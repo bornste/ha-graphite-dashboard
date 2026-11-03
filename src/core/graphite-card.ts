@@ -1,15 +1,53 @@
 // Base class of all Graphite cards: config handling, hass updates limited to the watched entities.
 import { LitElement, type PropertyValues } from "lit";
 import type { GraphiteCardConfig, HomeAssistant } from "./types";
+import { languageOf, translate } from "./i18n";
 
 export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = GraphiteCardConfig> extends LitElement {
   static properties = {
-    hass: { attribute: false },
     config: { state: true },
   };
 
-  declare hass?: HomeAssistant;
   declare config?: TConfig;
+
+  private hassObject?: HomeAssistant;
+
+  // hass is set by Home Assistant on every state change anywhere; shouldUpdate filters it
+  get hass(): HomeAssistant | undefined {
+    return this.hassObject;
+  }
+
+  set hass(hass: HomeAssistant | undefined) {
+    const previous = this.hassObject;
+    this.hassObject = hass;
+    if (previous?.locale?.language !== hass?.locale?.language) this.languageCache = undefined;
+    this.hassChanged(hass);
+    this.requestUpdate("hass", previous);
+  }
+
+  // called on every hass update, also when the card does not re-render (e.g. to pass hass on to child cards)
+  protected hassChanged(_hass: HomeAssistant | undefined): void {}
+
+  private languageCache?: string;
+
+  // language of the texts: theme variable --graphite-language, else the Home Assistant language
+  // (cached once the card is in the page, because the theme variable needs the computed style)
+  protected get language(): string {
+    if (this.languageCache) return this.languageCache;
+    const language = languageOf(this.isConnected ? this : undefined, this.hass);
+    if (this.isConnected) this.languageCache = language;
+    return language;
+  }
+
+  // translated text, e.g. this.localize("time.sinceMinutes", { minutes: 5 })
+  protected localize(key: string, params: Record<string, string | number> = {}): string {
+    return translate(this.language, key, params);
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.languageCache = undefined;
+  }
 
   // called by Home Assistant with the YAML / editor config; throw to show a config error
   setConfig(config: TConfig): void {

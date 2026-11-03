@@ -11,7 +11,8 @@ const options = {
   bundle: true,
   format: "esm",
   target: "es2021",
-  minify: true,
+  // not minified: readable stack traces in the browser console, the size does not matter locally
+  minify: false,
   legalComments: "eof",
   define: { GRAPHITE_VERSION: JSON.stringify(packageInfo.version) },
   // optional extra folder with node_modules (e.g. when the dependencies live outside the repo)

@@ -1,5 +1,6 @@
 // graphite-cards: entry point. Every card module registers itself on import.
 import { version } from "./core/version";
+import "./cards/graphite-panel";
 
 window.graphiteCards = { version };
 

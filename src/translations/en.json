@@ -1,0 +1,33 @@
+{
+  "time": {
+    "sinceMinutes": "for {minutes} min",
+    "sinceHours": "for {hours} h",
+    "sinceTime": "since {time}",
+    "sinceYesterday": "since yesterday {time}",
+    "sinceDate": "since {date}",
+    "agoMinutes": "{minutes} min ago",
+    "agoHours": "{hours} h ago",
+    "today": "today {time}",
+    "yesterday": "yesterday {time}",
+    "minutes": "{minutes} min",
+    "hoursMinutes": "{hours}:{minutes} h"
+  },
+  "panel": {
+    "editor": {
+      "title": "Title",
+      "info": "Status after the title (text or Jinja template)",
+      "info_alert": "Status in accent color when (YAML: entity, above, below, state)",
+      "chips": "Values on the right as chips (YAML list: entity, label, unit, decimals, muted, alert, tap_action)",
+      "layout": "Layout",
+      "layoutVertical": "Vertical",
+      "layoutHorizontal": "Horizontal",
+      "layoutGrid": "Grid",
+      "columns": "Columns (grid only)",
+      "gap": "Gap between cards (e.g. 8px)",
+      "padding": "Padding (e.g. 16px)",
+      "variables": "CSS variables (YAML, inherited by the cards in the panel)",
+      "min_column_width": "Minimum column width (grid only, e.g. 380px – wraps on narrow screens)",
+      "frame": "Show panel surface (off = layout container only)"
+    }
+  }
+}

@@ -14,6 +14,8 @@ export interface HassConnection {
 
 export interface HomeAssistant {
   states: Record<string, HassEntity>;
+  // entity registry entries of the frontend (display precision etc.)
+  entities?: Record<string, { display_precision?: number }>;
   locale?: { language: string };
   language?: string;
   connection: HassConnection;
@@ -43,5 +45,6 @@ declare global {
   interface Window {
     customCards?: Array<Record<string, unknown>>;
     graphiteCards?: { version: string };
+    loadCardHelpers?: () => Promise<{ createCardElement(config: Record<string, unknown>): any }>;
   }
 }

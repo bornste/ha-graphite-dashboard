@@ -22,6 +22,8 @@ Graphite: &graphite
       # second highlight color (e.g. visitor mode), same lightness as the accent
       graphite-success: "#a8d5a2"
       graphite-success-ink: "#17331a"
+      # language of the graphite-cards texts (de, en); remove to follow the Home Assistant language
+      graphite-language: de
 
       # 2. derived tokens: three surface levels (page, panel, tile) and text levels
       graphite-surface-page: var(--graphite-ground)

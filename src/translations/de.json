@@ -1,0 +1,33 @@
+{
+  "time": {
+    "sinceMinutes": "seit {minutes} Min.",
+    "sinceHours": "seit {hours} Std.",
+    "sinceTime": "seit {time}",
+    "sinceYesterday": "seit gestern {time}",
+    "sinceDate": "seit {date}",
+    "agoMinutes": "vor {minutes} Min.",
+    "agoHours": "vor {hours} Std.",
+    "today": "heute {time}",
+    "yesterday": "gestern {time}",
+    "minutes": "{minutes} Min.",
+    "hoursMinutes": "{hours}:{minutes} h"
+  },
+  "panel": {
+    "editor": {
+      "title": "Titel",
+      "info": "Status nach dem Titel (Text oder Jinja-Template)",
+      "info_alert": "Status in Akzentfarbe, wenn (YAML: entity, above, below, state)",
+      "chips": "Werte rechts als Chips (YAML-Liste: entity, label, unit, decimals, muted, alert, tap_action)",
+      "layout": "Anordnung",
+      "layoutVertical": "Vertikal",
+      "layoutHorizontal": "Horizontal",
+      "layoutGrid": "Raster",
+      "columns": "Spalten (nur Raster)",
+      "gap": "Abstand zwischen Karten (z.B. 8px)",
+      "padding": "Innenabstand (z.B. 16px)",
+      "variables": "CSS-Variablen (YAML, werden an die Karten im Panel vererbt)",
+      "min_column_width": "Mindestbreite pro Spalte (nur Raster, z.B. 380px – bricht auf schmalen Bildschirmen um)",
+      "frame": "Panel-Fläche anzeigen (aus = nur Layout-Container)"
+    }
+  }
+}
