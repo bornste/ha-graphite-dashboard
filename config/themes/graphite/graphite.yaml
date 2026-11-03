@@ -2,7 +2,7 @@
 # Token architecture (top to bottom):
 #   1. Base inputs    - the only values a variant needs to change (ground, ink, accent)
 #   2. Derived tokens - surfaces and text levels, mixed from ground and ink
-#   3. Layout tokens  - radii, gaps, paddings, typography
+#   3. Layout tokens  - radii, gaps, paddings, type scale, sizes
 #   4. HA / Bubble    - Home Assistant and Bubble Card variables mapped to the tokens
 #   5. Legacy aliases - the old sbo-* names point to the graphite-* tokens until every
 #                       card and the Bubble module use the new names (then they are removed)
@@ -51,6 +51,28 @@ Graphite: &graphite
       graphite-title-size: 18px
       graphite-title-weight: "400"
       graphite-title-color: var(--graphite-text-primary)
+
+      # 3c. type scale (cards fall back to these values when a token is missing)
+      graphite-font-value: 22px
+      graphite-font-value-weight: "300"
+      graphite-font-name: 15px
+      graphite-font-label: 13px
+      graphite-font-caption: 12px
+
+      # 3d. inner spacing and sizes of tiles, rows, chips and icons
+      graphite-space-inner: 12px
+      graphite-space-header: 12px
+      graphite-tile-height: 80px
+      graphite-tile-height-compact: 72px
+      graphite-tile-height-scene: 64px
+      graphite-tile-height-media: 88px
+      graphite-row-height: 60px
+      graphite-chip-padding: 4px 10px
+      graphite-chip-gap: 6px
+      graphite-icon-size: 24px
+      graphite-watermark-size: 34px
+      # strength of the accent tint of active tiles and rows
+      graphite-tint-active: 18%
 
       # 4. Home Assistant
       lovelace-background: var(--graphite-surface-page)

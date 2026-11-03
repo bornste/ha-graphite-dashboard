@@ -8,13 +8,19 @@ the special cases – also for cards with a visual editor.
 | Card | Page | Status |
 |---|---|---|
 | graphite-panel | [graphite-panel.md](graphite-panel.md) | ready |
+| graphite-status-row | [graphite-status-row.md](graphite-status-row.md) | ready |
+| graphite-switch-row | [graphite-switch-row.md](graphite-switch-row.md) | ready |
 
 ## Common behaviour
 
-- **Theme:** all cards use the `--graphite-*` variables of the Graphite theme.
+- **Theme:** all cards use the `--graphite-*` variables of the Graphite theme (colors, type scale,
+  spacing, sizes), see [theme.md](theme.md).
 - **Actions:** `tap_action`, `hold_action` and `double_tap_action` work like in the built-in
   cards (`more-info`, `toggle`, `navigate`, `url`, `perform-action`, `assist`, `none`).
   A double tap is only waited for when a `double_tap_action` is configured.
+  Holding opens the more-info dialog by default whenever an entity is attached (set
+  `hold_action: none` to disable it); the default tap action depends on the component.
+  Only the primary mouse button triggers actions; a right click never does.
 - **Times:** relative times use the Graphite wording, e.g. "seit 12 Min.", "seit gestern 21:40",
   "vor 3 Std.".
 - **Language:** all texts of the cards (relative times, editor labels, defaults) come from

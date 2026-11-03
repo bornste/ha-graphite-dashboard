@@ -16,6 +16,17 @@ if (!customElements.get("ha-card")) {
   });
 }
 
+// icons: Home Assistant's icon sets are not available here, a neutral glyph stands in
+class ShowcaseIcon extends HTMLElement {
+  connectedCallback() {
+    this.style.cssText = "display: inline-flex; width: var(--mdc-icon-size, 24px); height: var(--mdc-icon-size, 24px)";
+    this.innerHTML = `<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+  }
+}
+for (const tag of ["ha-icon", "ha-state-icon"]) {
+  if (!customElements.get(tag)) customElements.define(tag, class extends ShowcaseIcon {});
+}
+
 // placeholder for built-in cards (tile, entities, ...): name and state on a tile surface
 class ShowcaseTile extends HTMLElement {
   private config: Config = {};
@@ -72,6 +83,16 @@ function createHass(language: string): any {
     language,
     locale: { language },
     formatEntityState(stateObj: any) {
+      // translated states like Home Assistant shows them (only the ones the examples use)
+      const words: Record<string, Record<string, string>> = {
+        de: { on: "An", off: "Aus", open: "Offen", closed: "Geschlossen", unavailable: "Nicht verfügbar" },
+        en: { on: "On", off: "Off", open: "Open", closed: "Closed", unavailable: "Unavailable" },
+      };
+      const dictionary = words[language] ?? words.en;
+      if (stateObj.attributes.device_class === "window" && ["on", "off"].includes(stateObj.state)) {
+        return dictionary[stateObj.state === "on" ? "open" : "closed"];
+      }
+      if (dictionary[stateObj.state]) return dictionary[stateObj.state];
       const unit = stateObj.attributes.unit_of_measurement;
       const number = Number(stateObj.state);
       const precision = stateObj.attributes.display_precision;

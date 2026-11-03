@@ -30,6 +30,21 @@ export const sampleStates: Record<string, any> = {
   "sensor.hallway_temperature": entity("sensor.hallway_temperature", "20.4", { unit_of_measurement: "°C", friendly_name: "Hallway", display_precision: 1 }),
   "binary_sensor.console_in_game": entity("binary_sensor.console_in_game", "on", { friendly_name: "In game" }),
   "sensor.power_strip_power": entity("sensor.power_strip_power", "38.5", { unit_of_measurement: "W", friendly_name: "Power", display_precision: 0 }),
+  "binary_sensor.bedroom_window": entity("binary_sensor.bedroom_window", "on", { friendly_name: "Bedroom window", device_class: "window" }, 18),
+  "binary_sensor.office_window": entity("binary_sensor.office_window", "off", { friendly_name: "Office window", device_class: "window" }, 190),
+  "light.floor_lamp": entity("light.floor_lamp", "on", { friendly_name: "Floor lamp" }, 42),
+  "light.ceiling_lamp": entity("light.ceiling_lamp", "unavailable", { friendly_name: "Ceiling lamp" }, 300),
+  "sensor.server_power": entity("sensor.server_power", "24.6", { unit_of_measurement: "W", friendly_name: "Server", display_precision: 0 }),
+  "sensor.garden_temperature": entity("sensor.garden_temperature", "unavailable", { unit_of_measurement: "°C", friendly_name: "Garden" }, 95),
+  "switch.coffee_machine": entity("switch.coffee_machine", "on", { friendly_name: "Coffee machine" }, 7),
+  "switch.tv": entity("switch.tv", "on", { friendly_name: "TV" }, 1),
+  "binary_sensor.tv_online": entity("binary_sensor.tv_online", "off", { friendly_name: "TV online" }),
+  "automation.night_light": entity("automation.night_light", "on", { friendly_name: "Night light", last_triggered: minutesAgo(185) }, 4000),
+  "automation.vacation_mode": entity("automation.vacation_mode", "off", { friendly_name: "Vacation mode", last_triggered: null }, 9000),
+  "switch.code_server": entity("switch.code_server", "on", { friendly_name: "Code server" }, 600),
+  "sensor.code_server_cpu": entity("sensor.code_server_cpu", "0.4", { unit_of_measurement: "%", display_precision: 1 }),
+  "sensor.code_server_memory": entity("sensor.code_server_memory", "1.2", { unit_of_measurement: "%", display_precision: 1 }),
+  "switch.printer": entity("switch.printer", "unavailable", { friendly_name: "Printer" }, 50),
 };
 
 // canned results for the info templates (the showcase has no template engine)
@@ -116,6 +131,79 @@ export function examples(language: string): ShowcaseSection[] {
                 layout: "grid",
                 columns: 2,
                 cards: roomTiles.slice(0, 2),
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-status-row",
+      description: `Display row: icon, name with a "since" line and the state on the right. Active states get the accent tint,
+        measured values never. <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-status-row.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Windows, lamps, values",
+          note: "The floor lamp opens more-info on tap; holding any row opens more-info.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Status" : "Status",
+            cards: [
+              { type: "custom:graphite-status-row", entity: "binary_sensor.bedroom_window" },
+              { type: "custom:graphite-status-row", entity: "binary_sensor.office_window" },
+              { type: "custom:graphite-status-row", entity: "light.floor_lamp", tap_action: { action: "more-info" } },
+              { type: "custom:graphite-status-row", entity: "sensor.server_power" },
+            ],
+          },
+        },
+        {
+          title: "Unavailable and wall switch",
+          note: "wall_switch: an unavailable lamp counts as off (no offline badge).",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Nicht erreichbar" : "Unavailable",
+            cards: [
+              { type: "custom:graphite-status-row", entity: "sensor.garden_temperature" },
+              { type: "custom:graphite-status-row", entity: "light.ceiling_lamp", wall_switch: true },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-switch-row",
+      description: `Row with a toggle: tapping the row switches, holding opens more-info.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-switch-row.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Switches",
+          note: "The TV pulses until its online entity reports the device as reachable.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Steckdosen" : "Sockets",
+            cards: [
+              { type: "custom:graphite-switch-row", entity: "switch.coffee_machine" },
+              { type: "custom:graphite-switch-row", entity: "switch.tv", online_entity: "binary_sensor.tv_online" },
+              { type: "custom:graphite-switch-row", entity: "switch.printer" },
+            ],
+          },
+        },
+        {
+          title: "Automations and apps",
+          note: "since_attribute shows the last run; detail_entities show values while on.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Automationen" : "Automations",
+            cards: [
+              { type: "custom:graphite-switch-row", entity: "automation.night_light", since_attribute: "last_triggered" },
+              { type: "custom:graphite-switch-row", entity: "automation.vacation_mode", since_attribute: "last_triggered" },
+              {
+                type: "custom:graphite-switch-row",
+                entity: "switch.code_server",
+                detail_entities: [
+                  { entity: "sensor.code_server_cpu", label: "CPU" },
+                  { entity: "sensor.code_server_memory", label: "RAM" },
+                ],
               },
             ],
           },

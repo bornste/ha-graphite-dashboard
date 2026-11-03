@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.3.0";
+var version = "0.4.7";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -583,6 +583,29 @@ var de_default = {
       min_column_width: "Mindestbreite pro Spalte (nur Raster, z.B. 380px \u2013 bricht auf schmalen Bildschirmen um)",
       frame: "Panel-Fl\xE4che anzeigen (aus = nur Layout-Container)"
     }
+  },
+  rows: {
+    offline: "offline",
+    unavailable: "keine Meldung",
+    wallSwitchOff: "aus am Wandschalter",
+    triggeredDefault: "ausgel\xF6st",
+    attributeAgo: "{label} {ago}",
+    never: "noch nie {label}",
+    since: "{state} {since}",
+    editor: {
+      entity: "Entit\xE4t",
+      name: "Name (Standard: Name der Entit\xE4t)",
+      icon: "Icon (Standard: Icon der Entit\xE4t)",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen",
+      since_line: "Zeile \xABseit \u2026\xBB unter dem Namen anzeigen",
+      since_attribute: "Zeitstempel-Attribut statt letzter \xC4nderung (z.B. last_triggered)",
+      since_attribute_label: "Wort vor der Zeit (Standard: ausgel\xF6st)",
+      detail_entities: "Werte statt der Zeile \xABseit \u2026\xBB, solange eingeschaltet (YAML-Liste: entity, label)",
+      online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
+      wall_switch: "Wandschalter-Lampe (nicht erreichbar = aus)"
+    }
   }
 };
 
@@ -617,6 +640,29 @@ var en_default = {
       variables: "CSS variables (YAML, inherited by the cards in the panel)",
       min_column_width: "Minimum column width (grid only, e.g. 380px \u2013 wraps on narrow screens)",
       frame: "Show panel surface (off = layout container only)"
+    }
+  },
+  rows: {
+    offline: "offline",
+    unavailable: "no report",
+    wallSwitchOff: "off at the wall switch",
+    triggeredDefault: "triggered",
+    attributeAgo: "{label} {ago}",
+    never: "never {label}",
+    since: "{state} {since}",
+    editor: {
+      entity: "Entity",
+      name: "Name (default: entity name)",
+      icon: "Icon (default: entity icon)",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action",
+      since_line: 'Show the "since \u2026" line below the name',
+      since_attribute: "Timestamp attribute instead of the last change (e.g. last_triggered)",
+      since_attribute_label: "Word before the time (default: triggered)",
+      detail_entities: 'Values instead of the "since \u2026" line while on (YAML list: entity, label)',
+      online_entity: "Online entity (icon pulses until the device is reachable)",
+      wall_switch: "Wall switch lamp (unavailable = off)"
     }
   }
 };
@@ -710,6 +756,14 @@ GraphiteCard.properties = {
 };
 
 // src/core/actions.ts
+var holdDelay = 500;
+var doubleTapDelay = 250;
+function hasAction(config) {
+  return !!config && config.action !== "none";
+}
+function defaultHoldAction(entity) {
+  return entity ? { action: "more-info" } : { action: "none" };
+}
 function fireAction(element, config, action) {
   element.dispatchEvent(new CustomEvent("hass-action", {
     detail: { config, action },
@@ -717,9 +771,155 @@ function fireAction(element, config, action) {
     composed: true
   }));
 }
+var holdIndicator;
+function showHoldIndicator(element, x2, y3, isTouch) {
+  if (!holdIndicator) {
+    holdIndicator = document.createElement("div");
+    Object.assign(holdIndicator.style, {
+      position: "fixed",
+      borderRadius: "50%",
+      opacity: "0.2",
+      pointerEvents: "none",
+      zIndex: "999",
+      transform: "translate(-50%, -50%) scale(0)",
+      transition: "transform 180ms ease-in-out"
+    });
+    document.body.appendChild(holdIndicator);
+  }
+  const size = isTouch ? "100px" : "50px";
+  const styles = getComputedStyle(element);
+  const color = styles.getPropertyValue("--graphite-accent").trim() || styles.getPropertyValue("--primary-color").trim() || "currentColor";
+  Object.assign(holdIndicator.style, { width: size, height: size, background: color, left: `${x2}px`, top: `${y3}px` });
+  requestAnimationFrame(() => {
+    if (holdIndicator) holdIndicator.style.transform = "translate(-50%, -50%) scale(1)";
+  });
+}
+function hideHoldIndicator() {
+  if (holdIndicator) holdIndicator.style.transform = "translate(-50%, -50%) scale(0)";
+}
+function attachActionHandler(element, options, onAction) {
+  let holdTimer;
+  let tapTimer;
+  let held = false;
+  let pressed = false;
+  let pointerType = "";
+  let startX = 0;
+  let startY = 0;
+  const clearHold = () => {
+    window.clearTimeout(holdTimer);
+    holdTimer = void 0;
+  };
+  const cancel = () => {
+    clearHold();
+    if (held) hideHoldIndicator();
+    held = false;
+    pressed = false;
+  };
+  const onPointerDown = (event) => {
+    pointerType = event.pointerType;
+    if (event.button !== 0) return;
+    pressed = true;
+    held = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    if (options.hasHold()) {
+      holdTimer = window.setTimeout(() => {
+        held = true;
+        showHoldIndicator(element, startX, startY, pointerType === "touch");
+      }, holdDelay);
+    }
+  };
+  const onPointerMove = (event) => {
+    if (holdTimer && Math.hypot(event.clientX - startX, event.clientY - startY) > 10) clearHold();
+  };
+  const onPointerUp = (event) => {
+    clearHold();
+    if (event.button !== 0 || !pressed) return;
+    pressed = false;
+    if (held) {
+      held = false;
+      hideHoldIndicator();
+      onAction("hold");
+      return;
+    }
+    if (!options.hasDoubleTap()) {
+      onAction("tap");
+      return;
+    }
+    if (tapTimer) {
+      window.clearTimeout(tapTimer);
+      tapTimer = void 0;
+      onAction("double_tap");
+      return;
+    }
+    tapTimer = window.setTimeout(() => {
+      tapTimer = void 0;
+      onAction("tap");
+    }, doubleTapDelay);
+  };
+  const onKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onAction("tap");
+    }
+  };
+  const onContextMenu = (event) => {
+    if (pointerType === "touch" && options.hasHold()) event.preventDefault();
+  };
+  element.addEventListener("pointerdown", onPointerDown);
+  element.addEventListener("pointermove", onPointerMove);
+  element.addEventListener("pointerup", onPointerUp);
+  element.addEventListener("pointercancel", cancel);
+  element.addEventListener("pointerleave", cancel);
+  element.addEventListener("keydown", onKeyDown);
+  element.addEventListener("contextmenu", onContextMenu);
+  return () => {
+    clearHold();
+    window.clearTimeout(tapTimer);
+    element.removeEventListener("pointerdown", onPointerDown);
+    element.removeEventListener("pointermove", onPointerMove);
+    element.removeEventListener("pointerup", onPointerUp);
+    element.removeEventListener("pointercancel", cancel);
+    element.removeEventListener("pointerleave", cancel);
+    element.removeEventListener("keydown", onKeyDown);
+    element.removeEventListener("contextmenu", onContextMenu);
+  };
+}
 
 // src/core/format.ts
 var unavailableStates = ["unavailable", "unknown"];
+function isUnavailable(stateObj) {
+  return !stateObj || unavailableStates.includes(stateObj.state);
+}
+function formatState(hass, stateObj) {
+  if (!stateObj) return "";
+  return hass?.formatEntityState?.(stateObj) ?? stateObj.state;
+}
+function startOfToday() {
+  const today = /* @__PURE__ */ new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+function sinceText(changed, language) {
+  const minutes = Math.max(1, Math.floor((Date.now() - changed.getTime()) / 6e4));
+  if (minutes < 60) return translate(language, "time.sinceMinutes", { minutes });
+  if (minutes < 360) return translate(language, "time.sinceHours", { hours: Math.floor(minutes / 60) });
+  const time = changed.toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" });
+  const today = startOfToday();
+  if (changed >= today) return translate(language, "time.sinceTime", { time });
+  if (changed >= new Date(today.getTime() - 864e5)) return translate(language, "time.sinceYesterday", { time });
+  return translate(language, "time.sinceDate", { date: changed.toLocaleDateString(language, { day: "numeric", month: "short" }) });
+}
+function agoText(moment, language) {
+  const minutes = Math.max(1, Math.floor((Date.now() - moment.getTime()) / 6e4));
+  if (minutes < 60) return translate(language, "time.agoMinutes", { minutes });
+  if (minutes < 360) return translate(language, "time.agoHours", { hours: Math.floor(minutes / 60) });
+  const time = moment.toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" });
+  const today = startOfToday();
+  if (moment >= today) return translate(language, "time.today", { time });
+  if (moment >= new Date(today.getTime() - 864e5)) return translate(language, "time.yesterday", { time });
+  return moment.toLocaleDateString(language, { day: "numeric", month: "short" });
+}
 
 // src/core/conditions.ts
 function matchesCondition(condition, state) {
@@ -1087,8 +1287,8 @@ GraphitePanel.styles = i`
       display: flex;
       justify-content: flex-start;
       align-items: baseline;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: var(--graphite-space-header, 12px);
+      margin-bottom: var(--graphite-space-header, 12px);
     }
     .title {
       flex: none;
@@ -1102,13 +1302,13 @@ GraphitePanel.styles = i`
     }
     .info {
       min-width: 0;
-      padding-left: 12px;
+      padding-left: var(--graphite-space-header, 12px);
       position: relative;
       /* 2px more room on top for the separator line (it reads too short at cap height);
          the negative margin keeps the text on the shared baseline */
       padding-top: 2px;
       margin-top: -2px;
-      font-size: 13px;
+      font-size: var(--graphite-font-label, 13px);
       line-height: 16px;
       color: var(--graphite-text-secondary, var(--secondary-text-color));
       white-space: nowrap;
@@ -1137,7 +1337,7 @@ GraphitePanel.styles = i`
     /* values as pills on the right; the negative margin keeps the header at title height */
     .chips {
       display: flex;
-      gap: 6px;
+      gap: var(--graphite-chip-gap, 6px);
       flex: none;
       margin-left: auto;
       align-self: center;
@@ -1150,12 +1350,12 @@ GraphitePanel.styles = i`
       display: inline-flex;
       align-items: baseline;
       gap: 3px;
-      padding: 4px 10px;
+      padding: var(--graphite-chip-padding, 4px 10px);
       border: none;
       border-radius: var(--graphite-radius-pill, 999px);
       background: var(--graphite-surface-tile);
       font: inherit;
-      font-size: 13px;
+      font-size: var(--graphite-font-label, 13px);
       line-height: 16px;
       font-variant-numeric: tabular-nums;
       color: var(--graphite-text-primary, var(--primary-text-color));
@@ -1172,7 +1372,7 @@ GraphitePanel.styles = i`
     .chip .label,
     .chip .unit {
       color: var(--graphite-text-muted, var(--secondary-text-color));
-      font-size: 12px;
+      font-size: var(--graphite-font-caption, 12px);
     }
     .chip.muted .value {
       color: var(--graphite-text-secondary, var(--secondary-text-color));
@@ -1229,6 +1429,431 @@ registerElement("graphite-panel-editor", GraphitePanelEditor);
 registerCard("graphite-panel", GraphitePanel, {
   name: "Graphite Panel",
   description: "Groups cards in one panel with title, status, chips and a vertical, horizontal or grid layout."
+});
+
+// src/cards/rows/row-styles.ts
+var rowStyles = i`
+  :host {
+    display: block;
+  }
+  .row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: var(--graphite-row-height, 60px);
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background-color 0.3s ease;
+  }
+  .row.interactive {
+    cursor: pointer;
+  }
+  .row.interactive:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--graphite-accent);
+  }
+  /* active (on, open, ...): soft accent tint, not for measured values */
+  .row.active {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+  /* 42px icon box like the rows of the Home Assistant style; at 9px (not 8px) the 20px visible glyph
+     sits exactly between the edge and the text (20/20) */
+  .icon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-left: 9px;
+    margin-right: 9px;
+    color: var(--graphite-text-secondary);
+    --mdc-icon-size: var(--graphite-icon-size, 24px);
+  }
+  .row.active .icon {
+    color: var(--graphite-accent);
+  }
+  .text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+  }
+  .name {
+    font-size: var(--graphite-font-name, 15px);
+    font-weight: 400;
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row.active .name {
+    font-weight: 500;
+  }
+  .since {
+    font-size: var(--graphite-font-caption, 12px);
+    line-height: 15px;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .value {
+    flex: none;
+    margin-left: auto;
+    padding: 0 14px 0 12px;
+    font-size: var(--graphite-font-name, 15px);
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+  }
+  .row.active .value {
+    font-weight: 500;
+    color: var(--graphite-accent);
+  }
+  /* toggle (switch row): pure display, the row itself switches */
+  .toggle {
+    flex: none;
+    position: relative;
+    width: 36px;
+    height: 20px;
+    margin: 0 14px 0 12px;
+    border-radius: var(--graphite-radius-pill, 999px);
+    background: var(--graphite-surface-track);
+  }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--graphite-text-secondary);
+    transition: left 0.2s ease, background-color 0.2s ease;
+  }
+  .row.on .toggle {
+    background: var(--graphite-accent);
+  }
+  .row.on .toggle::after {
+    left: 19px;
+    background: var(--graphite-accent-ink);
+  }
+  /* offline badge in place of the value or toggle */
+  .offline {
+    display: none;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    height: 20px;
+    margin: 0 14px 0 auto;
+    padding: 0 8px 0 6px;
+    border-radius: var(--graphite-radius-pill, 999px);
+    background: color-mix(in srgb, var(--graphite-danger) 14%, var(--graphite-surface-tile));
+    color: var(--graphite-danger);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 20px;
+    --mdc-icon-size: 12px;
+  }
+  .offline ha-icon {
+    display: flex;
+  }
+  /* unavailable: dimmed row, badge instead of value and toggle */
+  .row.unavailable {
+    background: color-mix(in srgb, var(--graphite-surface-tile) 40%, transparent);
+  }
+  .row.unavailable :is(.text, .icon) {
+    opacity: 0.4;
+  }
+  .row.unavailable :is(.value, .toggle) {
+    display: none;
+  }
+  .row.unavailable .offline {
+    display: flex;
+  }
+  /* online_entity: the icon pulses until the device is reachable, then lights up */
+  .row.connecting .icon {
+    animation: graphite-connecting 1.6s ease-in-out infinite;
+  }
+  .row.online .icon {
+    color: var(--graphite-accent);
+  }
+  @keyframes graphite-connecting {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toggle::after {
+      transition: none;
+    }
+    .row.connecting .icon {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+`;
+
+// src/cards/rows/graphite-row.ts
+var activeStates = ["on", "open", "opening", "closing", "home", "playing", "active", "running", "true"];
+var onlineStates = ["home", "on", "online", "connected"];
+function isActiveState(state) {
+  if (state === void 0) return false;
+  return activeStates.includes(state) || Number(state) > 0;
+}
+var GraphiteRow = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { ...this.defaultActions(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    const entities = [config.entity];
+    if (config.online_entity) entities.push(config.online_entity);
+    for (const detail of config.detail_entities ?? []) entities.push(typeof detail === "string" ? detail : detail.entity);
+    return entities;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.refreshTimer = window.setInterval(() => this.requestUpdate(), 6e4);
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.clearInterval(this.refreshTimer);
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  // hand cursor, ripple and focus only when tapping does something; holding alone stays invisible
+  isInteractive() {
+    const config = this.config;
+    return hasAction(config.tap_action) || hasAction(config.double_tap_action);
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  // whether the entity counts as unavailable (a wall switch lamp is "off" instead)
+  unavailable(stateObj) {
+    return isUnavailable(stateObj) && !this.config.wall_switch;
+  }
+  // text below the name: details while on, a timestamp attribute, or "<state> seit <time>"
+  sinceLine(stateObj) {
+    const config = this.config;
+    if (!stateObj) return "";
+    const offline = isUnavailable(stateObj);
+    if (!offline && stateObj.state !== "off" && config.detail_entities?.length) {
+      const details = config.detail_entities.map((detail) => {
+        const entityId = typeof detail === "string" ? detail : detail.entity;
+        const detailState = this.hass?.states[entityId];
+        if (isUnavailable(detailState)) return "";
+        const value = formatState(this.hass, detailState);
+        return typeof detail !== "string" && detail.label ? `${detail.label} ${value}` : value;
+      }).filter(Boolean).join(" \xB7 ");
+      if (details) return details;
+    }
+    if (config.since_attribute && !offline) {
+      const label = config.since_attribute_label || this.localize("rows.triggeredDefault");
+      const moment = stateObj.attributes?.[config.since_attribute] ? new Date(stateObj.attributes[config.since_attribute]) : null;
+      return moment && !Number.isNaN(moment.getTime()) ? this.localize("rows.attributeAgo", { label, ago: agoText(moment, this.language) }) : this.localize("rows.never", { label });
+    }
+    const isMeasurement = !!stateObj.attributes?.unit_of_measurement;
+    const showSince = typeof config.since_line === "boolean" ? config.since_line : !isMeasurement;
+    if (!offline && !showSince) return "";
+    const stateText = offline ? this.localize(config.wall_switch ? "rows.wallSwitchOff" : "rows.unavailable") : formatState(this.hass, stateObj).toLowerCase();
+    return this.localize("rows.since", { state: stateText, since: sinceText(new Date(stateObj.last_changed), this.language) });
+  }
+  // classes of the row: active tint, on (toggle), unavailable, online status
+  rowClasses(stateObj) {
+    const config = this.config;
+    const classes = ["row"];
+    if (this.isInteractive()) classes.push("interactive");
+    if (this.unavailable(stateObj)) classes.push("unavailable");
+    if (stateObj?.state === "on") classes.push("on");
+    if (config.online_entity && stateObj?.state === "on") {
+      const online = onlineStates.includes(String(this.hass?.states[config.online_entity]?.state || "").toLowerCase());
+      classes.push(online ? "online" : "connecting");
+    }
+    return classes;
+  }
+  renderIcon(stateObj) {
+    const icon = this.config.icon;
+    if (icon || !customElements.get("ha-state-icon")) {
+      return b2`<ha-icon .icon=${icon || stateObj?.attributes?.icon || "mdi:help-circle-outline"}></ha-icon>`;
+    }
+    return b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.hass?.states[config.entity];
+    const unavailable = this.unavailable(stateObj);
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const since = this.sinceLine(stateObj);
+    const interactive = this.isInteractive();
+    return b2`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : A}
+      tabindex=${interactive ? "0" : A}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+      class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj, unavailable)}<div
+      class="offline"><ha-icon icon="mdi:wifi-off"></ha-icon><span>${this.localize("rows.offline")}</span></div></div>`;
+  }
+  getCardSize() {
+    return 1;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto", min_columns: 3 };
+  }
+};
+GraphiteRow.styles = rowStyles;
+
+// src/cards/rows/graphite-row-editor.ts
+function editorSchema2(rowKind) {
+  return [
+    { name: "entity", required: true, selector: { entity: {} } },
+    {
+      type: "grid",
+      name: "",
+      schema: [
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ]
+    },
+    { name: "tap_action", selector: { ui_action: {} } },
+    { name: "hold_action", selector: { ui_action: {} } },
+    { name: "double_tap_action", selector: { ui_action: {} } },
+    { name: "since_line", selector: { boolean: {} } },
+    {
+      type: "grid",
+      name: "",
+      schema: [
+        { name: "since_attribute", selector: { text: {} } },
+        { name: "since_attribute_label", selector: { text: {} } }
+      ]
+    },
+    { name: "detail_entities", selector: { object: {} } },
+    { name: "online_entity", selector: { entity: {} } },
+    ...rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
+  ];
+}
+var GraphiteRowEditor = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    this.rowKind = "status";
+    this.config = {};
+  }
+  setConfig(config) {
+    this.config = config;
+    this.render();
+  }
+  set hass(hass) {
+    this.hassObject = hass;
+    if (this.form) this.form.hass = hass;
+    else this.render();
+  }
+  render() {
+    if (!this.form) {
+      this.form = document.createElement("ha-form");
+      this.form.addEventListener("value-changed", (event) => {
+        event.stopPropagation();
+        this.fireConfig({ ...this.config, ...event.detail.value });
+      });
+      this.replaceChildren(this.form);
+    }
+    const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
+    if (this.formLanguage !== language) {
+      this.formLanguage = language;
+      this.form.schema = editorSchema2(this.rowKind);
+      this.form.computeLabel = (schema) => {
+        if (!schema.name) return "";
+        const key = `rows.editor.${schema.name}`;
+        const label = translate(language, key);
+        return label === key ? schema.name : label;
+      };
+    }
+    if (this.hassObject) this.form.hass = this.hassObject;
+    this.form.data = this.config;
+  }
+  fireConfig(config) {
+    const cleanConfig = Object.fromEntries(
+      Object.entries(config).filter(([key, value]) => {
+        if (value === "" || value === void 0 || value === null) return false;
+        if (key === "detail_entities" && (!Array.isArray(value) || value.length === 0)) return false;
+        if (key === "wall_switch" && value !== true) return false;
+        return true;
+      })
+    );
+    this.config = cleanConfig;
+    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: cleanConfig }, bubbles: true, composed: true }));
+  }
+};
+
+// src/cards/rows/graphite-status-row.ts
+var GraphiteStatusRow = class extends GraphiteRow {
+  defaultActions(entity) {
+    return { tap_action: { action: "none" }, hold_action: defaultHoldAction(entity) };
+  }
+  rowClasses(stateObj) {
+    const classes = super.rowClasses(stateObj);
+    const isMeasurement = !!stateObj?.attributes?.unit_of_measurement;
+    if (!isMeasurement && !classes.includes("unavailable") && isActiveState(stateObj?.state)) classes.push("active");
+    return classes;
+  }
+  renderEnd(stateObj) {
+    if (!stateObj) return b2`<div class="value"></div>`;
+    const shown = this.config.wall_switch && ["unavailable", "unknown"].includes(stateObj.state) ? { ...stateObj, state: "off" } : stateObj;
+    return b2`<div class="value">${formatState(this.hass, shown)}</div>`;
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("binary_sensor.")) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    const editor = document.createElement("graphite-row-editor");
+    editor.rowKind = "status";
+    return editor;
+  }
+};
+registerElement("graphite-row-editor", GraphiteRowEditor);
+registerCard("graphite-status-row", GraphiteStatusRow, {
+  name: "Graphite Status Row",
+  description: 'Row with icon, name, "since" line and the state on the right.'
+});
+
+// src/cards/rows/graphite-switch-row.ts
+var GraphiteSwitchRow = class extends GraphiteRow {
+  defaultActions(entity) {
+    return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(entity) };
+  }
+  rowClasses(stateObj) {
+    const classes = super.rowClasses(stateObj);
+    if (classes.includes("on") && !classes.includes("unavailable")) classes.push("active");
+    return classes;
+  }
+  renderEnd() {
+    return b2`<div class="toggle"></div>`;
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("switch.")) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    const editor = document.createElement("graphite-row-editor");
+    editor.rowKind = "switch";
+    return editor;
+  }
+};
+registerElement("graphite-row-editor", GraphiteRowEditor);
+registerCard("graphite-switch-row", GraphiteSwitchRow, {
+  name: "Graphite Switch Row",
+  description: 'Row with icon, name, "since" line and a toggle; tapping the row switches.'
 });
 
 // src/index.ts

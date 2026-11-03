@@ -68,8 +68,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       display: flex;
       justify-content: flex-start;
       align-items: baseline;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: var(--graphite-space-header, 12px);
+      margin-bottom: var(--graphite-space-header, 12px);
     }
     .title {
       flex: none;
@@ -83,13 +83,13 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     }
     .info {
       min-width: 0;
-      padding-left: 12px;
+      padding-left: var(--graphite-space-header, 12px);
       position: relative;
       /* 2px more room on top for the separator line (it reads too short at cap height);
          the negative margin keeps the text on the shared baseline */
       padding-top: 2px;
       margin-top: -2px;
-      font-size: 13px;
+      font-size: var(--graphite-font-label, 13px);
       line-height: 16px;
       color: var(--graphite-text-secondary, var(--secondary-text-color));
       white-space: nowrap;
@@ -118,7 +118,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     /* values as pills on the right; the negative margin keeps the header at title height */
     .chips {
       display: flex;
-      gap: 6px;
+      gap: var(--graphite-chip-gap, 6px);
       flex: none;
       margin-left: auto;
       align-self: center;
@@ -131,12 +131,12 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       display: inline-flex;
       align-items: baseline;
       gap: 3px;
-      padding: 4px 10px;
+      padding: var(--graphite-chip-padding, 4px 10px);
       border: none;
       border-radius: var(--graphite-radius-pill, 999px);
       background: var(--graphite-surface-tile);
       font: inherit;
-      font-size: 13px;
+      font-size: var(--graphite-font-label, 13px);
       line-height: 16px;
       font-variant-numeric: tabular-nums;
       color: var(--graphite-text-primary, var(--primary-text-color));
@@ -153,7 +153,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     .chip .label,
     .chip .unit {
       color: var(--graphite-text-muted, var(--secondary-text-color));
-      font-size: 12px;
+      font-size: var(--graphite-font-caption, 12px);
     }
     .chip.muted .value {
       color: var(--graphite-text-secondary, var(--secondary-text-color));

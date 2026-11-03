@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.119'
+  version: '0.120'
   creator: Bornste
   supported:
     - button
@@ -373,53 +373,7 @@ sbo_graphite:
       display: none !important;
     }
 
-    /* STATUS ROW: display-only row in full width (e.g. windows in a dialog): icon left, name with a
-       "since" line below it, the state as value on the right; on = soft accent tint like the status tile.
-       Spacing and type follow the rows of sbo-battery-card (padding 12/14px, name 15px, line 12px). */
-    .bubble-container.sbo-status-row {
-      height: 60px !important;
-      background-color: var(--bubble-main-background-color) !important;
-    }
-    /* measured values (entity with a unit, e.g. CPU %) are not "on": no accent tint, see sbo-row-measure */
-    ha-card.is-on .bubble-container.sbo-status-row:not(.sbo-row-measure) {
-      background-color: color-mix(in srgb, var(--sbo-accent) var(--sbo-switch-tint, 18%), var(--sbo-surface-tile-active)) !important;
-    }
-    /* no state colored overlay (Bubble fills it in accent for button_type switch), the row shows the state */
-    .sbo-status-row .bubble-button-background {
-      background: none !important;
-    }
-    .sbo-status-row .bubble-icon {
-      color: var(--sbo-text-secondary) !important;
-      opacity: 1 !important;
-    }
-    /* Bubble puts the 42px icon box at 8px and the text at 60px: the 24px icon (20px visible glyph)
-       would sit at 19/21px, one pixel off; 1px to the right centers it between edge and text (20/20) */
-    .sbo-status-row .bubble-icon-container {
-      transform: translateX(1px);
-    }
-    ha-card.is-on .sbo-status-row:not(.sbo-row-measure) .bubble-icon {
-      color: var(--sbo-accent) !important;
-    }
-    .sbo-status-row .bubble-name-container {
-      flex: 1 1 auto !important;
-      min-width: 0;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-    }
-    .sbo-status-row .bubble-name {
-      font-size: 15px;
-      font-weight: 400;
-      color: var(--sbo-text-primary);
-    }
-    ha-card.is-on .sbo-status-row:not(.sbo-row-measure) .bubble-name {
-      font-weight: 500;
-    }
-    /* Bubble's own state line is replaced by the "since" line */
-    .sbo-status-row .bubble-state {
-      display: none !important;
-    }
+    /* "since" line below the name (light tile): "an seit 12 Min." */
     .sbo-row-since:empty {
       display: none;
     }
@@ -430,45 +384,6 @@ sbo_graphite:
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    .sbo-row-value {
-      flex: none;
-      margin-left: auto;
-      padding: 0 14px 0 12px;
-      font-size: 15px;
-      color: var(--sbo-text-secondary);
-      white-space: nowrap;
-    }
-    ha-card.is-on .sbo-status-row:not(.sbo-row-measure) .sbo-row-value {
-      font-weight: 500;
-      color: var(--sbo-accent);
-    }
-    /* offline: the badge takes the place of the value, centered on the right */
-    ha-card.is-unavailable .sbo-row-value {
-      display: none;
-    }
-    .sbo-status-row .sbo-offline {
-      top: 50%;
-      right: 14px;
-      transform: translateY(-50%);
-    }
-    /* a status row without a tap action is display-only: no pointer, no ripple;
-       with a tap action (e.g. more-info) it reacts like a tile */
-    .sbo-status-row.sbo-row-static .bubble-action {
-      cursor: default !important;
-    }
-    .sbo-status-row.sbo-row-static ha-ripple {
-      display: none !important;
-    }
-    /* SWITCH ROW: status row with a working toggle on the right instead of the value
-       (tapping the row switches via the card's tap_action) */
-    .sbo-switch-row .sbo-row-value {
-      display: none !important;
-    }
-    .sbo-switch-row .sbo-toggle {
-      top: 50%;
-      right: 14px;
-      transform: translateY(-50%);
     }
 
     /* IMAGE TILE: action tile (e.g. game, app). With a picture (sbo_graphite.image, /local/... or
@@ -632,15 +547,15 @@ sbo_graphite:
     }
     /* offline tiles are dimmed as a whole: surface at 40% fades into the panel (no outline),
        text, icon and sliders are faded, only the offline badge keeps full strength */
-    ha-card.is-unavailable .bubble-container:is(.sbo-switch-tile, .sbo-light-tile, .sbo-status-row):not(.sbo-wall-switch-mode) {
+    ha-card.is-unavailable .bubble-container:is(.sbo-switch-tile, .sbo-light-tile):not(.sbo-wall-switch-mode) {
       background: color-mix(in srgb, var(--sbo-surface-tile) 40%, transparent) !important;
       box-shadow: none !important;
     }
-    ha-card.is-unavailable :is(.sbo-switch-tile, .sbo-light-tile, .sbo-status-row):not(.sbo-wall-switch-mode) :is(.bubble-name-container, .bubble-sub-button-bottom-container) {
+    ha-card.is-unavailable :is(.sbo-switch-tile, .sbo-light-tile):not(.sbo-wall-switch-mode) :is(.bubble-name-container, .bubble-sub-button-bottom-container) {
       opacity: 0.4 !important;
     }
-    /* icon of rows and light tiles faded like the text (the switch tile watermark has its own value) */
-    ha-card.is-unavailable :is(.sbo-light-tile, .sbo-status-row):not(.sbo-wall-switch-mode) .bubble-icon {
+    /* icon of light tiles faded like the text (the switch tile watermark has its own value) */
+    ha-card.is-unavailable .sbo-light-tile:not(.sbo-wall-switch-mode) .bubble-icon {
       opacity: 0.4 !important;
     }
 
@@ -966,10 +881,7 @@ sbo_graphite:
     .sbo-wall-switch-mode .sbo-offline {
       display: none !important;
     }
-    /* status row of a wall switch lamp: the value ("Aus") stays visible while unavailable */
-    ha-card.is-unavailable .sbo-wall-switch-mode .sbo-row-value {
-      display: block;
-    }
+    /* wall switch lamp switched off at the wall: the name keeps its normal color */
     ha-card.is-unavailable .sbo-wall-switch-mode .bubble-name {
       color: var(--sbo-text-primary) !important;
     }
@@ -2214,47 +2126,6 @@ sbo_graphite:
         return isWallSwitch ? 'aus am Wandschalter' : 'keine Meldung';
       };
 
-      // status row: full-width row, icon left, name with a "since" line, state as value on the right;
-      // switch row: the same with a toggle on the right instead of the value
-      if (config.appearance?.status_row || config.appearance?.switch_row)
-      {
-        const isSwitchRow = !!config.appearance?.switch_row;
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        const content = card.querySelector(`.bubble-content-container`);
-        const nameContainer = card.querySelector(`.bubble-name-container`);
-        const entityId = this.config?.entity;
-        if (container && wrapper && content && nameContainer && entityId)
-        {
-          container.classList.add(`sbo-status-row`);
-          container.classList.toggle(`sbo-switch-row`, isSwitchRow);
-          // display-only unless the row has a tap action (button_action wins over tap_action like in Bubble)
-          const rowTapAction = this.config?.button_action?.tap_action?.action ?? this.config?.tap_action?.action ?? 'none';
-          container.classList.toggle(`sbo-row-static`, !isSwitchRow && rowTapAction === 'none');
-          // a measured value (entity with a unit) is shown neutral, Bubble's is-on state does not tint it
-          container.classList.toggle(`sbo-row-measure`, !isSwitchRow && !!hass.states[entityId]?.attributes?.unit_of_measurement);
-          ensureToggleAndOffline(wrapper);
-          if (!isSwitchRow)
-            wrapper.querySelector(`.sbo-toggle`)?.remove();
-          let value = content.querySelector(`.sbo-row-value`);
-          if (!value)
-          {
-            value = document.createElement('div');
-            value.className = 'sbo-row-value';
-            content.appendChild(value);
-          }
-          const isWallSwitch = !isSwitchRow && !!config.wall_switch;
-          const unavailableText = applyWallSwitch(container, wrapper, isWallSwitch, false);
-          // wall switch lamp switched off at the wall: the value says "off" like for the other lamps
-          // (formatted as an off state, so it follows the user's language)
-          const offStateObj = hass.states[entityId];
-          const offText = isWallSwitch && offStateObj
-            ? (hass.formatEntityState?.({ ...offStateObj, state: 'off' }) ?? 'Aus')
-            : '';
-          attachSinceLine(container, nameContainer, entityId, value, unavailableText, offText);
-        }
-      }
-
       // right click (e.g. to open the inspector) must not trigger the card actions:
       // secondary mouse buttons are stopped before they reach Bubble's action handlers
       const actionContainer = card.querySelector(`.bubble-container`);
@@ -3041,16 +2912,6 @@ sbo_graphite:
           default: false
         - name: status_tile
           label: Show as status tile (switch tile look, state instead of toggle, display only)
-          selector:
-            boolean: {}
-          default: false
-        - name: status_row
-          label: Show as status row (full width, icon, name with 'since' line, state on the right, display only)
-          selector:
-            boolean: {}
-          default: false
-        - name: switch_row
-          label: Show as switch row (like the status row, with a toggle on the right; tapping switches)
           selector:
             boolean: {}
           default: false

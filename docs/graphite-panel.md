@@ -98,7 +98,9 @@ its slot, so no empty gap remains.
 Theme variables used: `--graphite-surface-panel`, `--graphite-radius-panel`,
 `--graphite-padding-panel`, `--graphite-gap-tile`, `--graphite-surface-tile`,
 `--graphite-surface-tile-active`, `--graphite-radius-tile`, `--graphite-title-*`,
-`--graphite-text-*`, `--graphite-separator`, `--graphite-accent`, `--graphite-radius-pill`.
+`--graphite-text-*`, `--graphite-separator`, `--graphite-accent`, `--graphite-radius-pill`,
+`--graphite-space-header`, `--graphite-font-label`, `--graphite-font-caption`, `--graphite-chip-padding`,
+`--graphite-chip-gap` (see [theme.md](theme.md)).
 
 Overrides (set via `variables` or on a parent):
 
