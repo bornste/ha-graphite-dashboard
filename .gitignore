@@ -1,0 +1,11 @@
+# Iconify source archive (110 MB, above the GitHub file size limit)
+config/custom_icons/iconify-icon-sets-master.zip
+
+# old backups
+*.bak
+
+# OS / editor files
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/

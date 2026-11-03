@@ -1,0 +1,83 @@
+# SBO Graphite
+# Token architecture (top to bottom):
+#   1. Base inputs   - the only values a variant needs to change (ground, ink, accent)
+#   2. Derived tokens - surfaces and text levels, mixed from ground and ink
+#   3. Layout tokens  - radii, gaps, paddings
+#   4. HA / Bubble    - Home Assistant and Bubble Card variables mapped to the tokens
+# A light or tinted variant only overrides the base inputs (see examples at the end).
+SBO Graphite:
+  modes:
+    dark:
+      # 1. base inputs
+      sbo-ground: "#0a0a0b"
+      sbo-ink: "#f3f3f4"
+      sbo-ink-rgb: 243, 243, 244
+      sbo-accent: "#f5c48a"
+      sbo-accent-ink: "#3a2410"
+      sbo-danger: "#e8908a"
+      # second highlight color (e.g. visitor mode), same lightness as the accent
+      sbo-success: "#a8d5a2"
+      sbo-success-ink: "#17331a"
+
+      # 2. derived tokens: three surface levels (page, panel, tile) and text levels
+      sbo-surface-page: var(--sbo-ground)
+      sbo-surface-panel: "color-mix(in srgb, var(--sbo-ink) 7%, var(--sbo-ground))"
+      sbo-surface-tile: "color-mix(in srgb, var(--sbo-ink) 12%, var(--sbo-ground))"
+      sbo-surface-tile-active: "color-mix(in srgb, var(--sbo-ink) 17%, var(--sbo-ground))"
+      sbo-surface-track: "color-mix(in srgb, var(--sbo-ink) 18%, var(--sbo-ground))"
+      sbo-text-primary: var(--sbo-ink)
+      sbo-text-secondary: "color-mix(in srgb, var(--sbo-ink) 62%, var(--sbo-ground))"
+      sbo-text-muted: "color-mix(in srgb, var(--sbo-ink) 40%, var(--sbo-ground))"
+      sbo-line: "color-mix(in srgb, var(--sbo-ink) 8%, transparent)"
+      # separator between title and status in headers: opaque, so it looks the same on every surface
+      sbo-separator: "color-mix(in srgb, var(--sbo-ink) 18%, var(--sbo-ground))"
+      sbo-overlay: "color-mix(in srgb, var(--sbo-ground) 90%, transparent)"
+
+      # 3. layout tokens
+      sbo-radius-panel: 20px
+      sbo-radius-tile: 12px
+      sbo-radius-pill: 999px
+      sbo-gap-panel: 16px
+      sbo-gap-tile: 8px
+      sbo-padding-panel: 16px
+
+      # 3b. typography tokens: one title style for panels and room cards
+      sbo-title-size: 18px
+      sbo-title-weight: "400"
+      sbo-title-color: var(--sbo-text-primary)
+
+      # 4. Home Assistant
+      lovelace-background: var(--sbo-surface-page)
+      primary-background-color: var(--sbo-surface-page)
+      secondary-background-color: var(--sbo-surface-panel)
+      card-background-color: var(--sbo-surface-panel)
+      ha-card-background: var(--sbo-surface-panel)
+      ha-card-border-radius: var(--sbo-radius-panel)
+      ha-card-border-width: 0px
+      ha-card-border-color: transparent
+      ha-card-box-shadow: none
+      primary-text-color: var(--sbo-text-primary)
+      secondary-text-color: var(--sbo-text-secondary)
+      disabled-text-color: var(--sbo-text-muted)
+      rgb-primary-text-color: var(--sbo-ink-rgb)
+      divider-color: var(--sbo-line)
+      accent-color: var(--sbo-accent)
+      ha-section-grid-row-gap: var(--sbo-gap-panel)
+      ha-section-grid-column-gap: var(--sbo-gap-panel)
+      ha-view-sections-column-gap: var(--sbo-gap-panel)
+      ha-dialog-surface-background: var(--sbo-surface-panel)
+
+      # 4. Bubble Card (the sbo_graphite module builds on these)
+      bubble-main-background-color: var(--sbo-surface-panel)
+      bubble-secondary-background-color: var(--sbo-surface-tile)
+      bubble-border-radius: var(--sbo-radius-panel)
+      bubble-pop-up-main-background-color: var(--sbo-overlay)
+      bubble-accent-color: var(--sbo-accent)
+
+# Variant examples (not active):
+# tinted dark - only the ground changes, all surfaces follow:
+#   sbo-ground: "#0d0b14"
+# light - ground and ink swap roles, surface steps then mix towards dark:
+#   sbo-ground: "#f4f4f6"
+#   sbo-ink: "#141416"
+#   sbo-ink-rgb: 20, 20, 22
