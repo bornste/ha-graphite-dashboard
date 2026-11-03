@@ -4,6 +4,7 @@ import "./cards/graphite-panel";
 import "./cards/rows/graphite-status-row";
 import "./cards/rows/graphite-switch-row";
 import "./cards/tiles/graphite-switch-tile";
+import "./cards/tiles/graphite-meter-tile";
 
 window.graphiteCards = { version };
 

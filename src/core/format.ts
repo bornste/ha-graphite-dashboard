@@ -14,6 +14,12 @@ export function formatState(hass: HomeAssistant | undefined, stateObj?: HassEnti
   return hass?.formatEntityState?.(stateObj) ?? stateObj.state;
 }
 
+// number with a fixed number of decimals in the number format of the Home Assistant user
+export function formatNumber(hass: HomeAssistant | undefined, value: number, digits: number): string {
+  const locale = hass?.locale?.language || "de-CH";
+  return value.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
 function startOfToday(): Date {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

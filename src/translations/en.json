@@ -63,5 +63,26 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action"
     }
+  },
+  "meter": {
+    "editor": {
+      "entity": "Entity (measurement)",
+      "name": "Name (default: entity name)",
+      "style": "Style (gradient = color scale with needle, level = fill bar)",
+      "min": "Minimum",
+      "max": "Maximum",
+      "decimals": "Decimals (default 1)",
+      "unit": "Unit (default: entity unit)",
+      "colors": "Color stops (YAML: value: color, e.g. 24: \"#6fbf5a\")",
+      "icon": "Icon top right",
+      "show_icon": "Show the entity icon",
+      "secondary_entity": "Second value on the right (e.g. humidity)",
+      "secondary_decimals": "Decimals of the second value",
+      "secondary_unit": "Unit of the second value",
+      "secondary_icon": "Icon before the second value",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action"
+    }
   }
 }

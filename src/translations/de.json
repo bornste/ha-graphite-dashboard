@@ -63,5 +63,26 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "meter": {
+    "editor": {
+      "entity": "Entität (Messwert)",
+      "name": "Name (Standard: Name der Entität)",
+      "style": "Darstellung (gradient = Farbskala mit Nadel, level = Füllbalken)",
+      "min": "Minimum",
+      "max": "Maximum",
+      "decimals": "Nachkommastellen (Standard 1)",
+      "unit": "Einheit (Standard: Einheit der Entität)",
+      "colors": "Farbstufen (YAML: Wert: Farbe, z.B. 24: \"#6fbf5a\")",
+      "icon": "Icon oben rechts",
+      "show_icon": "Icon der Entität anzeigen",
+      "secondary_entity": "Zweiter Wert rechts (z.B. Luftfeuchtigkeit)",
+      "secondary_decimals": "Nachkommastellen zweiter Wert",
+      "secondary_unit": "Einheit zweiter Wert",
+      "secondary_icon": "Icon vor dem zweiten Wert",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.122'
+  version: '0.123'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and meter tile.
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the label tiles (pickup, stopwatch, todo, ink).
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -1126,11 +1126,8 @@ sbo_graphite:
       color: var(--sbo-text-secondary);
     }
 
-    /* METER TILE: sensor value with an instrument.
-       style "gradient": whole color scale, dimmed beyond the value, needle at the value (--sbo-meter-dim).
-       style "level": bar in the band color, filled up to the value (no needle).
-       Both: name on top, value and secondary value sit on the bar in the footer.
-       style "label": short label stripe on top, name below it, value and secondary value at the bottom. */
+    /* LABEL LAYOUT (pickup, stopwatch, todo, ink tiles): short label stripe on top, name below it,
+       value and secondary value at the bottom. The meter tiles themselves are graphite-meter-tile now. */
     /* same height as the switch tiles: room between name and value */
     .bubble-container.sbo-meter-tile {
       height: var(--sbo-meter-height, 80px) !important;
@@ -1252,45 +1249,6 @@ sbo_graphite:
       border-radius: 2px;
       background: color-mix(in srgb, var(--sbo-ink) 14%, var(--sbo-card-surface, var(--sbo-surface-tile)));
     }
-    .sbo-meter-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: var(--sbo-meter-share, 0%);
-      border-radius: 2px;
-      background: var(--sbo-meter-color, var(--sbo-accent));
-    }
-    /* gradient (scale): the whole color scale is visible, dimmed beyond the value,
-       a needle marks the value (a needle, not a knob: it must not look like a slider) */
-    .sbo-meter-tile.sbo-meter-gradient .sbo-meter-bar {
-      background: var(--sbo-meter-scale);
-    }
-    .sbo-meter-tile.sbo-meter-gradient .sbo-meter-fill {
-      left: var(--sbo-meter-share, 0%);
-      right: 0;
-      width: auto;
-      border-radius: 0 2px 2px 0;
-      background: color-mix(in srgb, var(--sbo-card-surface, var(--sbo-surface-tile)) var(--sbo-meter-dim, 65%), transparent);
-    }
-    .sbo-meter-dot {
-      position: absolute;
-      top: -3px;
-      left: var(--sbo-meter-share, 0%);
-      width: 2px;
-      height: 10px;
-      margin-left: -1px;
-      border-radius: 1px;
-      background: var(--sbo-text-primary);
-      box-shadow: 0 0 0 1.5px var(--sbo-card-surface, var(--sbo-surface-tile));
-    }
-    .sbo-meter-tile:not(.sbo-meter-gradient) .sbo-meter-dot {
-      display: none;
-    }
-    /* level: track is a muted step of the fill color */
-    .sbo-meter-tile.sbo-meter-level .sbo-meter-bar {
-      background: color-mix(in srgb, var(--sbo-meter-color, var(--sbo-accent)) 22%, var(--sbo-card-surface, var(--sbo-surface-tile)));
-    }
     /* label: stripe on top instead of the footer bar */
     .sbo-meter-tile.sbo-meter-label .sbo-meter-bar {
       top: 10px;
@@ -1320,16 +1278,6 @@ sbo_graphite:
     .sbo-meter-tile.sbo-meter-label .sbo-meter-row {
       bottom: 9px;
     }
-    /* no value (unavailable, not numeric): empty bar, whole scale dimmed, no needle */
-    .sbo-meter-tile.sbo-meter-novalue:not(.sbo-meter-gradient) .sbo-meter-fill,
-    .sbo-meter-tile.sbo-meter-novalue .sbo-meter-dot {
-      display: none;
-    }
-    .sbo-meter-tile.sbo-meter-gradient.sbo-meter-novalue .sbo-meter-fill {
-      left: 0;
-      border-radius: 2px;
-    }
-
     /* PICKUP TILE (waste collection, calendar entity): meter "label" grammar with a date instead of a number.
        Due (today or tomorrow): soft accent tint like an active switch tile. */
     .bubble-container.sbo-pickup-tile.sbo-pickup-due {
@@ -2181,107 +2129,6 @@ sbo_graphite:
         }
       }
 
-      // meter tile: value, optional secondary value and an instrument bar
-      if (config.meter?.style)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        if (container && wrapper)
-        {
-          const meterConfig = config.meter;
-          const meterStyle = ['gradient', 'level', 'label'].includes(meterConfig.style) ? meterConfig.style : 'level';
-          container.classList.add(`sbo-meter-tile`);
-          for (const styleName of ['gradient', 'level', 'label'])
-            container.classList.toggle(`sbo-meter-${styleName}`, styleName === meterStyle);
-
-          let meter = wrapper.querySelector(`.sbo-meter`);
-          if (!meter)
-          {
-            meter = document.createElement('div');
-            meter.className = 'sbo-meter';
-            meter.innerHTML = `<div class="sbo-meter-name"></div>`
-              + `<div class="sbo-meter-row"><div class="sbo-meter-value"><span class="sbo-meter-number"></span><span class="sbo-meter-unit"></span></div><div class="sbo-meter-secondary"></div></div>`
-              + `<div class="sbo-meter-bar"><div class="sbo-meter-fill"></div><div class="sbo-meter-dot"></div></div>`;
-            wrapper.appendChild(meter);
-          }
-
-          const locale = hass?.locale?.language || 'de-CH';
-          const decimals = Number.isFinite(Number(meterConfig.decimals)) ? Number(meterConfig.decimals) : 1;
-          const formatNumber = (value, digits) => value.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits });
-
-          // main value
-          const entityId = this.config?.entity;
-          const stateObj = entityId ? hass?.states?.[entityId] : undefined;
-          const value = stateObj ? parseFloat(stateObj.state) : NaN;
-          const hasValue = Number.isFinite(value);
-          container.classList.toggle(`sbo-meter-novalue`, !hasValue);
-          const unit = meterConfig.unit !== undefined ? String(meterConfig.unit) : (stateObj?.attributes?.unit_of_measurement || '');
-          meter.querySelector(`.sbo-meter-number`).textContent = hasValue ? formatNumber(value, decimals) : '–';
-          meter.querySelector(`.sbo-meter-unit`).textContent = hasValue ? unit : '';
-          meter.querySelector(`.sbo-meter-name`).textContent = this.config?.name || stateObj?.attributes?.friendly_name || entityId || '';
-
-          // secondary value (e.g. humidity)
-          const secondary = meter.querySelector(`.sbo-meter-secondary`);
-          const secondaryState = meterConfig.secondary_entity ? hass?.states?.[meterConfig.secondary_entity] : undefined;
-          const secondaryValue = secondaryState ? parseFloat(secondaryState.state) : NaN;
-          let secondaryText = '';
-          if (secondaryState)
-          {
-            const secondaryDecimals = Number.isFinite(Number(meterConfig.secondary_decimals)) ? Number(meterConfig.secondary_decimals) : 0;
-            const secondaryUnit = meterConfig.secondary_unit !== undefined ? String(meterConfig.secondary_unit) : (secondaryState.attributes?.unit_of_measurement || '');
-            secondaryText = Number.isFinite(secondaryValue)
-              ? `${formatNumber(secondaryValue, secondaryDecimals)}${secondaryUnit ? ' ' + secondaryUnit : ''}`
-              : '–';
-          }
-          const secondaryKey = `${meterConfig.secondary_icon || ''}|${secondaryText}`;
-          if (secondary.dataset.key !== secondaryKey)
-          {
-            secondary.dataset.key = secondaryKey;
-            secondary.textContent = '';
-            if (secondaryText)
-            {
-              if (meterConfig.secondary_icon)
-              {
-                const secondaryIcon = document.createElement('ha-icon');
-                secondaryIcon.setAttribute('icon', meterConfig.secondary_icon);
-                secondary.appendChild(secondaryIcon);
-              }
-              secondary.appendChild(document.createTextNode(secondaryText));
-            }
-          }
-
-          // scale: min, max and color stops ({ value: color })
-          const minValue = Number.isFinite(Number(meterConfig.min)) ? Number(meterConfig.min) : 0;
-          const maxValue = Number.isFinite(Number(meterConfig.max)) && Number(meterConfig.max) > minValue ? Number(meterConfig.max) : minValue + 100;
-          const toShare = (v) => Math.min(100, Math.max(0, (v - minValue) / (maxValue - minValue) * 100));
-          const stops = Object.entries(meterConfig.colors || {})
-            .map(([stopValue, color]) => ({ value: Number(stopValue), color: String(color) }))
-            .filter(stop => Number.isFinite(stop.value) && stop.color)
-            .sort((a, b) => a.value - b.value);
-          const share = hasValue ? toShare(value) : 0;
-
-          // band color: color of the highest stop at or below the value
-          let bandColor = 'var(--sbo-accent)';
-          if (stops.length > 0)
-          {
-            bandColor = stops[0].color;
-            for (const stop of stops)
-              if (hasValue && value >= stop.value)
-                bandColor = stop.color;
-          }
-
-          container.style.setProperty('--sbo-meter-share', `${share}%`);
-          container.style.setProperty('--sbo-meter-color', bandColor);
-          if (meterStyle === 'gradient')
-          {
-            const gradientStops = stops.length > 0
-              ? stops.map(stop => `${stop.color} ${toShare(stop.value)}%`).join(', ')
-              : 'var(--sbo-accent) 0%, var(--sbo-accent) 100%';
-            container.style.setProperty('--sbo-meter-scale', `linear-gradient(90deg, ${gradientStops})`);
-          }
-        }
-      }
-
       // pickup tile: next collection of a calendar entity in the meter "label" layout
       if (config.pickup)
       {
@@ -2754,64 +2601,6 @@ sbo_graphite:
             number:
               min: 1
               max: 6
-              step: 1
-              mode: box
-    - type: expandable
-      name: meter
-      title: Meter tile (sensor value with bar)
-      icon: mdi:gauge
-      expanded: false
-      schema:
-        - name: style
-          label: Style (gradient, level or label)
-          selector:
-            select:
-              options:
-                - gradient
-                - level
-                - label
-        - name: min
-          label: Minimum
-          selector:
-            number:
-              step: any
-              mode: box
-        - name: max
-          label: Maximum
-          selector:
-            number:
-              step: any
-              mode: box
-        - name: decimals
-          label: Decimals (default 1)
-          selector:
-            number:
-              min: 0
-              max: 3
-              step: 1
-              mode: box
-        - name: unit
-          label: Unit (default from the entity)
-          selector:
-            text: {}
-        - name: colors
-          label: "Color stops as YAML, e.g. 16: '#4f8fd6'"
-          selector:
-            object: {}
-        - name: secondary_entity
-          label: Secondary value entity
-          selector:
-            entity: {}
-        - name: secondary_icon
-          label: Secondary value icon
-          selector:
-            icon: {}
-        - name: secondary_decimals
-          label: Secondary value decimals (default 0)
-          selector:
-            number:
-              min: 0
-              max: 3
               step: 1
               mode: box
     - type: expandable

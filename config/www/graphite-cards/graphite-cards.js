@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.5.2";
+var version = "0.6.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -617,6 +617,27 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen"
     }
+  },
+  meter: {
+    editor: {
+      entity: "Entit\xE4t (Messwert)",
+      name: "Name (Standard: Name der Entit\xE4t)",
+      style: "Darstellung (gradient = Farbskala mit Nadel, level = F\xFCllbalken)",
+      min: "Minimum",
+      max: "Maximum",
+      decimals: "Nachkommastellen (Standard 1)",
+      unit: "Einheit (Standard: Einheit der Entit\xE4t)",
+      colors: 'Farbstufen (YAML: Wert: Farbe, z.B. 24: "#6fbf5a")',
+      icon: "Icon oben rechts",
+      show_icon: "Icon der Entit\xE4t anzeigen",
+      secondary_entity: "Zweiter Wert rechts (z.B. Luftfeuchtigkeit)",
+      secondary_decimals: "Nachkommastellen zweiter Wert",
+      secondary_unit: "Einheit zweiter Wert",
+      secondary_icon: "Icon vor dem zweiten Wert",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -682,6 +703,27 @@ var en_default = {
       name: "Name (default: entity name)",
       icon: "Icon (default: entity icon)",
       online_entity: "Online entity (icon pulses until the device is reachable)",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
+    }
+  },
+  meter: {
+    editor: {
+      entity: "Entity (measurement)",
+      name: "Name (default: entity name)",
+      style: "Style (gradient = color scale with needle, level = fill bar)",
+      min: "Minimum",
+      max: "Maximum",
+      decimals: "Decimals (default 1)",
+      unit: "Unit (default: entity unit)",
+      colors: 'Color stops (YAML: value: color, e.g. 24: "#6fbf5a")',
+      icon: "Icon top right",
+      show_icon: "Show the entity icon",
+      secondary_entity: "Second value on the right (e.g. humidity)",
+      secondary_decimals: "Decimals of the second value",
+      secondary_unit: "Unit of the second value",
+      secondary_icon: "Icon before the second value",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action"
@@ -916,6 +958,10 @@ function isUnavailable(stateObj) {
 function formatState(hass, stateObj) {
   if (!stateObj) return "";
   return hass?.formatEntityState?.(stateObj) ?? stateObj.state;
+}
+function formatNumber(hass, value, digits) {
+  const locale = hass?.locale?.language || "de-CH";
+  return value.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 function startOfToday() {
   const today = /* @__PURE__ */ new Date();
@@ -2160,6 +2206,285 @@ registerElement("graphite-switch-tile-editor", GraphiteSwitchTileEditor);
 registerCard("graphite-switch-tile", GraphiteSwitchTile, {
   name: "Graphite Switch Tile",
   description: "Tile with toggle, name and watermark icon; tapping the tile switches. Optional online status."
+});
+
+// src/cards/tiles/graphite-meter-tile-editor.ts
+var GraphiteMeterTileEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "meter.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level"] } } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "min", selector: { number: { mode: "box" } } },
+          { name: "max", selector: { number: { mode: "box" } } },
+          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "unit", selector: { text: {} } }
+        ]
+      },
+      { name: "colors", selector: { object: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+          { name: "show_icon", selector: { boolean: {} } }
+        ]
+      },
+      { name: "secondary_entity", selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "secondary_unit", selector: { text: {} } },
+          { name: "secondary_icon", selector: { icon: {} } }
+        ]
+      },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+  skipValue(key, value) {
+    if (key === "show_icon") return value !== true;
+    if (key === "colors") return typeof value !== "object" || Object.keys(value).length === 0;
+    return false;
+  }
+};
+
+// src/cards/tiles/meter-styles.ts
+var meterStyles = i`
+  /* name on top (overrides the name at the bottom of the switch tile) */
+  .name {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 10px;
+    bottom: auto;
+    font-size: var(--graphite-font-label, 13px);
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* watermark icon top right */
+  .meter-icon {
+    position: absolute;
+    right: 6px;
+    top: 8px;
+    display: flex;
+    width: var(--graphite-watermark-size, 34px);
+    height: var(--graphite-watermark-size, 34px);
+    color: var(--graphite-text-primary);
+    opacity: 0.16;
+    pointer-events: none;
+    --mdc-icon-size: var(--graphite-watermark-size, 34px);
+  }
+  .value-row {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 19px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .value {
+    font-size: var(--graphite-font-value, 22px);
+    font-weight: var(--graphite-font-value-weight, 300);
+    line-height: 1.1;
+    white-space: nowrap;
+    color: var(--graphite-text-primary);
+  }
+  /* unit and secondary value share the name size for a calm type scale */
+  .unit {
+    font-size: var(--graphite-font-label, 13px);
+    font-weight: 400;
+    margin-left: 3px;
+    color: var(--graphite-text-muted);
+  }
+  .secondary {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    font-size: var(--graphite-font-label, 13px);
+    font-weight: 400;
+    line-height: 1.6;
+    white-space: nowrap;
+    color: var(--graphite-text-muted);
+    --mdc-icon-size: 13px;
+  }
+  /* icon sits on the text baseline like a glyph */
+  .secondary ha-icon {
+    display: inline-flex;
+    width: 13px;
+    height: 13px;
+    align-self: baseline;
+    transform: translateY(1px);
+  }
+  .bar {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 9px;
+    height: 4px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  .fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--meter-share, 0%);
+    border-radius: 2px;
+    background: var(--meter-color, var(--graphite-accent));
+  }
+  /* gradient: the whole color scale is visible, dimmed beyond the value,
+     a needle marks the value (a needle, not a knob: it must not look like a slider) */
+  .tile.gradient .bar {
+    background: var(--meter-scale);
+  }
+  .tile.gradient .fill {
+    left: var(--meter-share, 0%);
+    right: 0;
+    width: auto;
+    border-radius: 0 2px 2px 0;
+    background: color-mix(in srgb, var(--graphite-card-surface, var(--graphite-surface-tile)) var(--graphite-meter-dim, 65%), transparent);
+  }
+  .needle {
+    position: absolute;
+    top: -3px;
+    left: var(--meter-share, 0%);
+    width: 2px;
+    height: 10px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--graphite-text-primary);
+    box-shadow: 0 0 0 1.5px var(--graphite-card-surface, var(--graphite-surface-tile));
+  }
+  /* level: bar in the band color, track a muted step of it */
+  .tile.level .bar {
+    background: color-mix(in srgb, var(--meter-color, var(--graphite-accent)) 22%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  /* no value (unavailable, not numeric): empty bar, whole scale dimmed, no needle */
+  .tile.novalue.level .fill,
+  .tile.novalue .needle {
+    display: none;
+  }
+  .tile.novalue.gradient .fill {
+    left: 0;
+    border-radius: 2px;
+  }
+`;
+
+// src/cards/tiles/graphite-meter-tile.ts
+var GraphiteMeterTile = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    return config.secondary_entity ? [config.entity, config.secondary_entity] : [config.entity];
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  colorStops() {
+    return Object.entries(this.config.colors ?? {}).map(([stopValue, color]) => ({ value: Number(stopValue), color: String(color) })).filter((stop) => Number.isFinite(stop.value) && stop.color).sort((first, second) => first.value - second.value);
+  }
+  secondaryText() {
+    const config = this.config;
+    if (!config.secondary_entity) return "";
+    const secondaryState = this.hass?.states[config.secondary_entity];
+    if (!secondaryState) return "";
+    const value = parseFloat(secondaryState.state);
+    if (!Number.isFinite(value)) return "\u2013";
+    const unit = config.secondary_unit ?? secondaryState.attributes?.unit_of_measurement ?? "";
+    return `${formatNumber(this.hass, value, config.secondary_decimals ?? 0)}${unit ? ` ${unit}` : ""}`;
+  }
+  renderIcon(stateObj) {
+    const config = this.config;
+    if (!config.icon && !config.show_icon) return A;
+    const icon = config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    return b2`<div class="meter-icon">${icon}</div>`;
+  }
+  render() {
+    const config = this.config;
+    const style = config.style === "gradient" ? "gradient" : "level";
+    const stateObj = this.hass?.states[config.entity];
+    const value = stateObj ? parseFloat(stateObj.state) : NaN;
+    const hasValue = Number.isFinite(value);
+    const unit = config.unit ?? stateObj?.attributes?.unit_of_measurement ?? "";
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const minValue = Number.isFinite(Number(config.min)) ? Number(config.min) : 0;
+    const maxValue = Number.isFinite(Number(config.max)) && Number(config.max) > minValue ? Number(config.max) : minValue + 100;
+    const toShare = (number) => Math.min(100, Math.max(0, (number - minValue) / (maxValue - minValue) * 100));
+    const stops = this.colorStops();
+    let bandColor = "var(--graphite-accent)";
+    if (stops.length > 0) {
+      bandColor = stops[0].color;
+      for (const stop of stops) if (hasValue && value >= stop.value) bandColor = stop.color;
+    }
+    const scale = stops.length > 0 ? stops.map((stop) => `${stop.color} ${toShare(stop.value)}%`).join(", ") : "var(--graphite-accent) 0%, var(--graphite-accent) 100%";
+    const variables = `--meter-share: ${hasValue ? toShare(value) : 0}%; --meter-color: ${bandColor};` + (style === "gradient" ? ` --meter-scale: linear-gradient(90deg, ${scale});` : "");
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    const classes = ["tile", style, hasValue ? "" : "novalue", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const secondary = this.secondaryText();
+    return b2`<div class=${classes} style=${variables} role=${interactive ? "button" : A}
+      tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(stateObj)}<div class="name">${name}</div><div class="value-row"><div class="value">${hasValue ? formatNumber(this.hass, value, config.decimals ?? 1) : "\u2013"}${hasValue && unit ? b2`<span class="unit">${unit}</span>` : A}</div>${secondary ? b2`<div class="secondary">${config.secondary_icon ? b2`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : A}${secondary}</div>` : A}</div><div
+      class="bar"><div class="fill"></div>${style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 3, rows: 2, min_columns: 2 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("sensor.") && hass.states[id].attributes?.unit_of_measurement === "%") ?? "";
+    return { entity, style: "level", min: 0, max: 100, decimals: 0 };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-meter-tile-editor");
+  }
+};
+GraphiteMeterTile.styles = [tileStyles, meterStyles];
+registerElement("graphite-meter-tile-editor", GraphiteMeterTileEditor);
+registerCard("graphite-meter-tile", GraphiteMeterTile, {
+  name: "Graphite Meter Tile",
+  description: "Sensor value with a color scale (gradient with needle) or a level bar, optional secondary value."
 });
 
 // src/index.ts

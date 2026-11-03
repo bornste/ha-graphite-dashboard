@@ -48,6 +48,10 @@ export const sampleStates: Record<string, any> = {
   "switch.game_console": entity("switch.game_console", "on", { friendly_name: "Game console" }, 25),
   "binary_sensor.game_console_online": entity("binary_sensor.game_console_online", "on", { friendly_name: "Game console online" }),
   "switch.speaker": entity("switch.speaker", "off", { friendly_name: "Speaker" }, 240),
+  "sensor.server_cpu": entity("sensor.server_cpu", "34", { unit_of_measurement: "%", friendly_name: "CPU", icon: "mdi:speedometer" }),
+  "sensor.server_memory": entity("sensor.server_memory", "58", { unit_of_measurement: "%", friendly_name: "Memory", icon: "mdi:memory" }),
+  "sensor.server_disk": entity("sensor.server_disk", "86", { unit_of_measurement: "%", friendly_name: "Disk", icon: "mdi:harddisk" }),
+  "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
 // canned results for the info templates (the showcase has no template engine)
@@ -230,6 +234,41 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-switch-tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
               { type: "custom:graphite-switch-tile", entity: "switch.speaker", icon: "mdi:speaker" },
               { type: "custom:graphite-switch-tile", entity: "switch.printer", icon: "mdi:printer" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-meter-tile",
+      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient) or a fill bar (level).
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-meter-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Room climate (gradient)",
+          note: "Temperature on a comfort scale, humidity as second value; the garden sensor has no value.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Raumklima" : "Climate",
+            layout: "horizontal",
+            cards: [
+              { type: "custom:graphite-meter-tile", entity: "sensor.living_room_temperature", name: german ? "Wohnen" : "Living", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.living_room_humidity" },
+              { type: "custom:graphite-meter-tile", entity: "sensor.office_temperature", name: german ? "Büro" : "Office", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.office_humidity" },
+              { type: "custom:graphite-meter-tile", entity: "sensor.garden_temperature", name: german ? "Garten" : "Garden", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" } },
+            ],
+          },
+        },
+        {
+          title: "Server (gradient and level)",
+          note: "CPU as scale, memory and disk as fill bars in the color of their band; icons as watermark.",
+          config: {
+            type: "custom:graphite-panel",
+            title: "Server",
+            layout: "horizontal",
+            cards: [
+              { type: "custom:graphite-meter-tile", entity: "sensor.server_cpu", style: "gradient", decimals: 0, show_icon: true, colors: { 40: "#6fbf5a", 60: "#f0a33c", 80: "#e4644b" } },
+              { type: "custom:graphite-meter-tile", entity: "sensor.server_memory", style: "level", decimals: 0, show_icon: true, colors: { 0: "#6fbf5a", 50: "#f0a33c", 80: "#e4644b" } },
+              { type: "custom:graphite-meter-tile", entity: "sensor.server_disk", style: "level", decimals: 0, show_icon: true, colors: { 0: "#6fbf5a", 50: "#f0a33c", 80: "#e4644b" } },
             ],
           },
         },
