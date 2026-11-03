@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.121'
+  version: '0.122'
   creator: Bornste
   supported:
     - button
@@ -403,7 +403,7 @@ sbo_graphite:
       pointer-events: none;
       --mdc-icon-size: 12px;
     }
-    .sbo-offline ha-icon {
+    .sbo-offline .sbo-offline-dot {
       display: flex;
     }
     ha-card.is-unavailable .sbo-offline {
@@ -1820,8 +1820,10 @@ sbo_graphite:
         {
           const offlineBadge = document.createElement('div');
           offlineBadge.className = 'sbo-offline';
-          const offlineIcon = document.createElement('ha-icon');
-          offlineIcon.setAttribute('icon', 'mdi:wifi-off');
+          // small ring with a soft fill (same as the offline badge of graphite-cards)
+          const offlineIcon = document.createElement('span');
+          offlineIcon.className = 'sbo-offline-dot';
+          offlineIcon.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"></circle><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"></circle></svg>';
           const offlineText = document.createElement('span');
           offlineText.textContent = 'offline';
           offlineBadge.append(offlineIcon, offlineText);

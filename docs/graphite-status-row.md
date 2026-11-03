@@ -34,6 +34,7 @@ name: Bedroom window
 - **Measured values** (entities with `unit_of_measurement`) are never tinted.
 - **Unavailable or unknown:** the row is dimmed (surface 40 %, text and icon 40 %), the value is
   replaced by an "offline" badge, the line says "keine Meldung seit …" (not for `wall_switch`).
+  A tap action is ignored while offline (no hand cursor, no touch effect); holding still opens more-info.
 - The value is the state as Home Assistant formats it (translated, with unit).
 - Relative times update every minute.
 

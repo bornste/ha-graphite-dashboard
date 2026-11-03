@@ -104,10 +104,10 @@ export const tileStyles = css`
     font-size: 11px;
     font-weight: 500;
     line-height: 20px;
-    --mdc-icon-size: 12px;
   }
-  .offline ha-icon {
-    display: flex;
+  .offline-dot {
+    flex: none;
+    display: block;
   }
   /* unavailable: surface fades into the panel, text and icon faded, only the badge keeps full strength */
   .tile.unavailable {

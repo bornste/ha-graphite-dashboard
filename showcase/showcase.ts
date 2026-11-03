@@ -76,9 +76,12 @@ customElements.define("showcase-tile", ShowcaseTile);
 });
 
 // a minimal hass object: states, number formatting and canned template results
+// states of the page; toggling replaces an entity object (like Home Assistant), so the cards re-render
+let states: Record<string, any> = { ...sampleStates };
+
 function createHass(language: string): any {
   return {
-    states: sampleStates,
+    states,
     entities: Object.fromEntries(Object.entries(sampleStates).map(([id, state]: [string, any]) => [id, { display_precision: state.attributes.display_precision }])),
     language,
     locale: { language },
@@ -117,14 +120,81 @@ function createHass(language: string): any {
 
 const toast = document.getElementById("toast")!;
 let toastTimer: number | undefined;
-// actions are shown instead of executed
-document.addEventListener("hass-action", (event: Event) => {
-  const { config, action } = (event as CustomEvent).detail;
-  const actionConfig = config[`${action}_action`] ?? { action: "more-info" };
-  toast.textContent = `${action}: ${actionConfig.action}${config.entity ? ` · ${config.entity}` : ""}`;
+
+function showToast(text: string): void {
+  toast.textContent = text;
   toast.classList.add("visible");
   window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => toast.classList.remove("visible"), 1800);
+}
+
+// cards of the page, they get a new hass object after every state change
+let renderedCards: any[] = [];
+
+function setState(entityId: string, state: string): void {
+  const current = states[entityId];
+  if (!current) return;
+  const now = new Date().toISOString();
+  states = { ...states, [entityId]: { ...current, state, last_changed: now, last_updated: now } };
+  const hass = createHass(languageSelect.value);
+  for (const card of renderedCards) card.hass = hass;
+}
+
+// toggle: on/off flips, an online entity follows a moment later (shows the "connecting" pulse)
+function toggle(entityId: string, onlineEntity?: string): void {
+  const current = states[entityId];
+  if (!current || !["on", "off"].includes(current.state)) {
+    showToast(`${entityId}: ${current?.state ?? "unknown"}`);
+    return;
+  }
+  const turnOn = current.state === "off";
+  setState(entityId, turnOn ? "on" : "off");
+  if (onlineEntity) {
+    setState(onlineEntity, "off");
+    if (turnOn) {
+      window.setTimeout(() => {
+        if (states[entityId]?.state === "on") setState(onlineEntity, "on");
+      }, 2500);
+    }
+  }
+}
+
+// more-info: a small dialog with state, last change and attributes
+const dialog = document.getElementById("more-info") as HTMLDialogElement;
+dialog.addEventListener("click", (event) => {
+  if (event.target === dialog) dialog.close();
+});
+
+function showMoreInfo(entityId: string): void {
+  const stateObj = states[entityId];
+  if (!stateObj) return;
+  const hass = createHass(languageSelect.value);
+  const name = stateObj.attributes.friendly_name ?? entityId;
+  const rows = Object.entries(stateObj.attributes)
+    .filter(([key]) => key !== "friendly_name")
+    .map(([key, value]) => `<dt>${key}</dt><dd>${String(value)}</dd>`)
+    .join("");
+  const changed = new Date(stateObj.last_changed).toLocaleString(languageSelect.value);
+  dialog.innerHTML = `<form method="dialog"><header><h2>${name}</h2><button aria-label="close">✕</button></header>
+    <p class="state">${hass.formatEntityState(stateObj)}</p><p class="entity">${entityId} · ${changed}</p>
+    ${rows ? `<dl>${rows}</dl>` : ""}</form>`;
+  dialog.showModal();
+}
+
+// actions: toggle and more-info act on the sample data, everything else is shown as a toast
+document.addEventListener("hass-action", (event: Event) => {
+  const { config, action } = (event as CustomEvent).detail;
+  const actionConfig = config[`${action}_action`] ?? { action: "more-info" };
+  const entityId = actionConfig.entity ?? config.entity;
+  if (actionConfig.action === "toggle" && entityId) {
+    toggle(entityId, config.online_entity);
+    return;
+  }
+  if (actionConfig.action === "more-info" && entityId) {
+    showMoreInfo(entityId);
+    return;
+  }
+  showToast(`${action}: ${actionConfig.action}${entityId ? ` · ${entityId}` : ""}`);
 });
 
 function renderSection(section: ShowcaseSection, hass: any): HTMLElement {
@@ -144,6 +214,7 @@ function renderSection(section: ShowcaseSection, hass: any): HTMLElement {
     const card: any = document.createElement(example.config.type.slice(7));
     card.setConfig(example.config);
     card.hass = hass;
+    renderedCards.push(card);
     wrapper.append(title, card);
     if (example.note) {
       const note = document.createElement("p");
@@ -196,6 +267,7 @@ function render(): void {
   main.style.setProperty("--graphite-language", language);
   document.documentElement.lang = language;
   const hass = createHass(language);
+  renderedCards = [];
   main.replaceChildren(renderTokens(), ...examples(language).map((section) => renderSection(section, hass)));
 }
 

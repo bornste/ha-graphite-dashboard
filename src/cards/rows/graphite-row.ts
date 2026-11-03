@@ -5,6 +5,7 @@ import { GraphiteCard } from "../../core/graphite-card";
 import { attachActionHandler, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { agoText, formatState, isUnavailable, sinceText } from "../../core/format";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
+import { offlineDot } from "../../core/offline-dot";
 import { rowStyles } from "./row-styles";
 
 export interface DetailEntity {
@@ -77,15 +78,19 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
     this.detachActions = undefined;
   }
 
-  // hand cursor, ripple and focus only when tapping does something; holding alone stays invisible
-  protected isInteractive(): boolean {
+  // hand cursor, ripple and focus only when tapping does something; holding alone stays invisible.
+  // An offline entity cannot be switched, so the row is not interactive then either.
+  protected isInteractive(stateObj: HassEntity | undefined): boolean {
     const config = this.config!;
+    if (this.unavailable(stateObj)) return false;
     return hasAction(config.tap_action) || hasAction(config.double_tap_action);
   }
 
   private handleAction(action: ActionKind): void {
     const config = this.config;
     if (!config || !hasAction(config[`${action}_action`] as ActionConfig | undefined)) return;
+    // offline: tap and double tap do nothing, holding still opens more-info
+    if (action !== "hold" && this.unavailable(this.hass?.states[config.entity])) return;
     fireAction(this, config, action);
   }
 
@@ -132,7 +137,7 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
   protected rowClasses(stateObj: HassEntity | undefined): string[] {
     const config = this.config!;
     const classes = ["row"];
-    if (this.isInteractive()) classes.push("interactive");
+    if (this.isInteractive(stateObj)) classes.push("interactive");
     if (this.unavailable(stateObj)) classes.push("unavailable");
     if (stateObj?.state === "on") classes.push("on");
     if (config.online_entity && stateObj?.state === "on") {
@@ -156,12 +161,12 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
     const unavailable = this.unavailable(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const since = this.sinceLine(stateObj);
-    const interactive = this.isInteractive();
+    const interactive = this.isInteractive(stateObj);
     return html`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : nothing}
       tabindex=${interactive ? "0" : nothing}>${interactive ? html`<ha-ripple></ha-ripple>` : nothing}<div
       class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since
       ? html`<div class="since">${since}</div>` : nothing}</div>${this.renderEnd(stateObj, unavailable)}<div
-      class="offline"><ha-icon icon="mdi:wifi-off"></ha-icon><span>${this.localize("rows.offline")}</span></div></div>`;
+      class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
 
   getCardSize(): number {

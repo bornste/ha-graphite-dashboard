@@ -8,6 +8,7 @@ import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
 import { GraphiteSwitchTileEditor } from "./graphite-switch-tile-editor";
+import { offlineDot } from "../../core/offline-dot";
 import { tileStyles } from "./tile-styles";
 
 export interface SwitchTileConfig extends GraphiteCardConfig {
@@ -101,7 +102,7 @@ export class GraphiteSwitchTile extends GraphiteCard<SwitchTileConfig> {
     return html`<div class=${this.tileClasses(stateObj, unavailable, interactive)} role=${interactive ? "button" : nothing}
       tabindex=${interactive ? "0" : nothing} aria-label=${name}>${interactive ? html`<ha-ripple></ha-ripple>` : nothing}<div
       class="watermark">${this.renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
-      class="offline"><ha-icon icon="mdi:wifi-off"></ha-icon><span>${this.localize("rows.offline")}</span></div></div>`;
+      class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
 
   getCardSize(): number {

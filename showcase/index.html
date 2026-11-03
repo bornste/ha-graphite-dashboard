@@ -51,17 +51,39 @@
       padding: 10px 16px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none;
     }
     .toast.visible { opacity: 1; }
+    dialog#more-info {
+      width: min(420px, calc(100% - 32px)); padding: 0; border: none; border-radius: 20px;
+      background: var(--graphite-surface-panel); color: var(--graphite-text-primary);
+    }
+    dialog#more-info::backdrop { background: var(--graphite-overlay); }
+    dialog#more-info form { padding: 16px 20px 20px; }
+    dialog#more-info header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    dialog#more-info h2 { margin: 0; font-size: 18px; font-weight: 400; }
+    dialog#more-info button {
+      width: 36px; height: 36px; border: none; border-radius: 12px; cursor: pointer;
+      background: var(--graphite-surface-tile); color: var(--graphite-text-secondary); font-size: 14px;
+    }
+    dialog#more-info .state { margin: 16px 0 2px; font-size: 22px; font-weight: 300; }
+    dialog#more-info .entity { margin: 0; font-size: 12px; color: var(--graphite-text-muted); }
+    dialog#more-info dl {
+      display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 16px 0 0; padding: 12px;
+      border-radius: 12px; background: var(--graphite-surface-tile); font-size: 12px;
+    }
+    dialog#more-info dt { color: var(--graphite-text-secondary); }
+    dialog#more-info dd { margin: 0; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
   <header class="page">
     <h1>Graphite cards</h1>
     <p>Showcase of the graphite-cards library with sample data – no Home Assistant needed.
+      Tap a card to switch it, hold it for details.
       Built for a personal dashboard, see the <a href="https://github.com/bornste/ha-graphite-dashboard" style="color: var(--graphite-accent)">repository</a>.</p>
     <label>Language <select id="language"><option value="de">Deutsch</option><option value="en">English</option></select></label>
   </header>
   <main id="showcase"></main>
   <div class="toast" id="toast"></div>
+  <dialog id="more-info"></dialog>
   <script type="module" src="graphite-cards.js"></script>
   <script type="module" src="showcase.js"></script>
 </body>

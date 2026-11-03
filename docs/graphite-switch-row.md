@@ -29,7 +29,8 @@ name: Coffee machine
 ## Behaviour
 
 - **On:** toggle in the accent color, accent tint of the row, name in medium weight, icon in accent.
-- **Unavailable or unknown:** dimmed row, an "offline" badge instead of the toggle.
+- **Unavailable or unknown:** dimmed row, an "offline" badge instead of the toggle. Tapping does
+  nothing (no hand cursor, no touch effect); holding still opens more-info.
 - The toggle itself is only a display; the whole row is the switch.
 
 ```yaml

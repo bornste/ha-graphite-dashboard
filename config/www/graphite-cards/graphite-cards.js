@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.5.0";
+var version = "0.5.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -1453,6 +1453,11 @@ registerCard("graphite-panel", GraphitePanel, {
   description: "Groups cards in one panel with title, status, chips and a vertical, horizontal or grid layout."
 });
 
+// src/core/offline-dot.ts
+var offlineDot = b2`<svg class="offline-dot" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle
+  cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"></circle><circle cx="12" cy="12" r="7.5" fill="none"
+  stroke="currentColor" stroke-width="2"></circle></svg>`;
+
 // src/cards/rows/row-styles.ts
 var rowStyles = i`
   :host {
@@ -1581,10 +1586,10 @@ var rowStyles = i`
     font-size: 11px;
     font-weight: 500;
     line-height: 20px;
-    --mdc-icon-size: 12px;
   }
-  .offline ha-icon {
-    display: flex;
+  .offline-dot {
+    flex: none;
+    display: block;
   }
   /* unavailable: dimmed row, badge instead of value and toggle */
   .row.unavailable {
@@ -1655,14 +1660,17 @@ var GraphiteRow = class extends GraphiteCard {
     this.detachActions?.();
     this.detachActions = void 0;
   }
-  // hand cursor, ripple and focus only when tapping does something; holding alone stays invisible
-  isInteractive() {
+  // hand cursor, ripple and focus only when tapping does something; holding alone stays invisible.
+  // An offline entity cannot be switched, so the row is not interactive then either.
+  isInteractive(stateObj) {
     const config = this.config;
+    if (this.unavailable(stateObj)) return false;
     return hasAction(config.tap_action) || hasAction(config.double_tap_action);
   }
   handleAction(action) {
     const config = this.config;
     if (!config || !hasAction(config[`${action}_action`])) return;
+    if (action !== "hold" && this.unavailable(this.hass?.states[config.entity])) return;
     fireAction(this, config, action);
   }
   // whether the entity counts as unavailable (a wall switch lamp is "off" instead)
@@ -1699,7 +1707,7 @@ var GraphiteRow = class extends GraphiteCard {
   rowClasses(stateObj) {
     const config = this.config;
     const classes = ["row"];
-    if (this.isInteractive()) classes.push("interactive");
+    if (this.isInteractive(stateObj)) classes.push("interactive");
     if (this.unavailable(stateObj)) classes.push("unavailable");
     if (stateObj?.state === "on") classes.push("on");
     if (config.online_entity && stateObj?.state === "on") {
@@ -1721,11 +1729,11 @@ var GraphiteRow = class extends GraphiteCard {
     const unavailable = this.unavailable(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const since = this.sinceLine(stateObj);
-    const interactive = this.isInteractive();
+    const interactive = this.isInteractive(stateObj);
     return b2`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : A}
       tabindex=${interactive ? "0" : A}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
       class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj, unavailable)}<div
-      class="offline"><ha-icon icon="mdi:wifi-off"></ha-icon><span>${this.localize("rows.offline")}</span></div></div>`;
+      class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
   getCardSize() {
     return 1;
@@ -2018,10 +2026,10 @@ var tileStyles = i`
     font-size: 11px;
     font-weight: 500;
     line-height: 20px;
-    --mdc-icon-size: 12px;
   }
-  .offline ha-icon {
-    display: flex;
+  .offline-dot {
+    flex: none;
+    display: block;
   }
   /* unavailable: surface fades into the panel, text and icon faded, only the badge keeps full strength */
   .tile.unavailable {
@@ -2131,7 +2139,7 @@ var GraphiteSwitchTile = class extends GraphiteCard {
     return b2`<div class=${this.tileClasses(stateObj, unavailable, interactive)} role=${interactive ? "button" : A}
       tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
       class="watermark">${this.renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
-      class="offline"><ha-icon icon="mdi:wifi-off"></ha-icon><span>${this.localize("rows.offline")}</span></div></div>`;
+      class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
   getCardSize() {
     return 2;
