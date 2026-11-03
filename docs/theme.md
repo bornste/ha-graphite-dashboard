@@ -26,7 +26,7 @@ never breaks a card. A variant only overrides the base inputs, everything else f
 | `graphite-surface-tile-active` | Raised elements inside tiles |
 | `graphite-surface-track` | Tracks, inactive switches and buttons |
 | `graphite-text-primary` / `-secondary` / `-muted` | Text levels |
-| `graphite-line` | Thin dividers (translucent) |
+| `graphite-divider` | Thin dividers (translucent, Home Assistant `divider-color`) |
 | `graphite-separator` | Line between title and status (opaque) |
 | `graphite-overlay` | Pop-up background |
 
@@ -46,10 +46,10 @@ never breaks a card. A variant only overrides the base inputs, everything else f
 
 | Token | Default | Use |
 |---|---|---|
-| `graphite-font-value` / `graphite-font-value-weight` | `22px` / `300` | Measured values in tiles |
-| `graphite-font-name` | `15px` | Names in rows |
-| `graphite-font-label` | `13px` | Tile names, status after titles, chips |
-| `graphite-font-caption` | `12px` | Secondary lines ("seit 12 Min."), units in chips |
+| `graphite-font-value-size` / `graphite-font-value-weight` | `22px` / `300` | Measured values in tiles |
+| `graphite-font-name-size` | `15px` | Names in rows |
+| `graphite-font-label-size` | `13px` | Tile names, status after titles, chips |
+| `graphite-font-caption-size` | `12px` | Secondary lines ("seit 12 Min."), units in chips |
 
 The status line after a title is tuned for a 13px font in a 16px line (position of the separator
 line). Other sizes work, the separator may then need a small adjustment.
@@ -58,15 +58,15 @@ line). Other sizes work, the separator may then need a small adjustment.
 
 | Token | Default | Use |
 |---|---|---|
-| `graphite-space-inner` | `12px` | Padding inside tiles and rows |
-| `graphite-space-header` | `12px` | Between title and status, and below a header |
+| `graphite-padding-tile` | `12px` | Inset of the content inside tiles (left, right, toggle top) |
+| `graphite-gap-header` | `12px` | Between title and status, and below a header |
 | `graphite-tile-height` | `80px` | Standard tiles |
 | `graphite-tile-height-compact` | `72px` | Compact tiles (stopwatch, todo, image, effect) |
 | `graphite-tile-height-scene` | `64px` | Scene buttons |
 | `graphite-tile-height-media` | `88px` | Tiles with a 64px picture (now playing, vacuum) |
 | `graphite-row-height` | `60px` | Rows (status and switch rows) |
 | `graphite-chip-padding` / `graphite-chip-gap` | `4px 10px` / `6px` | Chips in headers |
-| `graphite-icon-size` | `24px` | Icons in rows |
+| `graphite-row-icon-size` | `24px` | Icons in rows |
 | `graphite-watermark-size` | `34px` | Watermark icons in tiles |
 | `graphite-tint-active` | `18%` | Strength of the accent tint of active tiles and rows |
 

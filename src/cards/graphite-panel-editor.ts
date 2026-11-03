@@ -36,12 +36,11 @@ function editorSchema(language: string) {
     // the object selector renders a YAML editor
     { name: "info_alert", selector: { object: {} } },
     { name: "chips", selector: { object: {} } },
-    { name: "variables", selector: { object: {} } },
   ];
 }
 
 // optional keys that are not stored when empty, so the YAML stays clean
-const objectKeys = ["variables", "info_alert"];
+const objectKeys = ["info_alert"];
 
 export class GraphitePanelEditor extends HTMLElement {
   private config: Record<string, any> = {};
@@ -106,9 +105,9 @@ export class GraphitePanelEditor extends HTMLElement {
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
 
-    const { title, info, info_alert, chips, layout, columns, gap, padding, variables, min_column_width, frame } = this.config;
+    const { title, info, info_alert, chips, layout, columns, gap, padding, min_column_width, frame } = this.config;
     this.form.data = {
-      title, info, info_alert, chips, layout: layout || "vertical", columns, gap, padding, variables, min_column_width,
+      title, info, info_alert, chips, layout: layout || "vertical", columns, gap, padding, min_column_width,
       frame: frame !== false,
     };
     this.stackEditor.setConfig({ type: "vertical-stack", cards: this.config.cards || [] });

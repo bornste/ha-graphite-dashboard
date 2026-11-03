@@ -85,7 +85,6 @@ info_alert:
 | `gap` | CSS length | `8px` (theme `--graphite-gap-tile`) | Space between the child cards. |
 | `padding` | CSS length | `16px` (theme `--graphite-padding-panel`) | Inner padding of the panel. |
 | `frame` | boolean | `true` | `false`: no surface, no padding, no rounded corners – the panel is only a layout container and passes no tile tokens to its children (useful for grids of panels). |
-| `variables` | map | – | CSS variables set on the panel and inherited by all child cards, e.g. `graphite-panel-child-surface: transparent`. The leading `--` is optional. |
 
 `columns`, `min_column_width`, `gap` and `padding` apply to this panel only; nested panels keep
 their own defaults.
@@ -99,20 +98,8 @@ Theme variables used: `--graphite-surface-panel`, `--graphite-radius-panel`,
 `--graphite-padding-panel`, `--graphite-gap-tile`, `--graphite-surface-tile`,
 `--graphite-surface-tile-active`, `--graphite-radius-tile`, `--graphite-title-*`,
 `--graphite-text-*`, `--graphite-separator`, `--graphite-accent`, `--graphite-radius-pill`,
-`--graphite-space-header`, `--graphite-font-label`, `--graphite-font-caption`, `--graphite-chip-padding`,
+`--graphite-gap-header`, `--graphite-font-label-size`, `--graphite-font-caption-size`, `--graphite-chip-padding`,
 `--graphite-chip-gap` (see [theme.md](theme.md)).
-
-Overrides (set via `variables` or on a parent):
-
-| Variable | Effect |
-|---|---|
-| `--graphite-panel-surface` | Panel background |
-| `--graphite-panel-radius` | Panel corner radius |
-| `--graphite-panel-padding` | Panel padding |
-| `--graphite-panel-gap` | Gap between child cards |
-| `--graphite-panel-child-surface` | Tile surface passed to the children |
-| `--graphite-panel-child-inner-surface` | Raised surface inside the children |
-| `--graphite-panel-child-radius` | Tile radius passed to the children |
 
 Context tokens passed to the child cards (not in frameless panels): `--graphite-card-surface`,
 `--graphite-card-inner-surface`, `--graphite-card-radius`, and the standard `--ha-card-*`
@@ -121,7 +108,7 @@ Bubble module and cards that are not moved yet.
 
 ## Editor
 
-The visual editor edits the panel options in a form (conditions, chips and variables as YAML
+The visual editor edits the panel options in a form (conditions and chips as YAML
 fields) and the child cards with Home Assistant's own stack editor (tabs, card picker, card
 editors). Empty optional values are not stored; `frame` is only stored when `false`.
 The labels are translated (see *Language* in the [overview](README.md)).

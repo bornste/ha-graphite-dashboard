@@ -37,7 +37,7 @@ online_entity: binary_sensor.game_console_online
 |---|---|---|
 | `--graphite-tile-height` | `80px` | Height of the tile. |
 | `--graphite-watermark-size` | `34px` | Size of the watermark icon. |
-| `--graphite-font-label` | `13px` | Font size of the name. |
+| `--graphite-font-label-size` | `13px` | Font size of the name. |
 | `--graphite-tint-active` | `18%` | Strength of the accent tint while on. |
 | `--graphite-card-surface`, `--graphite-card-radius` | tile surface, `12px` | Set by the panel for its children. |
 

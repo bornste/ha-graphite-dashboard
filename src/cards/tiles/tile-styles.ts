@@ -1,6 +1,6 @@
 // Shared styles of the Graphite tiles: tile surface, watermark icon bottom right, name bottom left,
 // toggle top left, offline badge top right. Geometry follows the former Bubble switch tile
-// (80px high, 12px inset, name 13/18px with 9px to the bottom edge, 34px watermark 6px from the right edge).
+// (80px high, 12px inset (--graphite-padding-tile), name 13/18px with 9px to the bottom edge, 34px watermark 6px from the right edge).
 import { css } from "lit";
 
 export const tileStyles = css`
@@ -46,10 +46,10 @@ export const tileStyles = css`
   }
   .name {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     bottom: 9px;
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     line-height: 18px;
     color: var(--graphite-text-primary);
@@ -63,8 +63,8 @@ export const tileStyles = css`
   /* toggle top left: pure display, the tile itself switches */
   .toggle {
     position: absolute;
-    left: 12px;
-    top: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    top: var(--graphite-padding-tile, 12px);
     width: 36px;
     height: 20px;
     border-radius: var(--graphite-radius-pill, 999px);

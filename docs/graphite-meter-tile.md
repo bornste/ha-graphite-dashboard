@@ -59,7 +59,7 @@ secondary_entity: sensor.living_room_humidity
 | Variable | Default | Use |
 |---|---|---|
 | `--graphite-tile-height` | `80px` | Height of the tile. |
-| `--graphite-font-value`, `--graphite-font-value-weight` | `22px`, `300` | Value. |
-| `--graphite-font-label` | `13px` | Name, unit and second value. |
+| `--graphite-font-value-size`, `--graphite-font-value-weight` | `22px`, `300` | Value. |
+| `--graphite-font-label-size` | `13px` | Name, unit and second value. |
 | `--graphite-watermark-size` | `34px` | Watermark icon. |
 | `--graphite-meter-dim` | `65%` | How strongly the scale is dimmed beyond the value (`gradient`). |

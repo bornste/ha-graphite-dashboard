@@ -41,7 +41,7 @@ export const rowStyles = css`
     margin-left: 9px;
     margin-right: 9px;
     color: var(--graphite-text-secondary);
-    --mdc-icon-size: var(--graphite-icon-size, 24px);
+    --mdc-icon-size: var(--graphite-row-icon-size, 24px);
   }
   .row.active .icon {
     color: var(--graphite-accent);
@@ -55,7 +55,7 @@ export const rowStyles = css`
     gap: 2px;
   }
   .name {
-    font-size: var(--graphite-font-name, 15px);
+    font-size: var(--graphite-font-name-size, 15px);
     font-weight: 400;
     line-height: 18px;
     color: var(--graphite-text-primary);
@@ -67,7 +67,7 @@ export const rowStyles = css`
     font-weight: 500;
   }
   .since {
-    font-size: var(--graphite-font-caption, 12px);
+    font-size: var(--graphite-font-caption-size, 12px);
     line-height: 15px;
     color: var(--graphite-text-secondary);
     white-space: nowrap;
@@ -78,7 +78,7 @@ export const rowStyles = css`
     flex: none;
     margin-left: auto;
     padding: 0 14px 0 12px;
-    font-size: var(--graphite-font-name, 15px);
+    font-size: var(--graphite-font-name-size, 15px);
     color: var(--graphite-text-secondary);
     white-space: nowrap;
   }

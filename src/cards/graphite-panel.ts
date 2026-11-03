@@ -31,7 +31,6 @@ export interface PanelConfig extends GraphiteCardConfig {
   gap?: string;
   padding?: string;
   frame?: boolean;
-  variables?: Record<string, string | number>;
   cards: Record<string, unknown>[];
 }
 
@@ -45,19 +44,19 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     /* context tokens for child cards; a frameless panel is only a layout container and passes none.
        The sbo-* names are read by the Bubble module and the not yet migrated cards. */
     :host(:not([frameless])) {
-      --graphite-card-surface: var(--graphite-panel-child-surface, var(--graphite-surface-tile));
-      --graphite-card-inner-surface: var(--graphite-panel-child-inner-surface, var(--graphite-surface-tile-active));
-      --graphite-card-radius: var(--graphite-panel-child-radius, var(--graphite-radius-tile));
+      --graphite-card-surface: var(--graphite-surface-tile);
+      --graphite-card-inner-surface: var(--graphite-surface-tile-active);
+      --graphite-card-radius: var(--graphite-radius-tile);
       --sbo-card-surface: var(--graphite-card-surface);
       --sbo-card-inner-surface: var(--graphite-card-inner-surface);
       --sbo-card-radius: var(--graphite-card-radius);
     }
     ha-card {
-      background: var(--graphite-panel-surface, var(--graphite-surface-panel));
-      border-radius: var(--graphite-panel-radius, var(--graphite-radius-panel));
+      background: var(--graphite-surface-panel);
+      border-radius: var(--graphite-radius-panel);
       border: none;
       box-shadow: none;
-      padding: var(--graphite-panel-padding, var(--graphite-padding-panel, 16px));
+      padding: var(--graphite-padding-panel, 16px);
       box-sizing: border-box;
       height: 100%;
       /* only colors animate; the theme applies after the first render and would animate the radius */
@@ -68,8 +67,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       display: flex;
       justify-content: flex-start;
       align-items: baseline;
-      gap: var(--graphite-space-header, 12px);
-      margin-bottom: var(--graphite-space-header, 12px);
+      gap: var(--graphite-gap-header, 12px);
+      margin-bottom: var(--graphite-gap-header, 12px);
     }
     .title {
       flex: none;
@@ -83,13 +82,13 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     }
     .info {
       min-width: 0;
-      padding-left: var(--graphite-space-header, 12px);
+      padding-left: var(--graphite-gap-header, 12px);
       position: relative;
       /* 2px more room on top for the separator line (it reads too short at cap height);
          the negative margin keeps the text on the shared baseline */
       padding-top: 2px;
       margin-top: -2px;
-      font-size: var(--graphite-font-label, 13px);
+      font-size: var(--graphite-font-label-size, 13px);
       line-height: 16px;
       color: var(--graphite-text-secondary, var(--secondary-text-color));
       white-space: nowrap;
@@ -136,7 +135,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       border-radius: var(--graphite-radius-pill, 999px);
       background: var(--graphite-surface-tile);
       font: inherit;
-      font-size: var(--graphite-font-label, 13px);
+      font-size: var(--graphite-font-label-size, 13px);
       line-height: 16px;
       font-variant-numeric: tabular-nums;
       color: var(--graphite-text-primary, var(--primary-text-color));
@@ -153,7 +152,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     .chip .label,
     .chip .unit {
       color: var(--graphite-text-muted, var(--secondary-text-color));
-      font-size: var(--graphite-font-caption, 12px);
+      font-size: var(--graphite-font-caption-size, 12px);
     }
     .chip.muted .value {
       color: var(--graphite-text-secondary, var(--secondary-text-color));
@@ -173,7 +172,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       --ha-card-border-radius: var(--graphite-card-radius);
       --ha-card-border-width: 0px;
       --ha-card-box-shadow: none;
-      gap: var(--graphite-panel-gap, var(--graphite-gap-tile, 8px));
+      gap: var(--graphite-gap-tile, 8px);
     }
     .content.vertical {
       display: flex;
@@ -309,10 +308,6 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     super.updated(changed);
     if (!changed.has("config") || !this.config) return;
     this.toggleAttribute("frameless", this.config.frame === false);
-    // custom variables apply to the panel and are inherited by all child cards
-    for (const [name, value] of Object.entries(this.config.variables || {})) {
-      this.style.setProperty(name.startsWith("--") ? name : `--${name}`, String(value));
-    }
     // a re-rendered content element (new config) gets the child cards back
     const content = this.renderRoot.querySelector(".content");
     if (content && this.childCards.length && content.childElementCount === 0) content.replaceChildren(...this.childCards);
@@ -355,7 +350,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : undefined;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
     const showHeader = !!(config.title || config.info || chips.length);
-    // columns and min_column_width apply to this panel only (set as properties, not inherited variables)
+    // columns and min_column_width apply to this panel only (set on this panel only, not inherited)
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;
     else if (config.columns) columns = `repeat(${Number(config.columns)}, minmax(0, 1fr))`;

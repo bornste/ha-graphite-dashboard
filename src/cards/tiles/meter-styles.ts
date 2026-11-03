@@ -6,11 +6,11 @@ export const meterStyles = css`
   /* name on top (overrides the name at the bottom of the switch tile) */
   .name {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     top: 10px;
     bottom: auto;
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     line-height: 1.6;
     color: var(--graphite-text-secondary);
@@ -33,8 +33,8 @@ export const meterStyles = css`
   }
   .value-row {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     bottom: 19px;
     display: flex;
     align-items: baseline;
@@ -42,7 +42,7 @@ export const meterStyles = css`
     gap: 6px;
   }
   .value {
-    font-size: var(--graphite-font-value, 22px);
+    font-size: var(--graphite-font-value-size, 22px);
     font-weight: var(--graphite-font-value-weight, 300);
     line-height: 1.1;
     white-space: nowrap;
@@ -50,7 +50,7 @@ export const meterStyles = css`
   }
   /* unit and secondary value share the name size for a calm type scale */
   .unit {
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     margin-left: 3px;
     color: var(--graphite-text-muted);
@@ -59,7 +59,7 @@ export const meterStyles = css`
     display: flex;
     align-items: baseline;
     gap: 3px;
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     line-height: 1.6;
     white-space: nowrap;
@@ -76,8 +76,8 @@ export const meterStyles = css`
   }
   .bar {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     bottom: 9px;
     height: 4px;
     border-radius: 2px;

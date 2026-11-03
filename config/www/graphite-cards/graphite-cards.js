@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.6.1";
+var version = "0.6.4";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -579,7 +579,6 @@ var de_default = {
       columns: "Spalten (nur Raster)",
       gap: "Abstand zwischen Karten (z.B. 8px)",
       padding: "Innenabstand (z.B. 16px)",
-      variables: "CSS-Variablen (YAML, werden an die Karten im Panel vererbt)",
       min_column_width: "Mindestbreite pro Spalte (nur Raster, z.B. 380px \u2013 bricht auf schmalen Bildschirmen um)",
       frame: "Panel-Fl\xE4che anzeigen (aus = nur Layout-Container)"
     }
@@ -669,7 +668,6 @@ var en_default = {
       columns: "Columns (grid only)",
       gap: "Gap between cards (e.g. 8px)",
       padding: "Padding (e.g. 16px)",
-      variables: "CSS variables (YAML, inherited by the cards in the panel)",
       min_column_width: "Minimum column width (grid only, e.g. 380px \u2013 wraps on narrow screens)",
       frame: "Show panel surface (off = layout container only)"
     }
@@ -1064,11 +1062,10 @@ function editorSchema(language) {
     },
     // the object selector renders a YAML editor
     { name: "info_alert", selector: { object: {} } },
-    { name: "chips", selector: { object: {} } },
-    { name: "variables", selector: { object: {} } }
+    { name: "chips", selector: { object: {} } }
   ];
 }
-var objectKeys = ["variables", "info_alert"];
+var objectKeys = ["info_alert"];
 var GraphitePanelEditor = class extends HTMLElement {
   constructor() {
     super(...arguments);
@@ -1122,7 +1119,7 @@ var GraphitePanelEditor = class extends HTMLElement {
       this.stackEditor.hass = this.hassObject;
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
-    const { title, info, info_alert, chips, layout, columns, gap, padding, variables, min_column_width, frame } = this.config;
+    const { title, info, info_alert, chips, layout, columns, gap, padding, min_column_width, frame } = this.config;
     this.form.data = {
       title,
       info,
@@ -1132,7 +1129,6 @@ var GraphitePanelEditor = class extends HTMLElement {
       columns,
       gap,
       padding,
-      variables,
       min_column_width,
       frame: frame !== false
     };
@@ -1257,9 +1253,6 @@ var GraphitePanel = class extends GraphiteCard {
     super.updated(changed);
     if (!changed.has("config") || !this.config) return;
     this.toggleAttribute("frameless", this.config.frame === false);
-    for (const [name, value] of Object.entries(this.config.variables || {})) {
-      this.style.setProperty(name.startsWith("--") ? name : `--${name}`, String(value));
-    }
     const content = this.renderRoot.querySelector(".content");
     if (content && this.childCards.length && content.childElementCount === 0) content.replaceChildren(...this.childCards);
   }
@@ -1332,19 +1325,19 @@ GraphitePanel.styles = i`
     /* context tokens for child cards; a frameless panel is only a layout container and passes none.
        The sbo-* names are read by the Bubble module and the not yet migrated cards. */
     :host(:not([frameless])) {
-      --graphite-card-surface: var(--graphite-panel-child-surface, var(--graphite-surface-tile));
-      --graphite-card-inner-surface: var(--graphite-panel-child-inner-surface, var(--graphite-surface-tile-active));
-      --graphite-card-radius: var(--graphite-panel-child-radius, var(--graphite-radius-tile));
+      --graphite-card-surface: var(--graphite-surface-tile);
+      --graphite-card-inner-surface: var(--graphite-surface-tile-active);
+      --graphite-card-radius: var(--graphite-radius-tile);
       --sbo-card-surface: var(--graphite-card-surface);
       --sbo-card-inner-surface: var(--graphite-card-inner-surface);
       --sbo-card-radius: var(--graphite-card-radius);
     }
     ha-card {
-      background: var(--graphite-panel-surface, var(--graphite-surface-panel));
-      border-radius: var(--graphite-panel-radius, var(--graphite-radius-panel));
+      background: var(--graphite-surface-panel);
+      border-radius: var(--graphite-radius-panel);
       border: none;
       box-shadow: none;
-      padding: var(--graphite-panel-padding, var(--graphite-padding-panel, 16px));
+      padding: var(--graphite-padding-panel, 16px);
       box-sizing: border-box;
       height: 100%;
       /* only colors animate; the theme applies after the first render and would animate the radius */
@@ -1355,8 +1348,8 @@ GraphitePanel.styles = i`
       display: flex;
       justify-content: flex-start;
       align-items: baseline;
-      gap: var(--graphite-space-header, 12px);
-      margin-bottom: var(--graphite-space-header, 12px);
+      gap: var(--graphite-gap-header, 12px);
+      margin-bottom: var(--graphite-gap-header, 12px);
     }
     .title {
       flex: none;
@@ -1370,13 +1363,13 @@ GraphitePanel.styles = i`
     }
     .info {
       min-width: 0;
-      padding-left: var(--graphite-space-header, 12px);
+      padding-left: var(--graphite-gap-header, 12px);
       position: relative;
       /* 2px more room on top for the separator line (it reads too short at cap height);
          the negative margin keeps the text on the shared baseline */
       padding-top: 2px;
       margin-top: -2px;
-      font-size: var(--graphite-font-label, 13px);
+      font-size: var(--graphite-font-label-size, 13px);
       line-height: 16px;
       color: var(--graphite-text-secondary, var(--secondary-text-color));
       white-space: nowrap;
@@ -1423,7 +1416,7 @@ GraphitePanel.styles = i`
       border-radius: var(--graphite-radius-pill, 999px);
       background: var(--graphite-surface-tile);
       font: inherit;
-      font-size: var(--graphite-font-label, 13px);
+      font-size: var(--graphite-font-label-size, 13px);
       line-height: 16px;
       font-variant-numeric: tabular-nums;
       color: var(--graphite-text-primary, var(--primary-text-color));
@@ -1440,7 +1433,7 @@ GraphitePanel.styles = i`
     .chip .label,
     .chip .unit {
       color: var(--graphite-text-muted, var(--secondary-text-color));
-      font-size: var(--graphite-font-caption, 12px);
+      font-size: var(--graphite-font-caption-size, 12px);
     }
     .chip.muted .value {
       color: var(--graphite-text-secondary, var(--secondary-text-color));
@@ -1460,7 +1453,7 @@ GraphitePanel.styles = i`
       --ha-card-border-radius: var(--graphite-card-radius);
       --ha-card-border-width: 0px;
       --ha-card-box-shadow: none;
-      gap: var(--graphite-panel-gap, var(--graphite-gap-tile, 8px));
+      gap: var(--graphite-gap-tile, 8px);
     }
     .content.vertical {
       display: flex;
@@ -1544,7 +1537,7 @@ var rowStyles = i`
     margin-left: 9px;
     margin-right: 9px;
     color: var(--graphite-text-secondary);
-    --mdc-icon-size: var(--graphite-icon-size, 24px);
+    --mdc-icon-size: var(--graphite-row-icon-size, 24px);
   }
   .row.active .icon {
     color: var(--graphite-accent);
@@ -1558,7 +1551,7 @@ var rowStyles = i`
     gap: 2px;
   }
   .name {
-    font-size: var(--graphite-font-name, 15px);
+    font-size: var(--graphite-font-name-size, 15px);
     font-weight: 400;
     line-height: 18px;
     color: var(--graphite-text-primary);
@@ -1570,7 +1563,7 @@ var rowStyles = i`
     font-weight: 500;
   }
   .since {
-    font-size: var(--graphite-font-caption, 12px);
+    font-size: var(--graphite-font-caption-size, 12px);
     line-height: 15px;
     color: var(--graphite-text-secondary);
     white-space: nowrap;
@@ -1581,7 +1574,7 @@ var rowStyles = i`
     flex: none;
     margin-left: auto;
     padding: 0 14px 0 12px;
-    font-size: var(--graphite-font-name, 15px);
+    font-size: var(--graphite-font-name-size, 15px);
     color: var(--graphite-text-secondary);
     white-space: nowrap;
   }
@@ -2014,10 +2007,10 @@ var tileStyles = i`
   }
   .name {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     bottom: 9px;
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     line-height: 18px;
     color: var(--graphite-text-primary);
@@ -2031,8 +2024,8 @@ var tileStyles = i`
   /* toggle top left: pure display, the tile itself switches */
   .toggle {
     position: absolute;
-    left: 12px;
-    top: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    top: var(--graphite-padding-tile, 12px);
     width: 36px;
     height: 20px;
     border-radius: var(--graphite-radius-pill, 999px);
@@ -2270,11 +2263,11 @@ var meterStyles = i`
   /* name on top (overrides the name at the bottom of the switch tile) */
   .name {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     top: 10px;
     bottom: auto;
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     line-height: 1.6;
     color: var(--graphite-text-secondary);
@@ -2297,8 +2290,8 @@ var meterStyles = i`
   }
   .value-row {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     bottom: 19px;
     display: flex;
     align-items: baseline;
@@ -2306,7 +2299,7 @@ var meterStyles = i`
     gap: 6px;
   }
   .value {
-    font-size: var(--graphite-font-value, 22px);
+    font-size: var(--graphite-font-value-size, 22px);
     font-weight: var(--graphite-font-value-weight, 300);
     line-height: 1.1;
     white-space: nowrap;
@@ -2314,7 +2307,7 @@ var meterStyles = i`
   }
   /* unit and secondary value share the name size for a calm type scale */
   .unit {
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     margin-left: 3px;
     color: var(--graphite-text-muted);
@@ -2323,7 +2316,7 @@ var meterStyles = i`
     display: flex;
     align-items: baseline;
     gap: 3px;
-    font-size: var(--graphite-font-label, 13px);
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     line-height: 1.6;
     white-space: nowrap;
@@ -2340,8 +2333,8 @@ var meterStyles = i`
   }
   .bar {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
     bottom: 9px;
     height: 4px;
     border-radius: 2px;

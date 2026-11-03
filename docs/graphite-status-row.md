@@ -40,8 +40,8 @@ name: Bedroom window
 
 ## Styling
 
-Size and type come from the theme: `--graphite-row-height` (60px), `--graphite-font-name` (15px),
-`--graphite-font-caption` (12px), `--graphite-icon-size` (24px). The surface follows the panel
+Size and type come from the theme: `--graphite-row-height` (60px), `--graphite-font-name-size` (15px),
+`--graphite-font-caption-size` (12px), `--graphite-row-icon-size` (24px). The surface follows the panel
 (`--graphite-card-surface`, `--graphite-card-radius`); the active tint is
 `--graphite-tint-active` (18 %) of `--graphite-accent`. See [theme.md](theme.md).
 

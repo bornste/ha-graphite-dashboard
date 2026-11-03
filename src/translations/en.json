@@ -25,7 +25,6 @@
       "columns": "Columns (grid only)",
       "gap": "Gap between cards (e.g. 8px)",
       "padding": "Padding (e.g. 16px)",
-      "variables": "CSS variables (YAML, inherited by the cards in the panel)",
       "min_column_width": "Minimum column width (grid only, e.g. 380px – wraps on narrow screens)",
       "frame": "Show panel surface (off = layout container only)"
     }
