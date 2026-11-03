@@ -10,6 +10,7 @@ the special cases – also for cards with a visual editor.
 | graphite-panel | [graphite-panel.md](graphite-panel.md) | ready |
 | graphite-status-row | [graphite-status-row.md](graphite-status-row.md) | ready |
 | graphite-switch-row | [graphite-switch-row.md](graphite-switch-row.md) | ready |
+| graphite-switch-tile | [graphite-switch-tile.md](graphite-switch-tile.md) | ready |
 
 ## Common behaviour
 

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.4.7";
+var version = "0.5.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -606,6 +606,17 @@ var de_default = {
       online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
       wall_switch: "Wandschalter-Lampe (nicht erreichbar = aus)"
     }
+  },
+  tiles: {
+    editor: {
+      entity: "Entit\xE4t",
+      name: "Name (Standard: Name der Entit\xE4t)",
+      icon: "Icon (Standard: Icon der Entit\xE4t)",
+      online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -663,6 +674,17 @@ var en_default = {
       detail_entities: 'Values instead of the "since \u2026" line while on (YAML list: entity, label)',
       online_entity: "Online entity (icon pulses until the device is reachable)",
       wall_switch: "Wall switch lamp (unavailable = off)"
+    }
+  },
+  tiles: {
+    editor: {
+      entity: "Entity",
+      name: "Name (default: entity name)",
+      icon: "Icon (default: entity icon)",
+      online_entity: "Online entity (icon pulses until the device is reachable)",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
     }
   }
 };
@@ -1714,40 +1736,15 @@ var GraphiteRow = class extends GraphiteCard {
 };
 GraphiteRow.styles = rowStyles;
 
-// src/cards/rows/graphite-row-editor.ts
-function editorSchema2(rowKind) {
-  return [
-    { name: "entity", required: true, selector: { entity: {} } },
-    {
-      type: "grid",
-      name: "",
-      schema: [
-        { name: "name", selector: { text: {} } },
-        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-      ]
-    },
-    { name: "tap_action", selector: { ui_action: {} } },
-    { name: "hold_action", selector: { ui_action: {} } },
-    { name: "double_tap_action", selector: { ui_action: {} } },
-    { name: "since_line", selector: { boolean: {} } },
-    {
-      type: "grid",
-      name: "",
-      schema: [
-        { name: "since_attribute", selector: { text: {} } },
-        { name: "since_attribute_label", selector: { text: {} } }
-      ]
-    },
-    { name: "detail_entities", selector: { object: {} } },
-    { name: "online_entity", selector: { entity: {} } },
-    ...rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
-  ];
-}
-var GraphiteRowEditor = class extends HTMLElement {
+// src/core/form-editor.ts
+var GraphiteFormEditor = class extends HTMLElement {
   constructor() {
     super(...arguments);
-    this.rowKind = "status";
     this.config = {};
+  }
+  // whether a value is left out of the stored config (besides empty values)
+  skipValue(_key, _value) {
+    return false;
   }
   setConfig(config) {
     this.config = config;
@@ -1770,10 +1767,10 @@ var GraphiteRowEditor = class extends HTMLElement {
     const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
     if (this.formLanguage !== language) {
       this.formLanguage = language;
-      this.form.schema = editorSchema2(this.rowKind);
+      this.form.schema = this.schema();
       this.form.computeLabel = (schema) => {
         if (!schema.name) return "";
-        const key = `rows.editor.${schema.name}`;
+        const key = `${this.labelPrefix()}.${schema.name}`;
         const label = translate(language, key);
         return label === key ? schema.name : label;
       };
@@ -1783,15 +1780,54 @@ var GraphiteRowEditor = class extends HTMLElement {
   }
   fireConfig(config) {
     const cleanConfig = Object.fromEntries(
-      Object.entries(config).filter(([key, value]) => {
-        if (value === "" || value === void 0 || value === null) return false;
-        if (key === "detail_entities" && (!Array.isArray(value) || value.length === 0)) return false;
-        if (key === "wall_switch" && value !== true) return false;
-        return true;
-      })
+      Object.entries(config).filter(([key, value]) => value !== "" && value !== void 0 && value !== null && !this.skipValue(key, value))
     );
     this.config = cleanConfig;
     this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: cleanConfig }, bubbles: true, composed: true }));
+  }
+};
+
+// src/cards/rows/graphite-row-editor.ts
+var GraphiteRowEditor = class extends GraphiteFormEditor {
+  constructor() {
+    super(...arguments);
+    this.rowKind = "status";
+  }
+  labelPrefix() {
+    return "rows.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } },
+      { name: "since_line", selector: { boolean: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "since_attribute", selector: { text: {} } },
+          { name: "since_attribute_label", selector: { text: {} } }
+        ]
+      },
+      { name: "detail_entities", selector: { object: {} } },
+      { name: "online_entity", selector: { entity: {} } },
+      ...this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
+    ];
+  }
+  skipValue(key, value) {
+    if (key === "detail_entities") return !Array.isArray(value) || value.length === 0;
+    if (key === "wall_switch") return value !== true;
+    return false;
   }
 };
 
@@ -1854,6 +1890,268 @@ registerElement("graphite-row-editor", GraphiteRowEditor);
 registerCard("graphite-switch-row", GraphiteSwitchRow, {
   name: "Graphite Switch Row",
   description: 'Row with icon, name, "since" line and a toggle; tapping the row switches.'
+});
+
+// src/cards/tiles/graphite-switch-tile-editor.ts
+var GraphiteSwitchTileEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "tiles.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      { name: "online_entity", selector: { entity: {} } },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+};
+
+// src/cards/tiles/tile-styles.ts
+var tileStyles = i`
+  :host {
+    display: block;
+  }
+  .tile {
+    position: relative;
+    box-sizing: border-box;
+    height: var(--graphite-tile-height, 80px);
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background-color 0.3s ease;
+  }
+  .tile.interactive {
+    cursor: pointer;
+  }
+  .tile.interactive:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--graphite-accent);
+  }
+  /* on: soft accent tint */
+  .tile.on {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+  /* icon as watermark bottom right */
+  .watermark {
+    position: absolute;
+    right: 6px;
+    bottom: 7px;
+    display: flex;
+    width: var(--graphite-watermark-size, 34px);
+    height: var(--graphite-watermark-size, 34px);
+    color: var(--graphite-text-primary);
+    opacity: 0.16;
+    pointer-events: none;
+    --mdc-icon-size: var(--graphite-watermark-size, 34px);
+  }
+  .tile.on .watermark {
+    opacity: 0.3;
+  }
+  .name {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 9px;
+    font-size: var(--graphite-font-label, 13px);
+    font-weight: 400;
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tile.on .name {
+    font-weight: 500;
+  }
+  /* toggle top left: pure display, the tile itself switches */
+  .toggle {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 36px;
+    height: 20px;
+    border-radius: var(--graphite-radius-pill, 999px);
+    background: var(--graphite-surface-track);
+  }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--graphite-text-secondary);
+    transition: left 0.2s ease, background-color 0.2s ease;
+  }
+  .tile.on .toggle {
+    background: var(--graphite-accent);
+  }
+  .tile.on .toggle::after {
+    left: 19px;
+    background: var(--graphite-accent-ink);
+  }
+  /* offline badge top right, only while unavailable */
+  .offline {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    align-items: center;
+    gap: 4px;
+    height: 20px;
+    padding: 0 8px 0 6px;
+    border-radius: var(--graphite-radius-pill, 999px);
+    background: color-mix(in srgb, var(--graphite-danger) 14%, var(--graphite-surface-tile));
+    color: var(--graphite-danger);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 20px;
+    --mdc-icon-size: 12px;
+  }
+  .offline ha-icon {
+    display: flex;
+  }
+  /* unavailable: surface fades into the panel, text and icon faded, only the badge keeps full strength */
+  .tile.unavailable {
+    background: color-mix(in srgb, var(--graphite-surface-tile) 40%, transparent);
+  }
+  .tile.unavailable .name {
+    opacity: 0.4;
+  }
+  .tile.unavailable .watermark {
+    opacity: 0.08;
+  }
+  .tile.unavailable .toggle {
+    display: none;
+  }
+  .tile.unavailable .offline {
+    display: flex;
+  }
+  /* online_entity: while switched on, the watermark pulses until the device is reachable,
+     then lights up in the accent color */
+  .tile.online .watermark {
+    color: var(--graphite-accent);
+    opacity: 0.9;
+  }
+  .tile.connecting .watermark {
+    animation: graphite-connecting 1.6s ease-in-out infinite;
+  }
+  @keyframes graphite-connecting {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toggle::after {
+      transition: none;
+    }
+    .tile.connecting .watermark {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+`;
+
+// src/cards/tiles/graphite-switch-tile.ts
+var onlineStates2 = ["home", "on", "online", "connected"];
+var GraphiteSwitchTile = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    return config.online_entity ? [config.entity, config.online_entity] : [config.entity];
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  get stateObj() {
+    return this.hass?.states[this.config.entity];
+  }
+  // an offline device cannot be switched: tap and double tap do nothing, holding still opens more-info
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    if (action !== "hold" && isUnavailable(this.stateObj)) return;
+    fireAction(this, config, action);
+  }
+  isInteractive(unavailable) {
+    const config = this.config;
+    return !unavailable && (hasAction(config.tap_action) || hasAction(config.double_tap_action));
+  }
+  tileClasses(stateObj, unavailable, interactive) {
+    const config = this.config;
+    const classes = ["tile"];
+    if (interactive) classes.push("interactive");
+    if (unavailable) classes.push("unavailable");
+    else if (stateObj?.state === "on") {
+      classes.push("on");
+      if (config.online_entity) {
+        const online = onlineStates2.includes(String(this.hass?.states[config.online_entity]?.state || "").toLowerCase());
+        classes.push(online ? "online" : "connecting");
+      }
+    }
+    return classes.join(" ");
+  }
+  renderIcon(stateObj) {
+    const icon = this.config.icon;
+    if (icon || !customElements.get("ha-state-icon")) {
+      return b2`<ha-icon .icon=${icon || stateObj?.attributes?.icon || "mdi:toggle-switch-outline"}></ha-icon>`;
+    }
+    return b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.stateObj;
+    const unavailable = isUnavailable(stateObj);
+    const interactive = this.isInteractive(unavailable);
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    return b2`<div class=${this.tileClasses(stateObj, unavailable, interactive)} role=${interactive ? "button" : A}
+      tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+      class="watermark">${this.renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
+      class="offline"><ha-icon icon="mdi:wifi-off"></ha-icon><span>${this.localize("rows.offline")}</span></div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 3, rows: 2, min_columns: 2 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("switch.")) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-switch-tile-editor");
+  }
+};
+GraphiteSwitchTile.styles = tileStyles;
+registerElement("graphite-switch-tile-editor", GraphiteSwitchTileEditor);
+registerCard("graphite-switch-tile", GraphiteSwitchTile, {
+  name: "Graphite Switch Tile",
+  description: "Tile with toggle, name and watermark icon; tapping the tile switches. Optional online status."
 });
 
 // src/index.ts

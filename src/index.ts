@@ -3,6 +3,7 @@ import { version } from "./core/version";
 import "./cards/graphite-panel";
 import "./cards/rows/graphite-status-row";
 import "./cards/rows/graphite-switch-row";
+import "./cards/tiles/graphite-switch-tile";
 
 window.graphiteCards = { version };
 

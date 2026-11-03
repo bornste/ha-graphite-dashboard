@@ -52,5 +52,16 @@
       "online_entity": "Online-Entität (Icon pulsiert, bis das Gerät erreichbar ist)",
       "wall_switch": "Wandschalter-Lampe (nicht erreichbar = aus)"
     }
+  },
+  "tiles": {
+    "editor": {
+      "entity": "Entität",
+      "name": "Name (Standard: Name der Entität)",
+      "icon": "Icon (Standard: Icon der Entität)",
+      "online_entity": "Online-Entität (Icon pulsiert, bis das Gerät erreichbar ist)",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

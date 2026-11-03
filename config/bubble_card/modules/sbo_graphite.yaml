@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.120'
+  version: '0.121'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, switch tile, clock card and meter tile.
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and meter tile.
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -29,7 +29,6 @@ sbo_graphite:
       --bubble-pop-up-border-radius: var(--sbo-radius-panel);
       --sbo-room-padding: var(--sbo-padding-panel, 16px);
       --sbo-scene-height: 64px;
-      --sbo-switch-height: 80px;
     }
 
     /* NO LAYOUT ANIMATIONS: the module styles and the view theme apply after the first render.
@@ -241,138 +240,6 @@ sbo_graphite:
       opacity: 0.3;
     }
 
-    /* SWITCH TILE: same look as a scene tile, the toggle replaces the color stripe,
-       name bottom left, icon as watermark bottom right */
-    .bubble-container.sbo-switch-tile {
-      height: var(--sbo-switch-height, 80px) !important;
-      background-color: var(--bubble-main-background-color) !important;
-    }
-    /* same layout as a scene tile: padding box, name at the bottom in the normal flow */
-    .sbo-switch-tile .bubble-wrapper {
-      position: relative;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: stretch !important;
-      box-sizing: border-box;
-      height: 100%;
-      padding: 0 12px 9px 12px;
-    }
-    /* no state colored overlay, the tile itself shows the state */
-    /* the background is the click and hover area: pin it to the full tile,
-       otherwise it starts at the wrapper padding (12px left, 9px shifted up) */
-    .sbo-switch-tile .bubble-button-background {
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background: none !important;
-      opacity: 1 !important;
-    }
-    .sbo-switch-tile .bubble-icon-container {
-      position: absolute !important;
-      right: 6px;
-      bottom: 3px;
-      width: auto !important;
-      height: auto !important;
-      min-width: 0 !important;
-      margin: 0 !important;
-      background: none !important;
-      pointer-events: none;
-      --mdc-icon-size: 34px;
-    }
-    .sbo-switch-tile .bubble-icon {
-      color: var(--sbo-text-primary) !important;
-      opacity: 0.16 !important;
-    }
-    .sbo-switch-tile .bubble-name-container {
-      position: relative !important;
-      z-index: 1;
-      /* Bubble lets the name grow (flex 1), keep it at its own height at the bottom */
-      flex: 0 0 auto !important;
-      margin: 0 !important;
-      width: auto !important;
-      min-width: 0;
-      justify-content: flex-start;
-      text-align: left;
-    }
-    .sbo-switch-tile .bubble-name {
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--sbo-text-primary);
-    }
-    /* toggle in place of the scene color stripe (look: TOGGLE) */
-    .sbo-switch-tile .sbo-toggle {
-      left: 12px;
-      top: 12px;
-    }
-    /* on state: lighter tile, accent toggle, stronger watermark and name */
-    /* soft accent tint on the active tile (strength adjustable via --sbo-switch-tint) */
-    ha-card.is-on .bubble-container.sbo-switch-tile {
-      background-color: color-mix(in srgb, var(--sbo-accent) var(--sbo-switch-tint, 18%), var(--sbo-surface-tile-active)) !important;
-    }
-    ha-card.is-on .sbo-switch-tile .bubble-icon {
-      opacity: 0.3 !important;
-    }
-    /* ONLINE STATUS (sbo_graphite.online_entity): while switched on, the watermark icon pulses
-       until the device is reachable and lights up in the accent color once it is online */
-    ha-card.is-on .sbo-online .bubble-icon {
-      color: var(--sbo-accent) !important;
-      opacity: 0.9 !important;
-    }
-    ha-card.is-on .sbo-connecting .bubble-icon-container {
-      animation: sbo-connecting-pulse 1.6s ease-in-out infinite;
-    }
-    @keyframes sbo-connecting-pulse {
-      50% { opacity: 0.35; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      ha-card.is-on .sbo-connecting .bubble-icon-container { animation: none; opacity: 0.6; }
-    }
-    ha-card.is-on .sbo-switch-tile .bubble-name {
-      font-weight: 500;
-    }
-    /* offline tile is not interactive: no hover, no pointer cursor, no ripple */
-    ha-card.is-unavailable .sbo-switch-tile .bubble-action {
-      pointer-events: none !important;
-      cursor: default !important;
-    }
-    /* Bubble shows a not-allowed cursor on unavailable cards */
-    ha-card.is-unavailable .sbo-switch-tile .bubble-wrapper {
-      cursor: default !important;
-    }
-    ha-card.is-unavailable .sbo-switch-tile ha-ripple {
-      display: none !important;
-    }
-
-    /* STATUS TILE: display-only switch tile (e.g. windows, lights for overview): the state
-       replaces the toggle top left, no action and no pointer, on = soft accent tint */
-    .sbo-status-tile.sbo-switch-tile .bubble-name-container {
-      position: static !important;
-    }
-    .sbo-status-tile .bubble-state {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      font-size: 12px;
-      line-height: 14px;
-      opacity: 1 !important;
-      color: var(--sbo-text-muted);
-    }
-    ha-card.is-on .sbo-status-tile .bubble-state {
-      color: var(--sbo-accent);
-    }
-    /* unavailable: the offline badge says it, no state text below it */
-    ha-card.is-unavailable .sbo-status-tile .bubble-state {
-      display: none !important;
-    }
-    .sbo-status-tile .bubble-action {
-      cursor: default !important;
-    }
-    .sbo-status-tile ha-ripple {
-      display: none !important;
-    }
-
     /* "since" line below the name (light tile): "an seit 12 Min." */
     .sbo-row-since:empty {
       display: none;
@@ -542,16 +409,13 @@ sbo_graphite:
     ha-card.is-unavailable .sbo-offline {
       display: flex;
     }
-    ha-card.is-unavailable .sbo-switch-tile .bubble-icon {
-      opacity: 0.08 !important;
-    }
     /* offline tiles are dimmed as a whole: surface at 40% fades into the panel (no outline),
        text, icon and sliders are faded, only the offline badge keeps full strength */
-    ha-card.is-unavailable .bubble-container:is(.sbo-switch-tile, .sbo-light-tile):not(.sbo-wall-switch-mode) {
+    ha-card.is-unavailable .bubble-container.sbo-light-tile:not(.sbo-wall-switch-mode) {
       background: color-mix(in srgb, var(--sbo-surface-tile) 40%, transparent) !important;
       box-shadow: none !important;
     }
-    ha-card.is-unavailable :is(.sbo-switch-tile, .sbo-light-tile):not(.sbo-wall-switch-mode) :is(.bubble-name-container, .bubble-sub-button-bottom-container) {
+    ha-card.is-unavailable .sbo-light-tile:not(.sbo-wall-switch-mode) :is(.bubble-name-container, .bubble-sub-button-bottom-container) {
       opacity: 0.4 !important;
     }
     /* icon of light tiles faded like the text (the switch tile watermark has its own value) */
@@ -1965,45 +1829,6 @@ sbo_graphite:
         }
       };
 
-      // switch tile
-      if (config.appearance?.switch_tile)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        if (container && wrapper)
-        {
-          container.classList.add(`sbo-switch-tile`);
-          ensureToggleAndOffline(wrapper);
-        }
-      }
-
-      // online status: device behind the switch reachable (device_tracker, ping, ...)?
-      if (config.online_entity)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        if (container)
-        {
-          const onlineState = String(hass.states[config.online_entity]?.state || '').toLowerCase();
-          const isOnline = ['home', 'on', 'online', 'connected'].includes(onlineState);
-          const isSwitchedOn = hass.states[this.config?.entity]?.state === 'on';
-          container.classList.toggle(`sbo-online`, isSwitchedOn && isOnline);
-          container.classList.toggle(`sbo-connecting`, isSwitchedOn && !isOnline);
-        }
-      }
-
-      // status tile: switch tile look without toggle, the state is shown instead
-      if (config.appearance?.status_tile)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        if (container && wrapper)
-        {
-          container.classList.add(`sbo-switch-tile`, `sbo-status-tile`);
-          ensureToggleAndOffline(wrapper);
-          wrapper.querySelector(`.sbo-toggle`)?.remove();
-        }
-      }
-
       // "since" line below the name ("an seit 12 Min.", "keine Meldung seit 09:07"), shared by status row,
       // switch row and light tile; refreshed every minute, an optional value element gets the state text
       const sinceLocale = hass?.locale?.language || 'de-CH';
@@ -2844,10 +2669,6 @@ sbo_graphite:
       label: Image for the image tile (/local/... or media-source://...)
       selector:
         text: {}
-    - name: online_entity
-      label: Online entity (device_tracker, ping ...); while on, the icon pulses until online and then lights up
-      selector:
-        entity: {}
     - name: wall_switch
       label: Status row of a lamp on a wall switch (offline counts as off, value 'Aus' instead of the offline badge)
       selector:
@@ -2895,11 +2716,6 @@ sbo_graphite:
           selector:
             boolean: {}
           default: false
-        - name: switch_tile
-          label: Show as switch tile (toggle, name, watermark icon)
-          selector:
-            boolean: {}
-          default: false
         - name: clock_card
           label: Show as clock card (status pills, time, date)
           selector:
@@ -2907,11 +2723,6 @@ sbo_graphite:
           default: false
         - name: image_tile
           label: Show as image tile (blurred picture from 'Image' with a thumbnail, label without picture)
-          selector:
-            boolean: {}
-          default: false
-        - name: status_tile
-          label: Show as status tile (switch tile look, state instead of toggle, display only)
           selector:
             boolean: {}
           default: false

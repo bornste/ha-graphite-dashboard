@@ -45,6 +45,9 @@ export const sampleStates: Record<string, any> = {
   "sensor.code_server_cpu": entity("sensor.code_server_cpu", "0.4", { unit_of_measurement: "%", display_precision: 1 }),
   "sensor.code_server_memory": entity("sensor.code_server_memory", "1.2", { unit_of_measurement: "%", display_precision: 1 }),
   "switch.printer": entity("switch.printer", "unavailable", { friendly_name: "Printer" }, 50),
+  "switch.game_console": entity("switch.game_console", "on", { friendly_name: "Game console" }, 25),
+  "binary_sensor.game_console_online": entity("binary_sensor.game_console_online", "on", { friendly_name: "Game console online" }),
+  "switch.speaker": entity("switch.speaker", "off", { friendly_name: "Speaker" }, 240),
 };
 
 // canned results for the info templates (the showcase has no template engine)
@@ -205,6 +208,28 @@ export function examples(language: string): ShowcaseSection[] {
                   { entity: "sensor.code_server_memory", label: "RAM" },
                 ],
               },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-switch-tile",
+      description: `Tile with a toggle, the name and the icon as watermark: tapping switches, holding opens more-info.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-switch-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Sockets",
+          note: "Console online (accent icon), TV connecting (pulsing icon), speaker off, printer offline.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Steckdosen" : "Sockets",
+            layout: "horizontal",
+            cards: [
+              { type: "custom:graphite-switch-tile", entity: "switch.game_console", icon: "mdi:controller", online_entity: "binary_sensor.game_console_online" },
+              { type: "custom:graphite-switch-tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
+              { type: "custom:graphite-switch-tile", entity: "switch.speaker", icon: "mdi:speaker" },
+              { type: "custom:graphite-switch-tile", entity: "switch.printer", icon: "mdi:printer" },
             ],
           },
         },
