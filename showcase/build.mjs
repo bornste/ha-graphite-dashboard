@@ -1,7 +1,7 @@
 // Builds the showcase site into showcase/site/: theme variables as CSS, the card library and
 // the showcase script. Usage: npm run build:showcase (once) or npm run showcase (serve locally).
 import { build, context } from "esbuild";
-import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
@@ -17,6 +17,13 @@ const variables = theme.Graphite.modes.dark;
 const css = `:root {\n${Object.entries(variables).map(([name, value]) => `  --${name}: ${value};`).join("\n")}\n}\n`;
 await writeFile(new URL("theme.css", site), css);
 await copyFile(new URL("index.html", import.meta.url), new URL("index.html", site));
+
+// Roboto (latin, OFL) next to the page, so the showcase makes no external requests
+const fonts = new URL("fonts/", site);
+await mkdir(fonts, { recursive: true });
+for (const file of await readdir(new URL("fonts/", import.meta.url))) {
+  await copyFile(new URL(`fonts/${file}`, import.meta.url), new URL(file, fonts));
+}
 
 const options = {
   entryPoints: {
