@@ -3,8 +3,15 @@
 A calm, dark dashboard style for Home Assistant: the **Graphite** theme and **graphite-cards**,
 a library of Lovelace cards built for it (TypeScript + Lit, bundled into one file).
 
+> **Personal project.** Theme and cards are built for my own private dashboard. They only
+> cover the options, cards and cases I need there – they are shared as they are, without the
+> aim of being a general purpose card collection. Feel free to use or fork them.
+
 > Work in progress: the cards are being moved step by step from single files and a
 > Bubble Card module into the library. See [docs](docs/README.md) for the available cards.
+
+**Showcase:** all cards with sample data, without Home Assistant –
+<https://bornste.github.io/ha-graphite-dashboard/>
 
 ## Contents
 
@@ -16,6 +23,7 @@ a library of Lovelace cards built for it (TypeScript + Lit, bundled into one fil
 | `config/bubble_card/modules/` | Bubble Card module (being replaced by the library) |
 | `config/www/` (other folders) | Cards not yet moved into the library |
 | `docs/` | One page per card: options, behaviour, examples |
+| `showcase/` | Showcase page with sample data (published to GitHub Pages) |
 
 ## Installation
 
@@ -37,12 +45,14 @@ npm install
 npm run build       # builds config/www/graphite-cards/graphite-cards.js
 npm run watch       # rebuilds on every change
 npm run typecheck
+npm run showcase    # showcase on http://localhost:8080 (rebuilds on every change)
 ```
 
 The version in `package.json` is the library version (0.x while pre-release); raise it with
 every change and use the same value in the resource URL.
 
-Conventions: code comments in English, camelCase names, every card has a page in `docs/`.
+Conventions: code comments in English, camelCase names, every card has a page in `docs/` and
+examples in `showcase/examples.ts` (fictional entities only).
 
 ## License
 

@@ -12,3 +12,6 @@ desktop.ini
 
 # dependencies (the bundle in config/www/graphite-cards/ is committed, it is what Home Assistant loads)
 node_modules/
+
+# built showcase site (published by the Pages workflow)
+showcase/site/
