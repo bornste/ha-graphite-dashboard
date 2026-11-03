@@ -1,0 +1,120 @@
+# Graphite
+# Token architecture (top to bottom):
+#   1. Base inputs    - the only values a variant needs to change (ground, ink, accent)
+#   2. Derived tokens - surfaces and text levels, mixed from ground and ink
+#   3. Layout tokens  - radii, gaps, paddings, typography
+#   4. HA / Bubble    - Home Assistant and Bubble Card variables mapped to the tokens
+#   5. Legacy aliases - the old sbo-* names point to the graphite-* tokens until every
+#                       card and the Bubble module use the new names (then they are removed)
+# The theme is published twice with the same values: "Graphite" (new) and "SBO Graphite"
+# (until every view is switched over). A light or tinted variant only overrides the base
+# inputs (see examples at the end).
+Graphite: &graphite
+  modes:
+    dark:
+      # 1. base inputs
+      graphite-ground: "#0a0a0b"
+      graphite-ink: "#f3f3f4"
+      graphite-ink-rgb: 243, 243, 244
+      graphite-accent: "#f5c48a"
+      graphite-accent-ink: "#3a2410"
+      graphite-danger: "#e8908a"
+      # second highlight color (e.g. visitor mode), same lightness as the accent
+      graphite-success: "#a8d5a2"
+      graphite-success-ink: "#17331a"
+
+      # 2. derived tokens: three surface levels (page, panel, tile) and text levels
+      graphite-surface-page: var(--graphite-ground)
+      graphite-surface-panel: "color-mix(in srgb, var(--graphite-ink) 7%, var(--graphite-ground))"
+      graphite-surface-tile: "color-mix(in srgb, var(--graphite-ink) 12%, var(--graphite-ground))"
+      graphite-surface-tile-active: "color-mix(in srgb, var(--graphite-ink) 17%, var(--graphite-ground))"
+      graphite-surface-track: "color-mix(in srgb, var(--graphite-ink) 18%, var(--graphite-ground))"
+      graphite-text-primary: var(--graphite-ink)
+      graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 62%, var(--graphite-ground))"
+      graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 40%, var(--graphite-ground))"
+      graphite-line: "color-mix(in srgb, var(--graphite-ink) 8%, transparent)"
+      # separator between title and status in headers: opaque, so it looks the same on every surface
+      graphite-separator: "color-mix(in srgb, var(--graphite-ink) 18%, var(--graphite-ground))"
+      graphite-overlay: "color-mix(in srgb, var(--graphite-ground) 90%, transparent)"
+
+      # 3. layout tokens
+      graphite-radius-panel: 20px
+      graphite-radius-tile: 12px
+      graphite-radius-pill: 999px
+      graphite-gap-panel: 16px
+      graphite-gap-tile: 8px
+      graphite-padding-panel: 16px
+
+      # 3b. typography tokens: one title style for panels and room cards
+      graphite-title-size: 18px
+      graphite-title-weight: "400"
+      graphite-title-color: var(--graphite-text-primary)
+
+      # 4. Home Assistant
+      lovelace-background: var(--graphite-surface-page)
+      primary-background-color: var(--graphite-surface-page)
+      secondary-background-color: var(--graphite-surface-panel)
+      card-background-color: var(--graphite-surface-panel)
+      ha-card-background: var(--graphite-surface-panel)
+      ha-card-border-radius: var(--graphite-radius-panel)
+      ha-card-border-width: 0px
+      ha-card-border-color: transparent
+      ha-card-box-shadow: none
+      primary-text-color: var(--graphite-text-primary)
+      secondary-text-color: var(--graphite-text-secondary)
+      disabled-text-color: var(--graphite-text-muted)
+      rgb-primary-text-color: var(--graphite-ink-rgb)
+      divider-color: var(--graphite-line)
+      accent-color: var(--graphite-accent)
+      ha-section-grid-row-gap: var(--graphite-gap-panel)
+      ha-section-grid-column-gap: var(--graphite-gap-panel)
+      ha-view-sections-column-gap: var(--graphite-gap-panel)
+      ha-dialog-surface-background: var(--graphite-surface-panel)
+
+      # 4. Bubble Card (the Bubble module builds on these)
+      bubble-main-background-color: var(--graphite-surface-panel)
+      bubble-secondary-background-color: var(--graphite-surface-tile)
+      bubble-border-radius: var(--graphite-radius-panel)
+      bubble-pop-up-main-background-color: var(--graphite-overlay)
+      bubble-accent-color: var(--graphite-accent)
+
+      # 5. legacy aliases (old names, used by the Bubble module and the not yet migrated cards)
+      sbo-ground: var(--graphite-ground)
+      sbo-ink: var(--graphite-ink)
+      sbo-ink-rgb: var(--graphite-ink-rgb)
+      sbo-accent: var(--graphite-accent)
+      sbo-accent-ink: var(--graphite-accent-ink)
+      sbo-danger: var(--graphite-danger)
+      sbo-success: var(--graphite-success)
+      sbo-success-ink: var(--graphite-success-ink)
+      sbo-surface-page: var(--graphite-surface-page)
+      sbo-surface-panel: var(--graphite-surface-panel)
+      sbo-surface-tile: var(--graphite-surface-tile)
+      sbo-surface-tile-active: var(--graphite-surface-tile-active)
+      sbo-surface-track: var(--graphite-surface-track)
+      sbo-text-primary: var(--graphite-text-primary)
+      sbo-text-secondary: var(--graphite-text-secondary)
+      sbo-text-muted: var(--graphite-text-muted)
+      sbo-line: var(--graphite-line)
+      sbo-separator: var(--graphite-separator)
+      sbo-overlay: var(--graphite-overlay)
+      sbo-radius-panel: var(--graphite-radius-panel)
+      sbo-radius-tile: var(--graphite-radius-tile)
+      sbo-radius-pill: var(--graphite-radius-pill)
+      sbo-gap-panel: var(--graphite-gap-panel)
+      sbo-gap-tile: var(--graphite-gap-tile)
+      sbo-padding-panel: var(--graphite-padding-panel)
+      sbo-title-size: var(--graphite-title-size)
+      sbo-title-weight: var(--graphite-title-weight)
+      sbo-title-color: var(--graphite-title-color)
+
+# same values under the old name, until no view uses "SBO Graphite" any more
+SBO Graphite: *graphite
+
+# Variant examples (not active):
+# tinted dark - only the ground changes, all surfaces follow:
+#   graphite-ground: "#0d0b14"
+# light - ground and ink swap roles, surface steps then mix towards dark:
+#   graphite-ground: "#f4f4f6"
+#   graphite-ink: "#141416"
+#   graphite-ink-rgb: 20, 20, 22
