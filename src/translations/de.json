@@ -83,5 +83,15 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "effect": {
+    "editor": {
+      "name": "Name",
+      "colors": "Farben des Verlaufs (z.B. #ff7a3d)",
+      "entity": "Entität (für das Halten: More-Info, z.B. die Lampe)",
+      "tap_action": "Aktion beim Tippen (z.B. Effekt setzen)",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

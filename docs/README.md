@@ -12,6 +12,7 @@ the special cases – also for cards with a visual editor.
 | graphite-switch-row | [graphite-switch-row.md](graphite-switch-row.md) | ready |
 | graphite-switch-tile | [graphite-switch-tile.md](graphite-switch-tile.md) | ready |
 | graphite-meter-tile | [graphite-meter-tile.md](graphite-meter-tile.md) | ready |
+| graphite-effect-tile | [graphite-effect-tile.md](graphite-effect-tile.md) | ready |
 
 ## Common behaviour
 

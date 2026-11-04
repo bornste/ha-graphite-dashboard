@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.6.4";
+var version = "0.7.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -637,6 +637,16 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen"
     }
+  },
+  effect: {
+    editor: {
+      name: "Name",
+      colors: "Farben des Verlaufs (z.B. #ff7a3d)",
+      entity: "Entit\xE4t (f\xFCr das Halten: More-Info, z.B. die Lampe)",
+      tap_action: "Aktion beim Tippen (z.B. Effekt setzen)",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -723,6 +733,16 @@ var en_default = {
       secondary_unit: "Unit of the second value",
       secondary_icon: "Icon before the second value",
       tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
+    }
+  },
+  effect: {
+    editor: {
+      name: "Name",
+      colors: "Gradient colors (e.g. #ff7a3d)",
+      entity: "Entity (for hold: more-info, e.g. the lamp)",
+      tap_action: "Tap action (e.g. set the effect)",
       hold_action: "Hold action",
       double_tap_action: "Double tap action"
     }
@@ -2478,6 +2498,131 @@ registerElement("graphite-meter-tile-editor", GraphiteMeterTileEditor);
 registerCard("graphite-meter-tile", GraphiteMeterTile, {
   name: "Graphite Meter Tile",
   description: "Sensor value with a color scale (gradient with needle) or a level bar, optional secondary value."
+});
+
+// src/cards/tiles/graphite-effect-tile-editor.ts
+var GraphiteEffectTileEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "effect.editor";
+  }
+  schema() {
+    return [
+      { name: "name", selector: { text: {} } },
+      { name: "colors", required: true, selector: { text: { multiple: true } } },
+      { name: "entity", selector: { entity: {} } },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+  skipValue(key, value) {
+    if (key === "colors") return !Array.isArray(value) || value.length === 0;
+    return false;
+  }
+};
+
+// src/cards/tiles/graphite-effect-tile.ts
+var effectStyles = i`
+  /* the tile grows with a long name, at least the compact tile height */
+  .tile {
+    display: flex;
+    align-items: flex-end;
+    height: auto;
+    min-height: var(--graphite-tile-height-compact, 72px);
+  }
+  .gradient {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(to top, rgba(0, 0, 0, 0.35) 0%, transparent 60%),
+      var(--effect-gradient);
+    filter: saturate(var(--graphite-effect-saturation, 0.85)) brightness(var(--graphite-effect-brightness, 0.88));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+  }
+  /* name bottom left on the gradient, wraps instead of being cut off */
+  .name {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: var(--graphite-padding-tile, 12px) 14px 9px var(--graphite-padding-tile, 12px);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.1;
+    color: #fff;
+    white-space: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  .dots {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    display: flex;
+    pointer-events: none;
+  }
+  .dots span {
+    width: 13px;
+    height: 13px;
+    margin-left: -2px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  }
+`;
+var GraphiteEffectTile = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!Array.isArray(config.colors) || config.colors.length === 0) {
+      throw new Error(`${this.localName}: 'colors' (list of colors) is required`);
+    }
+    return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  render() {
+    const config = this.config;
+    const colors = config.colors.map((color) => String(color).trim()).filter(Boolean);
+    const name = config.name ?? "";
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    return b2`<div class=${interactive ? "tile interactive" : "tile"} style=${`--effect-gradient: linear-gradient(90deg, ${colors.join(", ")})`} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}
+      aria-label=${name}><div class="gradient"></div>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+      class="dots">${colors.map((color) => b2`<span style=${`background: ${color}`}></span>`)}</div><div
+      class="name">${name}</div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 3, rows: "auto", min_columns: 2 };
+  }
+  static getStubConfig() {
+    return { name: "Sunset", colors: ["#ffb25c", "#ff7a3d", "#c2408f"] };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-effect-tile-editor");
+  }
+};
+GraphiteEffectTile.styles = [tileStyles, effectStyles];
+registerElement("graphite-effect-tile-editor", GraphiteEffectTileEditor);
+registerCard("graphite-effect-tile", GraphiteEffectTile, {
+  name: "Graphite Effect Tile",
+  description: "Light effect or scene as a tile with its color gradient and color dots."
 });
 
 // src/index.ts
