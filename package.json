@@ -1,6 +1,6 @@
 {
   "name": "graphite-cards",
-  "version": "0.9.2",
+  "version": "0.10.1",
   "description": "Graphite card library for Home Assistant dashboards",
   "license": "MIT",
   "author": "Stefan Born",

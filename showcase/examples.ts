@@ -58,10 +58,22 @@ export const sampleStates: Record<string, any> = {
   "sensor.player_two_playing_time": entity("sensor.player_two_playing_time", "6480", { friendly_name: "Player two", status: "running", accumulated_seconds: 6000, running_since: minutesAgo(8), icon: "mdi:controller" }, 8),
   "sensor.tv_watching_time": entity("sensor.tv_watching_time", "4980", { friendly_name: "TV", status: "paused", accumulated_seconds: 4980, icon: "mdi:television" }, 30),
   "image.player_two_picture": entity("image.player_two_picture", "2026-11-01", { friendly_name: "Player two", entity_picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' fill='%237aa5d6'/><circle cx='18' cy='14' r='7' fill='%23ffffff' opacity='0.85'/><rect x='7' y='24' width='22' height='14' rx='7' fill='%23ffffff' opacity='0.85'/></svg>" }),
+  "todo.shopping": entity("todo.shopping", "3", { friendly_name: "Shopping" }, 40),
+  "todo.chores": entity("todo.chores", "0", { friendly_name: "Chores" }, 600),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
 // canned results for the info templates (the showcase has no template engine)
+// canned results for todo/item/list (preview of the todo tile)
+export const todoItems: Record<string, Array<{ summary: string; status: string }>> = {
+  "todo.shopping": [
+    { summary: "Milk", status: "needs_action" },
+    { summary: "Bread", status: "needs_action" },
+    { summary: "Apples", status: "needs_action" },
+    { summary: "Coffee", status: "completed" },
+  ],
+};
+
 export const templateResults: Record<string, string> = {
   "{{ states('sensor.console_game') }}": "playing Starfield",
 };
@@ -345,6 +357,27 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-stopwatch-tile", entity: "sensor.player_one_playing_time", icon: "mdi:controller" },
               { type: "custom:graphite-stopwatch-tile", entity: "sensor.player_two_playing_time", icon: "mdi:controller", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
               { type: "custom:graphite-stopwatch-tile", entity: "sensor.tv_watching_time", icon: "mdi:television", icon_position: "left" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-todo-tile",
+      description: `Open items of a todo list, optionally with the first item names; an empty list shows a word as value.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-todo-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Lists",
+          note: "Shopping with a preview of the open items, chores empty.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Listen" : "Lists",
+            layout: "grid",
+            columns: 2,
+            cards: [
+              { type: "custom:graphite-todo-tile", entity: "todo.shopping", icon: "mdi:cart-outline", preview: true },
+              { type: "custom:graphite-todo-tile", entity: "todo.chores", icon: "mdi:broom", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
             ],
           },
         },

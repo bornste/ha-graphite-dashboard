@@ -125,5 +125,23 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action"
     }
+  },
+  "todo": {
+    "empty": "Empty",
+    "unit": "items",
+    "unitOne": "item",
+    "editor": {
+      "entity": "Todo list",
+      "name": "Name (default: list name)",
+      "icon": "Icon top right",
+      "unit": "Unit (default: items)",
+      "unit_one": "Unit for 1 (default: item)",
+      "empty_text": "Value of an empty list (default: Empty)",
+      "color": "Color of the stripe on top (no stripe without a color)",
+      "preview": "Show the first open items on the right",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action"
+    }
   }
 }

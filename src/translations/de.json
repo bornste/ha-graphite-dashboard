@@ -125,5 +125,23 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "todo": {
+    "empty": "Leer",
+    "unit": "Artikel",
+    "unitOne": "Artikel",
+    "editor": {
+      "entity": "Todo-Liste",
+      "name": "Name (Standard: Name der Liste)",
+      "icon": "Icon oben rechts",
+      "unit": "Einheit (Standard: Artikel)",
+      "unit_one": "Einheit bei 1 (Standard: wie Einheit)",
+      "empty_text": "Wert bei leerer Liste (Standard: Leer)",
+      "color": "Farbe des Streifens oben (ohne Farbe kein Streifen)",
+      "preview": "Erste offene Einträge rechts anzeigen",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

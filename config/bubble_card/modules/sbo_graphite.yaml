@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.126'
+  version: '0.127'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the label tiles (pickup, todo, ink).
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the label tiles (pickup, ink).
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -929,7 +929,7 @@ sbo_graphite:
       color: var(--sbo-text-secondary);
     }
 
-    /* LABEL LAYOUT (pickup, todo, ink tiles): short label stripe on top, name below it,
+    /* LABEL LAYOUT (pickup, ink tiles): short label stripe on top, name below it,
        value and secondary value at the bottom. The meter tiles themselves are graphite-meter-tile now. */
     /* same height as the switch tiles: room between name and value */
     .bubble-container.sbo-meter-tile {
@@ -1063,7 +1063,7 @@ sbo_graphite:
     .sbo-meter-tile.sbo-meter-label .sbo-meter-fill {
       display: none;
     }
-    /* no stripe where it would carry no meaning (todo without own color): name moves up */
+    /* no stripe where it would carry no meaning (tiles without own color): name moves up */
     .sbo-meter-tile.sbo-meter-label.sbo-no-stripe .sbo-meter-bar {
       display: none;
     }
@@ -1095,17 +1095,6 @@ sbo_graphite:
     .sbo-pickup-tile.sbo-pickup-due .bubble-icon {
       opacity: 0.3 !important;
     }
-    /* TODO TILE (todo list, e.g. shopping): label grammar, open item count, first items as secondary text */
-    .sbo-todo-tile .sbo-meter-secondary {
-      max-width: 62%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
-    }
-    .sbo-todo-tile.sbo-todo-open .sbo-meter-name {
-      color: var(--sbo-text-primary);
-    }
-
     /* INK TILE (printer): name top left, status bottom left, six cartridge tanks on the right
        that fill from the bottom. The tank track keeps a tint of the ink color, so an empty
        cartridge still shows which color it is. Empty cartridges: accent highlight like a due collection. */
@@ -1836,55 +1825,6 @@ sbo_graphite:
         return meter;
       };
 
-      // todo tile: number of open items and the first item names (e.g. shopping list)
-      if (config.todo)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        const entityId = this.config?.entity;
-        if (container && wrapper && entityId)
-        {
-          const todoConfig = config.todo;
-          container.classList.add(`sbo-meter-tile`, `sbo-meter-label`, `sbo-todo-tile`);
-          const meter = ensureLabelMeter(wrapper);
-          container.style.setProperty('--sbo-meter-color', todoConfig.color || 'var(--sbo-accent)');
-          container.classList.toggle(`sbo-no-stripe`, !todoConfig.color);
-          const stateObj = hass.states[entityId];
-          const openCount = parseInt(stateObj?.state, 10);
-          const hasOpen = Number.isFinite(openCount) && openCount > 0;
-          meter.querySelector(`.sbo-meter-name`).textContent = this.config?.name || stateObj?.attributes?.friendly_name || entityId;
-          // empty list: the status text is the value itself (like "Morgen" on the pickup tile)
-          meter.querySelector(`.sbo-meter-number`).textContent = hasOpen ? String(openCount) : (todoConfig.empty_text || 'Leer');
-          meter.querySelector(`.sbo-meter-unit`).textContent = hasOpen ? (openCount === 1 ? (todoConfig.unit_one || 'Artikel') : (todoConfig.unit || 'Artikel')) : '';
-          container.classList.toggle(`sbo-todo-open`, hasOpen);
-          const secondary = meter.querySelector(`.sbo-meter-secondary`);
-          if (!hasOpen)
-            secondary.textContent = '';
-          else if (todoConfig.preview === true)
-          {
-            // item names are fetched once per list change and shared between cards
-            window.sboTodoCache = window.sboTodoCache || {};
-            const cacheKey = `${entityId}|${stateObj.last_updated}`;
-            const cached = window.sboTodoCache[entityId];
-            if (cached && cached.key === cacheKey)
-              secondary.textContent = cached.text;
-            else if (!cached || cached.key !== cacheKey && !cached.loading)
-            {
-              window.sboTodoCache[entityId] = { key: cacheKey, text: cached?.text || '', loading: true };
-              hass.callWS({ type: 'todo/item/list', entity_id: entityId }).then((result) => {
-                const names = (result?.items || []).filter(item => item.status === 'needs_action').map(item => item.summary);
-                window.sboTodoCache[entityId] = { key: cacheKey, text: names.join(', '), loading: false };
-                secondary.textContent = names.join(', ');
-              }).catch(() => {
-                window.sboTodoCache[entityId] = { key: cacheKey, text: '', loading: false };
-              });
-            }
-          }
-          else
-            secondary.textContent = '';
-        }
-      }
-
       // ink tile: printer cartridges as small level bars, value = number of empty cartridges
       if (config.ink)
       {
@@ -2098,28 +2038,6 @@ sbo_graphite:
               max: 6
               step: 1
               mode: box
-    - type: expandable
-      name: todo
-      title: Todo tile (open items of a todo list, first item names)
-      icon: mdi:cart-outline
-      expanded: false
-      schema:
-        - name: color
-          label: Label stripe color (no stripe without a color)
-          selector:
-            text: {}
-        - name: unit
-          label: Unit text (default Artikel)
-          selector:
-            text: {}
-        - name: empty_text
-          label: Value when the list is empty (default Leer)
-          selector:
-            text: {}
-        - name: preview
-          label: Show the first item names (default off)
-          selector:
-            boolean: {}
     - type: expandable
       name: ink
       title: Ink tile (printer cartridges)

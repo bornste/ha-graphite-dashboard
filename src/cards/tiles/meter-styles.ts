@@ -61,7 +61,9 @@ export const meterStyles = css`
     gap: 3px;
     font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
-    line-height: 1.6;
+    /* not taller than the value line: a taller line would lift the baseline of the whole row
+       (the value then sits 1-2px higher than on tiles without a secondary value) */
+    line-height: 1.2;
     white-space: nowrap;
     color: var(--graphite-text-muted);
     --mdc-icon-size: 13px;

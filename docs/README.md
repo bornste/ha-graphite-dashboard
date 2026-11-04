@@ -15,6 +15,7 @@ the special cases – also for cards with a visual editor.
 | graphite-effect-tile | [graphite-effect-tile.md](graphite-effect-tile.md) | ready |
 | graphite-image-tile | [graphite-image-tile.md](graphite-image-tile.md) | ready |
 | graphite-stopwatch-tile | [graphite-stopwatch-tile.md](graphite-stopwatch-tile.md) | ready |
+| graphite-todo-tile | [graphite-todo-tile.md](graphite-todo-tile.md) | ready |
 
 ## Common behaviour
 

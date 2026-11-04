@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.9.2";
+var version = "0.10.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -679,6 +679,24 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen"
     }
+  },
+  todo: {
+    empty: "Leer",
+    unit: "Artikel",
+    unitOne: "Artikel",
+    editor: {
+      entity: "Todo-Liste",
+      name: "Name (Standard: Name der Liste)",
+      icon: "Icon oben rechts",
+      unit: "Einheit (Standard: Artikel)",
+      unit_one: "Einheit bei 1 (Standard: wie Einheit)",
+      empty_text: "Wert bei leerer Liste (Standard: Leer)",
+      color: "Farbe des Streifens oben (ohne Farbe kein Streifen)",
+      preview: "Erste offene Eintr\xE4ge rechts anzeigen",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -806,6 +824,24 @@ var en_default = {
       limit: "Daily limit (minutes or an entity; YAML per day: weekday, weekend, mon \u2026 sun)",
       warn_before: "Hint this many minutes before the limit (default 10)",
       day_start: "Start of the day (default 03:00)",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
+    }
+  },
+  todo: {
+    empty: "Empty",
+    unit: "items",
+    unitOne: "item",
+    editor: {
+      entity: "Todo list",
+      name: "Name (default: list name)",
+      icon: "Icon top right",
+      unit: "Unit (default: items)",
+      unit_one: "Unit for 1 (default: item)",
+      empty_text: "Value of an empty list (default: Empty)",
+      color: "Color of the stripe on top (no stripe without a color)",
+      preview: "Show the first open items on the right",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action"
@@ -2402,7 +2438,9 @@ var meterStyles = i`
     gap: 3px;
     font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
-    line-height: 1.6;
+    /* not taller than the value line: a taller line would lift the baseline of the whole row
+       (the value then sits 1-2px higher than on tiles without a secondary value) */
+    line-height: 1.2;
     white-space: nowrap;
     color: var(--graphite-text-muted);
     --mdc-icon-size: 13px;
@@ -3163,6 +3201,154 @@ registerElement("graphite-stopwatch-tile-editor", GraphiteStopwatchTileEditor);
 registerCard("graphite-stopwatch-tile", GraphiteStopwatchTile, {
   name: "Graphite Stopwatch Tile",
   description: "Elapsed time of a Stopwatch Plus sensor, optional daily limit, picture or icon on the left."
+});
+
+// src/cards/tiles/graphite-todo-tile-editor.ts
+var GraphiteTodoTileEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "todo.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: { domain: "todo" } } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "unit", selector: { text: {} } },
+          { name: "unit_one", selector: { text: {} } },
+          { name: "empty_text", selector: { text: {} } },
+          { name: "color", selector: { text: {} } }
+        ]
+      },
+      { name: "preview", selector: { boolean: {} } },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+  skipValue(key, value) {
+    if (key === "preview") return value !== true;
+    return false;
+  }
+};
+
+// src/cards/tiles/graphite-todo-tile.ts
+var previewCache = {};
+var todoStyles = i`
+  .tile.open .name {
+    color: var(--graphite-text-primary);
+  }
+  .secondary {
+    display: block;
+    max-width: 62%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`;
+var GraphiteTodoTile = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  get stateObj() {
+    return this.hass?.states[this.config.entity];
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  // preview: names of the open items, loaded when the list changes
+  willUpdate() {
+    const config = this.config;
+    const stateObj = this.stateObj;
+    if (!config?.preview || !stateObj) return;
+    const key = `${config.entity}|${stateObj.last_updated}`;
+    if (key === this.previewKey) return;
+    this.previewKey = key;
+    this.loadPreview(config.entity, key).then((text) => {
+      if (this.previewKey === key) this.previewText = text;
+    });
+  }
+  loadPreview(entityId, key) {
+    const cached = previewCache[entityId];
+    if (cached?.key === key) return cached.pending ?? Promise.resolve(cached.text);
+    const hass = this.hass;
+    if (!hass?.callWS) return Promise.resolve("");
+    const pending = hass.callWS({ type: "todo/item/list", entity_id: entityId }).then((result) => {
+      const text = (result?.items ?? []).filter((item) => item.status === "needs_action").map((item) => item.summary).join(", ");
+      previewCache[entityId] = { key, text };
+      return text;
+    }).catch(() => {
+      previewCache[entityId] = { key, text: "" };
+      return "";
+    });
+    previewCache[entityId] = { key, text: cached?.text ?? "", pending };
+    return pending;
+  }
+  renderIcon(stateObj) {
+    const icon = this.config.icon ? b2`<ha-icon .icon=${this.config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    return b2`<div class="meter-icon">${icon}</div>`;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.stateObj;
+    const openCount = parseInt(stateObj?.state ?? "", 10);
+    const hasOpen = Number.isFinite(openCount) && openCount > 0;
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const value = hasOpen ? String(openCount) : config.empty_text ?? this.localize("todo.empty");
+    const unit = hasOpen ? openCount === 1 ? config.unit_one ?? config.unit ?? this.localize("todo.unitOne") : config.unit ?? this.localize("todo.unit") : "";
+    const secondary = hasOpen && config.preview ? this.previewText ?? "" : "";
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    const classes = ["tile", "label", config.color ? "" : "no-stripe", hasOpen ? "open" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${config.color ? `--label-color: ${config.color}` : A}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(stateObj)}${config.color ? b2`<div class="stripe"></div>` : A}<div
+      class="name">${name}</div><div class="value-row"><div class=${hasOpen ? "value" : "value text"}>${value}${unit ? b2`<span class="unit">${unit}</span>` : A}</div>${secondary ? b2`<div class="secondary">${secondary}</div>` : A}</div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 6, rows: "auto", min_columns: 3 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("todo.")) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-todo-tile-editor");
+  }
+};
+GraphiteTodoTile.styles = [tileStyles, meterStyles, labelStyles, todoStyles];
+GraphiteTodoTile.properties = {
+  ...GraphiteCard.properties,
+  previewText: { state: true }
+};
+registerElement("graphite-todo-tile-editor", GraphiteTodoTileEditor);
+registerCard("graphite-todo-tile", GraphiteTodoTile, {
+  name: "Graphite Todo Tile",
+  description: "Open items of a todo list (e.g. shopping), optionally with the first item names."
 });
 
 // src/index.ts
