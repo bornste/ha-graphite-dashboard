@@ -143,5 +143,24 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "ink": {
+    "printer": "Drucker",
+    "empty": "leer",
+    "low": "bald leer",
+    "ok": "OK",
+    "idle": "Bereit",
+    "printing": "Druckt",
+    "processing": "Druckt",
+    "stopped": "Gestoppt",
+    "editor": {
+      "entity": "Drucker-Entität (Status, offline)",
+      "name": "Name (Standard: Name der Entität oder Drucker)",
+      "cartridges": "Füllstand-Sensoren der Patronen (%)",
+      "low_level": "Bald leer unter (%, Standard 20)",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

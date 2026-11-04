@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.127'
+  version: '0.128'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the label tiles (pickup, ink).
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the pickup tile.
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -929,7 +929,7 @@ sbo_graphite:
       color: var(--sbo-text-secondary);
     }
 
-    /* LABEL LAYOUT (pickup, ink tiles): short label stripe on top, name below it,
+    /* LABEL LAYOUT (pickup tile): short label stripe on top, name below it,
        value and secondary value at the bottom. The meter tiles themselves are graphite-meter-tile now. */
     /* same height as the switch tiles: room between name and value */
     .bubble-container.sbo-meter-tile {
@@ -1095,70 +1095,6 @@ sbo_graphite:
     .sbo-pickup-tile.sbo-pickup-due .bubble-icon {
       opacity: 0.3 !important;
     }
-    /* INK TILE (printer): name top left, status bottom left, six cartridge tanks on the right
-       that fill from the bottom. The tank track keeps a tint of the ink color, so an empty
-       cartridge still shows which color it is. Empty cartridges: accent highlight like a due collection. */
-    .bubble-container.sbo-meter-tile.sbo-ink-tile {
-      height: var(--sbo-meter-compact-height, 72px) !important;
-    }
-    .sbo-ink-tile .sbo-meter-bar,
-    .sbo-ink-tile .bubble-icon-container {
-      display: none !important;
-    }
-    .sbo-ink-tile .sbo-meter-name {
-      top: 10px !important;
-      right: 84px;
-    }
-    .sbo-ink-tile .sbo-meter-row {
-      right: 84px;
-    }
-    .sbo-ink-bars {
-      position: absolute;
-      right: 12px;
-      top: 12px;
-      bottom: 12px;
-      display: flex;
-      gap: 4px;
-    }
-    .sbo-ink-bars span {
-      position: relative;
-      width: 8px;
-      border-radius: 3px;
-      overflow: hidden;
-      background: color-mix(in srgb, var(--sbo-ink-color) 28%, var(--sbo-card-surface, var(--sbo-surface-tile)));
-    }
-    .sbo-ink-bars span::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: var(--sbo-ink-level, 0%);
-      background: var(--sbo-ink-color);
-    }
-    /* soon empty (no empty cartridge): calm hint in the accent color, no tint */
-    .sbo-ink-tile.sbo-ink-low .sbo-meter-unit {
-      color: var(--sbo-accent);
-    }
-    /* offline: dimmed like the other offline tiles (surface fades into the panel, content faded) */
-    .bubble-container.sbo-ink-tile.sbo-ink-offline {
-      background: color-mix(in srgb, var(--sbo-surface-tile) 35%, transparent) !important;
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sbo-surface-tile) 80%, transparent) !important;
-    }
-    .sbo-ink-tile.sbo-ink-offline .sbo-meter {
-      opacity: 0.4;
-    }
-    /* empty cartridge: same highlight as a due waste collection (accent tint, text in accent) */
-    .bubble-container.sbo-ink-tile.sbo-ink-alert {
-      background-color: color-mix(in srgb, var(--sbo-accent) var(--sbo-switch-tint, 18%), var(--sbo-surface-tile-active)) !important;
-    }
-    .sbo-ink-tile.sbo-ink-alert .sbo-meter-name {
-      color: var(--sbo-text-primary);
-    }
-    .sbo-ink-tile.sbo-ink-alert .sbo-meter-unit {
-      color: var(--sbo-accent);
-    }
-
     /* label pill (clock card, option "pill"): dimmed prefix, value in primary text, dimmed label;
        icon and Bubble's own text are replaced by the module */
     .bubble-sub-button.sbo-label-pill {
@@ -1810,96 +1746,6 @@ sbo_graphite:
         }
       }
 
-      // shared builder for tiles in the meter "label" layout
-      const ensureLabelMeter = (wrapper) => {
-        let meter = wrapper.querySelector(`.sbo-meter`);
-        if (!meter)
-        {
-          meter = document.createElement('div');
-          meter.className = 'sbo-meter';
-          meter.innerHTML = `<div class="sbo-meter-name"></div>`
-            + `<div class="sbo-meter-row"><div class="sbo-meter-value"><span class="sbo-meter-number"></span><span class="sbo-meter-unit"></span></div><div class="sbo-meter-secondary"></div></div>`
-            + `<div class="sbo-meter-bar"><div class="sbo-meter-fill"></div><div class="sbo-meter-dot"></div></div>`;
-          wrapper.appendChild(meter);
-        }
-        return meter;
-      };
-
-      // ink tile: printer cartridges as small level bars, value = number of empty cartridges
-      if (config.ink)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        const inkEntities = Array.isArray(config.ink.entities) ? config.ink.entities : [];
-        if (container && wrapper && inkEntities.length > 0)
-        {
-          container.classList.add(`sbo-meter-tile`, `sbo-meter-label`, `sbo-ink-tile`);
-          const meter = ensureLabelMeter(wrapper);
-          let bars = meter.querySelector(`.sbo-ink-bars`);
-          if (!bars || bars.children.length !== inkEntities.length)
-          {
-            bars?.remove();
-            bars = document.createElement('div');
-            bars.className = 'sbo-ink-bars';
-            for (let index = 0; index < inkEntities.length; index += 1)
-              bars.appendChild(document.createElement('span'));
-            meter.appendChild(bars);
-          }
-          // cartridge color from the configuration or guessed from the entity id
-          const guessColor = (entityId) => {
-            const id = String(entityId).toLowerCase();
-            if (id.includes('cyan')) return '#2fb4e6';
-            if (id.includes('magenta')) return '#e0479e';
-            if (id.includes('yellow')) return '#f0c94a';
-            if (id.includes('gray') || id.includes('grey')) return '#8e9399';
-            // black ink would vanish on the dark tile: shown light, like on printer displays in dark mode
-            return '#e4e4e6';
-          };
-          let emptyCount = 0;
-          let lowCount = 0;
-          let knownCount = 0;
-          inkEntities.forEach((inkEntity, index) => {
-            const entityId = typeof inkEntity === 'string' ? inkEntity : inkEntity.entity;
-            const stateObj = hass.states[entityId];
-            const level = parseFloat(stateObj?.state);
-            const lowLevel = Number(config.ink.low_level ?? 20);
-            const isEmpty = Number.isFinite(level) && level <= 0;
-            const isLow = Number.isFinite(level) && !isEmpty && level < lowLevel;
-            if (Number.isFinite(level)) knownCount += 1;
-            if (isEmpty) emptyCount += 1;
-            if (isLow) lowCount += 1;
-            const bar = bars.children[index];
-            bar.style.setProperty('--sbo-ink-color', (typeof inkEntity === 'object' && inkEntity.color) || guessColor(entityId));
-            bar.style.setProperty('--sbo-ink-level', `${Number.isFinite(level) ? Math.max(0, Math.min(100, level)) : 0}%`);
-            bar.title = `${stateObj?.attributes?.friendly_name || entityId}: ${Number.isFinite(level) ? level + ' %' : '–'}`;
-          });
-          meter.querySelector(`.sbo-meter-name`).textContent = this.config?.name || 'Drucker';
-          // offline: printer entity unavailable or no cartridge reports a level (never claim "OK")
-          const printerState = hass.states[this.config?.entity]?.state;
-          const isOffline = knownCount === 0 || ['unavailable', 'unknown'].includes(printerState);
-          container.classList.toggle(`sbo-ink-offline`, isOffline);
-          if (isOffline)
-          {
-            meter.querySelector(`.sbo-meter-number`).textContent = 'offline';
-            meter.querySelector(`.sbo-meter-unit`).textContent = '';
-            meter.querySelector(`.sbo-meter-secondary`).textContent = '';
-            container.classList.remove(`sbo-ink-alert`, `sbo-ink-low`);
-          }
-          else
-          {
-            // empty has priority over soon empty
-            // all cartridges fine: show the printer state instead (idle, printing, stopped)
-            const printerLabels = { idle: 'Bereit', printing: 'Druckt', processing: 'Druckt', stopped: 'Gestoppt' };
-            const printerText = printerLabels[printerState] || (printerState ? printerState.charAt(0).toUpperCase() + printerState.slice(1) : 'OK');
-            meter.querySelector(`.sbo-meter-number`).textContent = emptyCount > 0 ? String(emptyCount) : (lowCount > 0 ? String(lowCount) : printerText);
-            meter.querySelector(`.sbo-meter-unit`).textContent = emptyCount > 0 ? 'leer' : (lowCount > 0 ? 'bald leer' : '');
-            meter.querySelector(`.sbo-meter-secondary`).textContent = '';
-            container.classList.toggle(`sbo-ink-low`, emptyCount === 0 && lowCount > 0);
-            container.classList.toggle(`sbo-ink-alert`, emptyCount > 0);
-          }
-        }
-      }
-
       // sub-button configurations
       const subbuttonConfigs = config.subbuttons?.configurations;
       if (Array.isArray(subbuttonConfigs))
@@ -2036,26 +1882,6 @@ sbo_graphite:
             number:
               min: 1
               max: 6
-              step: 1
-              mode: box
-    - type: expandable
-      name: ink
-      title: Ink tile (printer cartridges)
-      icon: mdi:printer-outline
-      expanded: false
-      schema:
-        - name: entities
-          label: Cartridge level sensors (%)
-          selector:
-            entity:
-              multiple: true
-              domain: sensor
-        - name: low_level
-          label: Soon empty below (%, default 20)
-          selector:
-            number:
-              min: 1
-              max: 50
               step: 1
               mode: box
     - type: expandable

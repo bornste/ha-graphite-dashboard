@@ -60,6 +60,17 @@ export const sampleStates: Record<string, any> = {
   "image.player_two_picture": entity("image.player_two_picture", "2026-11-01", { friendly_name: "Player two", entity_picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' fill='%237aa5d6'/><circle cx='18' cy='14' r='7' fill='%23ffffff' opacity='0.85'/><rect x='7' y='24' width='22' height='14' rx='7' fill='%23ffffff' opacity='0.85'/></svg>" }),
   "todo.shopping": entity("todo.shopping", "3", { friendly_name: "Shopping" }, 40),
   "todo.chores": entity("todo.chores", "0", { friendly_name: "Chores" }, 600),
+  "sensor.office_printer": entity("sensor.office_printer", "idle", { friendly_name: "Printer" }, 120),
+  "sensor.office_printer_black": entity("sensor.office_printer_black", "64", { friendly_name: "Black", unit_of_measurement: "%" }),
+  "sensor.office_printer_cyan": entity("sensor.office_printer_cyan", "41", { friendly_name: "Cyan", unit_of_measurement: "%" }),
+  "sensor.office_printer_magenta": entity("sensor.office_printer_magenta", "12", { friendly_name: "Magenta", unit_of_measurement: "%" }),
+  "sensor.office_printer_yellow": entity("sensor.office_printer_yellow", "78", { friendly_name: "Yellow", unit_of_measurement: "%" }),
+  "sensor.photo_printer": entity("sensor.photo_printer", "idle", { friendly_name: "Photo printer" }, 120),
+  "sensor.photo_printer_black": entity("sensor.photo_printer_black", "55", { friendly_name: "Black", unit_of_measurement: "%" }),
+  "sensor.photo_printer_gray": entity("sensor.photo_printer_gray", "0", { friendly_name: "Gray", unit_of_measurement: "%" }),
+  "sensor.photo_printer_cyan": entity("sensor.photo_printer_cyan", "70", { friendly_name: "Cyan", unit_of_measurement: "%" }),
+  "sensor.photo_printer_magenta": entity("sensor.photo_printer_magenta", "66", { friendly_name: "Magenta", unit_of_measurement: "%" }),
+  "sensor.photo_printer_yellow": entity("sensor.photo_printer_yellow", "90", { friendly_name: "Yellow", unit_of_measurement: "%" }),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
@@ -378,6 +389,27 @@ export function examples(language: string): ShowcaseSection[] {
             cards: [
               { type: "custom:graphite-todo-tile", entity: "todo.shopping", icon: "mdi:cart-outline", preview: true },
               { type: "custom:graphite-todo-tile", entity: "todo.chores", icon: "mdi:broom", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-ink-tile",
+      description: `Printer with one tank per cartridge; soon empty and empty cartridges are highlighted.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-ink-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Printers",
+          note: "Office printer with magenta soon empty, photo printer with an empty gray cartridge. Hover a tank for its level.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Drucker" : "Printers",
+            layout: "grid",
+            columns: 2,
+            cards: [
+              { type: "custom:graphite-ink-tile", entity: "sensor.office_printer", cartridges: ["sensor.office_printer_black", "sensor.office_printer_cyan", "sensor.office_printer_magenta", "sensor.office_printer_yellow"] },
+              { type: "custom:graphite-ink-tile", entity: "sensor.photo_printer", cartridges: ["sensor.photo_printer_black", "sensor.photo_printer_gray", "sensor.photo_printer_cyan", "sensor.photo_printer_magenta", "sensor.photo_printer_yellow"] },
             ],
           },
         },

@@ -143,5 +143,24 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action"
     }
+  },
+  "ink": {
+    "printer": "Printer",
+    "empty": "empty",
+    "low": "low",
+    "ok": "OK",
+    "idle": "Ready",
+    "printing": "Printing",
+    "processing": "Printing",
+    "stopped": "Stopped",
+    "editor": {
+      "entity": "Printer entity (status, offline)",
+      "name": "Name (default: entity name or Printer)",
+      "cartridges": "Cartridge level sensors (%)",
+      "low_level": "Soon empty below (%, default 20)",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action"
+    }
   }
 }

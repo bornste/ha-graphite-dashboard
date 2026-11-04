@@ -9,6 +9,7 @@ import "./cards/tiles/graphite-effect-tile";
 import "./cards/tiles/graphite-image-tile";
 import "./cards/tiles/graphite-stopwatch-tile";
 import "./cards/tiles/graphite-todo-tile";
+import "./cards/tiles/graphite-ink-tile";
 
 window.graphiteCards = { version };
 
