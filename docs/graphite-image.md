@@ -1,4 +1,4 @@
-# graphite-image-tile
+# graphite-image
 
 An action tile, e.g. to start a game or an app. With an image, the picture fills the tile as a
 blurred, dimmed backdrop and sits as a square thumbnail bottom left; the name is then only read by
@@ -6,7 +6,7 @@ screen readers. Without an image, the name is shown as a label. With `busy`, the
 tint and a small spinner top right while the entity is on (e.g. a script that takes a while).
 
 ```yaml
-type: custom:graphite-image-tile
+type: custom:graphite-image
 entity: script.start_racing_game
 name: Racing game
 image: /local/images/racing-game.jpg

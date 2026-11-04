@@ -1,4 +1,5 @@
-// graphite-status-row: display row with the state as value on the right (windows, lamps, sensors).
+// graphite-status: display row with the state as value on the right (windows, lamps, sensors).
+// Only the row layout for now, so the editor shows no layout choice.
 import { html } from "lit";
 import { defaultHoldAction } from "../../core/actions";
 import { formatState } from "../../core/format";
@@ -7,7 +8,7 @@ import type { ActionConfig, HassEntity } from "../../core/types";
 import { GraphiteRow, isActiveState } from "./graphite-row";
 import { GraphiteRowEditor } from "./graphite-row-editor";
 
-export class GraphiteStatusRow extends GraphiteRow {
+export class GraphiteStatus extends GraphiteRow {
   protected defaultActions(entity: string): { tap_action: ActionConfig; hold_action: ActionConfig } {
     // tapping does nothing by default, holding opens more-info
     return { tap_action: { action: "none" }, hold_action: defaultHoldAction(entity) };
@@ -43,7 +44,8 @@ export class GraphiteStatusRow extends GraphiteRow {
 }
 
 registerElement("graphite-row-editor", GraphiteRowEditor);
-registerCard("graphite-status-row", GraphiteStatusRow, {
-  name: "Graphite Status Row",
+registerCard("graphite-status", GraphiteStatus, {
+  name: "Graphite Status",
   description: "Row with icon, name, \"since\" line and the state on the right.",
+  aliases: ["graphite-status-row"],
 });

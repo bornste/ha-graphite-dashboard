@@ -1,4 +1,4 @@
-# graphite-pickup-tile
+# graphite-pickup
 
 The next waste collection of a calendar entity: a colored stripe (the bin color), the name, the day
 as value and a hint on the right. Today and tomorrow are highlighted with a soft accent tint.
@@ -11,7 +11,7 @@ as value and a hint on the right. Today and tomorrow are highlighted with a soft
 | none in the lookahead | – | – |
 
 ```yaml
-type: custom:graphite-pickup-tile
+type: custom:graphite-pickup
 entity: calendar.paper_collection
 name: Paper
 icon: mdi:newspaper-variant-outline

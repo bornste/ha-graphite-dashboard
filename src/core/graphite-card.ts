@@ -1,5 +1,5 @@
 // Base class of all Graphite cards: config handling, hass updates limited to the watched entities.
-import { LitElement, type PropertyValues } from "lit";
+import { adoptStyles, LitElement, type CSSResultGroup, type PropertyValues } from "lit";
 import type { GraphiteCardConfig, HomeAssistant } from "./types";
 import { languageOf, translate } from "./i18n";
 
@@ -58,6 +58,23 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
   // defaults and validation of a card; returns the config the card works with
   protected normalizeConfig(config: TConfig): TConfig {
     return config;
+  }
+
+  // styles that depend on the config (e.g. the layout); undefined = the static styles only
+  protected stylesForConfig(): CSSResultGroup | undefined {
+    return undefined;
+  }
+
+  private appliedStyles?: CSSResultGroup;
+
+  // the shadow root gets the styles of the current layout before rendering
+  protected willUpdate(changed: PropertyValues): void {
+    super.willUpdate(changed);
+    const styles = this.stylesForConfig();
+    if (styles && styles !== this.appliedStyles && this.renderRoot instanceof ShadowRoot) {
+      adoptStyles(this.renderRoot, (this.constructor as typeof LitElement).finalizeStyles(styles));
+      this.appliedStyles = styles;
+    }
   }
 
   // entities whose changes trigger a re-render (default: the card entity)

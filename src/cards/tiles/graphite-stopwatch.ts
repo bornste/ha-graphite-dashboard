@@ -1,4 +1,4 @@
-// graphite-stopwatch-tile: elapsed time of a Stopwatch Plus sensor in the label layout, optional
+// graphite-stopwatch: elapsed time of a Stopwatch Plus sensor in the label layout, optional
 // daily limit. The tint always means "running" (also over the limit); paused or stopped tiles stay
 // neutral. Close to the limit the secondary text is emphasized; over the limit time and secondary
 // text are in accent and a running tile gets a stronger tint.
@@ -7,7 +7,7 @@ import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type Act
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
-import { GraphiteStopwatchTileEditor } from "./graphite-stopwatch-tile-editor";
+import { GraphiteStopwatchEditor } from "./graphite-stopwatch-editor";
 import { labelStyles } from "./label-styles";
 import { meterStyles } from "./meter-styles";
 import { tileStyles } from "./tile-styles";
@@ -16,7 +16,7 @@ import { tileStyles } from "./tile-styles";
 type LimitValue = number | string;
 type LimitMap = Partial<Record<"mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun" | "weekday" | "weekend", LimitValue>>;
 
-export interface StopwatchTileConfig extends GraphiteCardConfig {
+export interface StopwatchConfig extends GraphiteCardConfig {
   entity: string;
   name?: string;
   icon?: string;
@@ -100,13 +100,13 @@ const stopwatchStyles = css`
   }
 `;
 
-export class GraphiteStopwatchTile extends GraphiteCard<StopwatchTileConfig> {
+export class GraphiteStopwatch extends GraphiteCard<StopwatchConfig> {
   static styles = [tileStyles, meterStyles, labelStyles, stopwatchStyles];
 
   private detachActions?: () => void;
   private tickTimer?: number;
 
-  protected normalizeConfig(config: StopwatchTileConfig): StopwatchTileConfig {
+  protected normalizeConfig(config: StopwatchConfig): StopwatchConfig {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
   }
@@ -245,12 +245,13 @@ export class GraphiteStopwatchTile extends GraphiteCard<StopwatchTileConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    return document.createElement("graphite-stopwatch-tile-editor");
+    return document.createElement("graphite-stopwatch-editor");
   }
 }
 
-registerElement("graphite-stopwatch-tile-editor", GraphiteStopwatchTileEditor);
-registerCard("graphite-stopwatch-tile", GraphiteStopwatchTile, {
-  name: "Graphite Stopwatch Tile",
+registerElement("graphite-stopwatch-editor", GraphiteStopwatchEditor);
+registerCard("graphite-stopwatch", GraphiteStopwatch, {
+  aliases: ["graphite-stopwatch-tile"],
+  name: "Graphite Stopwatch",
   description: "Elapsed time of a Stopwatch Plus sensor, optional daily limit, picture or icon on the left.",
 });

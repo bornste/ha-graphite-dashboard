@@ -1,7 +1,7 @@
-// Visual editor of graphite-stopwatch-tile.
+// Visual editor of graphite-stopwatch.
 import { GraphiteFormEditor } from "../../core/form-editor";
 
-export class GraphiteStopwatchTileEditor extends GraphiteFormEditor {
+export class GraphiteStopwatchEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
     return "stopwatch.editor";
   }

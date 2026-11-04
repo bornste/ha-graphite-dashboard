@@ -1,13 +1,21 @@
-// Visual editor of graphite-meter-tile.
+// Visual editor of graphite-meter.
 import { GraphiteFormEditor } from "../../core/form-editor";
+import { layoutField, layoutOf } from "../../core/layout";
 
-export class GraphiteMeterTileEditor extends GraphiteFormEditor {
+export class GraphiteMeterEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
     return "meter.editor";
   }
 
+  protected schemaKey(): string {
+    return layoutOf(this.config, "tile");
+  }
+
   protected schema(): unknown[] {
+    // the icon is a watermark of the tile; the row has none
+    const isTile = layoutOf(this.config, "tile") === "tile";
     return [
+      layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
       {
         type: "grid",
@@ -27,15 +35,23 @@ export class GraphiteMeterTileEditor extends GraphiteFormEditor {
           { name: "unit", selector: { text: {} } },
         ],
       },
-      { name: "colors", selector: { object: {} } },
       {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "color", selector: { text: {} } },
+          { name: "low", selector: { number: { mode: "box" } } },
+        ],
+      },
+      { name: "colors", selector: { object: {} } },
+      ...(isTile ? [{
         type: "grid",
         name: "",
         schema: [
           { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
           { name: "show_icon", selector: { boolean: {} } },
         ],
-      },
+      }] : []),
       { name: "secondary_entity", selector: { entity: {} } },
       {
         type: "grid",
@@ -54,6 +70,7 @@ export class GraphiteMeterTileEditor extends GraphiteFormEditor {
 
   protected skipValue(key: string, value: unknown): boolean {
     if (key === "show_icon") return value !== true;
+    if (key === "layout") return value === "tile";
     if (key === "colors") return typeof value !== "object" || Object.keys(value as object).length === 0;
     return false;
   }

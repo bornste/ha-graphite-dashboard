@@ -1,11 +1,11 @@
-# graphite-todo-tile
+# graphite-todo
 
 The open items of a todo list (e.g. the shopping list) as a tile in the label layout: the number of
 open items as value, optionally the first item names on the right. An empty list shows a word as
 value instead ("keine Artikel"). Tapping usually opens the list, e.g. a pop-up.
 
 ```yaml
-type: custom:graphite-todo-tile
+type: custom:graphite-todo
 entity: todo.shopping
 name: Shopping
 icon: mdi:cart-outline

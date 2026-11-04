@@ -49,7 +49,8 @@
       "since_attribute_label": "Word before the time (default: triggered)",
       "detail_entities": "Values instead of the \"since …\" line while on (YAML list: entity, label)",
       "online_entity": "Online entity (icon pulses until the device is reachable)",
-      "wall_switch": "Wall switch lamp (unavailable = off)"
+      "wall_switch": "Wall switch lamp (unavailable = off)",
+      "layout": "Layout"
     }
   },
   "tiles": {
@@ -81,7 +82,10 @@
       "secondary_icon": "Icon before the second value",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "color": "Single color (instead of color stops)",
+      "low": "Low below (consumables, shows the status)",
+      "layout": "Layout"
     }
   },
   "effect": {
@@ -181,5 +185,10 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action"
     }
+  },
+  "level": {
+    "ok": "OK",
+    "low": "low",
+    "empty": "empty"
   }
 }

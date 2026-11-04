@@ -1,7 +1,7 @@
-// Visual editor of graphite-pickup-tile.
+// Visual editor of graphite-pickup.
 import { GraphiteFormEditor } from "../../core/form-editor";
 
-export class GraphitePickupTileEditor extends GraphiteFormEditor {
+export class GraphitePickupEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
     return "pickup.editor";
   }

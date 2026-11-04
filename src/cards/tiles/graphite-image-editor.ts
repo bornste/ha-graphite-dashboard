@@ -1,17 +1,17 @@
-// Visual editor of graphite-ink-tile.
+// Visual editor of graphite-image.
 import { GraphiteFormEditor } from "../../core/form-editor";
 
-export class GraphiteInkTileEditor extends GraphiteFormEditor {
+export class GraphiteImageEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
-    return "ink.editor";
+    return "image.editor";
   }
 
   protected schema(): unknown[] {
     return [
       { name: "entity", selector: { entity: {} } },
       { name: "name", selector: { text: {} } },
-      { name: "cartridges", required: true, selector: { entity: { multiple: true, domain: "sensor" } } },
-      { name: "low_level", selector: { number: { mode: "box", min: 1, max: 50 } } },
+      { name: "image", selector: { text: {} } },
+      { name: "busy", selector: { boolean: {} } },
       { name: "tap_action", selector: { ui_action: {} } },
       { name: "hold_action", selector: { ui_action: {} } },
       { name: "double_tap_action", selector: { ui_action: {} } },
@@ -19,7 +19,7 @@ export class GraphiteInkTileEditor extends GraphiteFormEditor {
   }
 
   protected skipValue(key: string, value: unknown): boolean {
-    if (key === "cartridges") return !Array.isArray(value) || value.length === 0;
+    if (key === "busy") return value !== true;
     return false;
   }
 }

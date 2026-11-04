@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.12.2";
+var version = "0.14.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -603,7 +603,8 @@ var de_default = {
       since_attribute_label: "Wort vor der Zeit (Standard: ausgel\xF6st)",
       detail_entities: "Werte statt der Zeile \xABseit \u2026\xBB, solange eingeschaltet (YAML-Liste: entity, label)",
       online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
-      wall_switch: "Wandschalter-Lampe (nicht erreichbar = aus)"
+      wall_switch: "Wandschalter-Lampe (nicht erreichbar = aus)",
+      layout: "Darstellung"
     }
   },
   tiles: {
@@ -635,7 +636,10 @@ var de_default = {
       secondary_icon: "Icon vor dem zweiten Wert",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      color: "Feste Farbe (statt Farbstufen)",
+      low: "Bald leer unter (f\xFCr Verbrauchsmaterial, zeigt den Zustand)",
+      layout: "Darstellung"
     }
   },
   effect: {
@@ -735,6 +739,11 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen"
     }
+  },
+  level: {
+    ok: "OK",
+    low: "bald leer",
+    empty: "leer"
   }
 };
 
@@ -790,7 +799,8 @@ var en_default = {
       since_attribute_label: "Word before the time (default: triggered)",
       detail_entities: 'Values instead of the "since \u2026" line while on (YAML list: entity, label)',
       online_entity: "Online entity (icon pulses until the device is reachable)",
-      wall_switch: "Wall switch lamp (unavailable = off)"
+      wall_switch: "Wall switch lamp (unavailable = off)",
+      layout: "Layout"
     }
   },
   tiles: {
@@ -822,7 +832,10 @@ var en_default = {
       secondary_icon: "Icon before the second value",
       tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      color: "Single color (instead of color stops)",
+      low: "Low below (consumables, shows the status)",
+      layout: "Layout"
     }
   },
   effect: {
@@ -922,6 +935,11 @@ var en_default = {
       hold_action: "Hold action",
       double_tap_action: "Double tap action"
     }
+  },
+  level: {
+    ok: "OK",
+    low: "low",
+    empty: "empty"
   }
 };
 
@@ -991,6 +1009,19 @@ var GraphiteCard = class extends i4 {
   // defaults and validation of a card; returns the config the card works with
   normalizeConfig(config) {
     return config;
+  }
+  // styles that depend on the config (e.g. the layout); undefined = the static styles only
+  stylesForConfig() {
+    return void 0;
+  }
+  // the shadow root gets the styles of the current layout before rendering
+  willUpdate(changed) {
+    super.willUpdate(changed);
+    const styles = this.stylesForConfig();
+    if (styles && styles !== this.appliedStyles && this.renderRoot instanceof ShadowRoot) {
+      S(this.renderRoot, this.constructor.finalizeStyles(styles));
+      this.appliedStyles = styles;
+    }
   }
   // entities whose changes trigger a re-render (default: the card entity)
   watchedEntities() {
@@ -1209,7 +1240,12 @@ var documentationBase = "https://github.com/bornste/ha-graphite-dashboard/blob/m
 function registerCard(tag, element, info) {
   if (!customElements.get(tag)) customElements.define(tag, element);
   for (const alias of info.aliases ?? []) {
-    if (!customElements.get(alias)) customElements.define(alias, class extends element {
+    const { tag: tag2, defaults } = typeof alias === "string" ? { tag: alias, defaults: void 0 } : alias;
+    if (customElements.get(tag2)) continue;
+    customElements.define(tag2, class extends element {
+      setConfig(config) {
+        super.setConfig(defaults ? { ...defaults, ...config } : config);
+      }
     });
   }
   window.customCards = window.customCards || [];
@@ -1985,6 +2021,10 @@ var GraphiteFormEditor = class extends HTMLElement {
     super(...arguments);
     this.config = {};
   }
+  // changes when the schema depends on the config (e.g. the fields of the chosen layout)
+  schemaKey() {
+    return "";
+  }
   // whether a value is left out of the stored config (besides empty values)
   skipValue(_key, _value) {
     return false;
@@ -2008,8 +2048,9 @@ var GraphiteFormEditor = class extends HTMLElement {
       this.replaceChildren(this.form);
     }
     const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
-    if (this.formLanguage !== language) {
+    if (this.formLanguage !== language || this.formSchemaKey !== this.schemaKey()) {
       this.formLanguage = language;
+      this.formSchemaKey = this.schemaKey();
       this.form.schema = this.schema();
       this.form.computeLabel = (schema) => {
         if (!schema.name) return "";
@@ -2030,6 +2071,14 @@ var GraphiteFormEditor = class extends HTMLElement {
   }
 };
 
+// src/core/layout.ts
+function layoutOf(config, fallback) {
+  return config?.layout === "row" || config?.layout === "tile" ? config.layout : fallback;
+}
+function layoutField() {
+  return { name: "layout", selector: { select: { mode: "list", options: ["row", "tile"] } } };
+}
+
 // src/cards/rows/graphite-row-editor.ts
 var GraphiteRowEditor = class extends GraphiteFormEditor {
   constructor() {
@@ -2039,8 +2088,13 @@ var GraphiteRowEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "rows.editor";
   }
+  schemaKey() {
+    return layoutOf(this.config, "row");
+  }
   schema() {
+    const isRow = this.rowKind === "status" || layoutOf(this.config, "row") === "row";
     return [
+      ...this.rowKind === "switch" ? [layoutField()] : [],
       { name: "entity", required: true, selector: { entity: {} } },
       {
         type: "grid",
@@ -2053,16 +2107,18 @@ var GraphiteRowEditor = class extends GraphiteFormEditor {
       { name: "tap_action", selector: { ui_action: {} } },
       { name: "hold_action", selector: { ui_action: {} } },
       { name: "double_tap_action", selector: { ui_action: {} } },
-      { name: "since_line", selector: { boolean: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "since_attribute", selector: { text: {} } },
-          { name: "since_attribute_label", selector: { text: {} } }
-        ]
-      },
-      { name: "detail_entities", selector: { object: {} } },
+      ...isRow ? [
+        { name: "since_line", selector: { boolean: {} } },
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "since_attribute", selector: { text: {} } },
+            { name: "since_attribute_label", selector: { text: {} } }
+          ]
+        },
+        { name: "detail_entities", selector: { object: {} } }
+      ] : [],
       { name: "online_entity", selector: { entity: {} } },
       ...this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
     ];
@@ -2070,12 +2126,13 @@ var GraphiteRowEditor = class extends GraphiteFormEditor {
   skipValue(key, value) {
     if (key === "detail_entities") return !Array.isArray(value) || value.length === 0;
     if (key === "wall_switch") return value !== true;
+    if (key === "layout") return value === "row";
     return false;
   }
 };
 
-// src/cards/rows/graphite-status-row.ts
-var GraphiteStatusRow = class extends GraphiteRow {
+// src/cards/rows/graphite-status.ts
+var GraphiteStatus = class extends GraphiteRow {
   defaultActions(entity) {
     return { tap_action: { action: "none" }, hold_action: defaultHoldAction(entity) };
   }
@@ -2101,63 +2158,11 @@ var GraphiteStatusRow = class extends GraphiteRow {
   }
 };
 registerElement("graphite-row-editor", GraphiteRowEditor);
-registerCard("graphite-status-row", GraphiteStatusRow, {
-  name: "Graphite Status Row",
-  description: 'Row with icon, name, "since" line and the state on the right.'
+registerCard("graphite-status", GraphiteStatus, {
+  name: "Graphite Status",
+  description: 'Row with icon, name, "since" line and the state on the right.',
+  aliases: ["graphite-status-row"]
 });
-
-// src/cards/rows/graphite-switch-row.ts
-var GraphiteSwitchRow = class extends GraphiteRow {
-  defaultActions(entity) {
-    return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(entity) };
-  }
-  rowClasses(stateObj) {
-    const classes = super.rowClasses(stateObj);
-    if (classes.includes("on") && !classes.includes("unavailable")) classes.push("active");
-    return classes;
-  }
-  renderEnd() {
-    return b2`<div class="toggle"></div>`;
-  }
-  static getStubConfig(hass) {
-    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("switch.")) ?? "";
-    return { entity };
-  }
-  static async getConfigElement() {
-    const editor = document.createElement("graphite-row-editor");
-    editor.rowKind = "switch";
-    return editor;
-  }
-};
-registerElement("graphite-row-editor", GraphiteRowEditor);
-registerCard("graphite-switch-row", GraphiteSwitchRow, {
-  name: "Graphite Switch Row",
-  description: 'Row with icon, name, "since" line and a toggle; tapping the row switches.'
-});
-
-// src/cards/tiles/graphite-switch-tile-editor.ts
-var GraphiteSwitchTileEditor = class extends GraphiteFormEditor {
-  labelPrefix() {
-    return "tiles.editor";
-  }
-  schema() {
-    return [
-      { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
-      { name: "online_entity", selector: { entity: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
-    ];
-  }
-};
 
 // src/cards/tiles/tile-styles.ts
 var tileStyles = i`
@@ -2307,103 +2312,69 @@ var tileStyles = i`
   }
 `;
 
-// src/cards/tiles/graphite-switch-tile.ts
-var onlineStates2 = ["home", "on", "online", "connected"];
-var GraphiteSwitchTile = class extends GraphiteCard {
-  normalizeConfig(config) {
-    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
-    return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(config.entity), ...config };
+// src/cards/rows/graphite-switch.ts
+var GraphiteSwitch = class extends GraphiteRow {
+  stylesForConfig() {
+    return layoutOf(this.config, "row") === "tile" ? tileStyles : rowStyles;
   }
-  watchedEntities() {
-    const config = this.config;
-    return config.online_entity ? [config.entity, config.online_entity] : [config.entity];
+  defaultActions(entity) {
+    return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(entity) };
   }
-  connectedCallback() {
-    super.connectedCallback();
-    this.detachActions = attachActionHandler(this, {
-      hasHold: () => hasAction(this.config?.hold_action),
-      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
-    }, (action) => this.handleAction(action));
+  rowClasses(stateObj) {
+    const classes = super.rowClasses(stateObj);
+    if (classes.includes("on") && !classes.includes("unavailable")) classes.push("active");
+    return classes;
   }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.detachActions?.();
-    this.detachActions = void 0;
-  }
-  get stateObj() {
-    return this.hass?.states[this.config.entity];
-  }
-  // an offline device cannot be switched: tap and double tap do nothing, holding still opens more-info
-  handleAction(action) {
-    const config = this.config;
-    if (!config || !hasAction(config[`${action}_action`])) return;
-    if (action !== "hold" && isUnavailable(this.stateObj)) return;
-    fireAction(this, config, action);
-  }
-  isInteractive(unavailable) {
-    const config = this.config;
-    return !unavailable && (hasAction(config.tap_action) || hasAction(config.double_tap_action));
-  }
-  tileClasses(stateObj, unavailable, interactive) {
-    const config = this.config;
-    const classes = ["tile"];
-    if (interactive) classes.push("interactive");
-    if (unavailable) classes.push("unavailable");
-    else if (stateObj?.state === "on") {
-      classes.push("on");
-      if (config.online_entity) {
-        const online = onlineStates2.includes(String(this.hass?.states[config.online_entity]?.state || "").toLowerCase());
-        classes.push(online ? "online" : "connecting");
-      }
-    }
-    return classes.join(" ");
-  }
-  renderIcon(stateObj) {
-    const icon = this.config.icon;
-    if (icon || !customElements.get("ha-state-icon")) {
-      return b2`<ha-icon .icon=${icon || stateObj?.attributes?.icon || "mdi:toggle-switch-outline"}></ha-icon>`;
-    }
-    return b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+  renderEnd() {
+    return b2`<div class="toggle"></div>`;
   }
   render() {
+    if (layoutOf(this.config, "row") === "row") return super.render();
     const config = this.config;
-    const stateObj = this.stateObj;
-    const unavailable = isUnavailable(stateObj);
-    const interactive = this.isInteractive(unavailable);
+    const stateObj = this.hass?.states[config.entity];
+    const interactive = this.isInteractive(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
-    return b2`<div class=${this.tileClasses(stateObj, unavailable, interactive)} role=${interactive ? "button" : A}
-      tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
-      class="watermark">${this.renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
+    const classes = ["tile", ...this.rowClasses(stateObj).slice(1)].join(" ");
+    return b2`<div class=${classes} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}
+      aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="watermark">${this.renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
   getCardSize() {
-    return 2;
+    return layoutOf(this.config, "row") === "tile" ? 2 : 1;
   }
   getGridOptions() {
-    return { columns: 3, rows: 2, min_columns: 2 };
+    return layoutOf(this.config, "row") === "tile" ? { columns: 3, rows: 2, min_columns: 2 } : { columns: 12, rows: "auto", min_columns: 3 };
   }
   static getStubConfig(hass) {
     const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("switch.")) ?? "";
     return { entity };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-switch-tile-editor");
+    const editor = document.createElement("graphite-row-editor");
+    editor.rowKind = "switch";
+    return editor;
   }
 };
-GraphiteSwitchTile.styles = tileStyles;
-registerElement("graphite-switch-tile-editor", GraphiteSwitchTileEditor);
-registerCard("graphite-switch-tile", GraphiteSwitchTile, {
-  name: "Graphite Switch Tile",
-  description: "Tile with toggle, name and watermark icon; tapping the tile switches. Optional online status."
+GraphiteSwitch.styles = [];
+registerElement("graphite-row-editor", GraphiteRowEditor);
+registerCard("graphite-switch", GraphiteSwitch, {
+  name: "Graphite Switch",
+  description: "Switch as a row (toggle on the right) or a tile (toggle, name, watermark icon); tapping switches.",
+  aliases: [{ tag: "graphite-switch-row", defaults: { layout: "row" } }, { tag: "graphite-switch-tile", defaults: { layout: "tile" } }]
 });
 
-// src/cards/tiles/graphite-meter-tile-editor.ts
-var GraphiteMeterTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-meter-editor.ts
+var GraphiteMeterEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "meter.editor";
   }
+  schemaKey() {
+    return layoutOf(this.config, "tile");
+  }
   schema() {
+    const isTile = layoutOf(this.config, "tile") === "tile";
     return [
+      layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
       {
         type: "grid",
@@ -2423,15 +2394,23 @@ var GraphiteMeterTileEditor = class extends GraphiteFormEditor {
           { name: "unit", selector: { text: {} } }
         ]
       },
-      { name: "colors", selector: { object: {} } },
       {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "color", selector: { text: {} } },
+          { name: "low", selector: { number: { mode: "box" } } }
+        ]
+      },
+      { name: "colors", selector: { object: {} } },
+      ...isTile ? [{
         type: "grid",
         name: "",
         schema: [
           { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
           { name: "show_icon", selector: { boolean: {} } }
         ]
-      },
+      }] : [],
       { name: "secondary_entity", selector: { entity: {} } },
       {
         type: "grid",
@@ -2449,6 +2428,7 @@ var GraphiteMeterTileEditor = class extends GraphiteFormEditor {
   }
   skipValue(key, value) {
     if (key === "show_icon") return value !== true;
+    if (key === "layout") return value === "tile";
     if (key === "colors") return typeof value !== "object" || Object.keys(value).length === 0;
     return false;
   }
@@ -2586,10 +2566,141 @@ var meterStyles = i`
     left: 0;
     border-radius: 2px;
   }
+  /* low (consumables): soon empty – status in accent; empty – accent tint as well */
+  .tile.low .secondary,
+  .tile.empty .secondary {
+    color: var(--graphite-accent);
+  }
+  .tile.empty {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+`;
+var meterRowStyles = i`
+  :host {
+    display: block;
+  }
+  .row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 12px;
+    padding: 12px 14px;
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background-color 0.3s ease;
+  }
+  .row.interactive {
+    cursor: pointer;
+  }
+  .row.interactive:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--graphite-accent);
+  }
+  .name {
+    font-size: var(--graphite-font-name-size, 15px);
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .status {
+    grid-column: 1;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 15px;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .value {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    font-size: var(--graphite-font-value-size, 22px);
+    font-weight: var(--graphite-font-value-weight, 300);
+    color: var(--graphite-text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .unit {
+    margin-left: 3px;
+    font-size: var(--graphite-font-label-size, 13px);
+    font-weight: 400;
+    color: var(--graphite-text-muted);
+  }
+  /* bar along the bottom: level fills in the band color, gradient shows the scale with a needle */
+  .bar {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 4px;
+    margin-top: 6px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--meter-color, var(--graphite-accent)) 22%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  .fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--meter-share, 0%);
+    border-radius: 2px;
+    background: var(--meter-color, var(--graphite-accent));
+  }
+  .row.gradient .bar {
+    background: var(--meter-scale);
+  }
+  .row.gradient .fill {
+    left: var(--meter-share, 0%);
+    right: 0;
+    width: auto;
+    border-radius: 0 2px 2px 0;
+    background: color-mix(in srgb, var(--graphite-card-surface, var(--graphite-surface-tile)) var(--graphite-meter-dim, 65%), transparent);
+  }
+  .needle {
+    position: absolute;
+    top: -3px;
+    left: var(--meter-share, 0%);
+    width: 2px;
+    height: 10px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--graphite-text-primary);
+    box-shadow: 0 0 0 1.5px var(--graphite-card-surface, var(--graphite-surface-tile));
+  }
+  .row.novalue.level .fill,
+  .row.novalue .needle {
+    display: none;
+  }
+  /* soon empty: value and status in accent; empty: accent tint as well */
+  .row.low :is(.value, .status),
+  .row.empty :is(.value, .status) {
+    color: var(--graphite-accent);
+  }
+  .row.empty {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+  /* offline: dimmed like every other offline row */
+  .row.unavailable {
+    background: color-mix(in srgb, var(--graphite-surface-tile) 40%, transparent);
+  }
+  .row.unavailable > * {
+    opacity: 0.4;
+  }
+  .row.unavailable .value {
+    font-size: var(--graphite-font-name-size, 15px);
+    font-weight: 400;
+  }
 `;
 
-// src/cards/tiles/graphite-meter-tile.ts
-var GraphiteMeterTile = class extends GraphiteCard {
+// src/cards/tiles/graphite-meter.ts
+var meterTileStyles = [tileStyles, meterStyles];
+var GraphiteMeter = class extends GraphiteCard {
+  stylesForConfig() {
+    return layoutOf(this.config, "tile") === "row" ? meterRowStyles : meterTileStyles;
+  }
   normalizeConfig(config) {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
@@ -2634,7 +2745,8 @@ var GraphiteMeterTile = class extends GraphiteCard {
     const icon = config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
     return b2`<div class="meter-icon">${icon}</div>`;
   }
-  render() {
+  // value, band color and scale shared by both layouts
+  model() {
     const config = this.config;
     const style = config.style === "gradient" ? "gradient" : "level";
     const stateObj = this.hass?.states[config.entity];
@@ -2646,43 +2758,92 @@ var GraphiteMeterTile = class extends GraphiteCard {
     const maxValue = Number.isFinite(Number(config.max)) && Number(config.max) > minValue ? Number(config.max) : minValue + 100;
     const toShare = (number) => Math.min(100, Math.max(0, (number - minValue) / (maxValue - minValue) * 100));
     const stops = this.colorStops();
-    let bandColor = "var(--graphite-accent)";
+    let bandColor = config.color ?? "var(--graphite-accent)";
     if (stops.length > 0) {
       bandColor = stops[0].color;
       for (const stop of stops) if (hasValue && value >= stop.value) bandColor = stop.color;
     }
-    const scale = stops.length > 0 ? stops.map((stop) => `${stop.color} ${toShare(stop.value)}%`).join(", ") : "var(--graphite-accent) 0%, var(--graphite-accent) 100%";
+    const scale = stops.length > 0 ? stops.map((stop) => `${stop.color} ${toShare(stop.value)}%`).join(", ") : `${bandColor} 0%, ${bandColor} 100%`;
     const variables = `--meter-share: ${hasValue ? toShare(value) : 0}%; --meter-color: ${bandColor};` + (style === "gradient" ? ` --meter-scale: linear-gradient(90deg, ${scale});` : "");
+    const hasLow = config.low !== void 0 && config.low !== null;
+    const empty = hasLow && hasValue && value <= minValue;
+    const low = hasLow && hasValue && !empty && value < Number(config.low);
     const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
-    const classes = ["tile", style, hasValue ? "" : "novalue", interactive ? "interactive" : ""].filter(Boolean).join(" ");
-    const secondary = this.secondaryText();
-    return b2`<div class=${classes} style=${variables} role=${interactive ? "button" : A}
-      tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(stateObj)}<div class="name">${name}</div><div class="value-row"><div class="value">${hasValue ? formatNumber(this.hass, value, config.decimals ?? 1) : "\u2013"}${hasValue && unit ? b2`<span class="unit">${unit}</span>` : A}</div>${secondary ? b2`<div class="secondary">${config.secondary_icon ? b2`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : A}${secondary}</div>` : A}</div><div
-      class="bar"><div class="fill"></div>${style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
+    const valueText = hasValue ? formatNumber(this.hass, value, config.decimals ?? 1) : "\u2013";
+    return { style, stateObj, hasValue, unit, name, variables, hasLow, empty, low, interactive, valueText };
+  }
+  // status of a consumable ("OK", "bald leer", "leer"); empty without "low"
+  statusText(model) {
+    if (!model.hasLow || !model.hasValue) return "";
+    return this.localize(model.empty ? "level.empty" : model.low ? "level.low" : "level.ok");
+  }
+  render() {
+    return layoutOf(this.config, "tile") === "row" ? this.renderRow() : this.renderTile();
+  }
+  renderTile() {
+    const config = this.config;
+    const model = this.model();
+    const classes = [
+      "tile",
+      model.style,
+      model.hasValue ? "" : "novalue",
+      model.empty ? "empty" : "",
+      model.low ? "low" : "",
+      model.interactive ? "interactive" : ""
+    ].filter(Boolean).join(" ");
+    const status = model.empty || model.low ? this.statusText(model) : "";
+    const secondary = status || this.secondaryText();
+    return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}
+      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(model.stateObj)}<div class="name">${model.name}</div><div
+      class="value-row"><div class="value">${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}</div>${secondary ? b2`<div class=${status ? "secondary status" : "secondary"}>${!status && config.secondary_icon ? b2`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : A}${secondary}</div>` : A}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
+  }
+  // row: name and status line on the left, the value on the right, the bar along the bottom
+  renderRow() {
+    const model = this.model();
+    const offline = isUnavailable(model.stateObj);
+    let status = this.statusText(model) || this.secondaryText();
+    if (offline && model.stateObj) {
+      status = this.localize("rows.since", {
+        state: this.localize("rows.unavailable"),
+        since: sinceText(new Date(model.stateObj.last_changed), this.language)
+      });
+    }
+    const classes = [
+      "row",
+      model.style,
+      model.hasValue ? "" : "novalue",
+      offline ? "unavailable" : "",
+      model.empty ? "empty" : "",
+      model.low ? "low" : "",
+      model.interactive ? "interactive" : ""
+    ].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}
+      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="name">${model.name}</div>${status ? b2`<div class="status">${status}</div>` : A}<div class="value">${offline ? this.localize("rows.offline") : b2`${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}`}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
   }
   getCardSize() {
-    return 2;
+    return layoutOf(this.config, "tile") === "row" ? 1 : 2;
   }
   getGridOptions() {
-    return { columns: 3, rows: 2, min_columns: 2 };
+    return layoutOf(this.config, "tile") === "row" ? { columns: 12, rows: "auto", min_columns: 3 } : { columns: 3, rows: 2, min_columns: 2 };
   }
   static getStubConfig(hass) {
     const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("sensor.") && hass.states[id].attributes?.unit_of_measurement === "%") ?? "";
     return { entity, style: "level", min: 0, max: 100, decimals: 0 };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-meter-tile-editor");
+    return document.createElement("graphite-meter-editor");
   }
 };
-GraphiteMeterTile.styles = [tileStyles, meterStyles];
-registerElement("graphite-meter-tile-editor", GraphiteMeterTileEditor);
-registerCard("graphite-meter-tile", GraphiteMeterTile, {
-  name: "Graphite Meter Tile",
+GraphiteMeter.styles = [];
+registerElement("graphite-meter-editor", GraphiteMeterEditor);
+registerCard("graphite-meter", GraphiteMeter, {
+  aliases: [{ tag: "graphite-meter-tile", defaults: { layout: "tile" } }],
+  name: "Graphite Meter",
   description: "Sensor value with a color scale (gradient with needle) or a level bar, optional secondary value."
 });
 
-// src/cards/tiles/graphite-effect-tile-editor.ts
-var GraphiteEffectTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-effect-editor.ts
+var GraphiteEffectEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "effect.editor";
   }
@@ -2702,7 +2863,7 @@ var GraphiteEffectTileEditor = class extends GraphiteFormEditor {
   }
 };
 
-// src/cards/tiles/graphite-effect-tile.ts
+// src/cards/tiles/graphite-effect.ts
 var effectStyles = i`
   /* the tile grows with a long name, at least the compact tile height */
   .tile {
@@ -2752,7 +2913,7 @@ var effectStyles = i`
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
   }
 `;
-var GraphiteEffectTile = class extends GraphiteCard {
+var GraphiteEffect = class extends GraphiteCard {
   normalizeConfig(config) {
     if (!Array.isArray(config.colors) || config.colors.length === 0) {
       throw new Error(`${this.localName}: 'colors' (list of colors) is required`);
@@ -2796,18 +2957,19 @@ var GraphiteEffectTile = class extends GraphiteCard {
     return { name: "Sunset", colors: ["#ffb25c", "#ff7a3d", "#c2408f"] };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-effect-tile-editor");
+    return document.createElement("graphite-effect-editor");
   }
 };
-GraphiteEffectTile.styles = [tileStyles, effectStyles];
-registerElement("graphite-effect-tile-editor", GraphiteEffectTileEditor);
-registerCard("graphite-effect-tile", GraphiteEffectTile, {
-  name: "Graphite Effect Tile",
+GraphiteEffect.styles = [tileStyles, effectStyles];
+registerElement("graphite-effect-editor", GraphiteEffectEditor);
+registerCard("graphite-effect", GraphiteEffect, {
+  aliases: ["graphite-effect-tile"],
+  name: "Graphite Effect",
   description: "Light effect or scene as a tile with its color gradient and color dots."
 });
 
-// src/cards/tiles/graphite-image-tile-editor.ts
-var GraphiteImageTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-image-editor.ts
+var GraphiteImageEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "image.editor";
   }
@@ -2828,7 +2990,7 @@ var GraphiteImageTileEditor = class extends GraphiteFormEditor {
   }
 };
 
-// src/cards/tiles/graphite-image-tile.ts
+// src/cards/tiles/graphite-image.ts
 var imageCache = {};
 var imageCacheTime = 2e4;
 var imageStyles = i`
@@ -2921,7 +3083,7 @@ var imageStyles = i`
     }
   }
 `;
-var GraphiteImageTile = class extends GraphiteCard {
+var GraphiteImage = class extends GraphiteCard {
   normalizeConfig(config) {
     return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
   }
@@ -2943,7 +3105,8 @@ var GraphiteImageTile = class extends GraphiteCard {
     fireAction(this, config, action);
   }
   // /local/... and http(s) images are used as they are, media-source://... is resolved once per source
-  willUpdate() {
+  willUpdate(changed) {
+    super.willUpdate(changed);
     const source = this.config?.image?.trim() ?? "";
     if (source === this.resolvedSource || !this.hass) return;
     this.resolvedSource = source;
@@ -2995,22 +3158,23 @@ var GraphiteImageTile = class extends GraphiteCard {
     return { entity, busy: true, tap_action: { action: "toggle" } };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-image-tile-editor");
+    return document.createElement("graphite-image-editor");
   }
 };
-GraphiteImageTile.styles = [tileStyles, imageStyles];
-GraphiteImageTile.properties = {
+GraphiteImage.styles = [tileStyles, imageStyles];
+GraphiteImage.properties = {
   ...GraphiteCard.properties,
   imageUrl: { state: true }
 };
-registerElement("graphite-image-tile-editor", GraphiteImageTileEditor);
-registerCard("graphite-image-tile", GraphiteImageTile, {
-  name: "Graphite Image Tile",
+registerElement("graphite-image-editor", GraphiteImageEditor);
+registerCard("graphite-image", GraphiteImage, {
+  aliases: ["graphite-image-tile"],
+  name: "Graphite Image",
   description: "Action tile with a picture (blurred backdrop and thumbnail) or a label; optional busy spinner."
 });
 
-// src/cards/tiles/graphite-stopwatch-tile-editor.ts
-var GraphiteStopwatchTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-stopwatch-editor.ts
+var GraphiteStopwatchEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "stopwatch.editor";
   }
@@ -3087,7 +3251,7 @@ var labelStyles = i`
   }
 `;
 
-// src/cards/tiles/graphite-stopwatch-tile.ts
+// src/cards/tiles/graphite-stopwatch.ts
 var weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 var tickInterval = 15e3;
 var stopwatchStyles = i`
@@ -3155,7 +3319,7 @@ var stopwatchStyles = i`
     left: 60px;
   }
 `;
-var GraphiteStopwatchTile = class extends GraphiteCard {
+var GraphiteStopwatch = class extends GraphiteCard {
   normalizeConfig(config) {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
@@ -3272,18 +3436,19 @@ var GraphiteStopwatchTile = class extends GraphiteCard {
     return { entity };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-stopwatch-tile-editor");
+    return document.createElement("graphite-stopwatch-editor");
   }
 };
-GraphiteStopwatchTile.styles = [tileStyles, meterStyles, labelStyles, stopwatchStyles];
-registerElement("graphite-stopwatch-tile-editor", GraphiteStopwatchTileEditor);
-registerCard("graphite-stopwatch-tile", GraphiteStopwatchTile, {
-  name: "Graphite Stopwatch Tile",
+GraphiteStopwatch.styles = [tileStyles, meterStyles, labelStyles, stopwatchStyles];
+registerElement("graphite-stopwatch-editor", GraphiteStopwatchEditor);
+registerCard("graphite-stopwatch", GraphiteStopwatch, {
+  aliases: ["graphite-stopwatch-tile"],
+  name: "Graphite Stopwatch",
   description: "Elapsed time of a Stopwatch Plus sensor, optional daily limit, picture or icon on the left."
 });
 
-// src/cards/tiles/graphite-todo-tile-editor.ts
-var GraphiteTodoTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-todo-editor.ts
+var GraphiteTodoEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "todo.editor";
   }
@@ -3320,7 +3485,7 @@ var GraphiteTodoTileEditor = class extends GraphiteFormEditor {
   }
 };
 
-// src/cards/tiles/graphite-todo-tile.ts
+// src/cards/tiles/graphite-todo.ts
 var previewCache = {};
 var todoStyles = i`
   .tile.open .name {
@@ -3330,7 +3495,7 @@ var todoStyles = i`
     max-width: 62%;
   }
 `;
-var GraphiteTodoTile = class extends GraphiteCard {
+var GraphiteTodo = class extends GraphiteCard {
   normalizeConfig(config) {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
@@ -3356,7 +3521,8 @@ var GraphiteTodoTile = class extends GraphiteCard {
     fireAction(this, config, action);
   }
   // preview: names of the open items, loaded when the list changes
-  willUpdate() {
+  willUpdate(changed) {
+    super.willUpdate(changed);
     const config = this.config;
     const stateObj = this.stateObj;
     if (!config?.preview || !stateObj) return;
@@ -3413,22 +3579,23 @@ var GraphiteTodoTile = class extends GraphiteCard {
     return { entity };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-todo-tile-editor");
+    return document.createElement("graphite-todo-editor");
   }
 };
-GraphiteTodoTile.styles = [tileStyles, meterStyles, labelStyles, todoStyles];
-GraphiteTodoTile.properties = {
+GraphiteTodo.styles = [tileStyles, meterStyles, labelStyles, todoStyles];
+GraphiteTodo.properties = {
   ...GraphiteCard.properties,
   previewText: { state: true }
 };
-registerElement("graphite-todo-tile-editor", GraphiteTodoTileEditor);
-registerCard("graphite-todo-tile", GraphiteTodoTile, {
-  name: "Graphite Todo Tile",
+registerElement("graphite-todo-editor", GraphiteTodoEditor);
+registerCard("graphite-todo", GraphiteTodo, {
+  aliases: ["graphite-todo-tile"],
+  name: "Graphite Todo",
   description: "Open items of a todo list (e.g. shopping), optionally with the first item names."
 });
 
-// src/cards/tiles/graphite-ink-tile-editor.ts
-var GraphiteInkTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-ink-editor.ts
+var GraphiteInkEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "ink.editor";
   }
@@ -3449,7 +3616,7 @@ var GraphiteInkTileEditor = class extends GraphiteFormEditor {
   }
 };
 
-// src/cards/tiles/graphite-ink-tile.ts
+// src/cards/tiles/graphite-ink.ts
 var printerStates = ["idle", "printing", "processing", "stopped"];
 var inkStyles = i`
   .tile.label .name {
@@ -3506,7 +3673,7 @@ var inkStyles = i`
     opacity: 0.4;
   }
 `;
-var GraphiteInkTile = class extends GraphiteCard {
+var GraphiteInk = class extends GraphiteCard {
   normalizeConfig(config) {
     if (!Array.isArray(config.cartridges) || config.cartridges.length === 0) {
       throw new Error(`${this.localName}: 'cartridges' (list of level sensors) is required`);
@@ -3608,13 +3775,14 @@ var GraphiteInkTile = class extends GraphiteCard {
     return { cartridges };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-ink-tile-editor");
+    return document.createElement("graphite-ink-editor");
   }
 };
-GraphiteInkTile.styles = [tileStyles, meterStyles, labelStyles, inkStyles];
-registerElement("graphite-ink-tile-editor", GraphiteInkTileEditor);
-registerCard("graphite-ink-tile", GraphiteInkTile, {
-  name: "Graphite Ink Tile",
+GraphiteInk.styles = [tileStyles, meterStyles, labelStyles, inkStyles];
+registerElement("graphite-ink-editor", GraphiteInkEditor);
+registerCard("graphite-ink", GraphiteInk, {
+  aliases: ["graphite-ink-tile"],
+  name: "Graphite Ink",
   description: "Printer with one small tank per cartridge; empty and soon empty cartridges are highlighted."
 });
 
@@ -3675,8 +3843,8 @@ function nextPickup(hass, entityId, lookaheadDays, dropAfter, onLoaded) {
   return next;
 }
 
-// src/cards/tiles/graphite-pickup-tile-editor.ts
-var GraphitePickupTileEditor = class extends GraphiteFormEditor {
+// src/cards/tiles/graphite-pickup-editor.ts
+var GraphitePickupEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "pickup.editor";
   }
@@ -3707,7 +3875,7 @@ var GraphitePickupTileEditor = class extends GraphiteFormEditor {
   }
 };
 
-// src/cards/tiles/graphite-pickup-tile.ts
+// src/cards/tiles/graphite-pickup.ts
 var refreshInterval = 15 * 60 * 1e3;
 var pickupStyles = i`
   .tile.due {
@@ -3723,7 +3891,7 @@ var pickupStyles = i`
     opacity: 0.3;
   }
 `;
-var GraphitePickupTile = class extends GraphiteCard {
+var GraphitePickup = class extends GraphiteCard {
   normalizeConfig(config) {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
@@ -3793,13 +3961,14 @@ var GraphitePickupTile = class extends GraphiteCard {
     return { entity, color: "#9aa3ad" };
   }
   static async getConfigElement() {
-    return document.createElement("graphite-pickup-tile-editor");
+    return document.createElement("graphite-pickup-editor");
   }
 };
-GraphitePickupTile.styles = [tileStyles, meterStyles, labelStyles, pickupStyles];
-registerElement("graphite-pickup-tile-editor", GraphitePickupTileEditor);
-registerCard("graphite-pickup-tile", GraphitePickupTile, {
-  name: "Graphite Pickup Tile",
+GraphitePickup.styles = [tileStyles, meterStyles, labelStyles, pickupStyles];
+registerElement("graphite-pickup-editor", GraphitePickupEditor);
+registerCard("graphite-pickup", GraphitePickup, {
+  aliases: ["graphite-pickup-tile"],
+  name: "Graphite Pickup",
   description: "Next waste collection of a calendar entity; today and tomorrow are highlighted."
 });
 

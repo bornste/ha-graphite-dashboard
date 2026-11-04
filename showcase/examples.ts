@@ -183,9 +183,9 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-status-row",
+      title: "graphite-status",
       description: `Display row: icon, name with a "since" line and the state on the right. Active states get the accent tint,
-        measured values never. <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-status-row.md">Documentation</a>`,
+        measured values never. <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-status.md">Documentation</a>`,
       examples: [
         {
           title: "Windows, lamps, values",
@@ -194,10 +194,10 @@ export function examples(language: string): ShowcaseSection[] {
             type: "custom:graphite-panel",
             title: german ? "Status" : "Status",
             cards: [
-              { type: "custom:graphite-status-row", entity: "binary_sensor.bedroom_window" },
-              { type: "custom:graphite-status-row", entity: "binary_sensor.office_window" },
-              { type: "custom:graphite-status-row", entity: "light.floor_lamp", tap_action: { action: "more-info" } },
-              { type: "custom:graphite-status-row", entity: "sensor.server_power" },
+              { type: "custom:graphite-status", entity: "binary_sensor.bedroom_window" },
+              { type: "custom:graphite-status", entity: "binary_sensor.office_window" },
+              { type: "custom:graphite-status", entity: "light.floor_lamp", tap_action: { action: "more-info" } },
+              { type: "custom:graphite-status", entity: "sensor.server_power" },
             ],
           },
         },
@@ -208,17 +208,17 @@ export function examples(language: string): ShowcaseSection[] {
             type: "custom:graphite-panel",
             title: german ? "Nicht erreichbar" : "Unavailable",
             cards: [
-              { type: "custom:graphite-status-row", entity: "sensor.garden_temperature" },
-              { type: "custom:graphite-status-row", entity: "light.ceiling_lamp", wall_switch: true },
+              { type: "custom:graphite-status", entity: "sensor.garden_temperature" },
+              { type: "custom:graphite-status", entity: "light.ceiling_lamp", wall_switch: true },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-switch-row",
-      description: `Row with a toggle: tapping the row switches, holding opens more-info.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-switch-row.md">Documentation</a>`,
+      title: "graphite-switch",
+      description: `Switch as a row or, with layout: tile, as a tile with the icon as watermark: tapping switches, holding opens more-info.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-switch.md">Documentation</a>`,
       examples: [
         {
           title: "Switches",
@@ -227,9 +227,9 @@ export function examples(language: string): ShowcaseSection[] {
             type: "custom:graphite-panel",
             title: german ? "Steckdosen" : "Sockets",
             cards: [
-              { type: "custom:graphite-switch-row", entity: "switch.coffee_machine" },
-              { type: "custom:graphite-switch-row", entity: "switch.tv", online_entity: "binary_sensor.tv_online" },
-              { type: "custom:graphite-switch-row", entity: "switch.printer" },
+              { type: "custom:graphite-switch", entity: "switch.coffee_machine" },
+              { type: "custom:graphite-switch", entity: "switch.tv", online_entity: "binary_sensor.tv_online" },
+              { type: "custom:graphite-switch", entity: "switch.printer" },
             ],
           },
         },
@@ -240,10 +240,10 @@ export function examples(language: string): ShowcaseSection[] {
             type: "custom:graphite-panel",
             title: german ? "Automationen" : "Automations",
             cards: [
-              { type: "custom:graphite-switch-row", entity: "automation.night_light", since_attribute: "last_triggered" },
-              { type: "custom:graphite-switch-row", entity: "automation.vacation_mode", since_attribute: "last_triggered" },
+              { type: "custom:graphite-switch", entity: "automation.night_light", since_attribute: "last_triggered" },
+              { type: "custom:graphite-switch", entity: "automation.vacation_mode", since_attribute: "last_triggered" },
               {
-                type: "custom:graphite-switch-row",
+                type: "custom:graphite-switch",
                 entity: "switch.code_server",
                 detail_entities: [
                   { entity: "sensor.code_server_cpu", label: "CPU" },
@@ -253,34 +253,27 @@ export function examples(language: string): ShowcaseSection[] {
             ],
           },
         },
-      ],
-    },
-    {
-      title: "graphite-switch-tile",
-      description: `Tile with a toggle, the name and the icon as watermark: tapping switches, holding opens more-info.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-switch-tile.md">Documentation</a>`,
-      examples: [
         {
-          title: "Sockets",
+          title: "Tiles (layout: tile)",
           note: "Console online (accent icon), TV connecting (pulsing icon), speaker off, printer offline.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Steckdosen" : "Sockets",
             layout: "horizontal",
             cards: [
-              { type: "custom:graphite-switch-tile", entity: "switch.game_console", icon: "mdi:controller", online_entity: "binary_sensor.game_console_online" },
-              { type: "custom:graphite-switch-tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
-              { type: "custom:graphite-switch-tile", entity: "switch.speaker", icon: "mdi:speaker" },
-              { type: "custom:graphite-switch-tile", entity: "switch.printer", icon: "mdi:printer" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.game_console", icon: "mdi:controller", online_entity: "binary_sensor.game_console_online" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.speaker", icon: "mdi:speaker" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.printer", icon: "mdi:printer" },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-meter-tile",
-      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient) or a fill bar (level).
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-meter-tile.md">Documentation</a>`,
+      title: "graphite-meter",
+      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient) or a fill bar (level); as a tile or, with layout: row, as a row with a status line (ink cartridges, batteries).
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-meter.md">Documentation</a>`,
       examples: [
         {
           title: "Room climate (gradient)",
@@ -290,9 +283,9 @@ export function examples(language: string): ShowcaseSection[] {
             title: german ? "Raumklima" : "Climate",
             layout: "horizontal",
             cards: [
-              { type: "custom:graphite-meter-tile", entity: "sensor.living_room_temperature", name: german ? "Wohnen" : "Living", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.living_room_humidity" },
-              { type: "custom:graphite-meter-tile", entity: "sensor.office_temperature", name: german ? "Büro" : "Office", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.office_humidity" },
-              { type: "custom:graphite-meter-tile", entity: "sensor.garden_temperature", name: german ? "Garten" : "Garden", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" } },
+              { type: "custom:graphite-meter", entity: "sensor.living_room_temperature", name: german ? "Wohnen" : "Living", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.living_room_humidity" },
+              { type: "custom:graphite-meter", entity: "sensor.office_temperature", name: german ? "Büro" : "Office", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.office_humidity" },
+              { type: "custom:graphite-meter", entity: "sensor.garden_temperature", name: german ? "Garten" : "Garden", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" } },
             ],
           },
         },
@@ -304,18 +297,33 @@ export function examples(language: string): ShowcaseSection[] {
             title: "Server",
             layout: "horizontal",
             cards: [
-              { type: "custom:graphite-meter-tile", entity: "sensor.server_cpu", style: "gradient", decimals: 0, show_icon: true, colors: { 40: "#6fbf5a", 60: "#f0a33c", 80: "#e4644b" } },
-              { type: "custom:graphite-meter-tile", entity: "sensor.server_memory", style: "level", decimals: 0, show_icon: true, colors: { 0: "#6fbf5a", 50: "#f0a33c", 80: "#e4644b" } },
-              { type: "custom:graphite-meter-tile", entity: "sensor.server_disk", style: "level", decimals: 0, show_icon: true, colors: { 0: "#6fbf5a", 50: "#f0a33c", 80: "#e4644b" } },
+              { type: "custom:graphite-meter", entity: "sensor.server_cpu", style: "gradient", decimals: 0, show_icon: true, colors: { 40: "#6fbf5a", 60: "#f0a33c", 80: "#e4644b" } },
+              { type: "custom:graphite-meter", entity: "sensor.server_memory", style: "level", decimals: 0, show_icon: true, colors: { 0: "#6fbf5a", 50: "#f0a33c", 80: "#e4644b" } },
+              { type: "custom:graphite-meter", entity: "sensor.server_disk", style: "level", decimals: 0, show_icon: true, colors: { 0: "#6fbf5a", 50: "#f0a33c", 80: "#e4644b" } },
+            ],
+          },
+        },
+        {
+          title: "Ink cartridges (layout: row)",
+          note: "Magenta is soon empty, gray is empty.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Patronen" : "Cartridges",
+            cards: [
+              { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.office_printer_black", name: "Black", color: "#e4e4e6" },
+              { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.office_printer_cyan", name: "Cyan", color: "#2fb4e6" },
+              { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.office_printer_magenta", name: "Magenta", color: "#e0479e" },
+              { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.office_printer_yellow", name: "Yellow", color: "#f0c94a" },
+              { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.photo_printer_gray", name: "Gray", color: "#8e9399" },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-effect-tile",
+      title: "graphite-effect",
       description: `Light effect as a tile with its color gradient and the colors as dots; long names wrap.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-effect-tile.md">Documentation</a>`,
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-effect.md">Documentation</a>`,
       examples: [
         {
           title: "Effects of a lamp",
@@ -327,21 +335,21 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 3,
             cards: [
-              { type: "custom:graphite-effect-tile", name: "Sunset", colors: ["#fffb5c", "#ffd958", "#ffa658", "#ff9150", "#ff7a3d"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "sunset" } } },
-              { type: "custom:graphite-effect-tile", name: "Aurora", colors: ["#29ff84", "#55ffc1", "#26eaff", "#0c3aff", "#0a12ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "aurora" } } },
-              { type: "custom:graphite-effect-tile", name: "Vapor Wave", colors: ["#ff72fb", "#784dff", "#2536ff", "#1135ff", "#0d31ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "vapor_wave" } } },
-              { type: "custom:graphite-effect-tile", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
-              { type: "custom:graphite-effect-tile", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
-              { type: "custom:graphite-effect-tile", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
+              { type: "custom:graphite-effect", name: "Sunset", colors: ["#fffb5c", "#ffd958", "#ffa658", "#ff9150", "#ff7a3d"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "sunset" } } },
+              { type: "custom:graphite-effect", name: "Aurora", colors: ["#29ff84", "#55ffc1", "#26eaff", "#0c3aff", "#0a12ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "aurora" } } },
+              { type: "custom:graphite-effect", name: "Vapor Wave", colors: ["#ff72fb", "#784dff", "#2536ff", "#1135ff", "#0d31ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "vapor_wave" } } },
+              { type: "custom:graphite-effect", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
+              { type: "custom:graphite-effect", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
+              { type: "custom:graphite-effect", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-image-tile",
+      title: "graphite-image",
       description: `Action tile with a picture (blurred backdrop and thumbnail) or a label; a spinner while the script runs.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-image-tile.md">Documentation</a>`,
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-image.md">Documentation</a>`,
       examples: [
         {
           title: "Games and apps",
@@ -351,18 +359,18 @@ export function examples(language: string): ShowcaseSection[] {
             title: german ? "Spiele" : "Games",
             layout: "horizontal",
             cards: [
-              { type: "custom:graphite-image-tile", entity: "script.start_racing_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e4644b'/><stop offset='1' stop-color='%233a1a4f'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
-              { type: "custom:graphite-image-tile", entity: "script.start_puzzle_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236fbf5a'/><stop offset='1' stop-color='%231b3f6b'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
-              { type: "custom:graphite-image-tile", entity: "script.start_streaming", busy: true, tap_action: { action: "toggle" } },
+              { type: "custom:graphite-image", entity: "script.start_racing_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e4644b'/><stop offset='1' stop-color='%233a1a4f'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
+              { type: "custom:graphite-image", entity: "script.start_puzzle_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236fbf5a'/><stop offset='1' stop-color='%231b3f6b'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
+              { type: "custom:graphite-image", entity: "script.start_streaming", busy: true, tap_action: { action: "toggle" } },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-stopwatch-tile",
+      title: "graphite-stopwatch",
       description: `Elapsed time of a Stopwatch Plus sensor, optional daily limit; picture or icon on the left.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-stopwatch-tile.md">Documentation</a>`,
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-stopwatch.md">Documentation</a>`,
       examples: [
         {
           title: "Playing and watching time",
@@ -373,18 +381,18 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 3,
             cards: [
-              { type: "custom:graphite-stopwatch-tile", entity: "sensor.player_one_playing_time", icon: "mdi:controller" },
-              { type: "custom:graphite-stopwatch-tile", entity: "sensor.player_two_playing_time", icon: "mdi:controller", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
-              { type: "custom:graphite-stopwatch-tile", entity: "sensor.tv_watching_time", icon: "mdi:television", icon_position: "left" },
+              { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "mdi:controller" },
+              { type: "custom:graphite-stopwatch", entity: "sensor.player_two_playing_time", icon: "mdi:controller", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
+              { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "mdi:television", icon_position: "left" },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-todo-tile",
+      title: "graphite-todo",
       description: `Open items of a todo list, optionally with the first item names; an empty list shows a word as value.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-todo-tile.md">Documentation</a>`,
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-todo.md">Documentation</a>`,
       examples: [
         {
           title: "Lists",
@@ -395,17 +403,17 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 2,
             cards: [
-              { type: "custom:graphite-todo-tile", entity: "todo.shopping", icon: "mdi:cart-outline", preview: true },
-              { type: "custom:graphite-todo-tile", entity: "todo.chores", icon: "mdi:broom", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
+              { type: "custom:graphite-todo", entity: "todo.shopping", icon: "mdi:cart-outline", preview: true },
+              { type: "custom:graphite-todo", entity: "todo.chores", icon: "mdi:broom", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-ink-tile",
+      title: "graphite-ink",
       description: `Printer with one tank per cartridge; soon empty and empty cartridges are highlighted.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-ink-tile.md">Documentation</a>`,
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-ink.md">Documentation</a>`,
       examples: [
         {
           title: "Printers",
@@ -416,17 +424,17 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 2,
             cards: [
-              { type: "custom:graphite-ink-tile", entity: "sensor.office_printer", cartridges: ["sensor.office_printer_black", "sensor.office_printer_cyan", "sensor.office_printer_magenta", "sensor.office_printer_yellow"] },
-              { type: "custom:graphite-ink-tile", entity: "sensor.photo_printer", cartridges: ["sensor.photo_printer_black", "sensor.photo_printer_gray", "sensor.photo_printer_cyan", "sensor.photo_printer_magenta", "sensor.photo_printer_yellow"] },
+              { type: "custom:graphite-ink", entity: "sensor.office_printer", cartridges: ["sensor.office_printer_black", "sensor.office_printer_cyan", "sensor.office_printer_magenta", "sensor.office_printer_yellow"] },
+              { type: "custom:graphite-ink", entity: "sensor.photo_printer", cartridges: ["sensor.photo_printer_black", "sensor.photo_printer_gray", "sensor.photo_printer_cyan", "sensor.photo_printer_magenta", "sensor.photo_printer_yellow"] },
             ],
           },
         },
       ],
     },
     {
-      title: "graphite-pickup-tile",
+      title: "graphite-pickup",
       description: `Next waste collection of a calendar; today and tomorrow are highlighted.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-pickup-tile.md">Documentation</a>`,
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-pickup.md">Documentation</a>`,
       examples: [
         {
           title: "Collections",
@@ -437,8 +445,8 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 2,
             cards: [
-              { type: "custom:graphite-pickup-tile", entity: "calendar.paper_collection", icon: "mdi:newspaper-variant-outline", color: "#9aa3ad" },
-              { type: "custom:graphite-pickup-tile", entity: "calendar.cardboard_collection", icon: "mdi:package-variant-closed", color: "#b98a5e" },
+              { type: "custom:graphite-pickup", entity: "calendar.paper_collection", icon: "mdi:newspaper-variant-outline", color: "#9aa3ad" },
+              { type: "custom:graphite-pickup", entity: "calendar.cardboard_collection", icon: "mdi:package-variant-closed", color: "#b98a5e" },
             ],
           },
         },

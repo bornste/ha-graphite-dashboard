@@ -8,9 +8,15 @@ export abstract class GraphiteFormEditor extends HTMLElement {
   private hassObject?: HomeAssistant;
   private form?: any;
   private formLanguage?: string;
+  private formSchemaKey?: string;
 
   // ha-form schema of the card
   protected abstract schema(): unknown[];
+
+  // changes when the schema depends on the config (e.g. the fields of the chosen layout)
+  protected schemaKey(): string {
+    return "";
+  }
 
   // translation prefix of the labels, e.g. "rows.editor"
   protected abstract labelPrefix(): string;
@@ -41,8 +47,9 @@ export abstract class GraphiteFormEditor extends HTMLElement {
       this.replaceChildren(this.form);
     }
     const language = languageOf(this.isConnected ? this : undefined, this.hassObject);
-    if (this.formLanguage !== language) {
+    if (this.formLanguage !== language || this.formSchemaKey !== this.schemaKey()) {
       this.formLanguage = language;
+      this.formSchemaKey = this.schemaKey();
       this.form.schema = this.schema();
       this.form.computeLabel = (schema: { name: string }) => {
         if (!schema.name) return "";

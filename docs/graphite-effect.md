@@ -1,4 +1,4 @@
-# graphite-effect-tile
+# graphite-effect
 
 A light effect or scene as a tile: the tile is filled with the effect's color gradient, the name sits
 bottom left in white, the colors are repeated as small dots top right. The gradient is slightly
@@ -6,7 +6,7 @@ desaturated and darkened so it sits calmly on the dark surface; the dots keep th
 What a tap does is up to you (`tap_action`), e.g. start the effect.
 
 ```yaml
-type: custom:graphite-effect-tile
+type: custom:graphite-effect
 name: Sunset
 colors: ["#ffb25c", "#ff7a3d", "#c2408f"]
 entity: light.floor_lamp

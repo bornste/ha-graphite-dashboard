@@ -1,7 +1,7 @@
-// Visual editor of graphite-todo-tile.
+// Visual editor of graphite-todo.
 import { GraphiteFormEditor } from "../../core/form-editor";
 
-export class GraphiteTodoTileEditor extends GraphiteFormEditor {
+export class GraphiteTodoEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
     return "todo.editor";
   }

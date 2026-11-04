@@ -1,16 +1,16 @@
-// graphite-image-tile: action tile (e.g. start a game or an app). With an image: the picture as a
+// graphite-image: action tile (e.g. start a game or an app). With an image: the picture as a
 // blurred, dimmed backdrop and as a square thumbnail bottom left, no text (the name stays for screen
 // readers). Without an image: the name as label. Optional busy state: accent tint and a spinner while
 // the entity is on (e.g. a running script).
-import { css, html, nothing } from "lit";
+import { css, html, nothing, type PropertyValues } from "lit";
 import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
-import { GraphiteImageTileEditor } from "./graphite-image-tile-editor";
+import { GraphiteImageEditor } from "./graphite-image-editor";
 import { tileStyles } from "./tile-styles";
 
-export interface ImageTileConfig extends GraphiteCardConfig {
+export interface ImageConfig extends GraphiteCardConfig {
   entity?: string;
   name?: string;
   image?: string;
@@ -115,7 +115,7 @@ const imageStyles = css`
   }
 `;
 
-export class GraphiteImageTile extends GraphiteCard<ImageTileConfig> {
+export class GraphiteImage extends GraphiteCard<ImageConfig> {
   static styles = [tileStyles, imageStyles];
 
   static properties = {
@@ -128,7 +128,7 @@ export class GraphiteImageTile extends GraphiteCard<ImageTileConfig> {
   private detachActions?: () => void;
   private resolvedSource?: string;
 
-  protected normalizeConfig(config: ImageTileConfig): ImageTileConfig {
+  protected normalizeConfig(config: ImageConfig): ImageConfig {
     return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
   }
 
@@ -153,7 +153,8 @@ export class GraphiteImageTile extends GraphiteCard<ImageTileConfig> {
   }
 
   // /local/... and http(s) images are used as they are, media-source://... is resolved once per source
-  protected willUpdate(): void {
+  protected willUpdate(changed: PropertyValues): void {
+    super.willUpdate(changed);
     const source = this.config?.image?.trim() ?? "";
     if (source === this.resolvedSource || !this.hass) return;
     this.resolvedSource = source;
@@ -217,12 +218,13 @@ export class GraphiteImageTile extends GraphiteCard<ImageTileConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    return document.createElement("graphite-image-tile-editor");
+    return document.createElement("graphite-image-editor");
   }
 }
 
-registerElement("graphite-image-tile-editor", GraphiteImageTileEditor);
-registerCard("graphite-image-tile", GraphiteImageTile, {
-  name: "Graphite Image Tile",
+registerElement("graphite-image-editor", GraphiteImageEditor);
+registerCard("graphite-image", GraphiteImage, {
+  aliases: ["graphite-image-tile"],
+  name: "Graphite Image",
   description: "Action tile with a picture (blurred backdrop and thumbnail) or a label; optional busy spinner.",
 });

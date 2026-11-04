@@ -2,10 +2,16 @@
 // and in the card picker of the dashboard editor.
 import { version } from "./version";
 
+export interface CardAlias {
+  tag: string;
+  // config defaults the old tag implied (e.g. layout: tile)
+  defaults?: Record<string, unknown>;
+}
+
 export interface CardInfo {
   name: string;
   description: string;
-  aliases?: string[];
+  aliases?: Array<string | CardAlias>;
   preview?: boolean;
 }
 
@@ -15,7 +21,13 @@ export function registerCard(tag: string, element: CustomElementConstructor, inf
   if (!customElements.get(tag)) customElements.define(tag, element);
   // an alias needs its own constructor: the same class cannot be defined twice
   for (const alias of info.aliases ?? []) {
-    if (!customElements.get(alias)) customElements.define(alias, class extends (element as new () => HTMLElement) {});
+    const { tag, defaults } = typeof alias === "string" ? { tag: alias, defaults: undefined } : alias;
+    if (customElements.get(tag)) continue;
+    customElements.define(tag, class extends (element as new () => HTMLElement & { setConfig(config: unknown): void }) {
+      setConfig(config: Record<string, unknown>): void {
+        super.setConfig(defaults ? { ...defaults, ...config } : config);
+      }
+    });
   }
   window.customCards = window.customCards || [];
   window.customCards.push({

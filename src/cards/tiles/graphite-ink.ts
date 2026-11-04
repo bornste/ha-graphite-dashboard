@@ -1,4 +1,4 @@
-// graphite-ink-tile: printer with its cartridges in the label layout: name top left, status bottom
+// graphite-ink: printer with its cartridges in the label layout: name top left, status bottom
 // left, one small tank per cartridge on the right that fills from the bottom. The tank track keeps a
 // tint of the ink color, so an empty cartridge still shows which color it is. Empty cartridges get the
 // accent highlight (like a due waste collection), soon empty ones a calm accent hint.
@@ -8,7 +8,7 @@ import { formatState, isUnavailable } from "../../core/format";
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
-import { GraphiteInkTileEditor } from "./graphite-ink-tile-editor";
+import { GraphiteInkEditor } from "./graphite-ink-editor";
 import { labelStyles } from "./label-styles";
 import { meterStyles } from "./meter-styles";
 import { tileStyles } from "./tile-styles";
@@ -18,7 +18,7 @@ export interface InkCartridge {
   color?: string;
 }
 
-export interface InkTileConfig extends GraphiteCardConfig {
+export interface InkConfig extends GraphiteCardConfig {
   entity?: string;
   name?: string;
   cartridges: Array<string | InkCartridge>;
@@ -87,12 +87,12 @@ const inkStyles = css`
   }
 `;
 
-export class GraphiteInkTile extends GraphiteCard<InkTileConfig> {
+export class GraphiteInk extends GraphiteCard<InkConfig> {
   static styles = [tileStyles, meterStyles, labelStyles, inkStyles];
 
   private detachActions?: () => void;
 
-  protected normalizeConfig(config: InkTileConfig): InkTileConfig {
+  protected normalizeConfig(config: InkConfig): InkConfig {
     if (!Array.isArray(config.cartridges) || config.cartridges.length === 0) {
       throw new Error(`${this.localName}: 'cartridges' (list of level sensors) is required`);
     }
@@ -203,12 +203,13 @@ export class GraphiteInkTile extends GraphiteCard<InkTileConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    return document.createElement("graphite-ink-tile-editor");
+    return document.createElement("graphite-ink-editor");
   }
 }
 
-registerElement("graphite-ink-tile-editor", GraphiteInkTileEditor);
-registerCard("graphite-ink-tile", GraphiteInkTile, {
-  name: "Graphite Ink Tile",
+registerElement("graphite-ink-editor", GraphiteInkEditor);
+registerCard("graphite-ink", GraphiteInk, {
+  aliases: ["graphite-ink-tile"],
+  name: "Graphite Ink",
   description: "Printer with one small tank per cartridge; empty and soon empty cartridges are highlighted.",
 });

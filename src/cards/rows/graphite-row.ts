@@ -1,6 +1,6 @@
-// Base of graphite-status-row and graphite-switch-row: icon, name, "since" line, actions,
+// Base of graphite-status and graphite-switch (row layout): icon, name, "since" line, actions,
 // unavailable and online handling. The subclasses add the value or the toggle on the right.
-import { html, nothing, type TemplateResult } from "lit";
+import { html, nothing, type CSSResultGroup, type TemplateResult } from "lit";
 import { GraphiteCard } from "../../core/graphite-card";
 import { attachActionHandler, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { agoText, formatState, isUnavailable, sinceText } from "../../core/format";
@@ -23,6 +23,7 @@ export interface RowConfig extends GraphiteCardConfig {
   detail_entities?: Array<string | DetailEntity>;
   online_entity?: string;
   wall_switch?: boolean;
+  layout?: "row" | "tile";
 }
 
 // states that count as "on" (tint, accent icon); numbers above 0 too, except measured values
@@ -35,7 +36,7 @@ export function isActiveState(state: string | undefined): boolean {
 }
 
 export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
-  static styles = rowStyles;
+  static styles: CSSResultGroup = rowStyles;
 
   private detachActions?: () => void;
   private refreshTimer?: number;
@@ -147,7 +148,7 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
     return classes;
   }
 
-  private renderIcon(stateObj: HassEntity | undefined) {
+  protected renderIcon(stateObj: HassEntity | undefined) {
     const icon = this.config!.icon;
     if (icon || !customElements.get("ha-state-icon")) {
       return html`<ha-icon .icon=${icon || stateObj?.attributes?.icon || "mdi:help-circle-outline"}></ha-icon>`;
@@ -173,7 +174,7 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
     return 1;
   }
 
-  getGridOptions() {
+  getGridOptions(): Record<string, unknown> {
     return { columns: 12, rows: "auto", min_columns: 3 };
   }
 }

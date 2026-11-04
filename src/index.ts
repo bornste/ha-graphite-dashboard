@@ -1,16 +1,15 @@
 // graphite-cards: entry point. Every card module registers itself on import.
 import { version } from "./core/version";
 import "./cards/graphite-panel";
-import "./cards/rows/graphite-status-row";
-import "./cards/rows/graphite-switch-row";
-import "./cards/tiles/graphite-switch-tile";
-import "./cards/tiles/graphite-meter-tile";
-import "./cards/tiles/graphite-effect-tile";
-import "./cards/tiles/graphite-image-tile";
-import "./cards/tiles/graphite-stopwatch-tile";
-import "./cards/tiles/graphite-todo-tile";
-import "./cards/tiles/graphite-ink-tile";
-import "./cards/tiles/graphite-pickup-tile";
+import "./cards/rows/graphite-status";
+import "./cards/rows/graphite-switch";
+import "./cards/tiles/graphite-meter";
+import "./cards/tiles/graphite-effect";
+import "./cards/tiles/graphite-image";
+import "./cards/tiles/graphite-stopwatch";
+import "./cards/tiles/graphite-todo";
+import "./cards/tiles/graphite-ink";
+import "./cards/tiles/graphite-pickup";
 
 window.graphiteCards = { version };
 

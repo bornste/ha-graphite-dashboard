@@ -1,11 +1,11 @@
-# graphite-ink-tile
+# graphite-ink
 
 A printer with its cartridges: the name top left, the status bottom left and one small tank per
 cartridge on the right that fills from the bottom. The tank track keeps a tint of the ink color, so
 an empty cartridge still shows which color it is.
 
 ```yaml
-type: custom:graphite-ink-tile
+type: custom:graphite-ink
 entity: sensor.office_printer
 name: Printer
 cartridges:

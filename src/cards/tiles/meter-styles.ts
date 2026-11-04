@@ -133,4 +133,134 @@ export const meterStyles = css`
     left: 0;
     border-radius: 2px;
   }
+  /* low (consumables): soon empty – status in accent; empty – accent tint as well */
+  .tile.low .secondary,
+  .tile.empty .secondary {
+    color: var(--graphite-accent);
+  }
+  .tile.empty {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+`;
+
+// Row layout of the meter: name and status line on the left, the value on the right, the bar along
+// the bottom (like the battery rows).
+export const meterRowStyles = css`
+  :host {
+    display: block;
+  }
+  .row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 12px;
+    padding: 12px 14px;
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background-color 0.3s ease;
+  }
+  .row.interactive {
+    cursor: pointer;
+  }
+  .row.interactive:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--graphite-accent);
+  }
+  .name {
+    font-size: var(--graphite-font-name-size, 15px);
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .status {
+    grid-column: 1;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 15px;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .value {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    font-size: var(--graphite-font-value-size, 22px);
+    font-weight: var(--graphite-font-value-weight, 300);
+    color: var(--graphite-text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .unit {
+    margin-left: 3px;
+    font-size: var(--graphite-font-label-size, 13px);
+    font-weight: 400;
+    color: var(--graphite-text-muted);
+  }
+  /* bar along the bottom: level fills in the band color, gradient shows the scale with a needle */
+  .bar {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 4px;
+    margin-top: 6px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--meter-color, var(--graphite-accent)) 22%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  .fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--meter-share, 0%);
+    border-radius: 2px;
+    background: var(--meter-color, var(--graphite-accent));
+  }
+  .row.gradient .bar {
+    background: var(--meter-scale);
+  }
+  .row.gradient .fill {
+    left: var(--meter-share, 0%);
+    right: 0;
+    width: auto;
+    border-radius: 0 2px 2px 0;
+    background: color-mix(in srgb, var(--graphite-card-surface, var(--graphite-surface-tile)) var(--graphite-meter-dim, 65%), transparent);
+  }
+  .needle {
+    position: absolute;
+    top: -3px;
+    left: var(--meter-share, 0%);
+    width: 2px;
+    height: 10px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--graphite-text-primary);
+    box-shadow: 0 0 0 1.5px var(--graphite-card-surface, var(--graphite-surface-tile));
+  }
+  .row.novalue.level .fill,
+  .row.novalue .needle {
+    display: none;
+  }
+  /* soon empty: value and status in accent; empty: accent tint as well */
+  .row.low :is(.value, .status),
+  .row.empty :is(.value, .status) {
+    color: var(--graphite-accent);
+  }
+  .row.empty {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+  /* offline: dimmed like every other offline row */
+  .row.unavailable {
+    background: color-mix(in srgb, var(--graphite-surface-tile) 40%, transparent);
+  }
+  .row.unavailable > * {
+    opacity: 0.4;
+  }
+  .row.unavailable .value {
+    font-size: var(--graphite-font-name-size, 15px);
+    font-weight: 400;
+  }
 `;

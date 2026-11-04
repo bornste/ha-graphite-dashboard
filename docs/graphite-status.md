@@ -1,11 +1,11 @@
-# graphite-status-row
+# graphite-status
 
 A display row in full width: icon on the left, the name with a "since" line below it, the state
 as value on the right. Made for lists inside a [graphite-panel](graphite-panel.md) – windows,
-lamps, sensors, presence. Its sibling with a toggle is [graphite-switch-row](graphite-switch-row.md).
+lamps, sensors, presence. Its sibling with a toggle is [graphite-switch](graphite-switch.md).
 
 ```yaml
-type: custom:graphite-status-row
+type: custom:graphite-status
 entity: binary_sensor.bedroom_window
 name: Bedroom window
 ```

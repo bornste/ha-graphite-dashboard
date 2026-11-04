@@ -1,17 +1,17 @@
-// graphite-todo-tile: open items of a todo list (e.g. shopping) in the label layout: the number of
+// graphite-todo: open items of a todo list (e.g. shopping) in the label layout: the number of
 // open items as value, optionally the first item names on the right. An empty list shows a word
 // as value ("keine Artikel").
-import { css, html, nothing } from "lit";
+import { css, html, nothing, type PropertyValues } from "lit";
 import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
-import { GraphiteTodoTileEditor } from "./graphite-todo-tile-editor";
+import { GraphiteTodoEditor } from "./graphite-todo-editor";
 import { labelStyles } from "./label-styles";
 import { meterStyles } from "./meter-styles";
 import { tileStyles } from "./tile-styles";
 
-export interface TodoTileConfig extends GraphiteCardConfig {
+export interface TodoConfig extends GraphiteCardConfig {
   entity: string;
   name?: string;
   icon?: string;
@@ -37,7 +37,7 @@ const todoStyles = css`
   }
 `;
 
-export class GraphiteTodoTile extends GraphiteCard<TodoTileConfig> {
+export class GraphiteTodo extends GraphiteCard<TodoConfig> {
   static styles = [tileStyles, meterStyles, labelStyles, todoStyles];
 
   static properties = {
@@ -50,7 +50,7 @@ export class GraphiteTodoTile extends GraphiteCard<TodoTileConfig> {
   private detachActions?: () => void;
   private previewKey?: string;
 
-  protected normalizeConfig(config: TodoTileConfig): TodoTileConfig {
+  protected normalizeConfig(config: TodoConfig): TodoConfig {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
   }
@@ -80,7 +80,8 @@ export class GraphiteTodoTile extends GraphiteCard<TodoTileConfig> {
   }
 
   // preview: names of the open items, loaded when the list changes
-  protected willUpdate(): void {
+  protected willUpdate(changed: PropertyValues): void {
+    super.willUpdate(changed);
     const config = this.config;
     const stateObj = this.stateObj;
     if (!config?.preview || !stateObj) return;
@@ -155,12 +156,13 @@ export class GraphiteTodoTile extends GraphiteCard<TodoTileConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    return document.createElement("graphite-todo-tile-editor");
+    return document.createElement("graphite-todo-editor");
   }
 }
 
-registerElement("graphite-todo-tile-editor", GraphiteTodoTileEditor);
-registerCard("graphite-todo-tile", GraphiteTodoTile, {
-  name: "Graphite Todo Tile",
+registerElement("graphite-todo-editor", GraphiteTodoEditor);
+registerCard("graphite-todo", GraphiteTodo, {
+  aliases: ["graphite-todo-tile"],
+  name: "Graphite Todo",
   description: "Open items of a todo list (e.g. shopping), optionally with the first item names.",
 });

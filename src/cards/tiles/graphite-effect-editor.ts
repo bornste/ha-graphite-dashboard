@@ -1,7 +1,7 @@
-// Visual editor of graphite-effect-tile.
+// Visual editor of graphite-effect.
 import { GraphiteFormEditor } from "../../core/form-editor";
 
-export class GraphiteEffectTileEditor extends GraphiteFormEditor {
+export class GraphiteEffectEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
     return "effect.editor";
   }

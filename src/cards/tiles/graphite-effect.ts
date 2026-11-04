@@ -1,4 +1,4 @@
-// graphite-effect-tile: a light effect (or scene) as a tile filled with its color gradient, the name
+// graphite-effect: a light effect (or scene) as a tile filled with its color gradient, the name
 // bottom left and the colors as small dots top right. The gradient is slightly desaturated and darkened
 // so it sits calmly on the dark surface; the dots keep the true colors.
 import { css, html, nothing } from "lit";
@@ -6,10 +6,10 @@ import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type Act
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
-import { GraphiteEffectTileEditor } from "./graphite-effect-tile-editor";
+import { GraphiteEffectEditor } from "./graphite-effect-editor";
 import { tileStyles } from "./tile-styles";
 
-export interface EffectTileConfig extends GraphiteCardConfig {
+export interface EffectConfig extends GraphiteCardConfig {
   entity?: string;
   name?: string;
   colors: string[];
@@ -68,12 +68,12 @@ const effectStyles = css`
   }
 `;
 
-export class GraphiteEffectTile extends GraphiteCard<EffectTileConfig> {
+export class GraphiteEffect extends GraphiteCard<EffectConfig> {
   static styles = [tileStyles, effectStyles];
 
   private detachActions?: () => void;
 
-  protected normalizeConfig(config: EffectTileConfig): EffectTileConfig {
+  protected normalizeConfig(config: EffectConfig): EffectConfig {
     if (!Array.isArray(config.colors) || config.colors.length === 0) {
       throw new Error(`${this.localName}: 'colors' (list of colors) is required`);
     }
@@ -125,12 +125,13 @@ export class GraphiteEffectTile extends GraphiteCard<EffectTileConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    return document.createElement("graphite-effect-tile-editor");
+    return document.createElement("graphite-effect-editor");
   }
 }
 
-registerElement("graphite-effect-tile-editor", GraphiteEffectTileEditor);
-registerCard("graphite-effect-tile", GraphiteEffectTile, {
-  name: "Graphite Effect Tile",
+registerElement("graphite-effect-editor", GraphiteEffectEditor);
+registerCard("graphite-effect", GraphiteEffect, {
+  aliases: ["graphite-effect-tile"],
+  name: "Graphite Effect",
   description: "Light effect or scene as a tile with its color gradient and color dots.",
 });

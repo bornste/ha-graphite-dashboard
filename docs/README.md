@@ -5,19 +5,23 @@ the special cases – also for cards with a visual editor.
 
 ## Cards
 
-| Card | Page | Status |
-|---|---|---|
-| graphite-panel | [graphite-panel.md](graphite-panel.md) | ready |
-| graphite-status-row | [graphite-status-row.md](graphite-status-row.md) | ready |
-| graphite-switch-row | [graphite-switch-row.md](graphite-switch-row.md) | ready |
-| graphite-switch-tile | [graphite-switch-tile.md](graphite-switch-tile.md) | ready |
-| graphite-meter-tile | [graphite-meter-tile.md](graphite-meter-tile.md) | ready |
-| graphite-effect-tile | [graphite-effect-tile.md](graphite-effect-tile.md) | ready |
-| graphite-image-tile | [graphite-image-tile.md](graphite-image-tile.md) | ready |
-| graphite-stopwatch-tile | [graphite-stopwatch-tile.md](graphite-stopwatch-tile.md) | ready |
-| graphite-todo-tile | [graphite-todo-tile.md](graphite-todo-tile.md) | ready |
-| graphite-ink-tile | [graphite-ink-tile.md](graphite-ink-tile.md) | ready |
-| graphite-pickup-tile | [graphite-pickup-tile.md](graphite-pickup-tile.md) | ready |
+| Card | Layouts | Page | Status |
+|---|---|---|---|
+| graphite-panel | – | [graphite-panel.md](graphite-panel.md) | ready |
+| graphite-status | row | [graphite-status.md](graphite-status.md) | ready |
+| graphite-switch | row, tile | [graphite-switch.md](graphite-switch.md) | ready |
+| graphite-meter | tile, row | [graphite-meter.md](graphite-meter.md) | ready (row in test) |
+| graphite-effect | tile | [graphite-effect.md](graphite-effect.md) | ready |
+| graphite-image | tile | [graphite-image.md](graphite-image.md) | ready |
+| graphite-stopwatch | tile | [graphite-stopwatch.md](graphite-stopwatch.md) | ready |
+| graphite-todo | tile | [graphite-todo.md](graphite-todo.md) | ready |
+| graphite-ink | tile | [graphite-ink.md](graphite-ink.md) | ready |
+| graphite-pickup | tile | [graphite-pickup.md](graphite-pickup.md) | ready |
+
+Cards with more than one look have a `layout` option (`row` or `tile`), so you can switch between
+them without changing the card type. The editor only shows it where there is a choice. The former
+names (`graphite-status-row`, `graphite-switch-row`, `graphite-switch-tile`, `graphite-meter-tile`,
+`graphite-effect-tile`, …) still work as aliases and will be removed in a later version.
 
 ## Common behaviour
 

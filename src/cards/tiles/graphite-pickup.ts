@@ -1,4 +1,4 @@
-// graphite-pickup-tile: next waste collection of a calendar entity in the label layout: a colored
+// graphite-pickup: next waste collection of a calendar entity in the label layout: a colored
 // stripe, the name, the day as value ("Morgen", "Mi 12.") and a hint on the right. Due (today or
 // tomorrow): soft accent tint like an active switch tile.
 import { css, html, nothing } from "lit";
@@ -7,12 +7,12 @@ import { GraphiteCard } from "../../core/graphite-card";
 import { nextPickup, type NextPickup } from "../../core/pickup";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
-import { GraphitePickupTileEditor } from "./graphite-pickup-tile-editor";
+import { GraphitePickupEditor } from "./graphite-pickup-editor";
 import { labelStyles } from "./label-styles";
 import { meterStyles } from "./meter-styles";
 import { tileStyles } from "./tile-styles";
 
-export interface PickupTileConfig extends GraphiteCardConfig {
+export interface PickupConfig extends GraphiteCardConfig {
   entity: string;
   name?: string;
   icon?: string;
@@ -41,13 +41,13 @@ const pickupStyles = css`
   }
 `;
 
-export class GraphitePickupTile extends GraphiteCard<PickupTileConfig> {
+export class GraphitePickup extends GraphiteCard<PickupConfig> {
   static styles = [tileStyles, meterStyles, labelStyles, pickupStyles];
 
   private detachActions?: () => void;
   private refreshTimer?: number;
 
-  protected normalizeConfig(config: PickupTileConfig): PickupTileConfig {
+  protected normalizeConfig(config: PickupConfig): PickupConfig {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
     return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
   }
@@ -132,12 +132,13 @@ export class GraphitePickupTile extends GraphiteCard<PickupTileConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    return document.createElement("graphite-pickup-tile-editor");
+    return document.createElement("graphite-pickup-editor");
   }
 }
 
-registerElement("graphite-pickup-tile-editor", GraphitePickupTileEditor);
-registerCard("graphite-pickup-tile", GraphitePickupTile, {
-  name: "Graphite Pickup Tile",
+registerElement("graphite-pickup-editor", GraphitePickupEditor);
+registerCard("graphite-pickup", GraphitePickup, {
+  aliases: ["graphite-pickup-tile"],
+  name: "Graphite Pickup",
   description: "Next waste collection of a calendar entity; today and tomorrow are highlighted.",
 });

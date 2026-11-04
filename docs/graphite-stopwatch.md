@@ -1,11 +1,11 @@
-# graphite-stopwatch-tile
+# graphite-stopwatch
 
 The elapsed time of a [Stopwatch Plus](https://github.com/bornste/ha-stopwatch-plus) sensor as a tile:
 name on top, the time (`h:mm h`) at the bottom, on the right the status or – with a daily limit – the
 remaining or extra time. The tile ticks on its own while the stopwatch runs.
 
 ```yaml
-type: custom:graphite-stopwatch-tile
+type: custom:graphite-stopwatch
 entity: sensor.player_two_playing_time
 name: Player two
 icon: mdi:controller
