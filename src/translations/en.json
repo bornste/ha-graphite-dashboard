@@ -190,5 +190,44 @@
     "ok": "OK",
     "low": "low",
     "empty": "empty"
+  },
+  "calendar": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "nextWeek": "next week",
+    "allDay": "all day",
+    "days": "{days} days",
+    "inOneDay": "in 1 day",
+    "inDays": "in {days} days",
+    "past": "over",
+    "until": "until {date}",
+    "more": "+ {count} more until {date}",
+    "empty": "No events until {date}",
+    "close": "Close",
+    "editor": {
+      "calendars": "Calendars (list: entity, name, color, icon, highlight)",
+      "range": {
+        "today": "Today",
+        "this_week": "This week",
+        "this_and_next_week": "This and next week",
+        "days": "Next days"
+      },
+      "days": "Number of days",
+      "max_items": "Max. events",
+      "secondary": {
+        "calendar_location": "Calendar and location",
+        "calendar": "Calendar",
+        "location": "Location",
+        "description": "Description",
+        "none": "None"
+      },
+      "highlight_days": "Highlight up to (days ahead)",
+      "show_past_today": "Show today's past events",
+      "rules": "Keyword rules (list: starts_with/contains, color, icon, highlight)",
+      "empty_text": "Text without events",
+      "hide_empty": "Hide without events",
+      "tap_action": "Tap action (more-info = details)",
+      "hold_action": "Hold action (on the calendar)"
+    }
   }
 }

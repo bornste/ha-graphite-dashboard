@@ -190,5 +190,44 @@
     "ok": "OK",
     "low": "bald leer",
     "empty": "leer"
+  },
+  "calendar": {
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "nextWeek": "nächste Woche",
+    "allDay": "ganztags",
+    "days": "{days} Tage",
+    "inOneDay": "in 1 Tag",
+    "inDays": "in {days} Tagen",
+    "past": "vorbei",
+    "until": "bis {date}",
+    "more": "+ {count} weitere bis {date}",
+    "empty": "Keine Einträge bis {date}",
+    "close": "Schliessen",
+    "editor": {
+      "calendars": "Kalender (Liste: entity, name, color, icon, highlight)",
+      "range": {
+        "today": "Heute",
+        "this_week": "Diese Woche",
+        "this_and_next_week": "Diese und nächste Woche",
+        "days": "Nächste Tage"
+      },
+      "days": "Anzahl Tage",
+      "max_items": "Max. Einträge",
+      "secondary": {
+        "calendar_location": "Kalender und Ort",
+        "calendar": "Kalender",
+        "location": "Ort",
+        "description": "Beschreibung",
+        "none": "Keine"
+      },
+      "highlight_days": "Hervorheben bis (Tage voraus)",
+      "show_past_today": "Heutige vergangene Einträge anzeigen",
+      "rules": "Stichwort-Regeln (Liste: starts_with/contains, color, icon, highlight)",
+      "empty_text": "Text ohne Einträge",
+      "hide_empty": "Ohne Einträge ausblenden",
+      "tap_action": "Aktion beim Tippen (More-Info = Details)",
+      "hold_action": "Aktion beim Halten (auf den Kalender)"
+    }
   }
 }

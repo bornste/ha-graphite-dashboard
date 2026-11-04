@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.14.0";
+var version = "0.15.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -744,6 +744,45 @@ var de_default = {
     ok: "OK",
     low: "bald leer",
     empty: "leer"
+  },
+  calendar: {
+    today: "Heute",
+    tomorrow: "Morgen",
+    nextWeek: "n\xE4chste Woche",
+    allDay: "ganztags",
+    days: "{days} Tage",
+    inOneDay: "in 1 Tag",
+    inDays: "in {days} Tagen",
+    past: "vorbei",
+    until: "bis {date}",
+    more: "+ {count} weitere bis {date}",
+    empty: "Keine Eintr\xE4ge bis {date}",
+    close: "Schliessen",
+    editor: {
+      calendars: "Kalender (Liste: entity, name, color, icon, highlight)",
+      range: {
+        today: "Heute",
+        this_week: "Diese Woche",
+        this_and_next_week: "Diese und n\xE4chste Woche",
+        days: "N\xE4chste Tage"
+      },
+      days: "Anzahl Tage",
+      max_items: "Max. Eintr\xE4ge",
+      secondary: {
+        calendar_location: "Kalender und Ort",
+        calendar: "Kalender",
+        location: "Ort",
+        description: "Beschreibung",
+        none: "Keine"
+      },
+      highlight_days: "Hervorheben bis (Tage voraus)",
+      show_past_today: "Heutige vergangene Eintr\xE4ge anzeigen",
+      rules: "Stichwort-Regeln (Liste: starts_with/contains, color, icon, highlight)",
+      empty_text: "Text ohne Eintr\xE4ge",
+      hide_empty: "Ohne Eintr\xE4ge ausblenden",
+      tap_action: "Aktion beim Tippen (More-Info = Details)",
+      hold_action: "Aktion beim Halten (auf den Kalender)"
+    }
   }
 };
 
@@ -940,6 +979,45 @@ var en_default = {
     ok: "OK",
     low: "low",
     empty: "empty"
+  },
+  calendar: {
+    today: "Today",
+    tomorrow: "Tomorrow",
+    nextWeek: "next week",
+    allDay: "all day",
+    days: "{days} days",
+    inOneDay: "in 1 day",
+    inDays: "in {days} days",
+    past: "over",
+    until: "until {date}",
+    more: "+ {count} more until {date}",
+    empty: "No events until {date}",
+    close: "Close",
+    editor: {
+      calendars: "Calendars (list: entity, name, color, icon, highlight)",
+      range: {
+        today: "Today",
+        this_week: "This week",
+        this_and_next_week: "This and next week",
+        days: "Next days"
+      },
+      days: "Number of days",
+      max_items: "Max. events",
+      secondary: {
+        calendar_location: "Calendar and location",
+        calendar: "Calendar",
+        location: "Location",
+        description: "Description",
+        none: "None"
+      },
+      highlight_days: "Highlight up to (days ahead)",
+      show_past_today: "Show today's past events",
+      rules: "Keyword rules (list: starts_with/contains, color, icon, highlight)",
+      empty_text: "Text without events",
+      hide_empty: "Hide without events",
+      tap_action: "Tap action (more-info = details)",
+      hold_action: "Hold action (on the calendar)"
+    }
   }
 };
 
@@ -2028,6 +2106,12 @@ var GraphiteFormEditor = class extends HTMLElement {
   // whether a value is left out of the stored config (besides empty values)
   skipValue(_key, _value) {
     return false;
+  }
+  // translated label of a select option, e.g. optionLabel("range.days") -> "<prefix>.range.days"
+  optionLabel(key) {
+    const fullKey = `${this.labelPrefix()}.${key}`;
+    const label = translate(languageOf(this.isConnected ? this : void 0, this.hassObject), fullKey);
+    return label === fullKey ? key : label;
   }
   setConfig(config) {
     this.config = config;
@@ -3970,6 +4054,597 @@ registerCard("graphite-pickup", GraphitePickup, {
   aliases: ["graphite-pickup-tile"],
   name: "Graphite Pickup",
   description: "Next waste collection of a calendar entity; today and tomorrow are highlighted."
+});
+
+// src/core/calendar.ts
+var cache2 = {};
+var refreshMs2 = 5 * 60 * 1e3;
+var dayMs2 = 864e5;
+function startOfDay2(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+function addDays(date, days) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+function daysBetween(from, to) {
+  return Math.round((startOfDay2(to).getTime() - startOfDay2(from).getTime()) / dayMs2);
+}
+function parseDate(value) {
+  const parts = String(value).substring(0, 10).split("-").map(Number);
+  return parts.length === 3 && parts.every(Number.isFinite) ? new Date(parts[0], parts[1] - 1, parts[2]) : null;
+}
+function parseMoment(value) {
+  if (!value) return null;
+  if (typeof value === "object" && value.date) {
+    const date2 = parseDate(value.date);
+    return date2 ? { date: date2, allDay: true } : null;
+  }
+  const raw = typeof value === "object" ? value.dateTime : value;
+  if (typeof raw === "string" && raw.length === 10) {
+    const date2 = parseDate(raw);
+    return date2 ? { date: date2, allDay: true } : null;
+  }
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : { date, allDay: false };
+}
+function toEvent(entityId, raw) {
+  const start = parseMoment(raw?.start);
+  if (!start) return null;
+  const end = parseMoment(raw?.end);
+  const fallbackEnd = start.allDay ? addDays(start.date, 1) : start.date;
+  const endDate = end && end.date.getTime() > start.date.getTime() ? end.date : fallbackEnd;
+  return {
+    entityId,
+    summary: String(raw.summary ?? ""),
+    description: raw.description || void 0,
+    location: raw.location || void 0,
+    start: start.date,
+    end: endDate,
+    allDay: start.allDay
+  };
+}
+function calendarEvents(hass, entityId, start, end, onLoaded) {
+  const key = `${entityId}|${start.getTime()}|${end.getTime()}`;
+  const entry = cache2[key];
+  const api = hass;
+  const isFresh = entry && Date.now() - entry.fetchedAt < refreshMs2;
+  if (entry?.pending) {
+    entry.pending.then(onLoaded);
+  } else if (!isFresh && api.callApi) {
+    const path = `calendars/${entityId}?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
+    const pending = api.callApi("GET", path).then((events) => {
+      const list = (Array.isArray(events) ? events : []).map((event) => toEvent(entityId, event)).filter((event) => !!event);
+      cache2[key] = { events: list, fetchedAt: Date.now() };
+    }).catch(() => {
+      cache2[key] = { events: entry?.events ?? [], fetchedAt: Date.now() };
+    });
+    cache2[key] = { events: entry?.events, fetchedAt: entry?.fetchedAt ?? 0, pending };
+    pending.then(onLoaded);
+  }
+  return cache2[key]?.events;
+}
+
+// src/cards/lists/calendar-styles.ts
+var calendarStyles = i`
+  :host {
+    display: block;
+  }
+  :host([hidden-empty]) {
+    display: none;
+  }
+  .day {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 14px 0 6px 4px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 18px;
+    color: var(--graphite-text-secondary);
+  }
+  .day.first {
+    margin-top: 0;
+  }
+  .day b {
+    font-weight: 500;
+    color: var(--graphite-text-primary);
+  }
+  .day.today b {
+    color: var(--graphite-accent);
+  }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--graphite-gap-tile, 8px);
+  }
+  .event {
+    position: relative;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: var(--graphite-row-height, 60px);
+    padding: 9px 0;
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    overflow: hidden;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    --event-color: var(--graphite-accent);
+  }
+  .event:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--graphite-accent);
+  }
+  .event::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--event-color);
+  }
+  .icon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin: 0 9px;
+    color: var(--event-color);
+    --mdc-icon-size: var(--graphite-row-icon-size, 24px);
+  }
+  .text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .name {
+    font-size: var(--graphite-font-name-size, 15px);
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sub {
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 15px;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .when {
+    flex: none;
+    margin-left: auto;
+    padding: 0 14px 0 12px;
+    text-align: right;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 18px;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+  }
+  .when .time {
+    font-size: var(--graphite-font-name-size, 15px);
+    color: var(--graphite-text-primary);
+  }
+  .when .hint {
+    display: block;
+  }
+  .event.highlight {
+    background: color-mix(in srgb, var(--event-color) 16%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  .event.highlight .when {
+    color: var(--event-color);
+  }
+  .event.running .when .time {
+    color: var(--graphite-accent);
+  }
+  .event.past {
+    opacity: 0.45;
+  }
+  .event.past .name {
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--graphite-ink) 50%, transparent);
+  }
+  .more {
+    margin-top: 10px;
+    text-align: center;
+    font-size: var(--graphite-font-caption-size, 12px);
+    color: var(--graphite-text-muted);
+  }
+  .empty {
+    display: flex;
+    align-items: center;
+    min-height: var(--graphite-row-height, 60px);
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    font-size: 14px;
+    color: var(--graphite-text-secondary);
+  }
+  .empty .icon {
+    color: var(--graphite-success);
+  }
+  /* details of an event: native dialog, so it sits above pop-ups and transformed parents */
+  dialog {
+    box-sizing: border-box;
+    width: min(420px, calc(100vw - 32px));
+    padding: 20px;
+    border: none;
+    border-radius: var(--graphite-radius-panel, 20px);
+    background: var(--graphite-surface-panel);
+    color: var(--graphite-text-primary);
+    font-family: inherit;
+    --event-color: var(--graphite-accent);
+  }
+  dialog::backdrop {
+    background: var(--graphite-overlay, rgba(0, 0, 0, 0.6));
+    backdrop-filter: blur(10px);
+  }
+  .dialog-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .dialog-head .icon {
+    margin: 0;
+    width: 24px;
+    height: 24px;
+  }
+  .dialog-title {
+    flex: 1;
+    font-size: var(--graphite-title-size, 18px);
+    line-height: 24px;
+  }
+  .close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin: -6px -6px 0 0;
+    border: none;
+    border-radius: var(--graphite-radius-tile, 12px);
+    background: var(--graphite-surface-tile);
+    color: var(--graphite-text-primary);
+    cursor: pointer;
+    --mdc-icon-size: 20px;
+  }
+  .details {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 10px 12px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--graphite-text-secondary);
+    --mdc-icon-size: 18px;
+  }
+  .details ha-icon {
+    color: var(--graphite-text-muted);
+  }
+  .details .description {
+    white-space: pre-line;
+    color: var(--graphite-text-primary);
+  }
+`;
+
+// src/cards/lists/graphite-calendar-editor.ts
+var GraphiteCalendarEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "calendar.editor";
+  }
+  schemaKey() {
+    return String(this.config.range ?? "this_and_next_week");
+  }
+  schema() {
+    const range = this.config.range ?? "this_and_next_week";
+    return [
+      { name: "calendars", required: true, selector: { object: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "range", selector: { select: { mode: "dropdown", options: ["today", "this_week", "this_and_next_week", "days"].map((value) => ({ value, label: this.optionLabel(`range.${value}`) })) } } },
+          ...range === "days" ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : [],
+          { name: "max_items", selector: { number: { mode: "box", min: 1, max: 100 } } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "secondary", selector: { select: { mode: "dropdown", options: ["calendar_location", "calendar", "location", "description", "none"].map((value) => ({ value, label: this.optionLabel(`secondary.${value}`) })) } } },
+          { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } }
+        ]
+      },
+      { name: "show_past_today", selector: { boolean: {} } },
+      { name: "rules", selector: { object: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "empty_text", selector: { text: {} } },
+          { name: "hide_empty", selector: { boolean: {} } }
+        ]
+      },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } }
+    ];
+  }
+};
+
+// src/cards/lists/graphite-calendar.ts
+var refreshInterval2 = 60 * 1e3;
+var defaultIcon = "mdi:calendar-blank-outline";
+var lineBreak = String.fromCharCode(10);
+var GraphiteCalendar = class extends GraphiteCard {
+  constructor() {
+    super(...arguments);
+    this.pressedIndex = -1;
+    this.pointerUsed = false;
+    this.shown = [];
+    this.rememberRow = (event) => {
+      const row = event.composedPath().find((element) => element instanceof HTMLElement && element.dataset.index !== void 0);
+      this.pressedIndex = row instanceof HTMLElement ? Number(row.dataset.index) : -1;
+      this.pointerUsed = true;
+    };
+  }
+  normalizeConfig(config) {
+    const calendars = config.calendars ?? (config.entity ? [config.entity] : []);
+    if (!Array.isArray(calendars) || calendars.length === 0) throw new Error(`${this.localName}: 'calendars' is required`);
+    return {
+      range: "this_and_next_week",
+      show_past_today: true,
+      secondary: "calendar_location",
+      highlight_days: 7,
+      tap_action: { action: "more-info" },
+      hold_action: { action: "more-info" },
+      ...config,
+      calendars
+    };
+  }
+  sources() {
+    return this.config.calendars.map((source) => typeof source === "string" ? { entity: source } : source).filter((source) => !!source?.entity);
+  }
+  watchedEntities() {
+    return this.sources().map((source) => source.entity);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("pointerdown", this.rememberRow, true);
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => this.pressedIndex >= 0 && hasAction(this.config?.hold_action),
+      hasDoubleTap: () => false
+    }, (action) => this.handleAction(action));
+    this.refreshTimer = window.setInterval(() => this.requestUpdate(), refreshInterval2);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener("pointerdown", this.rememberRow, true);
+    this.detachActions?.();
+    this.detachActions = void 0;
+    window.clearInterval(this.refreshTimer);
+  }
+  handleAction(action) {
+    const config = this.config;
+    let index = this.pressedIndex;
+    const focused = this.shadowRoot?.activeElement;
+    if (!this.pointerUsed && focused instanceof HTMLElement && focused.dataset.index !== void 0) index = Number(focused.dataset.index);
+    const event = this.shown[index];
+    this.pressedIndex = -1;
+    this.pointerUsed = false;
+    if (!config || !event) return;
+    const actionConfig = config[`${action}_action`];
+    if (!hasAction(actionConfig)) return;
+    if (action === "tap" && actionConfig.action === "more-info") {
+      this.openDetails(event);
+      return;
+    }
+    fireAction(this, { ...config, entity: event.entityId }, action);
+  }
+  openDetails(event) {
+    this.selected = event;
+    this.requestUpdate();
+    this.updateComplete.then(() => {
+      const dialog = this.shadowRoot?.querySelector("dialog");
+      if (dialog && !dialog.open) dialog.showModal();
+    });
+  }
+  closeDetails() {
+    this.shadowRoot?.querySelector("dialog")?.close();
+  }
+  // range [today 00:00, end) of the configured period
+  rangeEnd(today) {
+    const config = this.config;
+    const toMonday = (8 - today.getDay()) % 7 || 7;
+    if (config.range === "today") return addDays(today, 1);
+    if (config.range === "this_week") return addDays(today, toMonday);
+    if (config.range === "days") return addDays(today, Math.max(1, Math.round(Number(config.days) || 14)));
+    return addDays(today, toMonday + 7);
+  }
+  matchRule(summary) {
+    const title = summary.toLocaleLowerCase();
+    return (this.config.rules ?? []).find((rule) => {
+      if (rule.starts_with && title.startsWith(String(rule.starts_with).toLocaleLowerCase())) return true;
+      return !!rule.contains && title.includes(String(rule.contains).toLocaleLowerCase());
+    });
+  }
+  // all events of the range, decorated and sorted; undefined while nothing is loaded yet
+  collect(today, end) {
+    const config = this.config;
+    const now = /* @__PURE__ */ new Date();
+    const highlightDays = Number.isFinite(Number(config.highlight_days)) ? Number(config.highlight_days) : 7;
+    let loaded = false;
+    const events = [];
+    for (const source of this.sources()) {
+      const list = this.hass ? calendarEvents(this.hass, source.entity, today, end, () => this.requestUpdate()) : void 0;
+      if (!list) continue;
+      loaded = true;
+      const stateObj = this.hass?.states[source.entity];
+      const calendarName = source.name ?? stateObj?.attributes?.friendly_name ?? source.entity;
+      for (const event of list) {
+        if (event.end.getTime() <= today.getTime() || event.start.getTime() >= end.getTime()) continue;
+        const past = event.end.getTime() <= now.getTime();
+        if (past && !config.show_past_today) continue;
+        const rule = this.matchRule(event.summary);
+        const day = event.start.getTime() < today.getTime() ? today : startOfDay2(event.start);
+        const daysAhead = daysBetween(today, day);
+        const lastDay = event.allDay ? addDays(event.end, -1) : event.end;
+        events.push({
+          ...event,
+          day,
+          color: rule?.color ?? source.color ?? "var(--graphite-accent)",
+          icon: rule?.icon ?? source.icon ?? stateObj?.attributes?.icon ?? defaultIcon,
+          calendarName,
+          past,
+          running: !past && !event.allDay && event.start.getTime() <= now.getTime(),
+          highlight: !past && !!(rule?.highlight ?? source.highlight) && daysAhead <= highlightDays,
+          multiDay: daysBetween(event.start, lastDay) > 0
+        });
+      }
+    }
+    if (!loaded) return void 0;
+    return events.sort((first, second) => first.day.getTime() - second.day.getTime() || Number(first.allDay) - Number(second.allDay) || first.start.getTime() - second.start.getTime() || first.summary.localeCompare(second.summary));
+  }
+  time(date) {
+    return date.toLocaleTimeString(this.language, { hour: "2-digit", minute: "2-digit" });
+  }
+  weekday(date) {
+    return date.toLocaleDateString(this.language, { weekday: "short" }).replace(".", "");
+  }
+  date(date) {
+    return date.toLocaleDateString(this.language, { day: "numeric", month: "short" });
+  }
+  // "Fr 13. Nov."
+  longDate(date) {
+    return `${this.weekday(date)} ${this.date(date)}`;
+  }
+  lastDay(event) {
+    return event.allDay ? addDays(event.end, -1) : event.end;
+  }
+  renderDayHeader(day, today, nextMonday, isFirst, marksNextWeek) {
+    const offset = daysBetween(today, day);
+    const weekday = day.toLocaleDateString(this.language, { weekday: "long" });
+    const date = day.toLocaleDateString(this.language, { day: "numeric", month: "long" });
+    const label = offset === 0 ? this.localize("calendar.today") : offset === 1 ? this.localize("calendar.tomorrow") : weekday;
+    const rest = offset <= 1 ? `${weekday} ${date}` : date;
+    const nextWeek = marksNextWeek && day.getTime() >= nextMonday.getTime();
+    return b2`<div class=${["day", isFirst ? "first" : "", offset === 0 ? "today" : ""].filter(Boolean).join(" ")}><b>${label}</b>
+      ${rest}${nextWeek ? b2`<span>· ${this.localize("calendar.nextWeek")}</span>` : A}</div>`;
+  }
+  secondaryText(event) {
+    const mode = this.config.secondary;
+    const parts = [];
+    if (mode === "calendar" || mode === "calendar_location") parts.push(event.calendarName);
+    if ((mode === "location" || mode === "calendar_location") && event.location) parts.push(event.location);
+    if (mode === "description" && event.description) parts.push(event.description.split(lineBreak)[0]);
+    if (mode !== "none" && event.multiDay) parts.push(this.localize("calendar.until", { date: this.longDate(this.lastDay(event)) }));
+    return parts.join(" \xB7 ");
+  }
+  renderWhen(event, today) {
+    let hint = "";
+    if (event.past) hint = this.localize("calendar.past");
+    else if (event.highlight) {
+      const days = daysBetween(today, event.day);
+      if (days === 1) hint = this.localize("calendar.inOneDay");
+      else if (days > 1) hint = this.localize("calendar.inDays", { days });
+    }
+    let main;
+    if (event.multiDay) {
+      main = this.localize("calendar.days", { days: daysBetween(event.start, this.lastDay(event)) + 1 });
+    } else if (event.allDay) {
+      main = this.localize("calendar.allDay");
+    } else {
+      const range = !hint && event.end.getTime() > event.start.getTime() ? `${this.time(event.start)}\u2013${this.time(event.end)}` : this.time(event.start);
+      main = b2`<span class="time">${range}</span>`;
+    }
+    return b2`<div class="when">${main}${hint ? b2`<span class="hint">${hint}</span>` : A}</div>`;
+  }
+  renderEvent(event, index, today) {
+    const secondary = this.secondaryText(event);
+    const classes = ["event", event.past ? "past" : "", event.running ? "running" : "", event.highlight ? "highlight" : ""].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${`--event-color: ${event.color}`} data-index=${index} role="button" tabindex="0"
+      aria-label=${event.summary}><div class="icon"><ha-icon .icon=${event.icon}></ha-icon></div><div class="text"><div
+      class="name">${event.summary}</div>${secondary ? b2`<div class="sub">${secondary}</div>` : A}</div>${this.renderWhen(event, today)}</div>`;
+  }
+  renderDetails() {
+    const event = this.selected;
+    if (!event) return b2`<dialog></dialog>`;
+    const lastDay = this.lastDay(event);
+    let when;
+    if (event.allDay) {
+      when = event.multiDay ? `${this.longDate(event.start)} \u2013 ${this.longDate(lastDay)}` : `${this.longDate(event.start)}, ${this.localize("calendar.allDay")}`;
+    } else if (event.multiDay) {
+      when = `${this.longDate(event.start)} ${this.time(event.start)} \u2013 ${this.longDate(event.end)} ${this.time(event.end)}`;
+    } else {
+      when = `${this.longDate(event.start)}, ${this.time(event.start)}\u2013${this.time(event.end)}`;
+    }
+    return b2`<dialog style=${`--event-color: ${event.color}`} @click=${(clickEvent) => {
+      if (clickEvent.target === clickEvent.currentTarget) this.closeDetails();
+    }} @close=${() => {
+      this.selected = void 0;
+      this.requestUpdate();
+    }}><div class="dialog-head"><div class="icon"><ha-icon
+      .icon=${event.icon}></ha-icon></div><div class="dialog-title">${event.summary}</div><button class="close"
+      aria-label=${this.localize("calendar.close")} @click=${() => this.closeDetails()}><ha-icon icon="mdi:close"></ha-icon></button></div><div
+      class="details"><ha-icon icon="mdi:clock-outline"></ha-icon><div>${when}</div><ha-icon icon="mdi:calendar-blank-outline"></ha-icon><div>${event.calendarName}</div>${event.location ? b2`<ha-icon icon="mdi:map-marker-outline"></ha-icon><div>${event.location}</div>` : A}${event.description ? b2`<ha-icon icon="mdi:text"></ha-icon><div class="description">${event.description}</div>` : A}</div></dialog>`;
+  }
+  render() {
+    const config = this.config;
+    const today = startOfDay2(/* @__PURE__ */ new Date());
+    const end = this.rangeEnd(today);
+    const lastRangeDay = this.longDate(addDays(end, -1));
+    const events = this.collect(today, end);
+    const limit = Number(config.max_items) > 0 ? Math.round(Number(config.max_items)) : Infinity;
+    this.shown = (events ?? []).slice(0, limit);
+    const hiddenCount = (events?.length ?? 0) - this.shown.length;
+    const isEmpty = !!events && events.length === 0;
+    this.toggleAttribute("hidden-empty", isEmpty && !!config.hide_empty);
+    if (!events) return b2``;
+    if (isEmpty) {
+      const text = config.empty_text ?? this.localize("calendar.empty", { date: lastRangeDay });
+      return b2`<div class="empty"><div class="icon"><ha-icon icon="mdi:check-circle"></ha-icon></div>${text}</div>`;
+    }
+    const nextMonday = addDays(today, (8 - today.getDay()) % 7 || 7);
+    const marksNextWeek = this.shown.some((event) => event.day.getTime() < nextMonday.getTime());
+    const groups = [];
+    this.shown.forEach((event, index) => {
+      const last = groups[groups.length - 1];
+      if (last && last.day.getTime() === event.day.getTime()) last.items.push({ event, index });
+      else groups.push({ day: event.day, items: [{ event, index }] });
+    });
+    let markedNextWeek = false;
+    return b2`${groups.map((group, groupIndex) => {
+      const marks = marksNextWeek && !markedNextWeek && group.day.getTime() >= nextMonday.getTime();
+      if (marks) markedNextWeek = true;
+      return b2`${this.renderDayHeader(group.day, today, nextMonday, groupIndex === 0, marks)}<div class="list">${group.items.map((item) => this.renderEvent(item.event, item.index, today))}</div>`;
+    })}${hiddenCount > 0 ? b2`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>` : A}${this.renderDetails()}`;
+  }
+  getCardSize() {
+    return Math.max(2, this.shown.length + 1);
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto", min_columns: 6 };
+  }
+  static getStubConfig(hass) {
+    const calendars = Object.keys(hass?.states ?? {}).filter((id) => id.startsWith("calendar.")).slice(0, 1);
+    return { calendars, range: "this_and_next_week", max_items: 10 };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-calendar-editor");
+  }
+};
+GraphiteCalendar.styles = calendarStyles;
+registerElement("graphite-calendar-editor", GraphiteCalendarEditor);
+registerCard("graphite-calendar", GraphiteCalendar, {
+  name: "Graphite Calendar",
+  description: "Events of one or more calendars, grouped by day, with color and icon per calendar or keyword."
 });
 
 // src/index.ts

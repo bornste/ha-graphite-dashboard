@@ -1,7 +1,7 @@
 // Showcase: renders the graphite-cards with sample data outside of Home Assistant.
 // Provides a small stand-in for hass, ha-card and the card helpers; all entities are fictional.
 import { stringify } from "yaml";
-import { calendarDays, examples, sampleStates, templateResults, todoItems, type ShowcaseSection } from "./examples";
+import { calendarDays, calendarEvents, examples, sampleStates, templateResults, todoItems, type ShowcaseSection } from "./examples";
 
 type Config = Record<string, any>;
 
@@ -117,6 +117,24 @@ function createHass(language: string): any {
       // calendars/<entity>?start=...: all-day events on the sample days
       const entityId = path.split("?")[0].replace("calendars/", "");
       const today = new Date();
+      const pad = (value: number) => String(value).padStart(2, "0");
+      const dateOf = (offset: number) => {
+        const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+        return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`;
+      };
+      const moment = (offset: number, time: string) => {
+        const [hours, minutes] = time.split(":").map(Number);
+        return new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset, hours, minutes).toISOString();
+      };
+      if (calendarEvents[entityId]) {
+        return calendarEvents[entityId].map((event) => ({
+          summary: event.summary,
+          location: event.location,
+          description: event.description,
+          start: event.start ? { dateTime: moment(event.offset, event.start) } : { date: dateOf(event.offset) },
+          end: event.start ? { dateTime: moment(event.offset, event.end ?? event.start) } : { date: dateOf(event.offset + (event.days ?? 1)) },
+        }));
+      }
       return (calendarDays[entityId] ?? []).map((offset) => {
         const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
         const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;

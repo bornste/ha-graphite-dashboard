@@ -73,10 +73,43 @@ export const sampleStates: Record<string, any> = {
   "sensor.photo_printer_yellow": entity("sensor.photo_printer_yellow", "90", { friendly_name: "Yellow", unit_of_measurement: "%" }),
   "calendar.paper_collection": entity("calendar.paper_collection", "off", { friendly_name: "Paper", message: "Paper" }),
   "calendar.cardboard_collection": entity("calendar.cardboard_collection", "off", { friendly_name: "Cardboard", message: "Cardboard" }),
+  "calendar.school_homework": entity("calendar.school_homework", "off", { friendly_name: "Homework" }),
+  "calendar.school_exams": entity("calendar.school_exams", "off", { friendly_name: "Exams" }),
+  "calendar.school_events": entity("calendar.school_events", "off", { friendly_name: "Events" }),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
 // canned results for the info templates (the showcase has no template engine)
+// events of the sample school calendars: day offset from today, times "HH:MM" (none = all day), days for multi-day events
+export interface SampleEvent {
+  offset: number;
+  summary: string;
+  start?: string;
+  end?: string;
+  days?: number;
+  location?: string;
+  description?: string;
+}
+
+export const calendarEvents: Record<string, SampleEvent[]> = {
+  "calendar.school_homework": [
+    { offset: 0, summary: "Math: worksheet p. 42–43", description: "Exercises 1 to 6, show the steps." },
+    { offset: 1, summary: "Reading log chapter 5" },
+    { offset: 6, summary: "Vocabulary unit 3, part 2" },
+  ],
+  "calendar.school_exams": [
+    { offset: 1, summary: "Exam science: water cycle", start: "09:55", end: "10:40", location: "Room 12" },
+    { offset: 5, summary: "Exam French: vocabulary unit 3", start: "10:50", end: "11:35" },
+    { offset: 13, summary: "Exam math: fractions", start: "08:15", end: "09:00" },
+  ],
+  "calendar.school_events": [
+    { offset: 0, summary: "Parent meeting", start: "00:30", end: "01:00", location: "School building" },
+    { offset: 2, summary: "School trip", start: "08:00", end: "15:30", location: "Snack and rain jacket" },
+    { offset: 5, summary: "Project week", days: 5 },
+    { offset: 8, summary: "Sports day", start: "08:00", end: "12:00" },
+  ],
+};
+
 // collection days of the sample calendars, relative to today (calendar API of the pickup tile)
 export const calendarDays: Record<string, number[]> = {
   "calendar.paper_collection": [1, 29],
@@ -447,6 +480,53 @@ export function examples(language: string): ShowcaseSection[] {
             cards: [
               { type: "custom:graphite-pickup", entity: "calendar.paper_collection", icon: "mdi:newspaper-variant-outline", color: "#9aa3ad" },
               { type: "custom:graphite-pickup", entity: "calendar.cardboard_collection", icon: "mdi:package-variant-closed", color: "#b98a5e" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-calendar",
+      description: `Events of one or more calendars, grouped by day: color and icon per calendar or keyword rule, exams highlighted.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-calendar.md">Documentation</a>`,
+      examples: [
+        {
+          title: "School calendar",
+          note: "This and next week, at most 10 events; today's past events stay visible. Tap an event for its details.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Schule" : "School",
+            cards: [
+              {
+                type: "custom:graphite-calendar",
+                calendars: [
+                  { entity: "calendar.school_homework", name: german ? "Hausaufgaben" : "Homework", color: "#8ab8f5", icon: "mdi:pencil-outline" },
+                  { entity: "calendar.school_exams", name: german ? "Prüfungen" : "Exams", color: "#e8908a", icon: "mdi:alert-outline", highlight: true },
+                  { entity: "calendar.school_events", name: german ? "Termine" : "Events", color: "#a8d5a2", icon: "mdi:calendar-blank-outline" },
+                ],
+                range: "this_and_next_week",
+                max_items: 10,
+                show_past_today: true,
+              },
+            ],
+          },
+        },
+        {
+          title: "Exams (keyword rule, compact)",
+          note: "The next 14 days without second line; the rule colors every title starting with «Exam».",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Prüfungen" : "Exams",
+            cards: [
+              {
+                type: "custom:graphite-calendar",
+                calendars: ["calendar.school_exams"],
+                range: "days",
+                days: 14,
+                secondary: "none",
+                highlight_days: 2,
+                rules: [{ starts_with: "Exam", color: "#e8908a", icon: "mdi:alert-outline", highlight: true }],
+              },
             ],
           },
         },

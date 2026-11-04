@@ -26,6 +26,13 @@ export abstract class GraphiteFormEditor extends HTMLElement {
     return false;
   }
 
+  // translated label of a select option, e.g. optionLabel("range.days") -> "<prefix>.range.days"
+  protected optionLabel(key: string): string {
+    const fullKey = `${this.labelPrefix()}.${key}`;
+    const label = translate(languageOf(this.isConnected ? this : undefined, this.hassObject), fullKey);
+    return label === fullKey ? key : label;
+  }
+
   setConfig(config: Record<string, any>): void {
     this.config = config;
     this.render();
