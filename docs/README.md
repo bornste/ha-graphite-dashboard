@@ -17,6 +17,7 @@ the special cases – also for cards with a visual editor.
 | graphite-stopwatch-tile | [graphite-stopwatch-tile.md](graphite-stopwatch-tile.md) | ready |
 | graphite-todo-tile | [graphite-todo-tile.md](graphite-todo-tile.md) | ready |
 | graphite-ink-tile | [graphite-ink-tile.md](graphite-ink-tile.md) | ready |
+| graphite-pickup-tile | [graphite-pickup-tile.md](graphite-pickup-tile.md) | ready |
 
 ## Common behaviour
 

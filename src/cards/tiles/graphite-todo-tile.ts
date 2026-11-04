@@ -33,10 +33,7 @@ const todoStyles = css`
     color: var(--graphite-text-primary);
   }
   .secondary {
-    display: block;
     max-width: 62%;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 

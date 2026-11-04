@@ -162,5 +162,24 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "pickup": {
+    "today": "Heute",
+    "todayHint": "Abfuhr",
+    "tomorrow": "Morgen",
+    "tomorrowHint": "bereitstellen",
+    "date": "{weekday} {day}.",
+    "inDays": "in {days} Tagen",
+    "editor": {
+      "entity": "Abfuhr-Kalender",
+      "name": "Name (Standard: Termin oder Name des Kalenders)",
+      "icon": "Icon oben rechts",
+      "color": "Farbe des Streifens oben",
+      "drop_after": "Abfuhr von heute gilt erledigt ab (HH:MM, Standard 12:00)",
+      "lookahead_days": "Tage vorausschauen (Standard 40)",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

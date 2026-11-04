@@ -55,16 +55,19 @@ export const meterStyles = css`
     margin-left: 3px;
     color: var(--graphite-text-muted);
   }
+  /* a block (not flex), so a too long text ends with an ellipsis */
   .secondary {
-    display: flex;
-    align-items: baseline;
-    gap: 3px;
+    display: block;
     font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     /* not taller than the value line: a taller line would lift the baseline of the whole row
        (the value then sits 1-2px higher than on tiles without a secondary value) */
     line-height: 1.2;
     white-space: nowrap;
+    /* on narrow tiles the secondary value gives way (ellipsis) instead of running out of the tile */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--graphite-text-muted);
     --mdc-icon-size: 13px;
   }
@@ -73,7 +76,7 @@ export const meterStyles = css`
     display: inline-flex;
     width: 13px;
     height: 13px;
-    align-self: baseline;
+    margin-right: 3px;
     transform: translateY(1px);
   }
   .bar {

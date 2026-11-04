@@ -10,6 +10,7 @@ import "./cards/tiles/graphite-image-tile";
 import "./cards/tiles/graphite-stopwatch-tile";
 import "./cards/tiles/graphite-todo-tile";
 import "./cards/tiles/graphite-ink-tile";
+import "./cards/tiles/graphite-pickup-tile";
 
 window.graphiteCards = { version };
 

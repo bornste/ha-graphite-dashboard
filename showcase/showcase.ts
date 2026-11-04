@@ -1,7 +1,7 @@
 // Showcase: renders the graphite-cards with sample data outside of Home Assistant.
 // Provides a small stand-in for hass, ha-card and the card helpers; all entities are fictional.
 import { stringify } from "yaml";
-import { examples, sampleStates, templateResults, todoItems, type ShowcaseSection } from "./examples";
+import { calendarDays, examples, sampleStates, templateResults, todoItems, type ShowcaseSection } from "./examples";
 
 type Config = Record<string, any>;
 
@@ -112,6 +112,16 @@ function createHass(language: string): any {
     },
     async callService() {
       return undefined;
+    },
+    async callApi(method: string, path: string) {
+      // calendars/<entity>?start=...: all-day events on the sample days
+      const entityId = path.split("?")[0].replace("calendars/", "");
+      const today = new Date();
+      return (calendarDays[entityId] ?? []).map((offset) => {
+        const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+        const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+        return { summary: entityId, start: { date } };
+      });
     },
     async callWS(message: Config) {
       if (message.type === "todo/item/list") return { items: todoItems[message.entity_id] ?? [] };

@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.128'
+  version: '0.129'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the pickup tile.
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile and clock card.
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -929,172 +929,6 @@ sbo_graphite:
       color: var(--sbo-text-secondary);
     }
 
-    /* LABEL LAYOUT (pickup tile): short label stripe on top, name below it,
-       value and secondary value at the bottom. The meter tiles themselves are graphite-meter-tile now. */
-    /* same height as the switch tiles: room between name and value */
-    .bubble-container.sbo-meter-tile {
-      height: var(--sbo-meter-height, 80px) !important;
-    }
-    .sbo-meter-tile .bubble-wrapper {
-      position: relative;
-      display: block !important;
-      height: 100%;
-    }
-    .sbo-meter-tile .bubble-button-background {
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background: none !important;
-      opacity: 1 !important;
-    }
-    .sbo-meter-tile .bubble-name-container,
-    .sbo-meter-tile .bubble-sub-button-container,
-    .sbo-meter-tile .bubble-sub-button-bottom-container {
-      display: none !important;
-    }
-    /* the content container only keeps the (optional) icon, which becomes a watermark */
-    .sbo-meter-tile .bubble-content-container {
-      display: contents !important;
-    }
-    /* watermark icon top right (show_icon), same look as scene and switch tiles */
-    .sbo-meter-tile .bubble-icon-container {
-      position: absolute !important;
-      right: 6px;
-      top: 4px;
-      width: auto !important;
-      height: auto !important;
-      min-width: 0 !important;
-      margin: 0 !important;
-      background: none !important;
-      pointer-events: none;
-      --mdc-icon-size: 34px;
-    }
-    .sbo-meter-tile .bubble-icon-container ha-ripple {
-      display: none;
-    }
-    .sbo-meter-tile .bubble-icon {
-      color: var(--sbo-text-primary) !important;
-      opacity: 0.16 !important;
-    }
-    .sbo-meter {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-    .sbo-meter-name {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      top: 10px;
-      font-size: 13px;
-      color: var(--sbo-text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .sbo-meter-row {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 19px;
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .sbo-meter-value {
-      font-size: 22px;
-      font-weight: 300;
-      line-height: 1.1;
-      white-space: nowrap;
-      color: var(--sbo-text-primary);
-    }
-    /* words as value (e.g. "keine Artikel", "Bereit", "Morgen") read larger than numbers: 20px */
-    .sbo-meter-number.sbo-meter-text {
-      font-size: var(--sbo-meter-text-size, 20px);
-    }
-    /* unit and secondary value share the name style (13px, 400) for a calm type scale */
-    .sbo-meter-unit {
-      font-size: 13px;
-      font-weight: 400;
-      margin-left: 3px;
-      color: var(--sbo-text-muted);
-    }
-    .sbo-meter-secondary {
-      display: flex;
-      align-items: baseline;
-      gap: 3px;
-      font-size: 13px;
-      font-weight: 400;
-      white-space: nowrap;
-      color: var(--sbo-text-muted);
-      --mdc-icon-size: 13px;
-    }
-    /* icon sits on the text baseline like a glyph */
-    .sbo-meter-secondary ha-icon {
-      display: inline-flex;
-      width: 13px;
-      height: 13px;
-      align-self: baseline;
-      transform: translateY(1px);
-    }
-    .sbo-meter-secondary:empty {
-      display: none;
-    }
-    /* footer bar */
-    .sbo-meter-bar {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 9px;
-      height: 4px;
-      border-radius: 2px;
-      background: color-mix(in srgb, var(--sbo-ink) 14%, var(--sbo-card-surface, var(--sbo-surface-tile)));
-    }
-    /* label: stripe on top instead of the footer bar */
-    .sbo-meter-tile.sbo-meter-label .sbo-meter-bar {
-      top: 10px;
-      bottom: auto;
-      right: auto;
-      width: 28px;
-      background: var(--sbo-meter-color, var(--sbo-accent));
-    }
-    .sbo-meter-tile.sbo-meter-label .sbo-meter-fill {
-      display: none;
-    }
-    /* no stripe where it would carry no meaning (tiles without own color): name moves up */
-    .sbo-meter-tile.sbo-meter-label.sbo-no-stripe .sbo-meter-bar {
-      display: none;
-    }
-    .sbo-meter-tile.sbo-meter-label.sbo-no-stripe .sbo-meter-name {
-      top: 10px !important;
-    }
-    /* without the stripe the tile only needs room for name and value */
-    .bubble-container.sbo-meter-tile.sbo-meter-label.sbo-no-stripe {
-      height: var(--sbo-meter-compact-height, 72px) !important;
-    }
-    /* name below the stripe, value row grounded at the bottom edge */
-    .sbo-meter-tile.sbo-meter-label .sbo-meter-name {
-      top: 20px;
-    }
-    .sbo-meter-tile.sbo-meter-label .sbo-meter-row {
-      bottom: 9px;
-    }
-    /* PICKUP TILE (waste collection, calendar entity): meter "label" grammar with a date instead of a number.
-       Due (today or tomorrow): soft accent tint like an active switch tile. */
-    .bubble-container.sbo-pickup-tile.sbo-pickup-due {
-      background-color: color-mix(in srgb, var(--sbo-accent) var(--sbo-switch-tint, 18%), var(--sbo-surface-tile-active)) !important;
-    }
-    .sbo-pickup-tile.sbo-pickup-due .sbo-meter-name {
-      color: var(--sbo-text-primary);
-    }
-    .sbo-pickup-tile.sbo-pickup-due .sbo-meter-secondary {
-      color: var(--sbo-accent);
-    }
-    .sbo-pickup-tile.sbo-pickup-due .bubble-icon {
-      opacity: 0.3 !important;
-    }
     /* label pill (clock card, option "pill"): dimmed prefix, value in primary text, dimmed label;
        icon and Bubble's own text are replaced by the module */
     .bubble-sub-button.sbo-label-pill {
@@ -1691,74 +1525,12 @@ sbo_graphite:
         }
       }
 
-      // pickup tile: next collection of a calendar entity in the meter "label" layout
-      if (config.pickup)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        const entityId = this.config?.entity;
-        if (container && wrapper && entityId)
-        {
-          const pickupConfig = config.pickup;
-          container.classList.add(`sbo-meter-tile`, `sbo-meter-label`, `sbo-pickup-tile`);
-          let meter = wrapper.querySelector(`.sbo-meter`);
-          if (!meter)
-          {
-            meter = document.createElement('div');
-            meter.className = 'sbo-meter';
-            meter.innerHTML = `<div class="sbo-meter-name"></div>`
-              + `<div class="sbo-meter-row"><div class="sbo-meter-value"><span class="sbo-meter-number"></span><span class="sbo-meter-unit"></span></div><div class="sbo-meter-secondary"></div></div>`
-              + `<div class="sbo-meter-bar"><div class="sbo-meter-fill"></div><div class="sbo-meter-dot"></div></div>`;
-            wrapper.appendChild(meter);
-          }
-          container.style.setProperty('--sbo-meter-color', pickupConfig.color || 'var(--sbo-accent)');
-          const locale = hass?.locale?.language || 'de-CH';
-          const lookaheadDays = Number(pickupConfig.lookahead_days) > 0 ? Number(pickupConfig.lookahead_days) : 40;
-          const renderTile = () => {
-            // preview: show the tile as if the collection were tomorrow
-            const next = pickupConfig.preview
-              ? { date: new Date(Date.now() + dayMs), days: 1 }
-              : nextPickup(entityId, lookaheadDays, pickupConfig.drop_after, renderTile);
-            let valueText = '–';
-            let secondaryText = '';
-            if (next && next.days === 0)
-            {
-              valueText = 'Heute';
-              secondaryText = 'Abfuhr';
-            }
-            else if (next && next.days === 1)
-            {
-              valueText = 'Morgen';
-              secondaryText = 'bereitstellen';
-            }
-            else if (next)
-            {
-              const weekday = next.date.toLocaleDateString(locale, { weekday: 'short' }).replace('.', '');
-              valueText = `${weekday} ${next.date.getDate()}.`;
-              secondaryText = `in ${next.days} Tagen`;
-            }
-            meter.querySelector(`.sbo-meter-name`).textContent = this.config?.name || pickupName(entityId);
-            meter.querySelector(`.sbo-meter-number`).textContent = valueText;
-            meter.querySelector(`.sbo-meter-secondary`).textContent = secondaryText;
-            container.classList.toggle(`sbo-pickup-due`, !!next && next.days <= 1);
-          };
-          renderTile();
-        }
-      }
-
       // sub-button configurations
       const subbuttonConfigs = config.subbuttons?.configurations;
       if (Array.isArray(subbuttonConfigs))
       {
         for (const subbuttonConfig of subbuttonConfigs)
           applySubbuttonConfiguration(subbuttonConfig);
-      }
-
-      // meter values that are words instead of numbers get the text size
-      for (const number of card.querySelectorAll(`.sbo-meter-number`))
-      {
-        const firstCharacter = String(number.textContent || '').trim().charAt(0);
-        number.classList.toggle(`sbo-meter-text`, firstCharacter !== '' && !'0123456789+-–.,'.includes(firstCharacter));
       }
 
       // pop-up header: status in accent color while a header button is selected
@@ -1882,32 +1654,6 @@ sbo_graphite:
             number:
               min: 1
               max: 6
-              step: 1
-              mode: box
-    - type: expandable
-      name: pickup
-      title: Pickup tile (calendar, waste collection)
-      icon: mdi:trash-can-outline
-      expanded: false
-      schema:
-        - name: color
-          label: Label stripe color
-          selector:
-            text: {}
-        - name: drop_after
-          label: "Collection of today counts as done after (HH:MM, default 12:00)"
-          selector:
-            text: {}
-        - name: preview
-          label: Preview (show as due tomorrow, for testing)
-          selector:
-            boolean: {}
-        - name: lookahead_days
-          label: Days to look ahead (default 40)
-          selector:
-            number:
-              min: 7
-              max: 120
               step: 1
               mode: box
     - type: expandable

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.11.2";
+var version = "0.12.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -716,6 +716,25 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen"
     }
+  },
+  pickup: {
+    today: "Heute",
+    todayHint: "Abfuhr",
+    tomorrow: "Morgen",
+    tomorrowHint: "bereitstellen",
+    date: "{weekday} {day}.",
+    inDays: "in {days} Tagen",
+    editor: {
+      entity: "Abfuhr-Kalender",
+      name: "Name (Standard: Termin oder Name des Kalenders)",
+      icon: "Icon oben rechts",
+      color: "Farbe des Streifens oben",
+      drop_after: "Abfuhr von heute gilt erledigt ab (HH:MM, Standard 12:00)",
+      lookahead_days: "Tage vorausschauen (Standard 40)",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -880,6 +899,25 @@ var en_default = {
       name: "Name (default: entity name or Printer)",
       cartridges: "Cartridge level sensors (%)",
       low_level: "Soon empty below (%, default 20)",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
+    }
+  },
+  pickup: {
+    today: "Today",
+    todayHint: "collection",
+    tomorrow: "Tomorrow",
+    tomorrowHint: "put out",
+    date: "{weekday} {day}",
+    inDays: "in {days} days",
+    editor: {
+      entity: "Collection calendar",
+      name: "Name (default: event or calendar name)",
+      icon: "Icon top right",
+      color: "Color of the stripe on top",
+      drop_after: "Today's collection counts as done after (HH:MM, default 12:00)",
+      lookahead_days: "Days to look ahead (default 40)",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action"
@@ -2470,16 +2508,19 @@ var meterStyles = i`
     margin-left: 3px;
     color: var(--graphite-text-muted);
   }
+  /* a block (not flex), so a too long text ends with an ellipsis */
   .secondary {
-    display: flex;
-    align-items: baseline;
-    gap: 3px;
+    display: block;
     font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     /* not taller than the value line: a taller line would lift the baseline of the whole row
        (the value then sits 1-2px higher than on tiles without a secondary value) */
     line-height: 1.2;
     white-space: nowrap;
+    /* on narrow tiles the secondary value gives way (ellipsis) instead of running out of the tile */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--graphite-text-muted);
     --mdc-icon-size: 13px;
   }
@@ -2488,7 +2529,7 @@ var meterStyles = i`
     display: inline-flex;
     width: 13px;
     height: 13px;
-    align-self: baseline;
+    margin-right: 3px;
     transform: translateY(1px);
   }
   .bar {
@@ -3286,10 +3327,7 @@ var todoStyles = i`
     color: var(--graphite-text-primary);
   }
   .secondary {
-    display: block;
     max-width: 62%;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 var GraphiteTodoTile = class extends GraphiteCard {
@@ -3578,6 +3616,191 @@ registerElement("graphite-ink-tile-editor", GraphiteInkTileEditor);
 registerCard("graphite-ink-tile", GraphiteInkTile, {
   name: "Graphite Ink Tile",
   description: "Printer with one small tank per cartridge; empty and soon empty cartridges are highlighted."
+});
+
+// src/core/pickup.ts
+var cache = {};
+var refreshMs = 30 * 60 * 1e3;
+var dayMs = 864e5;
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+function dayFromDateString(value) {
+  const parts = String(value).substring(0, 10).split("-").map(Number);
+  return parts.length === 3 && parts.every(Number.isFinite) ? new Date(parts[0], parts[1] - 1, parts[2]) : null;
+}
+function eventDay(start) {
+  if (!start) return null;
+  if (start.date) return dayFromDateString(start.date);
+  const time = new Date(start.dateTime ?? start);
+  return Number.isNaN(time.getTime()) ? null : startOfDay(time);
+}
+function loadDays(hass, entityId, lookaheadDays, onLoaded) {
+  const today = startOfDay(/* @__PURE__ */ new Date());
+  const entry = cache[entityId];
+  const isFresh = entry && entry.day === today.getTime() && Date.now() - entry.fetchedAt < refreshMs;
+  const api = hass;
+  if (entry?.pending) {
+    entry.pending.then(onLoaded);
+  } else if (!isFresh && api.callApi) {
+    const end = new Date(today.getTime() + lookaheadDays * dayMs);
+    const pending = api.callApi("GET", `calendars/${entityId}?start=${encodeURIComponent(today.toISOString())}&end=${encodeURIComponent(end.toISOString())}`).then((events) => {
+      const days = (Array.isArray(events) ? events : []).map((event) => eventDay(event.start)).filter((day) => !!day);
+      cache[entityId] = { days, day: today.getTime(), fetchedAt: Date.now() };
+    }).catch(() => {
+      cache[entityId] = { days: entry?.days, day: today.getTime(), fetchedAt: Date.now() };
+    });
+    cache[entityId] = { days: entry?.days, day: entry?.day, fetchedAt: entry?.fetchedAt ?? 0, pending };
+    pending.then(onLoaded);
+  }
+  return cache[entityId]?.days;
+}
+function nextPickup(hass, entityId, lookaheadDays, dropAfter, onLoaded) {
+  const now = /* @__PURE__ */ new Date();
+  const today = startOfDay(now);
+  const [dropHours, dropMinutes] = String(dropAfter ?? "12:00").split(":").map(Number);
+  const dropTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), dropHours || 0, dropMinutes || 0);
+  let candidates = loadDays(hass, entityId, lookaheadDays, onLoaded);
+  if (!candidates) {
+    const start = hass.states[entityId]?.attributes?.start_time;
+    const startDay = start ? dayFromDateString(start) : null;
+    candidates = startDay ? [startDay] : [];
+  }
+  let next = null;
+  for (const date of candidates) {
+    const days = Math.round((date.getTime() - today.getTime()) / dayMs);
+    if (days < 0 || days === 0 && now >= dropTime) continue;
+    if (!next || days < next.days) next = { date, days };
+  }
+  return next;
+}
+
+// src/cards/tiles/graphite-pickup-tile-editor.ts
+var GraphitePickupTileEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "pickup.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: { domain: "calendar" } } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "color", selector: { text: {} } },
+          { name: "drop_after", selector: { text: {} } },
+          { name: "lookahead_days", selector: { number: { mode: "box", min: 7, max: 120 } } }
+        ]
+      },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+};
+
+// src/cards/tiles/graphite-pickup-tile.ts
+var refreshInterval = 15 * 60 * 1e3;
+var pickupStyles = i`
+  .tile.due {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+  .tile.due .name {
+    color: var(--graphite-text-primary);
+  }
+  .tile.due .secondary {
+    color: var(--graphite-accent);
+  }
+  .tile.due .meter-icon {
+    opacity: 0.3;
+  }
+`;
+var GraphitePickupTile = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { tap_action: { action: "more-info" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+    this.refreshTimer = window.setInterval(() => this.requestUpdate(), refreshInterval);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+    window.clearInterval(this.refreshTimer);
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  next() {
+    const config = this.config;
+    if (!this.hass) return null;
+    const lookahead = Number(config.lookahead_days) > 0 ? Number(config.lookahead_days) : 40;
+    return nextPickup(this.hass, config.entity, lookahead, config.drop_after, () => this.requestUpdate());
+  }
+  renderIcon(stateObj) {
+    const icon = this.config.icon ? b2`<ha-icon .icon=${this.config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    return b2`<div class="meter-icon">${icon}</div>`;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.hass?.states[config.entity];
+    const next = this.next();
+    let value = "\u2013";
+    let secondary = "";
+    if (next?.days === 0) {
+      value = this.localize("pickup.today");
+      secondary = this.localize("pickup.todayHint");
+    } else if (next?.days === 1) {
+      value = this.localize("pickup.tomorrow");
+      secondary = this.localize("pickup.tomorrowHint");
+    } else if (next) {
+      const weekday = next.date.toLocaleDateString(this.language, { weekday: "short" }).replace(".", "");
+      value = this.localize("pickup.date", { weekday, day: next.date.getDate() });
+      secondary = this.localize("pickup.inDays", { days: next.days });
+    }
+    const due = !!next && next.days <= 1;
+    const name = config.name ?? stateObj?.attributes?.message ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    const classes = ["tile", "label", config.color ? "" : "no-stripe", due ? "due" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${config.color ? `--label-color: ${config.color}` : A}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(stateObj)}${config.color ? b2`<div class="stripe"></div>` : A}<div
+      class="name">${name}</div><div class="value-row"><div class=${next ? "value text" : "value"}>${value}</div>${secondary ? b2`<div class="secondary">${secondary}</div>` : A}</div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 6, rows: "auto", min_columns: 3 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("calendar.")) ?? "";
+    return { entity, color: "#9aa3ad" };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-pickup-tile-editor");
+  }
+};
+GraphitePickupTile.styles = [tileStyles, meterStyles, labelStyles, pickupStyles];
+registerElement("graphite-pickup-tile-editor", GraphitePickupTileEditor);
+registerCard("graphite-pickup-tile", GraphitePickupTile, {
+  name: "Graphite Pickup Tile",
+  description: "Next waste collection of a calendar entity; today and tomorrow are highlighted."
 });
 
 // src/index.ts

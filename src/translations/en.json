@@ -162,5 +162,24 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action"
     }
+  },
+  "pickup": {
+    "today": "Today",
+    "todayHint": "collection",
+    "tomorrow": "Tomorrow",
+    "tomorrowHint": "put out",
+    "date": "{weekday} {day}",
+    "inDays": "in {days} days",
+    "editor": {
+      "entity": "Collection calendar",
+      "name": "Name (default: event or calendar name)",
+      "icon": "Icon top right",
+      "color": "Color of the stripe on top",
+      "drop_after": "Today's collection counts as done after (HH:MM, default 12:00)",
+      "lookahead_days": "Days to look ahead (default 40)",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action"
+    }
   }
 }

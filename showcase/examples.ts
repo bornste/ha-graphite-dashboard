@@ -71,10 +71,18 @@ export const sampleStates: Record<string, any> = {
   "sensor.photo_printer_cyan": entity("sensor.photo_printer_cyan", "70", { friendly_name: "Cyan", unit_of_measurement: "%" }),
   "sensor.photo_printer_magenta": entity("sensor.photo_printer_magenta", "66", { friendly_name: "Magenta", unit_of_measurement: "%" }),
   "sensor.photo_printer_yellow": entity("sensor.photo_printer_yellow", "90", { friendly_name: "Yellow", unit_of_measurement: "%" }),
+  "calendar.paper_collection": entity("calendar.paper_collection", "off", { friendly_name: "Paper", message: "Paper" }),
+  "calendar.cardboard_collection": entity("calendar.cardboard_collection", "off", { friendly_name: "Cardboard", message: "Cardboard" }),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
 // canned results for the info templates (the showcase has no template engine)
+// collection days of the sample calendars, relative to today (calendar API of the pickup tile)
+export const calendarDays: Record<string, number[]> = {
+  "calendar.paper_collection": [1, 29],
+  "calendar.cardboard_collection": [8, 36],
+};
+
 // canned results for todo/item/list (preview of the todo tile)
 export const todoItems: Record<string, Array<{ summary: string; status: string }>> = {
   "todo.shopping": [
@@ -410,6 +418,27 @@ export function examples(language: string): ShowcaseSection[] {
             cards: [
               { type: "custom:graphite-ink-tile", entity: "sensor.office_printer", cartridges: ["sensor.office_printer_black", "sensor.office_printer_cyan", "sensor.office_printer_magenta", "sensor.office_printer_yellow"] },
               { type: "custom:graphite-ink-tile", entity: "sensor.photo_printer", cartridges: ["sensor.photo_printer_black", "sensor.photo_printer_gray", "sensor.photo_printer_cyan", "sensor.photo_printer_magenta", "sensor.photo_printer_yellow"] },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-pickup-tile",
+      description: `Next waste collection of a calendar; today and tomorrow are highlighted.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-pickup-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Collections",
+          note: "Paper is collected tomorrow, cardboard in a week.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Abfuhr" : "Collection",
+            layout: "grid",
+            columns: 2,
+            cards: [
+              { type: "custom:graphite-pickup-tile", entity: "calendar.paper_collection", icon: "mdi:newspaper-variant-outline", color: "#9aa3ad" },
+              { type: "custom:graphite-pickup-tile", entity: "calendar.cardboard_collection", icon: "mdi:package-variant-closed", color: "#b98a5e" },
             ],
           },
         },
