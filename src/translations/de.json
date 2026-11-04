@@ -93,5 +93,16 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "image": {
+    "editor": {
+      "entity": "Entität (z.B. das Skript, das gestartet wird)",
+      "name": "Name (Beschriftung ohne Bild, sonst nur für Screenreader)",
+      "image": "Bild (/local/... oder media-source://...)",
+      "busy": "Läuft-Anzeige (Tönung und Kreisel, solange die Entität an ist)",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

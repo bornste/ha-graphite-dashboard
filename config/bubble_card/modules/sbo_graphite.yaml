@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.124'
+  version: '0.125'
   creator: Bornste
   supported:
     - button
@@ -251,136 +251,6 @@ sbo_graphite:
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    /* IMAGE TILE: action tile (e.g. game, app). With a picture (sbo_graphite.image, /local/... or
-       media-source://...): the picture as a blurred, dimmed backdrop and as a square thumbnail bottom
-       left in full inner height, no text (the name stays for screen readers). Without a picture: label. */
-    .bubble-container.sbo-image-tile {
-      height: var(--sbo-image-tile-height, 72px) !important;
-      overflow: hidden;
-      isolation: isolate;
-    }
-    .sbo-image-tile.sbo-has-image .bubble-wrapper::before {
-      content: '';
-      position: absolute;
-      inset: -16px;
-      z-index: 0;
-      background: var(--sbo-image) center / cover no-repeat;
-      filter: blur(var(--sbo-image-blur, 8px)) saturate(1.3) brightness(var(--sbo-image-brightness, 0.6));
-      transform: scale(1.1);
-      pointer-events: none;
-    }
-    .sbo-image-tile.sbo-has-image .bubble-wrapper::after {
-      content: '';
-      position: absolute;
-      left: 10px;
-      bottom: 10px;
-      width: var(--sbo-image-size, calc(var(--sbo-image-tile-height, 72px) - 20px));
-      height: var(--sbo-image-size, calc(var(--sbo-image-tile-height, 72px) - 20px));
-      z-index: 0;
-      border-radius: 8px;
-      background: var(--sbo-image) center / cover no-repeat;
-      pointer-events: none;
-    }
-    /* visually hidden, still read by screen readers */
-    .sbo-image-tile.sbo-has-image .bubble-name-container {
-      position: absolute !important;
-      width: 1px !important;
-      height: 1px !important;
-      overflow: hidden !important;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-    .sbo-image-tile .sbo-busy-spinner {
-      z-index: 3;
-    }
-    .sbo-image-tile .bubble-wrapper {
-      position: relative;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: stretch !important;
-      height: 100%;
-      box-sizing: border-box;
-      padding: 0 10px 8px 10px;
-    }
-    .sbo-image-tile .bubble-button-background {
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      opacity: 1 !important;
-      background: none !important;
-      z-index: 1;
-    }
-
-    .sbo-image-tile .bubble-content-container {
-      position: relative;
-      z-index: 2;
-      margin: 0 !important;
-      min-height: 0 !important;
-      pointer-events: none;
-    }
-    .sbo-image-tile .bubble-icon-container,
-    .sbo-image-tile .bubble-state {
-      display: none !important;
-    }
-    /* Bubble lets the name container grow and centers the name: keep it at its own height,
-       so the (wrapping) label sits at the bottom */
-    .sbo-image-tile .bubble-name-container {
-      position: relative;
-      z-index: 2;
-      flex: 0 0 auto !important;
-      justify-content: flex-end !important;
-      margin: 0 !important;
-    }
-    .sbo-image-tile .bubble-name {
-      font-size: 13px;
-      font-weight: 400;
-      line-height: 1.15;
-      color: var(--sbo-text-primary);
-    }
-
-    /* short press feedback, the tile starts something */
-    .sbo-image-tile .bubble-button-background:active {
-      background: color-mix(in srgb, var(--sbo-ink) 6%, transparent) !important;
-    }
-    .sbo-image-tile.sbo-has-image .bubble-button-background:active {
-      background: rgba(0, 0, 0, 0.25) !important;
-    }
-
-    /* BUSY: generic running state (e.g. a script that takes minutes): soft accent tint
-       and a small spinner top right, for any card with sbo_graphite.busy */
-    .bubble-container.sbo-busy {
-      background-color: color-mix(in srgb, var(--sbo-accent) 12%, var(--sbo-surface-tile-active)) !important;
-    }
-    .sbo-busy-spinner {
-      display: none;
-      position: absolute;
-      top: var(--sbo-busy-inset, 10px);
-      right: var(--sbo-busy-inset, 10px);
-      z-index: 3;
-      width: 14px;
-      height: 14px;
-      box-sizing: border-box;
-      border-radius: 50%;
-      border: 2px solid color-mix(in srgb, var(--sbo-accent) 28%, transparent);
-      border-top-color: var(--sbo-accent);
-      pointer-events: none;
-      animation: sbo-busy-spin 0.9s linear infinite;
-    }
-    .sbo-busy .sbo-busy-spinner {
-      display: block;
-    }
-    .sbo-busy .bubble-name {
-      font-weight: 500;
-    }
-    @keyframes sbo-busy-spin {
-      to { transform: rotate(360deg); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .sbo-busy-spinner { animation-duration: 3s; }
     }
 
     /* OFFLINE BADGE: generic element (div.sbo-offline), only visible while the entity is unavailable */
@@ -1848,70 +1718,6 @@ sbo_graphite:
           actionContainer.addEventListener(eventName, stopSecondary, true);
       }
 
-      // image tile: action tile with a picture and a label; media-source images are
-      // resolved to a signed URL (shared cache, signatures are short-lived)
-      if (config.appearance?.image_tile)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const imageSource = config.image ? String(config.image).trim() : '';
-        if (container)
-        {
-          container.classList.add(`sbo-image-tile`);
-          container.classList.toggle(`sbo-has-image`, !!imageSource);
-          const applyImage = (url) => {
-            container.style.setProperty('--sbo-image', `url("${url}")`);
-            container.dataset.sboImage = imageSource;
-          };
-          if (!imageSource)
-            container.style.removeProperty('--sbo-image');
-          else if (container.dataset.sboImage !== imageSource)
-          {
-            if (!imageSource.startsWith('media-source://'))
-              applyImage(imageSource);
-            else if (hass?.callWS)
-            {
-              const imageCache = window.sboImageCache || (window.sboImageCache = {});
-              const cached = imageCache[imageSource];
-              if (cached && Date.now() - cached.resolvedAt < 20000)
-                applyImage(cached.url);
-              else if (!cached?.pending)
-              {
-                imageCache[imageSource] = { ...(cached || {}), pending: true };
-                hass.callWS({ type: 'media_source/resolve_media', media_content_id: imageSource })
-                  .then(result => {
-                    const url = hass.hassUrl ? hass.hassUrl(result.url) : result.url;
-                    imageCache[imageSource] = { url: url, resolvedAt: Date.now(), pending: false };
-                    applyImage(url);
-                  })
-                  .catch(() => { imageCache[imageSource] = { pending: false, resolvedAt: 0 }; });
-              }
-            }
-          }
-        }
-      }
-
-      // busy state: spinner while the card entity is on (e.g. a running script),
-      // or while the configured conditions are met
-      if (config.busy || config.busy_conditions)
-      {
-        const container = card.querySelector(`.bubble-container`) || card.querySelector(`.bubble-sub-buttons-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`) || container;
-        if (container && wrapper)
-        {
-          if (!wrapper.querySelector(`.sbo-busy-spinner`))
-          {
-            const spinner = document.createElement('div');
-            spinner.className = 'sbo-busy-spinner';
-            wrapper.appendChild(spinner);
-          }
-          const busyConditions = config.busy_conditions;
-          const isBusy = busyConditions
-            ? checkConditionsMet([].concat(busyConditions), hass)
-            : hass?.states?.[this.config?.entity]?.state === 'on';
-          container.classList.toggle(`sbo-busy`, !!isBusy);
-        }
-      }
-
       // slider values: kelvin for the white temperature slider (Bubble shows none),
       // other sliders (e.g. number entities) get their label from the sub-button name
       // and the value in percent of the range
@@ -2419,10 +2225,6 @@ sbo_graphite:
       label: Header summary text when all counts are 0 (e.g. Alles in Ordnung)
       selector:
         text: {}
-    - name: image
-      label: Image for the image tile (/local/... or media-source://...)
-      selector:
-        text: {}
     - name: wall_switch
       label: Status row of a lamp on a wall switch (offline counts as off, value 'Aus' instead of the offline badge)
       selector:
@@ -2451,14 +2253,6 @@ sbo_graphite:
       label: Lamp on a wall switch (light tile without toggle, 'Wandschalter' hint, offline counts as off)
       selector:
         boolean: {}
-    - name: busy
-      label: Show a spinner while the entity is on (e.g. a running script)
-      selector:
-        boolean: {}
-    - name: busy_conditions
-      label: Show the spinner while these conditions are met (instead of the entity state)
-      selector:
-        condition: {}
     - type: expandable
       name: appearance
       title: Appearance
@@ -2472,11 +2266,6 @@ sbo_graphite:
           default: false
         - name: clock_card
           label: Show as clock card (status pills, time, date)
-          selector:
-            boolean: {}
-          default: false
-        - name: image_tile
-          label: Show as image tile (blurred picture from 'Image' with a thumbnail, label without picture)
           selector:
             boolean: {}
           default: false

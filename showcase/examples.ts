@@ -51,6 +51,9 @@ export const sampleStates: Record<string, any> = {
   "sensor.server_cpu": entity("sensor.server_cpu", "34", { unit_of_measurement: "%", friendly_name: "CPU", icon: "mdi:speedometer" }),
   "sensor.server_memory": entity("sensor.server_memory", "58", { unit_of_measurement: "%", friendly_name: "Memory", icon: "mdi:memory" }),
   "sensor.server_disk": entity("sensor.server_disk", "86", { unit_of_measurement: "%", friendly_name: "Disk", icon: "mdi:harddisk" }),
+  "script.start_racing_game": entity("script.start_racing_game", "on", { friendly_name: "Racing game" }, 1),
+  "script.start_puzzle_game": entity("script.start_puzzle_game", "off", { friendly_name: "Puzzle game" }, 300),
+  "script.start_streaming": entity("script.start_streaming", "off", { friendly_name: "Streaming" }, 900),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
@@ -295,6 +298,27 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-effect-tile", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
               { type: "custom:graphite-effect-tile", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
               { type: "custom:graphite-effect-tile", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-image-tile",
+      description: `Action tile with a picture (blurred backdrop and thumbnail) or a label; a spinner while the script runs.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-image-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Games and apps",
+          note: "The racing game is starting (busy), the streaming tile has no picture and shows its label.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Spiele" : "Games",
+            layout: "horizontal",
+            cards: [
+              { type: "custom:graphite-image-tile", entity: "script.start_racing_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e4644b'/><stop offset='1' stop-color='%233a1a4f'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
+              { type: "custom:graphite-image-tile", entity: "script.start_puzzle_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236fbf5a'/><stop offset='1' stop-color='%231b3f6b'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
+              { type: "custom:graphite-image-tile", entity: "script.start_streaming", busy: true, tap_action: { action: "toggle" } },
             ],
           },
         },

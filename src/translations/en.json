@@ -93,5 +93,16 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action"
     }
+  },
+  "image": {
+    "editor": {
+      "entity": "Entity (e.g. the script that is started)",
+      "name": "Name (label without an image, else only for screen readers)",
+      "image": "Image (/local/... or media-source://...)",
+      "busy": "Busy indicator (tint and spinner while the entity is on)",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action"
+    }
   }
 }
