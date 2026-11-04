@@ -104,5 +104,26 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "stopwatch": {
+    "running": "läuft",
+    "paused": "pausiert",
+    "remaining": "noch {time}",
+    "minutes": "{minutes} Min.",
+    "hours": "{hours}:{minutes} h",
+    "editor": {
+      "entity": "Stoppuhr-Sensor (Stopwatch Plus)",
+      "name": "Name (Standard: Name der Entität)",
+      "icon": "Icon (Standard: Icon der Entität)",
+      "icon_position": "Icon-Position (watermark = oben rechts, left = links wie bei den Zeilen)",
+      "color": "Farbe des Streifens oben (ohne Farbe kein Streifen)",
+      "picture_entity": "Bild-Entität (z.B. Gamerpic, rund links)",
+      "limit": "Tageslimit (Minuten oder Entität; YAML pro Tag: weekday, weekend, mon … sun)",
+      "warn_before": "Hinweis so viele Minuten vor dem Limit (Standard 10)",
+      "day_start": "Tagesbeginn (Standard 03:00)",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
+    }
   }
 }

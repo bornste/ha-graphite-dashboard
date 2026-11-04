@@ -7,6 +7,7 @@ import "./cards/tiles/graphite-switch-tile";
 import "./cards/tiles/graphite-meter-tile";
 import "./cards/tiles/graphite-effect-tile";
 import "./cards/tiles/graphite-image-tile";
+import "./cards/tiles/graphite-stopwatch-tile";
 
 window.graphiteCards = { version };
 

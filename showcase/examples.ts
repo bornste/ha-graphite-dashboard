@@ -54,6 +54,10 @@ export const sampleStates: Record<string, any> = {
   "script.start_racing_game": entity("script.start_racing_game", "on", { friendly_name: "Racing game" }, 1),
   "script.start_puzzle_game": entity("script.start_puzzle_game", "off", { friendly_name: "Puzzle game" }, 300),
   "script.start_streaming": entity("script.start_streaming", "off", { friendly_name: "Streaming" }, 900),
+  "sensor.player_one_playing_time": entity("sensor.player_one_playing_time", "11700", { friendly_name: "Player one", status: "running", accumulated_seconds: 11400, running_since: minutesAgo(5), icon: "mdi:controller" }, 5),
+  "sensor.player_two_playing_time": entity("sensor.player_two_playing_time", "6480", { friendly_name: "Player two", status: "running", accumulated_seconds: 6000, running_since: minutesAgo(8), icon: "mdi:controller" }, 8),
+  "sensor.tv_watching_time": entity("sensor.tv_watching_time", "4980", { friendly_name: "TV", status: "paused", accumulated_seconds: 4980, icon: "mdi:television" }, 30),
+  "image.player_two_picture": entity("image.player_two_picture", "2026-11-01", { friendly_name: "Player two", entity_picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' fill='%237aa5d6'/><circle cx='18' cy='14' r='7' fill='%23ffffff' opacity='0.85'/><rect x='7' y='24' width='22' height='14' rx='7' fill='%23ffffff' opacity='0.85'/></svg>" }),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
 };
 
@@ -319,6 +323,28 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-image-tile", entity: "script.start_racing_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e4644b'/><stop offset='1' stop-color='%233a1a4f'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
               { type: "custom:graphite-image-tile", entity: "script.start_puzzle_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236fbf5a'/><stop offset='1' stop-color='%231b3f6b'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
               { type: "custom:graphite-image-tile", entity: "script.start_streaming", busy: true, tap_action: { action: "toggle" } },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-stopwatch-tile",
+      description: `Elapsed time of a Stopwatch Plus sensor, optional daily limit; picture or icon on the left.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-stopwatch-tile.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Playing and watching time",
+          note: "Player one runs without a limit, player two is close to the limit (picture on the left), TV is paused (icon on the left).",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Spielzeit" : "Playing time",
+            layout: "grid",
+            columns: 3,
+            cards: [
+              { type: "custom:graphite-stopwatch-tile", entity: "sensor.player_one_playing_time", icon: "mdi:controller" },
+              { type: "custom:graphite-stopwatch-tile", entity: "sensor.player_two_playing_time", icon: "mdi:controller", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
+              { type: "custom:graphite-stopwatch-tile", entity: "sensor.tv_watching_time", icon: "mdi:television", icon_position: "left" },
             ],
           },
         },

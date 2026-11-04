@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.8.0";
+var version = "0.9.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -658,6 +658,27 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen"
     }
+  },
+  stopwatch: {
+    running: "l\xE4uft",
+    paused: "pausiert",
+    remaining: "noch {time}",
+    minutes: "{minutes} Min.",
+    hours: "{hours}:{minutes} h",
+    editor: {
+      entity: "Stoppuhr-Sensor (Stopwatch Plus)",
+      name: "Name (Standard: Name der Entit\xE4t)",
+      icon: "Icon (Standard: Icon der Entit\xE4t)",
+      icon_position: "Icon-Position (watermark = oben rechts, left = links wie bei den Zeilen)",
+      color: "Farbe des Streifens oben (ohne Farbe kein Streifen)",
+      picture_entity: "Bild-Entit\xE4t (z.B. Gamerpic, rund links)",
+      limit: "Tageslimit (Minuten oder Entit\xE4t; YAML pro Tag: weekday, weekend, mon \u2026 sun)",
+      warn_before: "Hinweis so viele Minuten vor dem Limit (Standard 10)",
+      day_start: "Tagesbeginn (Standard 03:00)",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -764,6 +785,27 @@ var en_default = {
       name: "Name (label without an image, else only for screen readers)",
       image: "Image (/local/... or media-source://...)",
       busy: "Busy indicator (tint and spinner while the entity is on)",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
+    }
+  },
+  stopwatch: {
+    running: "running",
+    paused: "paused",
+    remaining: "{time} left",
+    minutes: "{minutes} min",
+    hours: "{hours}:{minutes} h",
+    editor: {
+      entity: "Stopwatch sensor (Stopwatch Plus)",
+      name: "Name (default: entity name)",
+      icon: "Icon (default: entity icon)",
+      icon_position: "Icon position (watermark = top right, left = on the left like the rows)",
+      color: "Color of the stripe on top (no stripe without a color)",
+      picture_entity: "Picture entity (e.g. a gamer picture, round on the left)",
+      limit: "Daily limit (minutes or an entity; YAML per day: weekday, weekend, mon \u2026 sun)",
+      warn_before: "Hint this many minutes before the limit (default 10)",
+      day_start: "Start of the day (default 03:00)",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action"
@@ -2848,6 +2890,279 @@ registerElement("graphite-image-tile-editor", GraphiteImageTileEditor);
 registerCard("graphite-image-tile", GraphiteImageTile, {
   name: "Graphite Image Tile",
   description: "Action tile with a picture (blurred backdrop and thumbnail) or a label; optional busy spinner."
+});
+
+// src/cards/tiles/graphite-stopwatch-tile-editor.ts
+var GraphiteStopwatchTileEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "stopwatch.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: { domain: "sensor" } } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "icon_position", selector: { select: { mode: "dropdown", options: ["watermark", "left"] } } },
+          { name: "color", selector: { text: {} } }
+        ]
+      },
+      { name: "picture_entity", selector: { entity: {} } },
+      { name: "limit", selector: { object: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "warn_before", selector: { number: { mode: "box", min: 0 } } },
+          { name: "day_start", selector: { text: {} } }
+        ]
+      },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+  skipValue(key, value) {
+    if (key === "limit") return value === null || typeof value === "object" && Object.keys(value).length === 0;
+    if (key === "icon_position") return value === "watermark";
+    return false;
+  }
+};
+
+// src/cards/tiles/label-styles.ts
+var labelStyles = i`
+  .tile.label {
+    height: var(--graphite-tile-height, 80px);
+  }
+  .tile.label.no-stripe {
+    height: var(--graphite-tile-height-compact, 72px);
+  }
+  .stripe {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    top: 10px;
+    width: 28px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--label-color, var(--graphite-accent));
+  }
+  .tile.label .name {
+    top: 20px;
+  }
+  .tile.label.no-stripe .name {
+    top: 10px;
+  }
+  .tile.label .value-row {
+    bottom: 9px;
+  }
+  /* words as value (e.g. "keine Artikel", "morgen") read larger than numbers: 20px */
+  .value.text {
+    font-size: var(--graphite-font-value-text-size, 20px);
+  }
+`;
+
+// src/cards/tiles/graphite-stopwatch-tile.ts
+var weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+var tickInterval = 15e3;
+var stopwatchStyles = i`
+  /* running: accent tint, name in primary, secondary text in accent */
+  .tile.running {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+  }
+  .tile.running.over {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 28%), var(--graphite-surface-tile-active));
+  }
+  .tile.running .name {
+    color: var(--graphite-text-primary);
+  }
+  .tile.running .secondary {
+    color: var(--graphite-accent);
+  }
+  /* the muted unit is too weak on tinted tiles */
+  .tile.running .unit {
+    color: var(--graphite-text-secondary);
+  }
+  .tile.running .meter-icon {
+    opacity: 0.3;
+  }
+  .tile.warn .secondary,
+  .tile.over .secondary {
+    color: var(--graphite-accent);
+    font-weight: 500;
+  }
+  .tile.over .value {
+    color: var(--graphite-accent);
+  }
+  /* round picture left of the text, 12px from the edge and 12px to the text at 60px (like the rows);
+     the watermark icon stays top right */
+  .picture {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    top: 50%;
+    width: 36px;
+    height: 36px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: var(--graphite-surface-track) center / cover no-repeat;
+    pointer-events: none;
+  }
+  /* icon left: the same 42px box as the row icons, at 9px */
+  .left-icon {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    transform: translateY(-50%);
+    color: var(--graphite-text-secondary);
+    pointer-events: none;
+    --mdc-icon-size: var(--graphite-row-icon-size, 24px);
+  }
+  .tile.running .left-icon {
+    color: var(--graphite-accent);
+  }
+  .tile.inset .name,
+  .tile.inset .value-row {
+    left: 60px;
+  }
+`;
+var GraphiteStopwatchTile = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    const limitEntities = typeof config.limit === "object" && config.limit !== null ? Object.values(config.limit).filter((value) => typeof value === "string") : typeof config.limit === "string" ? [config.limit] : [];
+    return [config.entity, config.picture_entity, ...limitEntities].filter((id) => !!id);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+    this.tickTimer = window.setInterval(() => {
+      if (this.stateObj?.attributes?.status === "running") this.requestUpdate();
+    }, tickInterval);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+    window.clearInterval(this.tickTimer);
+  }
+  get stateObj() {
+    return this.hass?.states[this.config.entity];
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  // the "day" starts at day_start (default 03:00, like the nightly reset), so a late
+  // Saturday evening still counts as Saturday
+  limitMinutes() {
+    const config = this.config;
+    let limit;
+    if (config.limit !== null && typeof config.limit === "object") {
+      const [hours, minutes] = String(config.day_start ?? "03:00").split(":").map(Number);
+      const dayStartMs = ((hours || 0) * 60 + (minutes || 0)) * 6e4;
+      const dayIndex = new Date(Date.now() - dayStartMs).getDay();
+      const isWeekend = dayIndex === 0 || dayIndex === 6;
+      limit = config.limit[weekdayKeys[dayIndex]] ?? (isWeekend ? config.limit.weekend : config.limit.weekday);
+    } else {
+      limit = config.limit;
+    }
+    const value = this.limitValue(limit);
+    return value !== null && value > 0 ? value : null;
+  }
+  // minutes of a limit: a number, or the state of an entity (unit "h" is converted, otherwise minutes)
+  limitValue(limit) {
+    if (typeof limit === "number") return limit;
+    if (typeof limit !== "string" || !limit) return null;
+    const stateObj = this.hass?.states[limit];
+    const value = parseFloat(stateObj?.state ?? "");
+    if (!Number.isFinite(value)) return null;
+    const unit = String(stateObj?.attributes?.unit_of_measurement ?? "").trim().toLowerCase();
+    return ["h", "hour", "hours", "std", "std."].includes(unit) ? value * 60 : value;
+  }
+  durationText(minutes) {
+    return minutes >= 60 ? this.localize("stopwatch.hours", { hours: Math.floor(minutes / 60), minutes: String(minutes % 60).padStart(2, "0") }) : this.localize("stopwatch.minutes", { minutes });
+  }
+  renderIcon(stateObj, left) {
+    const icon = this.config.icon ? b2`<ha-icon .icon=${this.config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    return b2`<div class=${left ? "left-icon" : "meter-icon"}>${icon}</div>`;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.stateObj;
+    const attributes = stateObj?.attributes ?? {};
+    const isRunning = attributes.status === "running";
+    const isPaused = attributes.status === "paused";
+    let elapsedSeconds = parseFloat(stateObj?.state ?? "") || 0;
+    if (isRunning && attributes.running_since) {
+      elapsedSeconds = (Number(attributes.accumulated_seconds) || 0) + Math.max(0, (Date.now() - new Date(attributes.running_since).getTime()) / 1e3);
+    }
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+    const elapsedText = `${Math.floor(elapsedMinutes / 60)}:${String(elapsedMinutes % 60).padStart(2, "0")}`;
+    const limit = this.limitMinutes();
+    const isOver = limit !== null && elapsedMinutes >= limit;
+    const isWarn = limit !== null && !isOver && isRunning && elapsedMinutes >= limit - (config.warn_before ?? 10);
+    let secondary = isRunning ? this.localize("stopwatch.running") : isPaused ? this.localize("stopwatch.paused") : "";
+    if (limit !== null) {
+      const difference = this.durationText(Math.abs(limit - elapsedMinutes));
+      secondary = isOver ? `+${difference}` : this.localize("stopwatch.remaining", { time: difference });
+    }
+    const pictureUrl = config.picture_entity ? this.hass?.states[config.picture_entity]?.attributes?.entity_picture : void 0;
+    const iconLeft = !pictureUrl && config.icon_position === "left";
+    const name = config.name ?? attributes.friendly_name ?? config.entity;
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    const classes = [
+      "tile",
+      "label",
+      config.color ? "" : "no-stripe",
+      isRunning ? "running" : "",
+      isWarn ? "warn" : "",
+      isOver ? "over" : "",
+      pictureUrl || iconLeft ? "inset" : "",
+      interactive ? "interactive" : ""
+    ].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${config.color ? `--label-color: ${config.color}` : A}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${pictureUrl ? b2`<div class="picture" style=${`background-image: url("${pictureUrl}")`}></div>` : A}${this.renderIcon(stateObj, iconLeft)}${config.color ? b2`<div class="stripe"></div>` : A}<div
+      class="name">${name}</div><div class="value-row"><div class="value">${elapsedText}<span class="unit">h</span></div>${secondary ? b2`<div class="secondary">${secondary}</div>` : A}</div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 6, rows: "auto", min_columns: 3 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("sensor.") && hass.states[id].attributes?.status !== void 0 && hass.states[id].attributes?.accumulated_seconds !== void 0) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-stopwatch-tile-editor");
+  }
+};
+GraphiteStopwatchTile.styles = [tileStyles, meterStyles, labelStyles, stopwatchStyles];
+registerElement("graphite-stopwatch-tile-editor", GraphiteStopwatchTileEditor);
+registerCard("graphite-stopwatch-tile", GraphiteStopwatchTile, {
+  name: "Graphite Stopwatch Tile",
+  description: "Elapsed time of a Stopwatch Plus sensor, optional daily limit, picture or icon on the left."
 });
 
 // src/index.ts

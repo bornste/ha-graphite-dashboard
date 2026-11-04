@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.125'
+  version: '0.126'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the label tiles (pickup, stopwatch, todo, ink).
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile, clock card and the label tiles (pickup, todo, ink).
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -929,7 +929,7 @@ sbo_graphite:
       color: var(--sbo-text-secondary);
     }
 
-    /* LABEL LAYOUT (pickup, stopwatch, todo, ink tiles): short label stripe on top, name below it,
+    /* LABEL LAYOUT (pickup, todo, ink tiles): short label stripe on top, name below it,
        value and secondary value at the bottom. The meter tiles themselves are graphite-meter-tile now. */
     /* same height as the switch tiles: room between name and value */
     .bubble-container.sbo-meter-tile {
@@ -1063,7 +1063,7 @@ sbo_graphite:
     .sbo-meter-tile.sbo-meter-label .sbo-meter-fill {
       display: none;
     }
-    /* no stripe where it would carry no meaning (todo, stopwatch without own color): name moves up */
+    /* no stripe where it would carry no meaning (todo without own color): name moves up */
     .sbo-meter-tile.sbo-meter-label.sbo-no-stripe .sbo-meter-bar {
       display: none;
     }
@@ -1095,80 +1095,6 @@ sbo_graphite:
     .sbo-pickup-tile.sbo-pickup-due .bubble-icon {
       opacity: 0.3 !important;
     }
-    /* STOPWATCH TILE (Stopwatch integration sensor): meter "label" grammar with the elapsed time.
-       The tint always means "running" (also over the limit); paused or stopped tiles stay neutral.
-       Close to the limit: secondary text emphasized; over the limit: time and secondary text in accent,
-       and while running a stronger tint (no red tiles, same highlight family as a due waste collection). */
-    .bubble-container.sbo-stopwatch-tile.sbo-stopwatch-running {
-      background-color: color-mix(in srgb, var(--sbo-accent) var(--sbo-switch-tint, 18%), var(--sbo-surface-tile-active)) !important;
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-running .sbo-meter-name {
-      color: var(--sbo-text-primary);
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-running .sbo-meter-secondary {
-      color: var(--sbo-accent);
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-warn .sbo-meter-secondary {
-      color: var(--sbo-accent) !important;
-      font-weight: 500;
-    }
-    .bubble-container.sbo-stopwatch-tile.sbo-stopwatch-running.sbo-stopwatch-over {
-      background-color: color-mix(in srgb, var(--sbo-accent) var(--sbo-alert-tint, 28%), var(--sbo-surface-tile-active)) !important;
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-over .sbo-meter-value {
-      color: var(--sbo-accent);
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-over .sbo-meter-secondary {
-      color: var(--sbo-accent) !important;
-      font-weight: 500;
-    }
-    /* picture_entity (e.g. a gamer picture): round picture left of the text, 12px from the edge and
-       12px to the text at 60px (same as the rows below); the watermark icon stays top right */
-    .sbo-stopwatch-picture {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      width: 36px;
-      height: 36px;
-      transform: translateY(-50%);
-      border-radius: 50%;
-      background: var(--sbo-surface-track) center / cover no-repeat;
-      pointer-events: none;
-    }
-    .sbo-stopwatch-tile:is(.sbo-has-picture, .sbo-stopwatch-icon-left) .sbo-meter-name,
-    .sbo-stopwatch-tile:is(.sbo-has-picture, .sbo-stopwatch-icon-left) .sbo-meter-row {
-      left: 60px;
-    }
-    /* icon_position: left - the icon moves from the watermark into the same 42px box as the row icons
-       (at 9px, like the rows after their 1px correction) */
-    .sbo-stopwatch-tile.sbo-stopwatch-icon-left .bubble-icon-container {
-      left: 9px;
-      right: auto;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 42px !important;
-      height: 42px !important;
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-      --mdc-icon-size: 24px;
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-icon-left .bubble-icon {
-      color: var(--sbo-text-secondary) !important;
-      opacity: 1 !important;
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-icon-left.sbo-stopwatch-running .bubble-icon {
-      color: var(--sbo-accent) !important;
-      opacity: 1 !important;
-    }
-    /* the muted unit is too weak on tinted tiles */
-    .sbo-stopwatch-tile.sbo-stopwatch-running .sbo-meter-unit {
-      color: var(--sbo-text-secondary);
-    }
-    .sbo-stopwatch-tile.sbo-stopwatch-running .bubble-icon {
-      opacity: 0.3 !important;
-    }
-
     /* TODO TILE (todo list, e.g. shopping): label grammar, open item count, first items as secondary text */
     .sbo-todo-tile .sbo-meter-secondary {
       max-width: 62%;
@@ -2034,121 +1960,6 @@ sbo_graphite:
         }
       }
 
-      // stopwatch tile: elapsed time of a Stopwatch sensor, optional daily limit
-      if (config.stopwatch)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        const entityId = this.config?.entity;
-        if (container && wrapper && entityId)
-        {
-          const stopwatchConfig = config.stopwatch;
-          container.classList.add(`sbo-meter-tile`, `sbo-meter-label`, `sbo-stopwatch-tile`);
-          let meter = wrapper.querySelector(`.sbo-meter`);
-          if (!meter)
-          {
-            meter = document.createElement('div');
-            meter.className = 'sbo-meter';
-            meter.innerHTML = `<div class="sbo-meter-name"></div>`
-              + `<div class="sbo-meter-row"><div class="sbo-meter-value"><span class="sbo-meter-number"></span><span class="sbo-meter-unit"></span></div><div class="sbo-meter-secondary"></div></div>`
-              + `<div class="sbo-meter-bar"><div class="sbo-meter-fill"></div><div class="sbo-meter-dot"></div></div>`;
-            wrapper.appendChild(meter);
-          }
-          container.style.setProperty('--sbo-meter-color', stopwatchConfig.color || 'var(--sbo-accent)');
-          container.classList.toggle(`sbo-no-stripe`, !stopwatchConfig.color);
-
-          // picture_entity: entity_picture of that entity (e.g. image.xyz_gamerpic) as a round picture left of the text
-          const pictureEntityId = stopwatchConfig.picture_entity;
-          const pictureUrl = pictureEntityId ? hass.states[pictureEntityId]?.attributes?.entity_picture : '';
-          let picture = wrapper.querySelector(`.sbo-stopwatch-picture`);
-          if (pictureUrl)
-          {
-            if (!picture)
-            {
-              picture = document.createElement('div');
-              picture.className = 'sbo-stopwatch-picture';
-              wrapper.appendChild(picture);
-            }
-            const pictureStyle = `url("${pictureUrl}")`;
-            if (picture.style.backgroundImage !== pictureStyle)
-              picture.style.backgroundImage = pictureStyle;
-          }
-          else if (picture)
-            picture.remove();
-          container.classList.toggle(`sbo-has-picture`, !!pictureUrl);
-          // icon_position: left puts the icon left of the text (like the rows) instead of the watermark
-          container.classList.toggle(`sbo-stopwatch-icon-left`, !pictureUrl && stopwatchConfig.icon_position === 'left');
-
-          // the "day" starts at day_start (default 03:00, like the nightly reset), so a late
-          // Saturday evening still counts as Saturday
-          const dayStartParts = String(stopwatchConfig.day_start || '03:00').split(':').map(Number);
-          const dayStartMs = ((dayStartParts[0] || 0) * 60 + (dayStartParts[1] || 0)) * 60000;
-          const weekdayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-
-          // limit in minutes: number, map per weekday (mon..sun / weekday / weekend) or an entity
-          const limitMinutes = () => {
-            if (stopwatchConfig.limit_entity)
-            {
-              const limitValue = parseFloat(hass.states[stopwatchConfig.limit_entity]?.state);
-              return Number.isFinite(limitValue) && limitValue > 0 ? limitValue : null;
-            }
-            const limit = stopwatchConfig.limit;
-            if (typeof limit === 'number')
-              return limit > 0 ? limit : null;
-            if (limit && typeof limit === 'object')
-            {
-              const dayIndex = new Date(Date.now() - dayStartMs).getDay();
-              const isWeekend = dayIndex === 0 || dayIndex === 6;
-              const value = limit[weekdayKeys[dayIndex]] ?? (isWeekend ? limit.weekend : limit.weekday);
-              return Number(value) > 0 ? Number(value) : null;
-            }
-            return null;
-          };
-
-          const renderTile = () => {
-            const stateObj = hass.states[entityId];
-            const attributes = stateObj?.attributes || {};
-            const isRunning = attributes.status === 'running';
-            const isPaused = attributes.status === 'paused';
-            // live elapsed time from the attributes, so the tile ticks between sensor updates
-            let elapsedSeconds = parseFloat(stateObj?.state) || 0;
-            if (isRunning && attributes.running_since)
-              elapsedSeconds = (Number(attributes.accumulated_seconds) || 0)
-                + Math.max(0, (Date.now() - new Date(attributes.running_since).getTime()) / 1000);
-            const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-            const limit = limitMinutes();
-            const warnBefore = Number(stopwatchConfig.warn_before ?? 10);
-            const isOver = limit !== null && elapsedMinutes >= limit;
-            const isWarn = limit !== null && !isOver && isRunning && elapsedMinutes >= limit - warnBefore;
-
-            // without a limit the status is shown; with a limit only the remaining or extra time
-            // ('noch 12 Min.', '+38 Min.'), the tint already tells whether it is running
-            let secondaryText = isRunning ? 'läuft' : (isPaused ? 'pausiert' : '');
-            if (limit !== null)
-            {
-              const difference = Math.abs(limit - elapsedMinutes);
-              const differenceText = difference >= 60
-                ? `${Math.floor(difference / 60)}:${String(difference % 60).padStart(2, '0')} h`
-                : `${difference} Min.`;
-              secondaryText = isOver ? `+${differenceText}` : `noch ${differenceText}`;
-            }
-
-            meter.querySelector(`.sbo-meter-name`).textContent = this.config?.name || attributes.friendly_name || entityId;
-            meter.querySelector(`.sbo-meter-number`).textContent = `${Math.floor(elapsedMinutes / 60)}:${String(elapsedMinutes % 60).padStart(2, '0')}`;
-            meter.querySelector(`.sbo-meter-unit`).textContent = 'h';
-            meter.querySelector(`.sbo-meter-secondary`).textContent = secondaryText;
-            container.classList.toggle(`sbo-stopwatch-running`, isRunning);
-            container.classList.toggle(`sbo-stopwatch-warn`, isWarn);
-            container.classList.toggle(`sbo-stopwatch-over`, isOver);
-          };
-          renderTile();
-          // tick while running (the sensor itself may update less often)
-          clearInterval(container.sboStopwatchTimer);
-          if (hass.states[entityId]?.attributes?.status === 'running')
-            container.sboStopwatchTimer = setInterval(renderTile, 15000);
-        }
-      }
-
       // sub-button configurations
       const subbuttonConfigs = config.subbuttons?.configurations;
       if (Array.isArray(subbuttonConfigs))
@@ -2329,47 +2140,6 @@ sbo_graphite:
               max: 50
               step: 1
               mode: box
-    - type: expandable
-      name: stopwatch
-      title: Stopwatch tile (elapsed time, optional daily limit)
-      icon: mdi:timer-outline
-      expanded: false
-      schema:
-        - name: color
-          label: Label stripe color (no stripe without a color)
-          selector:
-            text: {}
-        - name: limit
-          label: "Limit in minutes (number, or in YAML per day: {weekday: 60, weekend: 120} or mon..sun)"
-          selector:
-            object: {}
-        - name: limit_entity
-          label: Limit from an entity (minutes, instead of 'limit')
-          selector:
-            entity: {}
-        - name: warn_before
-          label: Warn this many minutes before the limit (default 10)
-          selector:
-            number:
-              min: 0
-              max: 60
-              step: 1
-              mode: box
-        - name: day_start
-          label: "Day starts at (HH:MM, default 03:00, e.g. the nightly reset)"
-          selector:
-            text: {}
-        - name: picture_entity
-          label: Picture from an entity (entity_picture, e.g. a gamer picture) left of the text
-          selector:
-            entity: {}
-        - name: icon_position
-          label: Icon position (watermark top right or left of the text like the rows)
-          selector:
-            select:
-              options:
-                - top_right
-                - left
     - type: expandable
       name: pickup
       title: Pickup tile (calendar, waste collection)
