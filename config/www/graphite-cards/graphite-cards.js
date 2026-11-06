@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.18.1";
+var version = "0.19.7";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -823,6 +823,32 @@ var de_default = {
     color_temp: "Weisston",
     hue: "Farbe",
     saturation: "S\xE4ttigung"
+  },
+  light: {
+    editor: {
+      entity: "Lampe",
+      name: "Name (Standard: Name der Entit\xE4t)",
+      icon: "Icon",
+      sliders: "Welche Regler (leer: Helligkeit, Weisston falls m\xF6glich)",
+      allow_off: "Helligkeit ganz links schaltet aus",
+      wall_switch: "Wandschalter (statt Schalter)",
+      since_line: "\xABseit\xBB-Zeile anzeigen",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen",
+      attributes: {
+        brightness: "Helligkeit",
+        color_temp: "Weisston",
+        hue: "Farbe",
+        saturation: "S\xE4ttigung"
+      },
+      unavailable_sliders: "Regler, wenn nicht erreichbar oder am Wandschalter aus",
+      unavailableSliders: {
+        show: "Gesperrt anzeigen (Layout bleibt)",
+        hide: "Ausblenden (nur der Kopf)"
+      },
+      show_sliders: "Regler anzeigen"
+    }
   }
 };
 
@@ -1098,6 +1124,32 @@ var en_default = {
     color_temp: "White",
     hue: "Color",
     saturation: "Saturation"
+  },
+  light: {
+    editor: {
+      entity: "Lamp",
+      name: "Name (default: entity name)",
+      icon: "Icon",
+      sliders: "Which sliders (empty: brightness, white temperature if supported)",
+      allow_off: "Brightness leftmost turns off",
+      wall_switch: "Wall switch (instead of the toggle)",
+      since_line: "Show the \xABsince\xBB line",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action",
+      attributes: {
+        brightness: "Brightness",
+        color_temp: "White temperature",
+        hue: "Color",
+        saturation: "Saturation"
+      },
+      unavailable_sliders: "Sliders while unreachable or off at the wall",
+      unavailableSliders: {
+        show: "Show locked (layout stays)",
+        hide: "Hide (head only)"
+      },
+      show_sliders: "Show sliders"
+    }
   }
 };
 
@@ -2126,6 +2178,7 @@ var GraphiteRow = class extends GraphiteCard {
       const moment = stateObj.attributes?.[config.since_attribute] ? new Date(stateObj.attributes[config.since_attribute]) : null;
       return moment && !Number.isNaN(moment.getTime()) ? this.localize("rows.attributeAgo", { label, ago: agoText(moment, this.language) }) : this.localize("rows.never", { label });
     }
+    if (config.since_line === false) return "";
     const isMeasurement = !!stateObj.attributes?.unit_of_measurement;
     const showSince = typeof config.since_line === "boolean" ? config.since_line : !isMeasurement;
     if (!offline && !showSince) return "";
@@ -2187,6 +2240,11 @@ var GraphiteFormEditor = class extends HTMLElement {
   skipValue(_key, _value) {
     return false;
   }
+  // values the card uses when an option is not set; the form shows them, and a value equal to its
+  // default (or an empty list) is not stored, so the card falls back to its default again
+  defaults() {
+    return {};
+  }
   // translated label of a select option, e.g. optionLabel("range.days") -> "<prefix>.range.days"
   optionLabel(key) {
     const fullKey = `${this.labelPrefix()}.${key}`;
@@ -2224,11 +2282,11 @@ var GraphiteFormEditor = class extends HTMLElement {
       };
     }
     if (this.hassObject) this.form.hass = this.hassObject;
-    this.form.data = this.config;
+    this.form.data = { ...this.defaults(), ...this.config };
   }
   fireConfig(config) {
     const cleanConfig = Object.fromEntries(
-      Object.entries(config).filter(([key, value]) => value !== "" && value !== void 0 && value !== null && !this.skipValue(key, value))
+      Object.entries(config).filter(([key, value]) => value !== "" && value !== void 0 && value !== null && !(Array.isArray(value) && value.length === 0) && this.defaults()[key] !== value && !this.skipValue(key, value))
     );
     this.config = cleanConfig;
     this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: cleanConfig }, bubbles: true, composed: true }));
@@ -5166,7 +5224,7 @@ var GraphiteSlider = class extends GraphiteCard {
     return Number(Math.min(model.max, Math.max(model.min, stepped)).toFixed(this.decimals(model.step)));
   }
   shareOf(model, value) {
-    if (!Number.isFinite(value)) return model.reversed ? 1 : 0;
+    if (!Number.isFinite(value)) return 0;
     const share = Math.min(1, Math.max(0, (value - model.min) / (model.max - model.min)));
     return model.reversed ? 1 - share : share;
   }
@@ -5354,6 +5412,181 @@ registerElement("graphite-slider-editor", GraphiteSliderEditor);
 registerCard("graphite-slider", GraphiteSlider, {
   name: "Graphite Slider",
   description: "A single slider without a surface: number, input_number, or brightness, white temperature, hue or saturation of a light."
+});
+
+// src/cards/controls/graphite-light-editor.ts
+var GraphiteLightEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "light.editor";
+  }
+  defaults() {
+    return { since_line: true, unavailable_sliders: "show", show_sliders: true };
+  }
+  schemaKey() {
+    return String(this.config.show_sliders !== false);
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: { domain: "light" } } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      { name: "show_sliders", selector: { boolean: {} } },
+      ...this.config.show_sliders === false ? [] : [
+        { name: "sliders", selector: { select: { multiple: true, mode: "list", options: ["brightness", "color_temp", "hue", "saturation"].map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
+        { name: "unavailable_sliders", selector: { select: { mode: "dropdown", options: ["show", "hide"].map((value) => ({ value, label: this.optionLabel(`unavailableSliders.${value}`) })) } } }
+      ],
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "allow_off", selector: { boolean: {} } },
+          { name: "wall_switch", selector: { boolean: {} } }
+        ]
+      },
+      { name: "since_line", selector: { boolean: {} } },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+};
+
+// src/cards/controls/graphite-light.ts
+var sliderOrder = ["brightness", "color_temp", "hue", "saturation"];
+var lightStyles = i`
+  .row.light {
+    display: block;
+    height: auto;
+    padding: 12px;
+  }
+  /* on: soft accent tint, weaker than the switch tile (the sliders carry more surface) */
+  .row.light.active {
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+  }
+  .head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 36px;
+  }
+  .row.light .icon {
+    margin: -3px 10px -3px -4px;
+  }
+  .row.light .toggle {
+    margin: 0 2px 0 12px;
+  }
+  .row.light .offline {
+    margin: 0 2px 0 auto;
+  }
+  /* wall switch: an icon in the toggle's place, no surface (it is no button) */
+  .wall-switch {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin: 0 2px 0 12px;
+    color: var(--graphite-text-secondary);
+    --mdc-icon-size: 24px;
+  }
+  .row.light:not(.on) .wall-switch {
+    opacity: 0.5;
+  }
+  /* sliders aligned with the name (60px) and the toggle (14px from the right) */
+  .sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 6px 2px 0 48px;
+  }
+  .row.light.unavailable .sliders {
+    pointer-events: none;
+  }
+`;
+var GraphiteLight = class extends GraphiteRow {
+  get lightConfig() {
+    return this.config;
+  }
+  defaultActions(entity) {
+    return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(entity) };
+  }
+  normalizeConfig(config) {
+    const normalized = super.normalizeConfig(config);
+    if (config.wall_switch && !config.tap_action) normalized.tap_action = { action: "none" };
+    return normalized;
+  }
+  rowClasses(stateObj) {
+    const classes = super.rowClasses(stateObj);
+    classes.splice(1, 0, "light");
+    if (classes.includes("on") && !classes.includes("unavailable")) classes.push("active");
+    return classes;
+  }
+  // brightness, and the white temperature when the lamp supports it. While the lamp is unreachable
+  // (or off at the wall) the sliders stay locked in place, or are hidden with unavailable_sliders: hide
+  sliderAttributes(stateObj) {
+    if (this.lightConfig.show_sliders === false) return [];
+    if (isUnavailable(stateObj) && this.lightConfig.unavailable_sliders === "hide") return [];
+    const configured = this.lightConfig.sliders;
+    if (Array.isArray(configured) && configured.length > 0) return sliderOrder.filter((attribute) => configured.includes(attribute));
+    const modes = stateObj?.attributes?.supported_color_modes ?? [];
+    const sliders = [];
+    if (!modes.length || modes.some((mode) => mode !== "onoff")) sliders.push("brightness");
+    if (modes.includes("color_temp")) sliders.push("color_temp");
+    return sliders;
+  }
+  renderEnd(stateObj) {
+    if (this.config.wall_switch) {
+      return b2`<div class="wall-switch"><ha-icon .icon=${this.lightConfig.wall_switch_icon ?? "ic:twotone-electrical-services"}></ha-icon></div>`;
+    }
+    return stateObj ? b2`<div class="toggle"></div>` : A;
+  }
+  render() {
+    const config = this.lightConfig;
+    const stateObj = this.hass?.states[config.entity];
+    const unavailable = this.unavailable(stateObj);
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const since = this.sinceLine(stateObj);
+    const interactive = this.isInteractive(stateObj);
+    const sliders = this.sliderAttributes(stateObj);
+    return b2`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : A}
+      tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+      class="head"><div class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj)}<div
+      class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>${sliders.length ? b2`<div class="sliders">${sliders.map((attribute) => b2`<graphite-slider .hass=${this.hass}
+        .config=${{
+      type: "custom:graphite-slider",
+      entity: config.entity,
+      attribute,
+      ...attribute === "brightness" && config.allow_off ? { allow_off: true } : {},
+      // ticks only for the brightness; the color tracks speak for themselves
+      ...attribute === "brightness" ? {} : { ticks: "none" }
+    }}></graphite-slider>`)}</div>` : A}</div>`;
+  }
+  getCardSize() {
+    return 1 + this.sliderAttributes(this.hass?.states[this.config.entity]).length;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto", min_columns: 6 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("light.")) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-light-editor");
+  }
+};
+GraphiteLight.styles = [rowStyles, lightStyles];
+registerElement("graphite-light-editor", GraphiteLightEditor);
+registerCard("graphite-light", GraphiteLight, {
+  name: "Graphite Light",
+  description: "Lamp as a tile: switch row head (toggle or wall switch) with brightness and white temperature sliders."
 });
 
 // src/index.ts

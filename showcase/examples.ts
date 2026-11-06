@@ -573,5 +573,24 @@ export function examples(language: string): ShowcaseSection[] {
         },
       ],
     },
+    {
+      title: "graphite-light",
+      description: `Lamp as a tile: switch row head with brightness and white temperature sliders; a wall switch lamp shows a quiet icon instead of the toggle.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-light.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Lamps",
+          note: "Floor lamp on with brightness and white temperature; the ceiling lamp is off at the wall switch, its sliders stay locked.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Lampen" : "Lamps",
+            cards: [
+              { type: "custom:graphite-light", entity: "light.floor_lamp" },
+              { type: "custom:graphite-light", entity: "light.ceiling_lamp", wall_switch: true },
+            ],
+          },
+        },
+      ],
+    },
   ];
 }

@@ -269,5 +269,31 @@
     "color_temp": "White",
     "hue": "Color",
     "saturation": "Saturation"
+  },
+  "light": {
+    "editor": {
+      "entity": "Lamp",
+      "name": "Name (default: entity name)",
+      "icon": "Icon",
+      "sliders": "Which sliders (empty: brightness, white temperature if supported)",
+      "allow_off": "Brightness leftmost turns off",
+      "wall_switch": "Wall switch (instead of the toggle)",
+      "since_line": "Show the «since» line",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action",
+      "attributes": {
+        "brightness": "Brightness",
+        "color_temp": "White temperature",
+        "hue": "Color",
+        "saturation": "Saturation"
+      },
+      "unavailable_sliders": "Sliders while unreachable or off at the wall",
+      "unavailableSliders": {
+        "show": "Show locked (layout stays)",
+        "hide": "Hide (head only)"
+      },
+      "show_sliders": "Show sliders"
+    }
   }
 }

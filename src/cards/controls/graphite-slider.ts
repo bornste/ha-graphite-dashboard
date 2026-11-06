@@ -228,7 +228,7 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
   }
 
   private shareOf(model: SliderModel, value: number): number {
-    if (!Number.isFinite(value)) return model.reversed ? 1 : 0;
+    if (!Number.isFinite(value)) return 0;
     const share = Math.min(1, Math.max(0, (value - model.min) / (model.max - model.min)));
     return model.reversed ? 1 - share : share;
   }

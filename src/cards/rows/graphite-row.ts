@@ -125,6 +125,8 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
         ? this.localize("rows.attributeAgo", { label, ago: agoText(moment, this.language) })
         : this.localize("rows.never", { label });
     }
+    // switched off explicitly: no "since" line, also not for offline or wall switch states
+    if (config.since_line === false) return "";
     const isMeasurement = !!stateObj.attributes?.unit_of_measurement;
     const showSince = typeof config.since_line === "boolean" ? config.since_line : !isMeasurement;
     if (!offline && !showSince) return "";

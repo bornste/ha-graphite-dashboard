@@ -269,5 +269,31 @@
     "color_temp": "Weisston",
     "hue": "Farbe",
     "saturation": "Sättigung"
+  },
+  "light": {
+    "editor": {
+      "entity": "Lampe",
+      "name": "Name (Standard: Name der Entität)",
+      "icon": "Icon",
+      "sliders": "Welche Regler (leer: Helligkeit, Weisston falls möglich)",
+      "allow_off": "Helligkeit ganz links schaltet aus",
+      "wall_switch": "Wandschalter (statt Schalter)",
+      "since_line": "«seit»-Zeile anzeigen",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "attributes": {
+        "brightness": "Helligkeit",
+        "color_temp": "Weisston",
+        "hue": "Farbe",
+        "saturation": "Sättigung"
+      },
+      "unavailable_sliders": "Regler, wenn nicht erreichbar oder am Wandschalter aus",
+      "unavailableSliders": {
+        "show": "Gesperrt anzeigen (Layout bleibt)",
+        "hide": "Ausblenden (nur der Kopf)"
+      },
+      "show_sliders": "Regler anzeigen"
+    }
   }
 }

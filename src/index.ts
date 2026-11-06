@@ -12,6 +12,7 @@ import "./cards/tiles/graphite-ink";
 import "./cards/tiles/graphite-pickup";
 import "./cards/lists/graphite-calendar";
 import "./cards/controls/graphite-slider";
+import "./cards/controls/graphite-light";
 
 window.graphiteCards = { version };
 

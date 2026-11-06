@@ -26,6 +26,12 @@ export abstract class GraphiteFormEditor extends HTMLElement {
     return false;
   }
 
+  // values the card uses when an option is not set; the form shows them, and a value equal to its
+  // default (or an empty list) is not stored, so the card falls back to its default again
+  protected defaults(): Record<string, unknown> {
+    return {};
+  }
+
   // translated label of a select option, e.g. optionLabel("range.days") -> "<prefix>.range.days"
   protected optionLabel(key: string): string {
     const fullKey = `${this.labelPrefix()}.${key}`;
@@ -66,13 +72,14 @@ export abstract class GraphiteFormEditor extends HTMLElement {
       };
     }
     if (this.hassObject) this.form.hass = this.hassObject;
-    this.form.data = this.config;
+    this.form.data = { ...this.defaults(), ...this.config };
   }
 
   private fireConfig(config: Record<string, any>): void {
     const cleanConfig = Object.fromEntries(
       Object.entries(config).filter(([key, value]) =>
-        value !== "" && value !== undefined && value !== null && !this.skipValue(key, value)),
+        value !== "" && value !== undefined && value !== null && !(Array.isArray(value) && value.length === 0)
+        && this.defaults()[key] !== value && !this.skipValue(key, value)),
     );
     this.config = cleanConfig;
     this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: cleanConfig }, bubbles: true, composed: true }));
