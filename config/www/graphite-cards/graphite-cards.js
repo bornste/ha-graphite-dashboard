@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.23.1";
+var version = "0.24.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -5047,17 +5047,8 @@ var GraphiteVacuumEditor = class extends GraphiteFormEditor {
   }
 };
 
-// src/cards/media/graphite-vacuum.ts
-var defaultModes = [
-  { value: "sweeping", icon: "mdi:vacuum-outline" },
-  { value: "mopping_after_sweeping", icon: "mdi:water-sync" },
-  { value: "sweeping_and_mopping", icon: "mdi:water-plus-outline" }
-];
-var knownModes = ["sweeping", "mopping", "sweeping_and_mopping", "mopping_after_sweeping"];
-var vacuumModeKeys = { "Sweeping": "sweeping", "Mopping": "mopping", "Sweeping and mopping": "sweeping_and_mopping", "Mopping after sweeping": "mopping_after_sweeping" };
-var defaultSuctionLevels = [{ value: "quiet" }, { value: "standard" }, { value: "strong" }, { value: "turbo" }];
-var stationStates = { "installed": "ok", "not installed": "missing", "full": "full", "low": "low", "check": "check", "enabled": "ok" };
-var robotSvg = `
+// src/cards/media/vacuum-art.ts
+var robotArt = b2`
 <svg viewBox="0 0 64 64" aria-hidden="true">
   <g class="dock"><rect x="10" y="48" width="44" height="12" rx="4" fill="var(--vacDock)" style="fill-opacity: var(--vacTone)" stroke="var(--vacDock)" stroke-width="1.4"/><rect x="18" y="55.5" width="28" height="2.5" rx="1.25" fill="var(--vacDock)"/></g>
   <g class="robot">
@@ -5078,7 +5069,7 @@ var robotSvg = `
   <g class="heat" fill="none" stroke="var(--vacAccent)" stroke-width="1.8" stroke-linecap="round"><path class="wave" d="M24 8 q2 -3 0 -6"/><path class="wave" d="M32 8 q2 -3 0 -6"/><path class="wave" d="M40 8 q2 -3 0 -6"/></g>
   <path class="bolt" d="M51 2 l-5 9 h4 l-2 7 l6 -10 h-4 l2 -6z" fill="var(--vacAccent)"/>
 </svg>`;
-var sharedStyles = `
+var artStyles = i`
   :host {
     display: block;
     container-type: inline-size;
@@ -5110,7 +5101,7 @@ var sharedStyles = `
     --vacTurret: var(--vacArtBg);
     width: 64px;
     height: 64px;
-    border-radius: 10px;
+    border-radius: var(--vacRadius);
     background: var(--vacArtBg);
     display: grid;
     place-items: center;
@@ -5145,15 +5136,18 @@ var sharedStyles = `
   @keyframes vacShake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
   @media (prefers-reduced-motion: reduce) { .art * { animation: none !important; } }
 `;
-var cardStyles = `
+
+// src/cards/media/vacuum-styles.ts
+var tileStyles2 = i`
   ha-card {
     --vacArtBg: color-mix(in srgb, var(--vacText) 6%, var(--vacTile));
     background: var(--vacTile);
-    border-radius: var(--graphite-card-radius, var(--vacRadius));
+    border-radius: var(--vacRadius);
     border: none;
     box-shadow: none;
     padding: 12px 14px 12px 12px;
     box-sizing: border-box;
+    min-height: var(--graphite-tile-height-media, 88px);
     display: grid;
     grid-template-columns: 64px minmax(0, 1fr) auto;
     gap: 14px;
@@ -5165,25 +5159,21 @@ var cardStyles = `
     --vacArtBg: var(--vacTile);
     background: color-mix(in srgb, var(--vacAccent) 10%, var(--vacTileHi));
   }
-  /* text column as high as the robot: name aligned to its top, details to its bottom,
-     the free space sits between name and state */
+  /* text column as high as the robot: name aligned to its top, details to its bottom */
   .text {
     min-width: 0;
     height: 64px;
     display: flex;
     flex-direction: column;
-    position: relative;
   }
-  /* device name like the names of the other tiles */
   .name {
-    font-size: 13px;
-    line-height: 13px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: var(--graphite-font-label-size, 13px);
     color: var(--vacText2);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .name[hidden] { display: none; }
   /* state as text: 20/300 (numbers would be 22/300, words read larger) */
   .title {
     margin-top: auto;
@@ -5197,24 +5187,24 @@ var cardStyles = `
   }
   .subtitle {
     margin-top: 3px;
-    font-size: 12px;
-    line-height: 12px;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: var(--graphite-font-caption-size, 12px);
     color: var(--vacText2);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* progress as last line, aligned to the bottom of the robot (the text moves up) */
+  /* progress as last line, 4px like the media tiles */
   .progress {
     margin-top: 6px;
     flex: none;
-    height: 3px;
+    height: 4px;
     border-radius: 2px;
     background: var(--vacTile);
     overflow: hidden;
   }
-  .progress[hidden], .control[hidden], .pill[hidden] { display: none; }
-  .progress > div { height: 100%; width: 0; border-radius: 2px; background: var(--vacAccent); }
+  .progress > div { height: 100%; border-radius: 2px; background: var(--vacAccent); }
+  /* quick control like the panel buttons: 44 x 36 */
   .control {
     width: 44px;
     height: 36px;
@@ -5228,15 +5218,13 @@ var cardStyles = `
     align-self: end;
   }
   .control:active { transform: scale(0.96); }
-  /* maintenance or station hint, takes the place of the control (never both) */
+  /* maintenance or station hint as chip, takes the place of the control (never both) */
   .pill {
-    height: 24px;
     max-width: 150px;
-    padding: 0 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    display: inline-flex;
-    align-items: center;
+    padding: var(--graphite-chip-padding, 4px 10px);
+    border-radius: var(--graphite-radius-pill, 999px);
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 16px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5244,77 +5232,80 @@ var cardStyles = `
     color: var(--vacAccent);
   }
 `;
-var dialogStyles = `
+var panelStyles = i`
   .columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
+    gap: var(--graphite-gap-panel, 16px);
     align-items: start;
   }
   .column {
-    background: var(--graphite-panel-surface, var(--graphite-surface-panel, #161617));
-    border-radius: var(--graphite-panel-radius, var(--graphite-radius-panel, 20px));
-    padding: var(--graphite-panel-padding, var(--graphite-padding-panel, 16px));
+    background: var(--graphite-surface-panel, #161617);
+    border-radius: var(--graphite-radius-panel, 20px);
+    padding: var(--graphite-padding-panel, 16px);
     min-width: 0;
   }
-  :host(:not([panels])) .column { background: none; padding: 0; }
+  .columns.plain .column { background: none; padding: 0; }
   .panelTitle {
     font-size: var(--graphite-title-size, 18px);
     font-weight: var(--graphite-title-weight, 400);
     line-height: 1.2;
     color: var(--graphite-title-color, var(--vacText));
-    margin-bottom: 12px;
+    margin-bottom: var(--graphite-gap-header, 12px);
   }
   .label {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    font-size: 13px;
+    font-size: var(--graphite-font-label-size, 13px);
     font-weight: 500;
     color: var(--vacText);
-    margin: 14px 2px 8px;
+    margin: var(--graphite-gap-panel, 16px) 0 var(--graphite-gap-tile, 8px);
   }
   .panelTitle + .label { margin-top: 0; }
-  /* configured rooms that do not match the map (e.g. after the map was recreated) */
-  .roomWarning {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin: 0 0 8px;
-    padding: 10px 12px;
-    border-radius: var(--graphite-radius-tile, 12px);
-    background: color-mix(in srgb, var(--graphite-accent, #f5c48a) 14%, var(--graphite-surface-tile, #1f1f20));
-    color: var(--graphite-accent, #f5c48a);
-    font-size: 12px;
-    line-height: 16px;
-  }
-  .roomWarning ha-icon { --mdc-icon-size: 18px; flex: none; margin-top: -1px; }
-  .roomWarning strong { display: block; font-size: 13px; font-weight: 500; margin-bottom: 2px; }
-  .roomWarning span { display: block; color: var(--vacText2, var(--graphite-text-secondary)); }
   .label button {
     background: none;
     padding: 0;
-    font-size: 12px;
+    font-size: var(--graphite-font-caption-size, 12px);
     font-weight: 400;
     color: var(--vacText3);
   }
-  .presets, .modes, .rooms {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+  /* configured rooms that do not match the map (e.g. after the map was recreated) */
+  .roomWarning {
+    display: flex;
+    gap: var(--graphite-gap-tile, 8px);
+    align-items: flex-start;
+    margin: 0 0 var(--graphite-gap-tile, 8px);
+    padding: var(--graphite-padding-tile, 12px);
+    border-radius: var(--vacRadius);
+    background: color-mix(in srgb, var(--vacAccent) 14%, var(--vacTile));
+    color: var(--vacAccent);
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 16px;
   }
-  .preset, .room {
-    height: 52px;
+  .roomWarning ha-icon { --mdc-icon-size: 18px; flex: none; margin-top: -1px; }
+  .roomWarning strong { display: block; font-size: var(--graphite-font-label-size, 13px); font-weight: 500; margin-bottom: 2px; }
+  .roomWarning span { display: block; color: var(--vacText2); }
+  .presets, .modes, .rooms, .suctions, .actions {
+    display: grid;
+    gap: var(--graphite-gap-tile, 8px);
+  }
+  .presets, .modes, .rooms { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* all tiles and buttons of the panel share the row height */
+  .preset, .room, .mode, .suction, .boost, .start, .toStation, .action {
+    height: var(--graphite-row-height, 60px);
     border-radius: var(--vacRadius);
     background: var(--vacTile);
+    min-width: 0;
+  }
+  .preset, .room {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 12px;
-    font-size: 13px;
+    gap: var(--graphite-gap-tile, 8px);
+    padding: 0 var(--graphite-padding-tile, 12px);
+    font-size: var(--graphite-font-label-size, 13px);
     color: var(--vacText2);
     text-align: left;
-    min-width: 0;
     --mdc-icon-size: 18px;
   }
   .preset span, .room span {
@@ -5337,116 +5328,94 @@ var dialogStyles = `
     background: color-mix(in srgb, var(--vacAccent) 20%, var(--vacTileHi));
     color: var(--vacText);
   }
-  .room .order { flex: none; font-size: 11px; color: var(--vacAccent); }
+  .room .order { flex: none; font-size: var(--graphite-font-caption-size, 12px); color: var(--vacAccent); }
   .mode {
-    height: 56px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    padding: 0 6px;
-    font-size: 12px;
+    gap: 4px;
+    padding: 0 var(--graphite-gap-tile, 8px);
+    font-size: var(--graphite-font-caption-size, 12px);
     line-height: 1.2;
     color: var(--vacText2);
     --mdc-icon-size: 18px;
   }
   .mode.selected { background: var(--vacAccent); color: var(--vacAccentInk); }
-  .suctions {
-    display: grid;
-    grid-template-columns: repeat(var(--suctionCount, 4), minmax(0, 1fr)) 64px;
-    gap: 6px;
-  }
+  .suctions { grid-template-columns: repeat(var(--suctionCount, 4), minmax(0, 1fr)) 64px; }
   .suctions.noBoost { grid-template-columns: repeat(var(--suctionCount, 4), minmax(0, 1fr)); }
   .suction {
-    height: 48px;
-    border-radius: 10px;
-    background: var(--vacTile);
-    font-size: 12px;
+    font-size: var(--graphite-font-caption-size, 12px);
     color: var(--vacText2);
     padding: 0 4px;
   }
   .suction.selected { background: color-mix(in srgb, var(--vacAccent) 20%, var(--vacTileHi)); color: var(--vacText); }
   .boost {
-    height: 48px;
-    border-radius: 10px;
-    background: var(--vacTile);
-    font-size: 12px;
+    font-size: var(--graphite-font-caption-size, 12px);
     color: var(--vacAccent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vacAccent) 45%, var(--vacTile));
   }
   .boost.on { background: var(--vacAccent); color: var(--vacAccentInk); font-weight: 500; box-shadow: none; }
-  .hint { font-size: 11px; color: var(--vacText3); margin: 6px 2px 0; }
+  .hint { font-size: var(--graphite-font-caption-size, 12px); color: var(--vacText3); margin-top: var(--graphite-gap-tile, 8px); }
   .startRow {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 52px;
-    gap: 6px;
-    margin-top: 14px;
+    grid-template-columns: minmax(0, 1fr) var(--graphite-row-height, 60px);
+    gap: var(--graphite-gap-tile, 8px);
+    margin-top: var(--graphite-gap-panel, 16px);
   }
   .start {
-    height: 48px;
-    border-radius: var(--vacRadius);
     background: var(--vacAccent);
     color: var(--vacAccentInk);
-    font-size: 14px;
+    font-size: var(--graphite-font-name-size, 15px);
     font-weight: 500;
   }
   .start.idle { background: var(--vacTile); color: var(--vacText3); opacity: 1; }
   .toStation {
-    height: 48px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
     color: var(--vacText2);
     display: grid;
     place-items: center;
-    --mdc-icon-size: 20px;
+    --mdc-icon-size: 18px;
   }
-  .robotInfo { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+  .robotInfo { display: flex; gap: 14px; align-items: center; margin-bottom: var(--graphite-gap-panel, 16px); }
   .robotInfo .art { --vacArtBg: var(--vacTile); width: 88px; height: 88px; }
   .robotInfo .art svg { width: 76px; height: 76px; }
-  .facts { font-size: 12px; line-height: 1.7; color: var(--vacText2); min-width: 0; }
+  .facts { font-size: var(--graphite-font-caption-size, 12px); line-height: 1.7; color: var(--vacText2); min-width: 0; }
   .facts b { color: var(--vacText); font-weight: 500; }
   .facts .warn { color: var(--vacAccent); }
   .wear {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 4px 10px;
+    gap: 4px var(--graphite-gap-tile, 8px);
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: var(--graphite-padding-tile, 12px);
   }
-  .wear .name { font-size: 13px; color: var(--vacText); }
-  .wear .value { font-size: 12px; color: var(--vacText2); }
+  .wear .name { font-size: var(--graphite-font-label-size, 13px); color: var(--vacText); }
+  .wear .value { font-size: var(--graphite-font-caption-size, 12px); color: var(--vacText2); }
   .wear .line { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--vacTile); overflow: hidden; }
   .wear .line div { height: 100%; background: var(--vacText2); }
   .wear.due .value { color: var(--vacAccent); }
   .wear.due .line div { background: var(--vacAccent); }
   .reset {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 999px;
-    font-size: 12px;
+    height: 36px;
+    padding: 0 var(--graphite-padding-tile, 12px);
+    border-radius: var(--graphite-radius-pill, 999px);
+    font-size: var(--graphite-font-caption-size, 12px);
     color: var(--vacAccent);
     background: color-mix(in srgb, var(--vacAccent) 14%, var(--vacTile));
   }
   .reset.confirm { background: var(--vacAccent); color: var(--vacAccentInk); }
-  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
+  .actions { grid-template-columns: 1fr 1fr; margin-top: var(--graphite-gap-panel, 16px); }
   .action {
-    height: 52px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
-    font-size: 12px;
+    font-size: var(--graphite-font-caption-size, 12px);
     color: var(--vacText2);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: var(--graphite-gap-tile, 8px);
     --mdc-icon-size: 18px;
   }
   .action.done { color: var(--vacAccent); }
-  .error { font-size: 12px; color: var(--vacDanger); margin-top: 8px; }
-  .error:empty { display: none; }
+  .error { font-size: var(--graphite-font-caption-size, 12px); color: var(--vacDanger); margin-top: var(--graphite-gap-tile, 8px); }
   @container (min-width: 640px) {
     .columns { grid-template-columns: minmax(0, 1fr) 320px; }
   }
@@ -5454,168 +5423,161 @@ var dialogStyles = `
     .presets, .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 `;
-var GraphiteVacuum = class extends HTMLElement {
+
+// src/cards/media/graphite-vacuum.ts
+var defaultModes = [
+  { value: "sweeping", icon: "mdi:vacuum-outline" },
+  { value: "mopping_after_sweeping", icon: "mdi:water-sync" },
+  { value: "sweeping_and_mopping", icon: "mdi:water-plus-outline" }
+];
+var knownModes = ["sweeping", "mopping", "sweeping_and_mopping", "mopping_after_sweeping"];
+var vacuumModeKeys = {
+  "Sweeping": "sweeping",
+  "Mopping": "mopping",
+  "Sweeping and mopping": "sweeping_and_mopping",
+  "Mopping after sweeping": "mopping_after_sweeping"
+};
+var defaultSuctionLevels = [{ value: "quiet" }, { value: "standard" }, { value: "strong" }, { value: "turbo" }];
+var stationStates = {
+  "installed": "ok",
+  "not installed": "missing",
+  "full": "full",
+  "low": "low",
+  "check": "check",
+  "enabled": "ok"
+};
+var hintStates = ["ready", "charging", "drying", "error"];
+var confirmMilliseconds = 4e3;
+var pressedMilliseconds = 2500;
+var GraphiteVacuum = class extends GraphiteCard {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+    this.modes = [];
+    this.suctionLevels = [];
+    this.maintenance = [];
+    this.stationActions = [];
+    this.warnedIssues = 0;
     this.selected = [];
-    this.chosenMode = null;
-    this.chosenSuction = null;
-    this.chosenBoost = null;
-    this.confirmReset = null;
-    this.pressedAction = null;
-    this.lastSignature = "";
     this.errorText = "";
-    this.shadowRoot.addEventListener("click", (event) => this.handleClick(event));
   }
-  setConfig(config) {
-    if (!config || !config.entity) throw new Error("entity is required");
-    this.config = config;
-    this.view = config.layout === "panel" || config.view === "dialog" ? "dialog" : "card";
-    this.entityPrefix = config.prefix || config.entity.split(".")[1];
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error("entity is required");
+    const prefix = config.prefix || config.entity.split(".")[1];
+    this.entities = {
+      mode: config.mode_entity || `select.${prefix}_cleaning_mode`,
+      suction: config.suction_entity || `select.${prefix}_suction_level`,
+      boost: config.boost_entity || `switch.${prefix}_max_suction_power`,
+      history: config.history_entity || `sensor.${prefix}_cleaning_history`,
+      error: config.error_entity || `sensor.${prefix}_error`,
+      dryingLeft: config.drying_left_entity || `sensor.${prefix}_drying_left`
+    };
     this.modes = (config.modes || defaultModes).map((mode) => typeof mode === "string" ? defaultModes.find((item) => item.value === mode) || { value: mode } : mode);
     this.suctionLevels = (config.suction_levels || defaultSuctionLevels).map((level) => typeof level === "string" ? defaultSuctionLevels.find((item) => item.value === level) || { value: level } : level);
     this.maintenance = config.maintenance || [
-      { key: "main_brush", reset: `button.${this.entityPrefix}_reset_main_brush` },
-      { key: "side_brush", reset: `button.${this.entityPrefix}_reset_side_brush` },
-      { key: "filter", reset: `button.${this.entityPrefix}_reset_filter` },
-      { key: "sensor_dirty", reset: `button.${this.entityPrefix}_reset_sensor` }
+      { key: "main_brush", reset: `button.${prefix}_reset_main_brush` },
+      { key: "side_brush", reset: `button.${prefix}_reset_side_brush` },
+      { key: "filter", reset: `button.${prefix}_reset_filter` },
+      { key: "sensor_dirty", reset: `button.${prefix}_reset_sensor` }
     ];
     this.stationActions = config.actions || [
-      { key: "self_clean", icon: "mdi:water-sync", entity: `button.${this.entityPrefix}_self_clean` },
-      { key: "manual_drying", icon: "mdi:heat-wave", entity: `button.${this.entityPrefix}_manual_drying` },
-      { key: "base_station_cleaning", icon: "mdi:spray-bottle", entity: `button.${this.entityPrefix}_base_station_cleaning` },
-      { key: "start_auto_empty", icon: "mdi:delete-empty-outline", entity: `button.${this.entityPrefix}_start_auto_empty` }
+      { key: "self_clean", icon: "mdi:water-sync", entity: `button.${prefix}_self_clean` },
+      { key: "manual_drying", icon: "mdi:heat-wave", entity: `button.${prefix}_manual_drying` },
+      { key: "base_station_cleaning", icon: "mdi:spray-bottle", entity: `button.${prefix}_base_station_cleaning` },
+      { key: "start_auto_empty", icon: "mdi:delete-empty-outline", entity: `button.${prefix}_start_auto_empty` }
     ];
-    this.entities = {
-      mode: config.mode_entity || `select.${this.entityPrefix}_cleaning_mode`,
-      suction: config.suction_entity || `select.${this.entityPrefix}_suction_level`,
-      boost: config.boost_entity || `switch.${this.entityPrefix}_max_suction_power`,
-      history: config.history_entity || `sensor.${this.entityPrefix}_cleaning_history`,
-      error: config.error_entity || `sensor.${this.entityPrefix}_error`,
-      dryingLeft: config.drying_left_entity || `sensor.${this.entityPrefix}_drying_left`
-    };
-    this.threshold = Number(config.maintenance_threshold ?? 10);
-    if (config.panels === false) this.removeAttribute("panels");
-    else this.setAttribute("panels", "");
-    this.build();
-    this.lastSignature = "";
-    this.render();
+    return config;
   }
-  set hass(hass) {
-    this.hassObject = hass;
-    this.render();
+  get isPanel() {
+    return this.config?.layout === "panel";
   }
-  get hass() {
-    return this.hassObject;
+  stylesForConfig() {
+    return this.isPanel ? [artStyles, panelStyles] : [artStyles, tileStyles2];
   }
-  connectedCallback() {
-    this.render();
+  watchedEntities() {
+    if (!this.config) return [];
+    return [this.config.entity, ...Object.values(this.entities), ...this.stationActions.map((action) => action.entity)];
   }
   disconnectedCallback() {
-    clearTimeout(this.confirmTimer);
-    clearTimeout(this.pressedTimer);
-  }
-  build() {
-    if (this.view === "card") {
-      this.shadowRoot.innerHTML = `<style>${sharedStyles}${cardStyles}</style>
-        <ha-card role="button" tabindex="0">
-          <div class="art"></div>
-          <div class="text"><div class="name"></div><div class="title"></div><div class="subtitle"></div><div class="progress" hidden><div></div></div></div>
-          <button class="control" data-action="control" hidden><ha-icon></ha-icon></button>
-          <span class="pill" hidden></span>
-        </ha-card>`;
-      this.shadowRoot.querySelector(".art").innerHTML = robotSvg;
-      this.shadowRoot.querySelector("ha-card").addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          this.openDialog();
-        }
-      });
-    } else {
-      this.shadowRoot.innerHTML = `<style>${sharedStyles}${dialogStyles}</style>
-        <div class="columns"><div class="column cleaning"></div><div class="column station"></div></div>`;
-    }
+    super.disconnectedCallback();
+    window.clearTimeout(this.confirmTimer);
+    window.clearTimeout(this.pressedTimer);
   }
   // ---------- texts ----------
-  // translated text (vacuum.*): theme variable --graphite-language, else the Home Assistant language
-  // the theme variable is only readable once connected, so the language is part of the render signature
-  language() {
-    return languageOf(this.isConnected ? this : void 0, this.hassObject);
-  }
   t(key, params = {}) {
-    return translate(this.language(), `vacuum.${key}`, params);
+    return this.localize(`vacuum.${key}`, params);
   }
   // name of a configured or default item: own name, else the translation of its key, else the key
   itemName(item, group) {
     if (item.name) return item.name;
-    const key = `${group}.${item.key ?? item.value}`;
+    const id = String(item.key ?? item.value ?? "");
+    const key = `${group}.${id}`;
     const text = this.t(key);
-    return text === `vacuum.${key}` ? String(item.key ?? item.value) : text;
+    return text === `vacuum.${key}` ? id : text;
   }
-  locale() {
-    return this.hassObject?.locale?.language || "de-CH";
+  get locale() {
+    return this.hass?.locale?.language || this.language;
   }
   // ---------- state helpers ----------
-  // config name, otherwise the entity id in readable form ("vacuum.dreamie" -> "Dreamie")
+  stateOf(entityId) {
+    return this.hass?.states[entityId];
+  }
+  get vacuumAttributes() {
+    return this.stateOf(this.config.entity)?.attributes || {};
+  }
+  // config name, otherwise the entity id in readable form ("vacuum.robot" -> "Robot")
   deviceName() {
     if (typeof this.config.name === "string" && this.config.name) return this.config.name;
     const objectId = this.config.entity.split(".")[1] || "";
     return objectId.charAt(0).toUpperCase() + objectId.slice(1).split("_").join(" ");
   }
-  stateOf(entityId) {
-    return this.hassObject?.states?.[entityId];
-  }
-  // HTML-safe text for the string templates (no regular expressions in the library)
-  escape(text) {
-    const entities = [["&", "&amp;"], ["<", "&lt;"], [">", "&gt;"], ['"', "&quot;"], ["'", "&#39;"]];
-    return entities.reduce((value, [character, entity]) => value.split(character).join(entity), String(text ?? ""));
-  }
-  // rooms of the current map, in config order (with overrides) or in the cleaning sequence
+  // rooms of the selected map as the integration reports them
   mapRooms() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
-    return attributes.rooms?.[attributes.selected_map] || Object.values(attributes.rooms || {})[0] || [];
-  }
-  rooms() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
-    const mapRooms = this.mapRooms();
-    if (Array.isArray(this.config.rooms)) {
-      const issueIds = this.roomIssues().map((issue) => issue.id);
-      return this.config.rooms.map((entry) => {
-        const room = typeof entry === "object" ? entry : { id: entry };
-        if (issueIds.includes(Number(room.id))) return null;
-        const known = this.findRoom(mapRooms, room.id);
-        return known ? { id: known.id, name: room.name || known.name, icon: room.icon || known.icon || "mdi:floor-plan" } : null;
-      }).filter(Boolean);
-    }
-    const sequence = attributes.cleaning_sequence || [];
-    return [...mapRooms].sort((first, second) => {
-      const firstIndex = sequence.indexOf(first.id), secondIndex = sequence.indexOf(second.id);
-      return (firstIndex < 0 ? 999 : firstIndex) - (secondIndex < 0 ? 999 : secondIndex);
-    }).map((room) => ({ id: room.id, name: room.name, icon: room.icon || "mdi:floor-plan" }));
-  }
-  // configured rooms that do not fit the current map: the id is missing, or it belongs to another room
-  // whose name differs while the configured name exists on the map under another id (map recreated);
-  // a renamed room (own name that is not on the map) is not an issue
-  roomIssues() {
-    if (!Array.isArray(this.config.rooms)) return [];
-    const mapRooms = this.mapRooms();
-    if (!mapRooms.length) return [];
-    const sameName = (first, second) => String(first).toLowerCase() === String(second).toLowerCase();
-    return this.config.rooms.map((entry) => {
-      const room = typeof entry === "object" ? entry : { id: entry };
-      const id = Number(room.id);
-      const known = mapRooms.find((mapRoom) => mapRoom.id === id);
-      const byName = room.name ? mapRooms.find((mapRoom) => sameName(mapRoom.name, room.name)) : void 0;
-      if (!known) return { id, name: room.name || this.t("room", { id: room.id }), text: this.t("roomMissing", { id: room.id }), newId: byName?.id };
-      if (room.name && !sameName(known.name, room.name) && byName && byName.id !== id)
-        return { id, name: room.name, text: this.t("roomChanged", { id: room.id, name: known.name }), newId: byName.id };
-      return null;
-    }).filter(Boolean);
+    const attributes = this.vacuumAttributes;
+    const rooms = attributes.rooms || {};
+    return rooms[attributes.selected_map] || Object.values(rooms)[0] || [];
   }
   // a room by segment id or by name
   findRoom(rooms, key) {
     return rooms.find((room) => room.id === Number(key)) || rooms.find((room) => String(room.name).toLowerCase() === String(key).toLowerCase());
+  }
+  configuredRooms() {
+    return this.config.rooms?.map((entry) => typeof entry === "object" ? entry : { id: entry });
+  }
+  // rooms in config order (rooms that do not fit the map are left out, so a button never cleans
+  // the wrong room), otherwise all rooms of the map in the cleaning sequence
+  rooms() {
+    const mapRooms = this.mapRooms();
+    const configured = this.configuredRooms();
+    if (configured) {
+      const issueIds = this.roomIssues().map((issue) => issue.id);
+      return configured.flatMap((room) => {
+        if (issueIds.includes(Number(room.id))) return [];
+        const known = this.findRoom(mapRooms, room.id);
+        return known ? [{ id: known.id, name: room.name || known.name, icon: room.icon || known.icon || "mdi:floor-plan" }] : [];
+      });
+    }
+    const sequence = this.vacuumAttributes.cleaning_sequence || [];
+    const position = (id) => sequence.indexOf(id) < 0 ? 999 : sequence.indexOf(id);
+    return [...mapRooms].sort((first, second) => position(first.id) - position(second.id)).map((room) => ({ id: room.id, name: room.name, icon: room.icon || "mdi:floor-plan" }));
+  }
+  // configured rooms that do not fit the current map: the id is missing, or it belongs to another room
+  // whose name differs while the configured name exists on the map under another id (map recreated);
+  // a renamed room (own name that is not on the map) is no issue
+  roomIssues() {
+    const configured = this.configuredRooms();
+    const mapRooms = this.mapRooms();
+    if (!configured || !mapRooms.length) return [];
+    const sameName = (first, second) => String(first).toLowerCase() === String(second).toLowerCase();
+    return configured.flatMap((room) => {
+      const id = Number(room.id);
+      const known = mapRooms.find((mapRoom) => mapRoom.id === id);
+      const byName = room.name ? mapRooms.find((mapRoom) => sameName(mapRoom.name, room.name)) : void 0;
+      if (!known)
+        return [{ id, name: room.name || this.t("room", { id }), text: this.t("roomMissing", { id }), newId: byName?.id }];
+      if (room.name && !sameName(known.name, room.name) && byName && byName.id !== id)
+        return [{ id, name: room.name, text: this.t("roomChanged", { id, name: known.name }), newId: byName.id }];
+      return [];
+    });
   }
   roomName(id) {
     return this.findRoom(this.rooms(), id)?.name || "";
@@ -5624,13 +5586,13 @@ var GraphiteVacuum = class extends HTMLElement {
     if (this.chosenMode) return this.chosenMode;
     const selectState = this.stateOf(this.entities.mode)?.state;
     if (selectState && selectState !== "unavailable") return selectState;
-    return vacuumModeKeys[this.stateOf(this.config.entity)?.attributes?.cleaning_mode] || "";
+    return vacuumModeKeys[this.vacuumAttributes.cleaning_mode] || "";
   }
   currentSuction() {
     return this.chosenSuction || this.stateOf(this.entities.suction)?.state || "";
   }
   currentBoost() {
-    if (this.chosenBoost !== null) return this.chosenBoost;
+    if (this.chosenBoost !== void 0) return this.chosenBoost;
     return this.stateOf(this.entities.boost)?.state === "on";
   }
   modeName(value) {
@@ -5639,44 +5601,49 @@ var GraphiteVacuum = class extends HTMLElement {
     return knownModes.includes(value) ? this.t(`modes.${value}`) : "";
   }
   formatDuration(minutes) {
-    const total = Math.max(0, Math.round(Number(minutes)));
-    const hours = Math.floor(total / 60), rest = total % 60;
+    const total = Math.max(0, Math.round(minutes));
+    const hours = Math.floor(total / 60);
+    const rest = total % 60;
     if (hours === 0) return this.t("minutes", { minutes: rest });
     return rest ? this.t("hoursMinutes", { hours, minutes: rest }) : this.t("hours", { hours });
   }
   formatLastCleaning() {
     const value = this.stateOf(this.entities.history)?.state;
-    const date = value ? new Date(value) : null;
-    if (!date || isNaN(date)) return "";
-    const time = date.toLocaleTimeString(this.locale(), { hour: "2-digit", minute: "2-digit" });
+    const date = value ? new Date(value) : void 0;
+    if (!date || isNaN(date.getTime())) return "";
+    const time = date.toLocaleTimeString(this.locale, { hour: "2-digit", minute: "2-digit" });
     const today = /* @__PURE__ */ new Date();
     today.setHours(0, 0, 0, 0);
-    const days = Math.round((today - new Date(date.getFullYear(), date.getMonth(), date.getDate())) / 864e5);
+    const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const days = Math.round((today.getTime() - day.getTime()) / 864e5);
     if (days === 0) return this.t("today", { time });
     if (days === 1) return this.t("yesterday", { time });
-    if (days < 7) return `${date.toLocaleDateString(this.locale(), { weekday: "short" }).split(".").join("")} ${time}`;
-    return date.toLocaleDateString(this.locale(), { day: "numeric", month: "numeric" });
+    if (days < 7) return `${date.toLocaleDateString(this.locale, { weekday: "short" }).split(".").join("")} ${time}`;
+    return date.toLocaleDateString(this.locale, { day: "numeric", month: "numeric" });
   }
   stationValue(raw) {
     if (raw === void 0 || raw === null || raw === "") return "";
     const key = stationStates[String(raw).toLowerCase()];
     return key ? this.t(`station.${key}`) : String(raw).toLowerCase();
   }
-  // maintenance items with remaining life; due when at or below the threshold
+  // maintenance items with remaining life; due at or below the threshold
   wearItems() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
-    return this.maintenance.map((item) => {
+    const attributes = this.vacuumAttributes;
+    const threshold = Number(this.config.maintenance_threshold ?? 10);
+    return this.maintenance.flatMap((item) => {
       const left = attributes[`${item.key}_left`];
+      if (left === void 0) return [];
       const hours = attributes[`${item.key}_time_left`];
       const name = this.itemName(item, "maintenance");
       const dueKey = `maintenanceDue.${item.key}`;
-      const dueText = item.due || (item.name ? this.t("due", { name }) : this.t(dueKey) === `vacuum.${dueKey}` ? this.t("due", { name }) : this.t(dueKey));
-      return { ...item, name, left: left === void 0 ? null : Number(left), hours: hours === void 0 ? null : Number(hours), due: left !== void 0 && Number(left) <= this.threshold, dueText };
-    }).filter((item) => item.left !== null);
+      const ownDue = item.name ? void 0 : this.t(dueKey);
+      const dueText = item.due || (ownDue && ownDue !== `vacuum.${dueKey}` ? ownDue : this.t("due", { name }));
+      return [{ key: item.key, reset: item.reset, name, left: Number(left), hours: hours === void 0 ? null : Number(hours), due: Number(left) <= threshold, dueText }];
+    });
   }
-  // hints for the card pill (only shown while not cleaning)
+  // hints for the tile chip (only shown while not cleaning)
   hints() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
+    const attributes = this.vacuumAttributes;
     const hints = [];
     if (attributes.low_water) hints.push(this.t("refillWater"));
     const dirty = this.stationValue(attributes.dirty_water_tank_status);
@@ -5686,7 +5653,7 @@ var GraphiteVacuum = class extends HTMLElement {
     else if (due.length > 1) hints.push(this.t("maintenanceCount", { count: due.length }));
     return hints;
   }
-  // what the robot is doing: text, animation class and quick control
+  // what the robot is doing: text, animation classes and quick control
   status() {
     const entity = this.stateOf(this.config.entity);
     if (!entity || entity.state === "unavailable" || entity.state === "unknown")
@@ -5695,7 +5662,7 @@ var GraphiteVacuum = class extends HTMLElement {
     const battery = attributes.battery ?? attributes.battery_level;
     const batteryText = battery !== void 0 ? this.t("battery", { battery }) : "";
     const mode = vacuumModeKeys[attributes.cleaning_mode] || this.stateOf(this.entities.mode)?.state || "";
-    const mopping = mode && mode !== "sweeping";
+    const mopping = mode !== "" && mode !== "sweeping";
     const progressParts = [this.modeName(mode)];
     if (attributes.cleaning_progress) progressParts.push(`${attributes.cleaning_progress} %`);
     if (attributes.cleaned_area) progressParts.push(`${attributes.cleaned_area} m\xB2`);
@@ -5708,33 +5675,72 @@ var GraphiteVacuum = class extends HTMLElement {
     if (attributes.returning_to_wash)
       return { key: "returning", art: "return", title: this.t("states.returningToWash"), subtitle: progressText, active: true, control: "pause" };
     if (attributes.washing || attributes.washing_paused)
-      return { key: "washing", art: "wash docked", title: attributes.washing_paused ? this.t("states.washingPaused") : this.t("states.washing"), subtitle: attributes.started ? `${this.t("intermediateWash")} \xB7 ${progressText}` : batteryText, active: true, progress: attributes.started ? attributes.cleaning_progress : null };
+      return {
+        key: "washing",
+        art: "wash docked",
+        title: attributes.washing_paused ? this.t("states.washingPaused") : this.t("states.washing"),
+        subtitle: attributes.started ? `${this.t("intermediateWash")} \xB7 ${progressText}` : batteryText,
+        active: true,
+        progress: attributes.started ? attributes.cleaning_progress : null
+      };
     if (attributes.returning || entity.state === "returning")
       return { key: "returning", art: "return", title: this.t("states.returning"), subtitle: progressText || batteryText, active: true, control: "pause" };
     if (attributes.paused || entity.state === "paused")
-      return { key: "paused", art: "", title: this.t("states.paused"), subtitle: [currentRoom, progressText].filter(Boolean).join(" \xB7 "), active: true, control: "resume", progress: attributes.cleaning_progress };
+      return {
+        key: "paused",
+        art: "",
+        title: this.t("states.paused"),
+        subtitle: [currentRoom, progressText].filter(Boolean).join(" \xB7 "),
+        active: true,
+        control: "resume",
+        progress: attributes.cleaning_progress
+      };
     if (attributes.running || entity.state === "cleaning")
-      return { key: "cleaning", art: `run${mopping ? " mopping" : ""}`, title: currentRoom || this.t("states.cleaning"), subtitle: progressText, active: true, control: "pause", progress: attributes.cleaning_progress };
+      return {
+        key: "cleaning",
+        art: `run${mopping ? " mopping" : ""}`,
+        title: currentRoom || this.t("states.cleaning"),
+        subtitle: progressText,
+        active: true,
+        control: "pause",
+        progress: attributes.cleaning_progress
+      };
     if (attributes.drying) {
       const left = Number(this.stateOf(this.entities.dryingLeft)?.state ?? attributes.drying_left);
-      return { key: "drying", art: "dry docked", title: this.t("states.drying"), subtitle: left > 0 ? this.t("remaining", { duration: this.formatDuration(left) }) : batteryText, active: false };
+      return {
+        key: "drying",
+        art: "dry docked",
+        title: this.t("states.drying"),
+        subtitle: left > 0 ? this.t("remaining", { duration: this.formatDuration(left) }) : batteryText,
+        active: false
+      };
     }
     if (attributes.charging)
       return { key: "charging", art: "charge", title: this.t("states.charging"), subtitle: batteryText, active: false };
     const last = this.formatLastCleaning();
-    return { key: "ready", art: `${attributes.docked ? "docked " : ""}sleep`, title: this.t("states.ready"), subtitle: [batteryText, last].filter(Boolean).join(" \xB7 "), active: false };
+    return {
+      key: "ready",
+      art: `${attributes.docked ? "docked " : ""}sleep`,
+      title: this.t("states.ready"),
+      subtitle: [batteryText, last].filter(Boolean).join(" \xB7 "),
+      active: false
+    };
   }
   // ---------- actions ----------
-  callService(domain, service, data, target) {
+  async callService(domain, service, data, entityId) {
     this.errorText = "";
-    return this.hassObject.callService(domain, service, data || {}, target).catch((error) => {
+    try {
+      await this.hass.callService(domain, service, data, { entity_id: entityId });
+    } catch (error) {
       this.errorText = error?.message || this.t("actionFailed");
-      this.lastSignature = "";
-      this.render();
       throw error;
-    });
+    }
   }
-  openDialog() {
+  // service call whose error is only shown below the start button
+  run(domain, service, data, entityId) {
+    this.callService(domain, service, data, entityId).catch(() => void 0);
+  }
+  openPanel() {
     const path = this.config.navigation_path;
     if (path) {
       history.pushState(null, "", path);
@@ -5743,26 +5749,46 @@ var GraphiteVacuum = class extends HTMLElement {
       this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: this.config.entity }, bubbles: true, composed: true }));
     }
   }
-  // applies mode, suction and boost if they were changed in the dialog, then cleans the selected rooms
+  onTileKey(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    this.openPanel();
+  }
+  onControl(event, control) {
+    event.stopPropagation();
+    this.run("vacuum", control === "resume" ? "start" : "pause", {}, this.config.entity);
+  }
+  // applies mode, suction and boost if they were changed in the panel, then cleans the selected rooms
   async startCleaning() {
     if (this.selected.length === 0) return;
-    const target = { entity_id: this.config.entity };
     try {
       if (this.chosenMode && this.chosenMode !== this.stateOf(this.entities.mode)?.state)
-        await this.callService("select", "select_option", { option: this.chosenMode }, { entity_id: this.entities.mode });
+        await this.callService("select", "select_option", { option: this.chosenMode }, this.entities.mode);
       if (this.chosenSuction && this.chosenSuction !== this.stateOf(this.entities.suction)?.state)
-        await this.callService("select", "select_option", { option: this.chosenSuction }, { entity_id: this.entities.suction });
-      if (this.chosenBoost !== null && this.chosenBoost !== (this.stateOf(this.entities.boost)?.state === "on"))
-        await this.callService("switch", this.chosenBoost ? "turn_on" : "turn_off", {}, { entity_id: this.entities.boost });
-      await this.callService("dreame_vacuum", "vacuum_clean_segment", { segments: [...this.selected] }, target);
+        await this.callService("select", "select_option", { option: this.chosenSuction }, this.entities.suction);
+      if (this.chosenBoost !== void 0 && this.chosenBoost !== (this.stateOf(this.entities.boost)?.state === "on"))
+        await this.callService("switch", this.chosenBoost ? "turn_on" : "turn_off", {}, this.entities.boost);
+      await this.callService("dreame_vacuum", "vacuum_clean_segment", { segments: [...this.selected] }, this.config.entity);
       this.selected = [];
-      this.chosenMode = null;
-      this.chosenSuction = null;
-      this.chosenBoost = null;
-    } catch (error) {
+      this.chosenMode = void 0;
+      this.chosenSuction = void 0;
+      this.chosenBoost = void 0;
+    } catch {
     }
-    this.lastSignature = "";
-    this.render();
+  }
+  onStart(status) {
+    if (status.control === "pause" && status.key !== "returning") this.run("vacuum", "pause", {}, this.config.entity);
+    else if (status.control === "resume") this.run("vacuum", "start", {}, this.config.entity);
+    else this.startCleaning();
+  }
+  // preset rooms by id, by shown name or by the name of the integration
+  presetRooms(preset) {
+    const rooms = this.rooms();
+    const mapRooms = this.mapRooms();
+    return (preset.rooms || []).flatMap((key) => {
+      const room = this.findRoom(rooms, key) || this.findRoom(mapRooms, key);
+      return room ? [room.id] : [];
+    });
   }
   presetMatches(preset) {
     const rooms = this.presetRooms(preset);
@@ -5771,204 +5797,238 @@ var GraphiteVacuum = class extends HTMLElement {
     if (preset.suction && preset.suction !== this.currentSuction()) return false;
     return true;
   }
-  presetRooms(preset) {
-    const rooms = this.rooms(), mapRooms = this.mapRooms();
-    return (preset.rooms || []).map((key) => (this.findRoom(rooms, key) || this.findRoom(mapRooms, key))?.id).filter((id) => id !== void 0);
+  choosePreset(preset) {
+    this.selected = this.presetRooms(preset);
+    if (preset.mode) this.chosenMode = preset.mode;
+    if (preset.suction) this.chosenSuction = preset.suction;
   }
-  handleClick(event) {
-    if (this.view === "card") {
-      const control = event.target.closest("[data-action='control']");
-      if (control) {
-        event.stopPropagation();
-        const status = this.status();
-        if (status.control === "resume") this.callService("vacuum", "start", {}, { entity_id: this.config.entity }).catch(() => {
-        });
-        else if (status.control) this.callService("vacuum", "pause", {}, { entity_id: this.config.entity }).catch(() => {
-        });
-        return;
-      }
-      if (event.target.closest("ha-card")) this.openDialog();
+  toggleRoom(id) {
+    this.selected = this.selected.includes(id) ? this.selected.filter((room) => room !== id) : [...this.selected, id];
+  }
+  toggleAllRooms() {
+    const all = this.rooms().map((room) => room.id);
+    this.selected = this.selected.length === all.length ? [] : all;
+  }
+  // two taps: the first one asks for confirmation
+  onReset(entityId) {
+    window.clearTimeout(this.confirmTimer);
+    if (this.confirmReset === entityId) {
+      this.confirmReset = void 0;
+      this.run("button", "press", {}, entityId);
       return;
     }
-    const target = event.target.closest("[data-action]");
-    if (!target) return;
-    const { action, value } = target.dataset;
-    if (action === "preset") {
-      const preset = (this.config.presets || [])[Number(value)];
-      if (!preset) return;
-      this.selected = this.presetRooms(preset);
-      if (preset.mode) this.chosenMode = preset.mode;
-      if (preset.suction) this.chosenSuction = preset.suction;
-    } else if (action === "mode") {
-      this.chosenMode = value;
-    } else if (action === "suction") {
-      this.chosenSuction = value;
-    } else if (action === "boost") {
-      this.chosenBoost = !this.currentBoost();
-    } else if (action === "room") {
-      const id = Number(value);
-      const index = this.selected.indexOf(id);
-      if (index >= 0) this.selected.splice(index, 1);
-      else this.selected.push(id);
-    } else if (action === "allRooms") {
-      const all = this.rooms().map((room) => room.id);
-      this.selected = this.selected.length === all.length ? [] : all;
-    } else if (action === "start") {
-      const status = this.status();
-      if (status.control === "pause" && status.key !== "returning") this.callService("vacuum", "pause", {}, { entity_id: this.config.entity }).catch(() => {
-      });
-      else if (status.control === "resume") this.callService("vacuum", "start", {}, { entity_id: this.config.entity }).catch(() => {
-      });
-      else this.startCleaning();
-      return;
-    } else if (action === "dock") {
-      this.callService("vacuum", "return_to_base", {}, { entity_id: this.config.entity }).catch(() => {
-      });
-      return;
-    } else if (action === "reset") {
-      if (this.confirmReset === value) {
-        this.confirmReset = null;
-        this.callService("button", "press", {}, { entity_id: value }).catch(() => {
-        });
-      } else {
-        this.confirmReset = value;
-        clearTimeout(this.confirmTimer);
-        this.confirmTimer = setTimeout(() => {
-          this.confirmReset = null;
-          this.lastSignature = "";
-          this.render();
-        }, 4e3);
-      }
-    } else if (action === "press") {
-      this.callService("button", "press", {}, { entity_id: value }).then(() => {
-        this.pressedAction = value;
-        clearTimeout(this.pressedTimer);
-        this.pressedTimer = setTimeout(() => {
-          this.pressedAction = null;
-          this.lastSignature = "";
-          this.render();
-        }, 2500);
-        this.lastSignature = "";
-        this.render();
-      }).catch(() => {
-      });
+    this.confirmReset = entityId;
+    this.confirmTimer = window.setTimeout(() => {
+      this.confirmReset = void 0;
+    }, confirmMilliseconds);
+  }
+  async onPress(entityId) {
+    try {
+      await this.callService("button", "press", {}, entityId);
+    } catch {
       return;
     }
-    this.lastSignature = "";
-    this.render();
+    this.pressedAction = entityId;
+    window.clearTimeout(this.pressedTimer);
+    this.pressedTimer = window.setTimeout(() => {
+      this.pressedAction = void 0;
+    }, pressedMilliseconds);
   }
   // ---------- rendering ----------
-  // only re-render when one of the used entities changed
-  signature() {
-    const ids = [this.config.entity, ...Object.values(this.entities), ...this.stationActions.map((action) => action.entity)];
-    return ids.map((id) => this.stateOf(id)?.last_updated || "").join("|") + `|${this.language()}|${this.selected.join(",")}|${this.chosenMode}|${this.chosenSuction}|${this.chosenBoost}|${this.confirmReset}|${this.pressedAction}|${this.errorText}`;
+  willUpdate(changed) {
+    super.willUpdate(changed);
+    const issues = this.isPanel && this.hass ? this.roomIssues() : [];
+    if (issues.length && issues.length !== this.warnedIssues) console.warn("graphite-vacuum: room ids do not match the map", issues);
+    this.warnedIssues = issues.length;
   }
   render() {
-    if (!this.config || !this.hassObject) return;
-    const signature = this.signature();
-    if (signature === this.lastSignature) return;
-    this.lastSignature = signature;
-    if (this.view === "card") this.renderCard();
-    else this.renderDialog();
+    if (!this.config || !this.hass) return A;
+    return this.isPanel ? this.renderPanel() : this.renderTile();
   }
-  renderCard() {
-    const root = this.shadowRoot;
-    const status = this.status();
-    root.querySelector("ha-card").classList.toggle("active", !!status.active);
-    root.querySelector(".art").className = `art ${status.art}`;
-    const name = root.querySelector(".name");
-    name.hidden = this.config.name === false;
-    name.textContent = this.deviceName();
-    root.querySelector(".title").textContent = status.title;
-    root.querySelector(".subtitle").textContent = status.subtitle || "";
-    const progress = root.querySelector(".progress");
-    const hasProgress = status.progress !== void 0 && status.progress !== null && status.active;
-    progress.hidden = !hasProgress;
-    if (hasProgress) progress.firstElementChild.style.width = `${Math.min(100, Math.max(0, Number(status.progress) || 0))}%`;
-    const control = root.querySelector(".control");
-    control.hidden = !status.control;
-    if (status.control) {
-      control.querySelector("ha-icon").setAttribute("icon", status.control === "resume" ? "mdi:play" : "mdi:pause");
-      control.setAttribute("aria-label", status.control === "resume" ? this.t("resume") : this.t("pause"));
-    }
-    const pill = root.querySelector(".pill");
-    const hints = ["ready", "charging", "drying", "error"].includes(status.key) ? status.hint ? [status.hint] : this.hints() : [];
-    pill.hidden = status.control || hints.length === 0;
-    pill.textContent = hints[0] || "";
-    pill.title = hints.join(", ");
+  renderArt(status) {
+    return b2`<div class="art ${status.art}">${robotArt}</div>`;
   }
-  renderDialog() {
-    const root = this.shadowRoot;
+  renderTile() {
     const status = this.status();
-    const presets = this.config.presets || [];
+    const hasProgress = status.active && status.progress !== void 0 && status.progress !== null;
+    const progress = Math.min(100, Math.max(0, Number(status.progress) || 0));
+    const hints = hintStates.includes(status.key) ? status.hint ? [status.hint] : this.hints() : [];
+    return b2`
+      <ha-card class=${status.active ? "active" : ""} role="button" tabindex="0" @click=${this.openPanel} @keydown=${this.onTileKey}>
+        ${this.renderArt(status)}
+        <div class="text">
+          ${this.config.name === false ? A : b2`<div class="name">${this.deviceName()}</div>`}
+          <div class="title">${status.title}</div>
+          <div class="subtitle">${status.subtitle}</div>
+          ${hasProgress ? b2`<div class="progress"><div style="width: ${progress}%"></div></div>` : A}
+        </div>
+        ${status.control ? b2`<button class="control" aria-label=${status.control === "resume" ? this.t("resume") : this.t("pause")}
+              @click=${(event) => this.onControl(event, status.control)}>
+              <ha-icon icon=${status.control === "resume" ? "mdi:play" : "mdi:pause"}></ha-icon>
+            </button>` : hints.length ? b2`<span class="pill" title=${hints.join(", ")}>${hints[0]}</span>` : A}
+      </ha-card>
+    `;
+  }
+  renderPanel() {
+    const status = this.status();
+    return b2`
+      <div class="columns ${this.config.panels === false ? "plain" : ""}">
+        <div class="column">${this.renderCleaning(status)}</div>
+        <div class="column">${this.renderStation(status)}</div>
+      </div>
+    `;
+  }
+  renderCleaning(status) {
+    const config = this.config;
+    const presets = config.presets || [];
     const rooms = this.rooms();
     const mode = this.currentMode();
     const suction = this.currentSuction();
     const boost = this.currentBoost();
-    const hasBoost = this.config.boost !== false && !!this.stateOf(this.entities.boost);
-    let html = `<div class="panelTitle">${this.escape(this.config.cleaning_title || this.t("cleaningTitle"))}</div>`;
-    if (presets.length) {
-      html += `<div class="label">${this.escape(this.config.presets_title || this.t("presetsTitle"))}</div><div class="presets">` + presets.map((preset, index) => `<button class="preset${this.presetMatches(preset) ? " selected" : ""}" data-action="preset" data-value="${index}">${preset.icon ? `<ha-icon icon="${this.escape(preset.icon)}"></ha-icon>` : ""}<span>${this.escape(preset.name)}</span></button>`).join("") + `</div>`;
-    }
-    html += `<div class="label">${this.t("mode")}</div><div class="modes">` + this.modes.map((item) => `<button class="mode${item.value === mode ? " selected" : ""}" data-action="mode" data-value="${this.escape(item.value)}">${item.icon ? `<ha-icon icon="${this.escape(item.icon)}"></ha-icon>` : ""}<span>${this.escape(this.itemName(item, "modes"))}</span></button>`).join("") + `</div>`;
-    html += `<div class="label">${this.t("suction")}</div><div class="suctions${hasBoost ? "" : " noBoost"}" style="--suctionCount:${this.suctionLevels.length}">` + this.suctionLevels.map((level) => `<button class="suction${level.value === suction ? " selected" : ""}" data-action="suction" data-value="${this.escape(level.value)}">${this.escape(this.itemName(level, "suctionLevels"))}</button>`).join("") + (hasBoost ? `<button class="boost${boost ? " on" : ""}" data-action="boost" aria-pressed="${boost}">${this.escape(this.config.boost_name || "Max+")}</button>` : "") + `</div>`;
-    const boostName = this.config.boost_name || "Max+";
-    if (hasBoost) html += `<div class="hint">${this.escape(boost ? this.t("boostActive", { name: boostName }) : this.t("boostHint", { name: boostName }))}</div>`;
+    const boostName = config.boost_name || "Max+";
+    const hasBoost = config.boost !== false && !!this.stateOf(this.entities.boost);
     const allSelected = rooms.length > 0 && this.selected.length === rooms.length;
     const issues = this.roomIssues();
-    if (issues.length && this.warnedIssues !== issues.length) {
-      this.warnedIssues = issues.length;
-      console.warn("graphite-vacuum: room ids do not match the map", issues);
-    }
-    html += `<div class="label">${this.t("rooms")}<button data-action="allRooms">${allSelected ? this.t("selectNone") : this.t("selectAll")}</button></div>` + (issues.length ? `<div class="roomWarning"><ha-icon icon="ic:twotone-warning-amber"></ha-icon><div><strong>${this.t("roomIssuesTitle")}</strong>` + issues.map((issue) => `<span>${this.escape(issue.name)}: ${this.escape(issue.text)}${issue.newId !== void 0 ? ` ${this.t("roomNewId", { id: issue.newId })}` : ""}</span>`).join("") + `<span>${this.t("roomIssuesHint")}</span></div></div>` : "") + `<div class="rooms">` + rooms.map((room) => {
+    return b2`
+      <div class="panelTitle">${config.cleaning_title || this.t("cleaningTitle")}</div>
+      ${presets.length ? b2`
+          <div class="label">${config.presets_title || this.t("presetsTitle")}</div>
+          <div class="presets">
+            ${presets.map((preset) => b2`
+              <button class="preset ${this.presetMatches(preset) ? "selected" : ""}" @click=${() => this.choosePreset(preset)}>
+                ${preset.icon ? b2`<ha-icon icon=${preset.icon}></ha-icon>` : A}<span>${preset.name}</span>
+              </button>`)}
+          </div>` : A}
+      <div class="label">${this.t("mode")}</div>
+      <div class="modes">
+        ${this.modes.map((item) => b2`
+          <button class="mode ${item.value === mode ? "selected" : ""}" @click=${() => {
+      this.chosenMode = item.value;
+    }}>
+            ${item.icon ? b2`<ha-icon icon=${item.icon}></ha-icon>` : A}<span>${this.itemName(item, "modes")}</span>
+          </button>`)}
+      </div>
+      <div class="label">${this.t("suction")}</div>
+      <div class="suctions ${hasBoost ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
+        ${this.suctionLevels.map((level) => b2`
+          <button class="suction ${level.value === suction ? "selected" : ""}" @click=${() => {
+      this.chosenSuction = level.value;
+    }}>
+            ${this.itemName(level, "suctionLevels")}
+          </button>`)}
+        ${hasBoost ? b2`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => {
+      this.chosenBoost = !this.currentBoost();
+    }}>${boostName}</button>` : A}
+      </div>
+      ${hasBoost ? b2`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : A}
+      <div class="label">
+        ${this.t("rooms")}
+        <button @click=${this.toggleAllRooms}>${allSelected ? this.t("selectNone") : this.t("selectAll")}</button>
+      </div>
+      ${issues.length ? this.renderRoomIssues(issues) : A}
+      <div class="rooms">
+        ${rooms.map((room) => {
       const order = this.selected.indexOf(room.id);
-      return `<button class="room${order >= 0 ? " selected" : ""}" data-action="room" data-value="${room.id}" aria-pressed="${order >= 0}"><ha-icon icon="${this.escape(room.icon)}"></ha-icon><span>${this.escape(room.name)}</span>${order >= 0 ? `<span class="order">${order + 1}</span>` : ""}</button>`;
-    }).join("") + `</div>`;
-    let startText, startClass = "start", startDisabled = false;
-    if (status.control === "pause" && status.key !== "returning") startText = this.t("pause");
-    else if (status.control === "resume") startText = this.t("resume");
-    else if (this.selected.length) startText = this.selected.length === 1 ? this.t("cleanOneRoom") : this.t("cleanRooms", { count: this.selected.length });
+      return b2`
+            <button class="room ${order >= 0 ? "selected" : ""}" aria-pressed=${order >= 0 ? "true" : "false"} @click=${() => this.toggleRoom(room.id)}>
+              <ha-icon icon=${room.icon}></ha-icon><span>${room.name}</span>${order >= 0 ? b2`<span class="order">${order + 1}</span>` : A}
+            </button>`;
+    })}
+      </div>
+      ${this.renderStartRow(status)}
+      ${this.errorText ? b2`<div class="error">${this.errorText}</div>` : A}
+    `;
+  }
+  renderRoomIssues(issues) {
+    return b2`
+      <div class="roomWarning">
+        <ha-icon icon="ic:twotone-warning-amber"></ha-icon>
+        <div>
+          <strong>${this.t("roomIssuesTitle")}</strong>
+          ${issues.map((issue) => b2`<span>${issue.name}: ${issue.text}${issue.newId !== void 0 ? ` ${this.t("roomNewId", { id: issue.newId })}` : ""}</span>`)}
+          <span>${this.t("roomIssuesHint")}</span>
+        </div>
+      </div>
+    `;
+  }
+  renderStartRow(status) {
+    let text;
+    let idle = false;
+    if (status.control === "pause" && status.key !== "returning") text = this.t("pause");
+    else if (status.control === "resume") text = this.t("resume");
+    else if (this.selected.length) text = this.selected.length === 1 ? this.t("cleanOneRoom") : this.t("cleanRooms", { count: this.selected.length });
     else {
-      startText = this.t("chooseRooms");
-      startClass += " idle";
-      startDisabled = true;
+      text = this.t("chooseRooms");
+      idle = true;
     }
-    html += `<div class="startRow"><button class="${startClass}" data-action="start"${startDisabled ? " disabled" : ""}>${startText}</button><button class="toStation" data-action="dock" aria-label="${this.t("toStation")}" title="${this.t("toStation")}"><ha-icon icon="mdi:home-import-outline"></ha-icon></button></div><div class="error">${this.escape(this.errorText)}</div>`;
-    root.querySelector(".cleaning").innerHTML = html;
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
+    return b2`
+      <div class="startRow">
+        <button class="start ${idle ? "idle" : ""}" ?disabled=${idle} @click=${() => this.onStart(status)}>${text}</button>
+        <button class="toStation" aria-label=${this.t("toStation")} title=${this.t("toStation")}
+          @click=${() => this.run("vacuum", "return_to_base", {}, this.config.entity)}>
+          <ha-icon icon="mdi:home-import-outline"></ha-icon>
+        </button>
+      </div>
+    `;
+  }
+  // robot state, battery, station (one line when everything is fine, otherwise what needs attention), last cleaning
+  facts(status) {
+    const attributes = this.vacuumAttributes;
     const battery = attributes.battery ?? attributes.battery_level;
-    const facts = [`<b>${this.escape(status.title)}</b>`];
-    if (status.subtitle && status.key !== "ready") facts.push(this.escape(status.subtitle));
-    if (battery !== void 0) facts.push(this.escape(this.t("battery", { battery })));
+    const facts = [b2`<b>${status.title}</b>`];
+    if (status.subtitle && status.key !== "ready") facts.push(status.subtitle);
+    if (battery !== void 0) facts.push(this.t("battery", { battery }));
+    const ok = this.t("station.ok");
     const stationParts = [
       [this.t("freshWater"), attributes.low_water ? this.t("station.empty") : this.stationValue(attributes.clean_water_tank_status)],
       [this.t("dirtyWater"), this.stationValue(attributes.dirty_water_tank_status)],
       [this.t("dustBag"), this.stationValue(attributes.dust_bag_status)]
-    ].filter(([, value]) => value);
-    const stationIssues = stationParts.filter(([, value]) => value !== this.t("station.ok"));
-    if (stationParts.length) facts.push(stationIssues.length ? stationIssues.map(([name, value]) => `<span class="warn">${this.escape(name)} ${this.escape(value)}</span>`).join("<br>") : this.escape(this.t("stationOk")));
+    ];
+    const known = stationParts.filter(([, value]) => value);
+    const issues = known.filter(([, value]) => value !== ok);
+    if (issues.length) facts.push(...issues.map(([name, value]) => b2`<span class="warn">${name} ${value}</span>`));
+    else if (known.length) facts.push(this.t("stationOk"));
     const last = this.formatLastCleaning();
-    if (last) facts.push(this.escape(this.t("lastCleaning", { time: last })));
-    let station = `<div class="panelTitle">${this.escape(this.config.station_title || this.t("stationTitle"))}</div><div class="robotInfo"><div class="art ${status.art}">${robotSvg}</div><div class="facts">${facts.join("<br>")}</div></div>`;
-    station += this.wearItems().map((item) => {
-      const value = item.due && item.reset ? `<button class="reset${this.confirmReset === item.reset ? " confirm" : ""}" data-action="reset" data-value="${this.escape(item.reset)}">${this.confirmReset === item.reset ? this.t("confirmReset") : this.t("reset")}</button>` : `<span class="value">${item.left} %${item.hours !== null ? ` \xB7 ${item.hours} h` : ""}</span>`;
-      return `<div class="wear${item.due ? " due" : ""}"><div class="name">${this.escape(item.name)}</div>${value}<div class="line"><div style="width:${Math.max(2, Math.min(100, item.left))}%"></div></div></div>`;
-    }).join("");
+    if (last) facts.push(this.t("lastCleaning", { time: last }));
+    return facts;
+  }
+  renderStation(status) {
     const actions = this.stationActions.filter((action) => this.stateOf(action.entity));
-    if (actions.length) {
-      station += `<div class="actions">` + actions.map((action) => {
-        const unavailable = this.stateOf(action.entity).state === "unavailable";
-        const done = this.pressedAction === action.entity;
-        return `<button class="action${done ? " done" : ""}" data-action="press" data-value="${this.escape(action.entity)}"${unavailable ? " disabled" : ""}>${action.icon ? `<ha-icon icon="${this.escape(done ? "mdi:check" : action.icon)}"></ha-icon>` : ""}<span>${this.escape(this.itemName(action, "actions"))}</span></button>`;
-      }).join("") + `</div>`;
-    }
-    root.querySelector(".station").innerHTML = station;
+    return b2`
+      <div class="panelTitle">${this.config.station_title || this.t("stationTitle")}</div>
+      <div class="robotInfo">
+        ${this.renderArt(status)}
+        <div class="facts">${this.facts(status).map((fact, index) => b2`${index ? b2`<br>` : A}${fact}`)}</div>
+      </div>
+      ${this.wearItems().map((item) => this.renderWear(item))}
+      ${actions.length ? b2`<div class="actions">${actions.map((action) => {
+      const done = this.pressedAction === action.entity;
+      return b2`
+            <button class="action ${done ? "done" : ""}" ?disabled=${this.stateOf(action.entity)?.state === "unavailable"} @click=${() => this.onPress(action.entity)}>
+              ${action.icon ? b2`<ha-icon icon=${done ? "mdi:check" : action.icon}></ha-icon>` : A}
+              <span>${this.itemName(action, "actions")}</span>
+            </button>`;
+    })}</div>` : A}
+    `;
+  }
+  renderWear(item) {
+    const confirming = this.confirmReset === item.reset;
+    const value = item.due && item.reset ? b2`<button class="reset ${confirming ? "confirm" : ""}" @click=${() => this.onReset(item.reset)}>
+          ${confirming ? this.t("confirmReset") : this.t("reset")}
+        </button>` : b2`<span class="value">${item.left} %${item.hours !== null ? ` \xB7 ${item.hours} h` : ""}</span>`;
+    return b2`
+      <div class="wear ${item.due ? "due" : ""}">
+        <div class="name">${item.name}</div>
+        ${value}
+        <div class="line"><div style="width: ${Math.max(2, Math.min(100, item.left))}%"></div></div>
+      </div>
+    `;
   }
   getCardSize() {
-    return this.view === "dialog" ? 8 : 2;
+    return this.isPanel ? 8 : 2;
   }
   getGridOptions() {
-    return this.view === "dialog" ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
+    return this.isPanel ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
   }
   static getStubConfig() {
     return { entity: "vacuum.robot" };
@@ -5977,6 +6037,17 @@ var GraphiteVacuum = class extends HTMLElement {
     return document.createElement("graphite-vacuum-editor");
   }
 };
+GraphiteVacuum.properties = {
+  ...GraphiteCard.properties,
+  selected: { state: true },
+  chosenMode: { state: true },
+  chosenSuction: { state: true },
+  chosenBoost: { state: true },
+  confirmReset: { state: true },
+  pressedAction: { state: true },
+  errorText: { state: true }
+};
+GraphiteVacuum.styles = artStyles;
 registerElement("graphite-vacuum-editor", GraphiteVacuumEditor);
 registerCard("graphite-vacuum", GraphiteVacuum, {
   name: "Graphite Vacuum",

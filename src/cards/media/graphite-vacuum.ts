@@ -1,681 +1,422 @@
-// @ts-nocheck -- 1:1 port of the former vacuum card (plain custom element with string templates);
-// the move to Lit with typed state follows in a separate step.
-// graphite-vacuum: robot vacuum (Dreame integration) as dashboard tile and as panel content.
-// layout: tile  -> animated robot, state, progress, maintenance pill; tap opens the panel (navigation_path)
-// layout: panel -> left: quick picks, mode, suction, rooms, start; right: station state, maintenance, station actions
-import { languageOf, translate } from "../../core/i18n";
+// graphite-vacuum: robot vacuum of the Dreame integration in two layouts.
+// layout: tile  -> animated robot, state, progress, hint chip or quick control; tap opens the panel (navigation_path)
+// layout: panel -> left: quick picks, mode, suction, rooms, start; right: robot and station state,
+//                  maintenance with reset and station actions
+// The other entities of the integration are found from the prefix of the vacuum entity.
+import { html, nothing, type CSSResultGroup, type PropertyValues, type TemplateResult } from "lit";
+import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
+import type { GraphiteCardConfig, HassEntity } from "../../core/types";
 import { GraphiteVacuumEditor } from "./graphite-vacuum-editor";
+import { artStyles, robotArt } from "./vacuum-art";
+import { panelStyles, tileStyles } from "./vacuum-styles";
 
-// names come from the translations (vacuum.modes.*, vacuum.suction.*, ...) unless the config sets one
-const defaultModes = [
+export interface VacuumMode {
+  value: string;
+  name?: string;
+  icon?: string;
+}
+
+export interface VacuumSuctionLevel {
+  value: string;
+  name?: string;
+}
+
+export interface VacuumMaintenance {
+  // matches the attributes <key>_left (%) and <key>_time_left (h)
+  key: string;
+  name?: string;
+  due?: string;
+  reset?: string;
+}
+
+export interface VacuumAction {
+  key?: string;
+  name?: string;
+  icon?: string;
+  entity: string;
+}
+
+export interface VacuumRoom {
+  id: number | string;
+  name?: string;
+  icon?: string;
+}
+
+export interface VacuumPreset {
+  name: string;
+  icon?: string;
+  // rooms by segment id or by name
+  rooms?: Array<number | string>;
+  mode?: string;
+  suction?: string;
+}
+
+export interface VacuumConfig extends GraphiteCardConfig {
+  entity: string;
+  layout?: "tile" | "panel";
+  name?: string | false;
+  navigation_path?: string;
+  prefix?: string;
+  rooms?: Array<VacuumRoom | number>;
+  presets?: VacuumPreset[];
+  modes?: Array<VacuumMode | string>;
+  suction_levels?: Array<VacuumSuctionLevel | string>;
+  boost?: boolean;
+  boost_name?: string;
+  maintenance?: VacuumMaintenance[];
+  maintenance_threshold?: number;
+  actions?: VacuumAction[];
+  panels?: boolean;
+  cleaning_title?: string;
+  presets_title?: string;
+  station_title?: string;
+  mode_entity?: string;
+  suction_entity?: string;
+  boost_entity?: string;
+  history_entity?: string;
+  error_entity?: string;
+  drying_left_entity?: string;
+}
+
+interface MapRoom {
+  id: number;
+  name: string;
+  icon?: string;
+}
+
+interface ShownRoom {
+  id: number;
+  name: string;
+  icon: string;
+}
+
+interface RoomIssue {
+  id: number;
+  name: string;
+  text: string;
+  newId?: number;
+}
+
+interface WearItem {
+  key: string;
+  reset?: string;
+  name: string;
+  left: number;
+  hours: number | null;
+  due: boolean;
+  dueText: string;
+}
+
+type StatusKey = "offline" | "error" | "returning" | "washing" | "paused" | "cleaning" | "drying" | "charging" | "ready";
+
+interface VacuumStatus {
+  key: StatusKey;
+  // classes of the artwork (animation)
+  art: string;
+  title: string;
+  subtitle: string;
+  active: boolean;
+  control?: "pause" | "resume";
+  progress?: number | null;
+  hint?: string;
+}
+
+interface VacuumEntities {
+  mode: string;
+  suction: string;
+  boost: string;
+  history: string;
+  error: string;
+  dryingLeft: string;
+}
+
+// names come from the translations (vacuum.modes.*, vacuum.suctionLevels.*, ...) unless the config sets one
+const defaultModes: VacuumMode[] = [
   { value: "sweeping", icon: "mdi:vacuum-outline" },
   { value: "mopping_after_sweeping", icon: "mdi:water-sync" },
   { value: "sweeping_and_mopping", icon: "mdi:water-plus-outline" },
 ];
 const knownModes = ["sweeping", "mopping", "sweeping_and_mopping", "mopping_after_sweeping"];
-const vacuumModeKeys = { "Sweeping": "sweeping", "Mopping": "mopping", "Sweeping and mopping": "sweeping_and_mopping", "Mopping after sweeping": "mopping_after_sweeping" };
-const defaultSuctionLevels = [{ value: "quiet" }, { value: "standard" }, { value: "strong" }, { value: "turbo" }];
+// cleaning_mode attribute of the vacuum entity -> option of the mode select
+const vacuumModeKeys: Record<string, string> = {
+  "Sweeping": "sweeping",
+  "Mopping": "mopping",
+  "Sweeping and mopping": "sweeping_and_mopping",
+  "Mopping after sweeping": "mopping_after_sweeping",
+};
+const defaultSuctionLevels: VacuumSuctionLevel[] = [{ value: "quiet" }, { value: "standard" }, { value: "strong" }, { value: "turbo" }];
 // station states as translation keys (vacuum.station.*)
-const stationStates = { "installed": "ok", "not installed": "missing", "full": "full", "low": "low", "check": "check", "enabled": "ok" };
+const stationStates: Record<string, string> = {
+  "installed": "ok",
+  "not installed": "missing",
+  "full": "full",
+  "low": "low",
+  "check": "check",
+  "enabled": "ok",
+};
+const hintStates: StatusKey[] = ["ready", "charging", "drying", "error"];
+const confirmMilliseconds = 4000;
+const pressedMilliseconds = 2500;
 
-// own robot artwork (top view, front = up); state classes on the wrapper animate the parts
-const robotSvg = `
-<svg viewBox="0 0 64 64" aria-hidden="true">
-  <g class="dock"><rect x="10" y="48" width="44" height="12" rx="4" fill="var(--vacDock)" style="fill-opacity: var(--vacTone)" stroke="var(--vacDock)" stroke-width="1.4"/><rect x="18" y="55.5" width="28" height="2.5" rx="1.25" fill="var(--vacDock)"/></g>
-  <g class="robot">
-    <g class="pads">
-      <g transform="translate(25 44)"><g class="pad"><circle r="7" fill="var(--vacWater)" style="fill-opacity: var(--vacTone)" stroke="var(--vacWater)" stroke-width="1.4"/><path d="M-4 0 H4 M0 -4 V4" stroke="var(--vacWater)" stroke-width="1.2" opacity=".8"/></g></g>
-      <g transform="translate(39 44)"><g class="pad"><circle r="7" fill="var(--vacWater)" style="fill-opacity: var(--vacTone)" stroke="var(--vacWater)" stroke-width="1.4"/><path d="M-4 0 H4 M0 -4 V4" stroke="var(--vacWater)" stroke-width="1.2" opacity=".8"/></g></g>
-    </g>
-    <g transform="translate(20 17)"><g class="brush"><path d="M0 0 L-8 -3 M0 0 L1 -8 M0 0 L-5 6" stroke="var(--vacLine)" stroke-width="1.4" stroke-linecap="round"/></g></g>
-    <circle cx="32" cy="30" r="19" fill="var(--vacBody)"/>
-    <circle cx="32" cy="30" r="19" fill="var(--vacLine)" style="fill-opacity: var(--vacTone)" stroke="var(--vacLine)" stroke-width="1.6"/>
-    <path d="M16.5 30 A15.5 15.5 0 0 1 47.5 30" fill="none" stroke="var(--vacLine)" stroke-width="1.4"/>
-    <path d="M14 29 L16.5 30 L16.5 33 M50 29 L47.5 30 L47.5 33" fill="none" stroke="var(--vacLine)" stroke-width="1.4" stroke-linejoin="round"/>
-    <path d="M19 22 H26 M38 22 H45" stroke="var(--vacLine)" stroke-width="1.2"/>
-    <circle cx="32" cy="22" r="5.5" fill="none" stroke="var(--vacLine)" stroke-width="1.4"/>
-    <rect class="eye" x="30.8" y="37" width="2.4" height="5" rx="1.2" fill="var(--vacAccent)"/>
-  </g>
-  <g class="drops"><path class="drop" d="M12 42 q3 4 0 6 q-3 -2 0 -6z" fill="var(--vacWater)"/><path class="drop" d="M52 42 q3 4 0 6 q-3 -2 0 -6z" fill="var(--vacWater)"/><path class="drop" d="M8 34 q3 4 0 6 q-3 -2 0 -6z" fill="var(--vacWater)"/></g>
-  <g class="heat" fill="none" stroke="var(--vacAccent)" stroke-width="1.8" stroke-linecap="round"><path class="wave" d="M24 8 q2 -3 0 -6"/><path class="wave" d="M32 8 q2 -3 0 -6"/><path class="wave" d="M40 8 q2 -3 0 -6"/></g>
-  <path class="bolt" d="M51 2 l-5 9 h4 l-2 7 l6 -10 h-4 l2 -6z" fill="var(--vacAccent)"/>
-</svg>`;
+export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
+  static properties = {
+    ...GraphiteCard.properties,
+    selected: { state: true },
+    chosenMode: { state: true },
+    chosenSuction: { state: true },
+    chosenBoost: { state: true },
+    confirmReset: { state: true },
+    pressedAction: { state: true },
+    errorText: { state: true },
+  };
 
-const sharedStyles = `
-  :host {
-    display: block;
-    container-type: inline-size;
-    --vacTile: var(--graphite-surface-tile, #1f1f20);
-    --vacTileHi: var(--graphite-surface-tile-active, #2b2b2c);
-    --vacText: var(--graphite-text-primary, #f3f3f4);
-    --vacText2: var(--graphite-text-secondary, #b4b4b8);
-    --vacText3: var(--graphite-text-muted, #8f8f92);
-    --vacAccent: var(--graphite-accent, #f5c48a);
-    --vacAccentInk: var(--graphite-accent-ink, #3a2410);
-    --vacDanger: var(--graphite-danger, #e8908a);
-    --vacWater: #7cc4f0;
-    --vacLine: #c4c4c8;
-    --vacDock: #6a6a70;
-    /* second tone of the two-tone artwork, matches the dimmed icons of the other tiles */
-    --vacTone: var(--graphite-vacuum-tone, 0.12);
-    --vacRadius: var(--graphite-radius-tile, 12px);
-  }
-  button {
-    border: none;
-    font: inherit;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  button:disabled { cursor: default; opacity: 0.45; }
-  /* robot artwork */
-  .art {
-    --vacBody: var(--vacArtBg);
-    --vacTurret: var(--vacArtBg);
-    width: 64px;
-    height: 64px;
-    border-radius: 10px;
-    background: var(--vacArtBg);
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    flex: none;
-  }
-  .art svg { width: 56px; height: 56px; overflow: visible; }
-  .brush, .pad { transform-box: view-box; }
-  .run .brush, .return .brush { animation: vacSpin 0.6s linear infinite; }
-  .run .robot, .return .robot { animation: vacDrive 3s ease-in-out infinite; }
-  .run.mopping .pad, .wash .pad { animation: vacSpin 1s linear infinite; }
-  .drops, .heat, .bolt, .dock { opacity: 0; }
-  .wash .drops { opacity: 1; }
-  .wash .drop { animation: vacFall 1s ease-in infinite; }
-  .wash .drop:nth-child(2) { animation-delay: 0.33s; }
-  .wash .drop:nth-child(3) { animation-delay: 0.66s; }
-  .dry .heat { opacity: 1; }
-  .dry .wave { animation: vacRise 1.8s ease-in-out infinite; }
-  .dry .wave:nth-child(2) { animation-delay: 0.6s; }
-  .dry .wave:nth-child(3) { animation-delay: 1.2s; }
-  .charge .bolt { opacity: 1; animation: vacPulse 1.6s ease-in-out infinite; }
-  .docked .dock, .charge .dock, .wash .dock, .dry .dock { opacity: 1; }
-  .err .eye { fill: var(--vacDanger); }
-  .err .robot { animation: vacShake 0.5s ease-in-out 3; }
-  .sleep .eye { opacity: 0.35; }
-  .offline svg { opacity: 0.4; }
-  @keyframes vacSpin { to { transform: rotate(360deg); } }
-  @keyframes vacDrive { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(3px, -2px) rotate(8deg); } 75% { transform: translate(-3px, 2px) rotate(-6deg); } }
-  @keyframes vacFall { 0% { transform: translateY(-6px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(6px); opacity: 0; } }
-  @keyframes vacRise { 0% { transform: translateY(4px); opacity: 0; } 50% { opacity: 0.9; } 100% { transform: translateY(-6px); opacity: 0; } }
-  @keyframes vacPulse { 50% { opacity: 0.35; } }
-  @keyframes vacShake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
-  @media (prefers-reduced-motion: reduce) { .art * { animation: none !important; } }
-`;
+  static styles = artStyles;
 
-const cardStyles = `
-  ha-card {
-    --vacArtBg: color-mix(in srgb, var(--vacText) 6%, var(--vacTile));
-    background: var(--vacTile);
-    border-radius: var(--graphite-card-radius, var(--vacRadius));
-    border: none;
-    box-shadow: none;
-    padding: 12px 14px 12px 12px;
-    box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr) auto;
-    gap: 14px;
-    align-items: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  ha-card.active {
-    --vacArtBg: var(--vacTile);
-    background: color-mix(in srgb, var(--vacAccent) 10%, var(--vacTileHi));
-  }
-  /* text column as high as the robot: name aligned to its top, details to its bottom,
-     the free space sits between name and state */
-  .text {
-    min-width: 0;
-    height: 64px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-  /* device name like the names of the other tiles */
-  .name {
-    font-size: 13px;
-    line-height: 13px;
-    color: var(--vacText2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .name[hidden] { display: none; }
-  /* state as text: 20/300 (numbers would be 22/300, words read larger) */
-  .title {
-    margin-top: auto;
-    font-size: var(--graphite-font-value-text-size, 20px);
-    font-weight: 300;
-    line-height: 1.1;
-    color: var(--vacText);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .subtitle {
-    margin-top: 3px;
-    font-size: 12px;
-    line-height: 12px;
-    color: var(--vacText2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* progress as last line, aligned to the bottom of the robot (the text moves up) */
-  .progress {
-    margin-top: 6px;
-    flex: none;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--vacTile);
-    overflow: hidden;
-  }
-  .progress[hidden], .control[hidden], .pill[hidden] { display: none; }
-  .progress > div { height: 100%; width: 0; border-radius: 2px; background: var(--vacAccent); }
-  .control {
-    width: 44px;
-    height: 36px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
-    color: var(--vacText2);
-    display: grid;
-    place-items: center;
-    padding: 0;
-    --mdc-icon-size: 18px;
-    align-self: end;
-  }
-  .control:active { transform: scale(0.96); }
-  /* maintenance or station hint, takes the place of the control (never both) */
-  .pill {
-    height: 24px;
-    max-width: 150px;
-    padding: 0 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    background: color-mix(in srgb, var(--vacAccent) 16%, var(--vacTile));
-    color: var(--vacAccent);
-  }
-`;
+  // rooms chosen in the panel, in the tap order
+  declare selected: number[];
+  // mode, suction and boost changed in the panel, applied when the cleaning starts
+  declare chosenMode?: string;
+  declare chosenSuction?: string;
+  declare chosenBoost?: boolean;
+  // reset button waiting for the second tap
+  declare confirmReset?: string;
+  // station action that was just pressed (shows a check)
+  declare pressedAction?: string;
+  declare errorText: string;
 
-const dialogStyles = `
-  .columns {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    align-items: start;
-  }
-  .column {
-    background: var(--graphite-panel-surface, var(--graphite-surface-panel, #161617));
-    border-radius: var(--graphite-panel-radius, var(--graphite-radius-panel, 20px));
-    padding: var(--graphite-panel-padding, var(--graphite-padding-panel, 16px));
-    min-width: 0;
-  }
-  :host(:not([panels])) .column { background: none; padding: 0; }
-  .panelTitle {
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--vacText));
-    margin-bottom: 12px;
-  }
-  .label {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--vacText);
-    margin: 14px 2px 8px;
-  }
-  .panelTitle + .label { margin-top: 0; }
-  /* configured rooms that do not match the map (e.g. after the map was recreated) */
-  .roomWarning {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin: 0 0 8px;
-    padding: 10px 12px;
-    border-radius: var(--graphite-radius-tile, 12px);
-    background: color-mix(in srgb, var(--graphite-accent, #f5c48a) 14%, var(--graphite-surface-tile, #1f1f20));
-    color: var(--graphite-accent, #f5c48a);
-    font-size: 12px;
-    line-height: 16px;
-  }
-  .roomWarning ha-icon { --mdc-icon-size: 18px; flex: none; margin-top: -1px; }
-  .roomWarning strong { display: block; font-size: 13px; font-weight: 500; margin-bottom: 2px; }
-  .roomWarning span { display: block; color: var(--vacText2, var(--graphite-text-secondary)); }
-  .label button {
-    background: none;
-    padding: 0;
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--vacText3);
-  }
-  .presets, .modes, .rooms {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
-  }
-  .preset, .room {
-    height: 52px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 12px;
-    font-size: 13px;
-    color: var(--vacText2);
-    text-align: left;
-    min-width: 0;
-    --mdc-icon-size: 18px;
-  }
-  .preset span, .room span {
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .preset ha-icon, .room ha-icon { flex: none; opacity: 0.75; }
-  .preset {
-    color: var(--vacText);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vacAccent) 30%, var(--vacTile));
-  }
-  .preset.selected {
-    background: color-mix(in srgb, var(--vacAccent) 20%, var(--vacTileHi));
-    box-shadow: inset 0 0 0 1.5px var(--vacAccent);
-  }
-  .room.selected {
-    background: color-mix(in srgb, var(--vacAccent) 20%, var(--vacTileHi));
-    color: var(--vacText);
-  }
-  .room .order { flex: none; font-size: 11px; color: var(--vacAccent); }
-  .mode {
-    height: 56px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 0 6px;
-    font-size: 12px;
-    line-height: 1.2;
-    color: var(--vacText2);
-    --mdc-icon-size: 18px;
-  }
-  .mode.selected { background: var(--vacAccent); color: var(--vacAccentInk); }
-  .suctions {
-    display: grid;
-    grid-template-columns: repeat(var(--suctionCount, 4), minmax(0, 1fr)) 64px;
-    gap: 6px;
-  }
-  .suctions.noBoost { grid-template-columns: repeat(var(--suctionCount, 4), minmax(0, 1fr)); }
-  .suction {
-    height: 48px;
-    border-radius: 10px;
-    background: var(--vacTile);
-    font-size: 12px;
-    color: var(--vacText2);
-    padding: 0 4px;
-  }
-  .suction.selected { background: color-mix(in srgb, var(--vacAccent) 20%, var(--vacTileHi)); color: var(--vacText); }
-  .boost {
-    height: 48px;
-    border-radius: 10px;
-    background: var(--vacTile);
-    font-size: 12px;
-    color: var(--vacAccent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vacAccent) 45%, var(--vacTile));
-  }
-  .boost.on { background: var(--vacAccent); color: var(--vacAccentInk); font-weight: 500; box-shadow: none; }
-  .hint { font-size: 11px; color: var(--vacText3); margin: 6px 2px 0; }
-  .startRow {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 52px;
-    gap: 6px;
-    margin-top: 14px;
-  }
-  .start {
-    height: 48px;
-    border-radius: var(--vacRadius);
-    background: var(--vacAccent);
-    color: var(--vacAccentInk);
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .start.idle { background: var(--vacTile); color: var(--vacText3); opacity: 1; }
-  .toStation {
-    height: 48px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
-    color: var(--vacText2);
-    display: grid;
-    place-items: center;
-    --mdc-icon-size: 20px;
-  }
-  .robotInfo { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
-  .robotInfo .art { --vacArtBg: var(--vacTile); width: 88px; height: 88px; }
-  .robotInfo .art svg { width: 76px; height: 76px; }
-  .facts { font-size: 12px; line-height: 1.7; color: var(--vacText2); min-width: 0; }
-  .facts b { color: var(--vacText); font-weight: 500; }
-  .facts .warn { color: var(--vacAccent); }
-  .wear {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 4px 10px;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .wear .name { font-size: 13px; color: var(--vacText); }
-  .wear .value { font-size: 12px; color: var(--vacText2); }
-  .wear .line { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--vacTile); overflow: hidden; }
-  .wear .line div { height: 100%; background: var(--vacText2); }
-  .wear.due .value { color: var(--vacAccent); }
-  .wear.due .line div { background: var(--vacAccent); }
-  .reset {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    color: var(--vacAccent);
-    background: color-mix(in srgb, var(--vacAccent) 14%, var(--vacTile));
-  }
-  .reset.confirm { background: var(--vacAccent); color: var(--vacAccentInk); }
-  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
-  .action {
-    height: 52px;
-    border-radius: var(--vacRadius);
-    background: var(--vacTile);
-    font-size: 12px;
-    color: var(--vacText2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    --mdc-icon-size: 18px;
-  }
-  .action.done { color: var(--vacAccent); }
-  .error { font-size: 12px; color: var(--vacDanger); margin-top: 8px; }
-  .error:empty { display: none; }
-  @container (min-width: 640px) {
-    .columns { grid-template-columns: minmax(0, 1fr) 320px; }
-  }
-  @container (max-width: 380px) {
-    .presets, .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-`;
+  private entities!: VacuumEntities;
+  private modes: VacuumMode[] = [];
+  private suctionLevels: VacuumSuctionLevel[] = [];
+  private maintenance: VacuumMaintenance[] = [];
+  private stationActions: VacuumAction[] = [];
+  private confirmTimer?: number;
+  private pressedTimer?: number;
+  private warnedIssues = 0;
 
-export class GraphiteVacuum extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
     this.selected = [];
-    this.chosenMode = null;
-    this.chosenSuction = null;
-    this.chosenBoost = null;
-    this.confirmReset = null;
-    this.pressedAction = null;
-    this.lastSignature = "";
     this.errorText = "";
-    this.shadowRoot.addEventListener("click", (event) => this.handleClick(event));
   }
 
-  setConfig(config) {
-    if (!config || !config.entity) throw new Error("entity is required");
-    this.config = config;
-    // layout: panel (former view: dialog) or tile (former view: card)
-    this.view = config.layout === "panel" || config.view === "dialog" ? "dialog" : "card";
-    this.entityPrefix = config.prefix || config.entity.split(".")[1];
-    // configured items keep their own names; the defaults are named by the translations when rendered
-    this.modes = (config.modes || defaultModes).map((mode) => (typeof mode === "string" ? defaultModes.find((item) => item.value === mode) || { value: mode } : mode));
-    this.suctionLevels = (config.suction_levels || defaultSuctionLevels).map((level) => (typeof level === "string" ? defaultSuctionLevels.find((item) => item.value === level) || { value: level } : level));
+  protected normalizeConfig(config: VacuumConfig): VacuumConfig {
+    if (!config.entity) throw new Error("entity is required");
+    const prefix = config.prefix || config.entity.split(".")[1];
+    this.entities = {
+      mode: config.mode_entity || `select.${prefix}_cleaning_mode`,
+      suction: config.suction_entity || `select.${prefix}_suction_level`,
+      boost: config.boost_entity || `switch.${prefix}_max_suction_power`,
+      history: config.history_entity || `sensor.${prefix}_cleaning_history`,
+      error: config.error_entity || `sensor.${prefix}_error`,
+      dryingLeft: config.drying_left_entity || `sensor.${prefix}_drying_left`,
+    };
+    this.modes = (config.modes || defaultModes).map((mode) =>
+      typeof mode === "string" ? defaultModes.find((item) => item.value === mode) || { value: mode } : mode);
+    this.suctionLevels = (config.suction_levels || defaultSuctionLevels).map((level) =>
+      typeof level === "string" ? defaultSuctionLevels.find((item) => item.value === level) || { value: level } : level);
     this.maintenance = config.maintenance || [
-      { key: "main_brush", reset: `button.${this.entityPrefix}_reset_main_brush` },
-      { key: "side_brush", reset: `button.${this.entityPrefix}_reset_side_brush` },
-      { key: "filter", reset: `button.${this.entityPrefix}_reset_filter` },
-      { key: "sensor_dirty", reset: `button.${this.entityPrefix}_reset_sensor` },
+      { key: "main_brush", reset: `button.${prefix}_reset_main_brush` },
+      { key: "side_brush", reset: `button.${prefix}_reset_side_brush` },
+      { key: "filter", reset: `button.${prefix}_reset_filter` },
+      { key: "sensor_dirty", reset: `button.${prefix}_reset_sensor` },
     ];
     this.stationActions = config.actions || [
-      { key: "self_clean", icon: "mdi:water-sync", entity: `button.${this.entityPrefix}_self_clean` },
-      { key: "manual_drying", icon: "mdi:heat-wave", entity: `button.${this.entityPrefix}_manual_drying` },
-      { key: "base_station_cleaning", icon: "mdi:spray-bottle", entity: `button.${this.entityPrefix}_base_station_cleaning` },
-      { key: "start_auto_empty", icon: "mdi:delete-empty-outline", entity: `button.${this.entityPrefix}_start_auto_empty` },
+      { key: "self_clean", icon: "mdi:water-sync", entity: `button.${prefix}_self_clean` },
+      { key: "manual_drying", icon: "mdi:heat-wave", entity: `button.${prefix}_manual_drying` },
+      { key: "base_station_cleaning", icon: "mdi:spray-bottle", entity: `button.${prefix}_base_station_cleaning` },
+      { key: "start_auto_empty", icon: "mdi:delete-empty-outline", entity: `button.${prefix}_start_auto_empty` },
     ];
-    this.entities = {
-      mode: config.mode_entity || `select.${this.entityPrefix}_cleaning_mode`,
-      suction: config.suction_entity || `select.${this.entityPrefix}_suction_level`,
-      boost: config.boost_entity || `switch.${this.entityPrefix}_max_suction_power`,
-      history: config.history_entity || `sensor.${this.entityPrefix}_cleaning_history`,
-      error: config.error_entity || `sensor.${this.entityPrefix}_error`,
-      dryingLeft: config.drying_left_entity || `sensor.${this.entityPrefix}_drying_left`,
-    };
-    this.threshold = Number(config.maintenance_threshold ?? 10);
-    if (config.panels === false) this.removeAttribute("panels");
-    else this.setAttribute("panels", "");
-    this.build();
-    this.lastSignature = "";
-    this.render();
+    return config;
   }
 
-  set hass(hass) {
-    this.hassObject = hass;
-    this.render();
+  private get isPanel(): boolean {
+    return this.config?.layout === "panel";
   }
 
-  get hass() {
-    return this.hassObject;
+  protected stylesForConfig(): CSSResultGroup {
+    return this.isPanel ? [artStyles, panelStyles] : [artStyles, tileStyles];
   }
 
-  connectedCallback() {
-    this.render();
+  protected watchedEntities(): string[] {
+    if (!this.config) return [];
+    return [this.config.entity, ...Object.values(this.entities), ...this.stationActions.map((action) => action.entity)];
   }
 
-  disconnectedCallback() {
-    clearTimeout(this.confirmTimer);
-    clearTimeout(this.pressedTimer);
-  }
-
-  build() {
-    if (this.view === "card") {
-      this.shadowRoot.innerHTML = `<style>${sharedStyles}${cardStyles}</style>
-        <ha-card role="button" tabindex="0">
-          <div class="art"></div>
-          <div class="text"><div class="name"></div><div class="title"></div><div class="subtitle"></div><div class="progress" hidden><div></div></div></div>
-          <button class="control" data-action="control" hidden><ha-icon></ha-icon></button>
-          <span class="pill" hidden></span>
-        </ha-card>`;
-      this.shadowRoot.querySelector(".art").innerHTML = robotSvg;
-      this.shadowRoot.querySelector("ha-card").addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); this.openDialog(); }
-      });
-    } else {
-      this.shadowRoot.innerHTML = `<style>${sharedStyles}${dialogStyles}</style>
-        <div class="columns"><div class="column cleaning"></div><div class="column station"></div></div>`;
-    }
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.clearTimeout(this.confirmTimer);
+    window.clearTimeout(this.pressedTimer);
   }
 
   // ---------- texts ----------
 
-  // translated text (vacuum.*): theme variable --graphite-language, else the Home Assistant language
-  // the theme variable is only readable once connected, so the language is part of the render signature
-  language() {
-    return languageOf(this.isConnected ? this : undefined, this.hassObject);
-  }
-
-  t(key, params = {}) {
-    return translate(this.language(), `vacuum.${key}`, params);
+  private t(key: string, params: Record<string, string | number> = {}): string {
+    return this.localize(`vacuum.${key}`, params);
   }
 
   // name of a configured or default item: own name, else the translation of its key, else the key
-  itemName(item, group) {
+  private itemName(item: { name?: string; key?: string; value?: string }, group: string): string {
     if (item.name) return item.name;
-    const key = `${group}.${item.key ?? item.value}`;
+    const id = String(item.key ?? item.value ?? "");
+    const key = `${group}.${id}`;
     const text = this.t(key);
-    return text === `vacuum.${key}` ? String(item.key ?? item.value) : text;
+    return text === `vacuum.${key}` ? id : text;
   }
 
-  locale() {
-    return this.hassObject?.locale?.language || "de-CH";
+  private get locale(): string {
+    return this.hass?.locale?.language || this.language;
   }
 
   // ---------- state helpers ----------
 
-  // config name, otherwise the entity id in readable form ("vacuum.dreamie" -> "Dreamie")
-  deviceName() {
-    if (typeof this.config.name === "string" && this.config.name) return this.config.name;
-    const objectId = this.config.entity.split(".")[1] || "";
+  private stateOf(entityId: string): HassEntity | undefined {
+    return this.hass?.states[entityId];
+  }
+
+  private get vacuumAttributes(): Record<string, any> {
+    return this.stateOf(this.config!.entity)?.attributes || {};
+  }
+
+  // config name, otherwise the entity id in readable form ("vacuum.robot" -> "Robot")
+  private deviceName(): string {
+    if (typeof this.config!.name === "string" && this.config!.name) return this.config!.name;
+    const objectId = this.config!.entity.split(".")[1] || "";
     return objectId.charAt(0).toUpperCase() + objectId.slice(1).split("_").join(" ");
   }
 
-  stateOf(entityId) {
-    return this.hassObject?.states?.[entityId];
+  // rooms of the selected map as the integration reports them
+  private mapRooms(): MapRoom[] {
+    const attributes = this.vacuumAttributes;
+    const rooms = attributes.rooms || {};
+    return rooms[attributes.selected_map] || Object.values(rooms)[0] || [];
   }
 
-  // HTML-safe text for the string templates (no regular expressions in the library)
-  escape(text) {
-    const entities = [["&", "&amp;"], ["<", "&lt;"], [">", "&gt;"], ['"', "&quot;"], ["'", "&#39;"]];
-    return entities.reduce((value, [character, entity]) => value.split(character).join(entity), String(text ?? ""));
+  // a room by segment id or by name
+  private findRoom<T extends { id: number; name: string }>(rooms: T[], key: number | string): T | undefined {
+    return rooms.find((room) => room.id === Number(key))
+      || rooms.find((room) => String(room.name).toLowerCase() === String(key).toLowerCase());
   }
 
-  // rooms of the current map, in config order (with overrides) or in the cleaning sequence
-  mapRooms() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
-    return attributes.rooms?.[attributes.selected_map] || Object.values(attributes.rooms || {})[0] || [];
+  private configuredRooms(): VacuumRoom[] | undefined {
+    return this.config!.rooms?.map((entry) => (typeof entry === "object" ? entry : { id: entry }));
   }
 
-  rooms() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
+  // rooms in config order (rooms that do not fit the map are left out, so a button never cleans
+  // the wrong room), otherwise all rooms of the map in the cleaning sequence
+  private rooms(): ShownRoom[] {
     const mapRooms = this.mapRooms();
-    if (Array.isArray(this.config.rooms)) {
-      // rooms whose id no longer fits the map are left out, so a button never cleans the wrong room
+    const configured = this.configuredRooms();
+    if (configured) {
       const issueIds = this.roomIssues().map((issue) => issue.id);
-      return this.config.rooms.map((entry) => {
-        const room = typeof entry === "object" ? entry : { id: entry };
-        if (issueIds.includes(Number(room.id))) return null;
+      return configured.flatMap((room) => {
+        if (issueIds.includes(Number(room.id))) return [];
         const known = this.findRoom(mapRooms, room.id);
-        return known ? { id: known.id, name: room.name || known.name, icon: room.icon || known.icon || "mdi:floor-plan" } : null;
-      }).filter(Boolean);
+        return known ? [{ id: known.id, name: room.name || known.name, icon: room.icon || known.icon || "mdi:floor-plan" }] : [];
+      });
     }
-    const sequence = attributes.cleaning_sequence || [];
+    const sequence: number[] = this.vacuumAttributes.cleaning_sequence || [];
+    const position = (id: number) => (sequence.indexOf(id) < 0 ? 999 : sequence.indexOf(id));
     return [...mapRooms]
-      .sort((first, second) => {
-        const firstIndex = sequence.indexOf(first.id), secondIndex = sequence.indexOf(second.id);
-        return (firstIndex < 0 ? 999 : firstIndex) - (secondIndex < 0 ? 999 : secondIndex);
-      })
+      .sort((first, second) => position(first.id) - position(second.id))
       .map((room) => ({ id: room.id, name: room.name, icon: room.icon || "mdi:floor-plan" }));
   }
 
   // configured rooms that do not fit the current map: the id is missing, or it belongs to another room
   // whose name differs while the configured name exists on the map under another id (map recreated);
-  // a renamed room (own name that is not on the map) is not an issue
-  roomIssues() {
-    if (!Array.isArray(this.config.rooms)) return [];
+  // a renamed room (own name that is not on the map) is no issue
+  private roomIssues(): RoomIssue[] {
+    const configured = this.configuredRooms();
     const mapRooms = this.mapRooms();
-    if (!mapRooms.length) return [];
-    const sameName = (first, second) => String(first).toLowerCase() === String(second).toLowerCase();
-    return this.config.rooms.map((entry) => {
-      const room = typeof entry === "object" ? entry : { id: entry };
+    if (!configured || !mapRooms.length) return [];
+    const sameName = (first: string, second: string) => String(first).toLowerCase() === String(second).toLowerCase();
+    return configured.flatMap((room): RoomIssue[] => {
       const id = Number(room.id);
       const known = mapRooms.find((mapRoom) => mapRoom.id === id);
-      const byName = room.name ? mapRooms.find((mapRoom) => sameName(mapRoom.name, room.name)) : undefined;
-      if (!known) return { id, name: room.name || this.t("room", { id: room.id }), text: this.t("roomMissing", { id: room.id }), newId: byName?.id };
+      const byName = room.name ? mapRooms.find((mapRoom) => sameName(mapRoom.name, room.name!)) : undefined;
+      if (!known)
+        return [{ id, name: room.name || this.t("room", { id }), text: this.t("roomMissing", { id }), newId: byName?.id }];
       if (room.name && !sameName(known.name, room.name) && byName && byName.id !== id)
-        return { id, name: room.name, text: this.t("roomChanged", { id: room.id, name: known.name }), newId: byName.id };
-      return null;
-    }).filter(Boolean);
+        return [{ id, name: room.name, text: this.t("roomChanged", { id, name: known.name }), newId: byName.id }];
+      return [];
+    });
   }
 
-  // a room by segment id or by name
-  findRoom(rooms, key) {
-    return rooms.find((room) => room.id === Number(key)) || rooms.find((room) => String(room.name).toLowerCase() === String(key).toLowerCase());
-  }
-
-  roomName(id) {
+  private roomName(id: number): string {
     return this.findRoom(this.rooms(), id)?.name || "";
   }
 
-  currentMode() {
+  private currentMode(): string {
     if (this.chosenMode) return this.chosenMode;
     const selectState = this.stateOf(this.entities.mode)?.state;
     if (selectState && selectState !== "unavailable") return selectState;
-    return vacuumModeKeys[this.stateOf(this.config.entity)?.attributes?.cleaning_mode] || "";
+    return vacuumModeKeys[this.vacuumAttributes.cleaning_mode] || "";
   }
 
-  currentSuction() {
+  private currentSuction(): string {
     return this.chosenSuction || this.stateOf(this.entities.suction)?.state || "";
   }
 
-  currentBoost() {
-    if (this.chosenBoost !== null) return this.chosenBoost;
+  private currentBoost(): boolean {
+    if (this.chosenBoost !== undefined) return this.chosenBoost;
     return this.stateOf(this.entities.boost)?.state === "on";
   }
 
-  modeName(value) {
+  private modeName(value: string): string {
     const mode = this.modes.find((item) => item.value === value);
     if (mode) return this.itemName(mode, "modes");
     return knownModes.includes(value) ? this.t(`modes.${value}`) : "";
   }
 
-  formatDuration(minutes) {
-    const total = Math.max(0, Math.round(Number(minutes)));
-    const hours = Math.floor(total / 60), rest = total % 60;
+  private formatDuration(minutes: number): string {
+    const total = Math.max(0, Math.round(minutes));
+    const hours = Math.floor(total / 60);
+    const rest = total % 60;
     if (hours === 0) return this.t("minutes", { minutes: rest });
     return rest ? this.t("hoursMinutes", { hours, minutes: rest }) : this.t("hours", { hours });
   }
 
-  formatLastCleaning() {
+  private formatLastCleaning(): string {
     const value = this.stateOf(this.entities.history)?.state;
-    const date = value ? new Date(value) : null;
-    if (!date || isNaN(date)) return "";
-    const time = date.toLocaleTimeString(this.locale(), { hour: "2-digit", minute: "2-digit" });
+    const date = value ? new Date(value) : undefined;
+    if (!date || isNaN(date.getTime())) return "";
+    const time = date.toLocaleTimeString(this.locale, { hour: "2-digit", minute: "2-digit" });
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const days = Math.round((today - new Date(date.getFullYear(), date.getMonth(), date.getDate())) / 86400000);
+    const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const days = Math.round((today.getTime() - day.getTime()) / 86400000);
     if (days === 0) return this.t("today", { time });
     if (days === 1) return this.t("yesterday", { time });
-    if (days < 7) return `${date.toLocaleDateString(this.locale(), { weekday: "short" }).split(".").join("")} ${time}`;
-    return date.toLocaleDateString(this.locale(), { day: "numeric", month: "numeric" });
+    if (days < 7) return `${date.toLocaleDateString(this.locale, { weekday: "short" }).split(".").join("")} ${time}`;
+    return date.toLocaleDateString(this.locale, { day: "numeric", month: "numeric" });
   }
 
-  stationValue(raw) {
+  private stationValue(raw: unknown): string {
     if (raw === undefined || raw === null || raw === "") return "";
     const key = stationStates[String(raw).toLowerCase()];
     return key ? this.t(`station.${key}`) : String(raw).toLowerCase();
   }
 
-  // maintenance items with remaining life; due when at or below the threshold
-  wearItems() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
-    return this.maintenance.map((item) => {
+  // maintenance items with remaining life; due at or below the threshold
+  private wearItems(): WearItem[] {
+    const attributes = this.vacuumAttributes;
+    const threshold = Number(this.config!.maintenance_threshold ?? 10);
+    return this.maintenance.flatMap((item): WearItem[] => {
       const left = attributes[`${item.key}_left`];
+      if (left === undefined) return [];
       const hours = attributes[`${item.key}_time_left`];
       const name = this.itemName(item, "maintenance");
       const dueKey = `maintenanceDue.${item.key}`;
-      const dueText = item.due || (item.name ? this.t("due", { name }) : this.t(dueKey) === `vacuum.${dueKey}` ? this.t("due", { name }) : this.t(dueKey));
-      return { ...item, name, left: left === undefined ? null : Number(left), hours: hours === undefined ? null : Number(hours), due: left !== undefined && Number(left) <= this.threshold, dueText };
-    }).filter((item) => item.left !== null);
+      const ownDue = item.name ? undefined : this.t(dueKey);
+      const dueText = item.due || (ownDue && ownDue !== `vacuum.${dueKey}` ? ownDue : this.t("due", { name }));
+      return [{ key: item.key, reset: item.reset, name, left: Number(left), hours: hours === undefined ? null : Number(hours), due: Number(left) <= threshold, dueText }];
+    });
   }
 
-  // hints for the card pill (only shown while not cleaning)
-  hints() {
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
-    const hints = [];
+  // hints for the tile chip (only shown while not cleaning)
+  private hints(): string[] {
+    const attributes = this.vacuumAttributes;
+    const hints: string[] = [];
     if (attributes.low_water) hints.push(this.t("refillWater"));
     const dirty = this.stationValue(attributes.dirty_water_tank_status);
     if (dirty && dirty !== this.t("station.ok")) hints.push(`${this.t("dirtyWater")} ${dirty}`);
@@ -685,16 +426,16 @@ export class GraphiteVacuum extends HTMLElement {
     return hints;
   }
 
-  // what the robot is doing: text, animation class and quick control
-  status() {
-    const entity = this.stateOf(this.config.entity);
+  // what the robot is doing: text, animation classes and quick control
+  private status(): VacuumStatus {
+    const entity = this.stateOf(this.config!.entity);
     if (!entity || entity.state === "unavailable" || entity.state === "unknown")
       return { key: "offline", art: "offline sleep", title: this.t("states.offline"), subtitle: "", active: false };
     const attributes = entity.attributes;
     const battery = attributes.battery ?? attributes.battery_level;
     const batteryText = battery !== undefined ? this.t("battery", { battery }) : "";
     const mode = vacuumModeKeys[attributes.cleaning_mode] || this.stateOf(this.entities.mode)?.state || "";
-    const mopping = mode && mode !== "sweeping";
+    const mopping = mode !== "" && mode !== "sweeping";
     const progressParts = [this.modeName(mode)];
     if (attributes.cleaning_progress) progressParts.push(`${attributes.cleaning_progress} %`);
     if (attributes.cleaned_area) progressParts.push(`${attributes.cleaned_area} m²`);
@@ -708,69 +449,133 @@ export class GraphiteVacuum extends HTMLElement {
     if (attributes.returning_to_wash)
       return { key: "returning", art: "return", title: this.t("states.returningToWash"), subtitle: progressText, active: true, control: "pause" };
     if (attributes.washing || attributes.washing_paused)
-      return { key: "washing", art: "wash docked", title: attributes.washing_paused ? this.t("states.washingPaused") : this.t("states.washing"), subtitle: attributes.started ? `${this.t("intermediateWash")} · ${progressText}` : batteryText, active: true, progress: attributes.started ? attributes.cleaning_progress : null };
+      return {
+        key: "washing",
+        art: "wash docked",
+        title: attributes.washing_paused ? this.t("states.washingPaused") : this.t("states.washing"),
+        subtitle: attributes.started ? `${this.t("intermediateWash")} · ${progressText}` : batteryText,
+        active: true,
+        progress: attributes.started ? attributes.cleaning_progress : null,
+      };
     if (attributes.returning || entity.state === "returning")
       return { key: "returning", art: "return", title: this.t("states.returning"), subtitle: progressText || batteryText, active: true, control: "pause" };
     if (attributes.paused || entity.state === "paused")
-      return { key: "paused", art: "", title: this.t("states.paused"), subtitle: [currentRoom, progressText].filter(Boolean).join(" · "), active: true, control: "resume", progress: attributes.cleaning_progress };
+      return {
+        key: "paused",
+        art: "",
+        title: this.t("states.paused"),
+        subtitle: [currentRoom, progressText].filter(Boolean).join(" · "),
+        active: true,
+        control: "resume",
+        progress: attributes.cleaning_progress,
+      };
     if (attributes.running || entity.state === "cleaning")
-      return { key: "cleaning", art: `run${mopping ? " mopping" : ""}`, title: currentRoom || this.t("states.cleaning"), subtitle: progressText, active: true, control: "pause", progress: attributes.cleaning_progress };
+      return {
+        key: "cleaning",
+        art: `run${mopping ? " mopping" : ""}`,
+        title: currentRoom || this.t("states.cleaning"),
+        subtitle: progressText,
+        active: true,
+        control: "pause",
+        progress: attributes.cleaning_progress,
+      };
     if (attributes.drying) {
       const left = Number(this.stateOf(this.entities.dryingLeft)?.state ?? attributes.drying_left);
-      return { key: "drying", art: "dry docked", title: this.t("states.drying"), subtitle: left > 0 ? this.t("remaining", { duration: this.formatDuration(left) }) : batteryText, active: false };
+      return {
+        key: "drying",
+        art: "dry docked",
+        title: this.t("states.drying"),
+        subtitle: left > 0 ? this.t("remaining", { duration: this.formatDuration(left) }) : batteryText,
+        active: false,
+      };
     }
     if (attributes.charging)
       return { key: "charging", art: "charge", title: this.t("states.charging"), subtitle: batteryText, active: false };
     const last = this.formatLastCleaning();
-    return { key: "ready", art: `${attributes.docked ? "docked " : ""}sleep`, title: this.t("states.ready"), subtitle: [batteryText, last].filter(Boolean).join(" · "), active: false };
+    return {
+      key: "ready",
+      art: `${attributes.docked ? "docked " : ""}sleep`,
+      title: this.t("states.ready"),
+      subtitle: [batteryText, last].filter(Boolean).join(" · "),
+      active: false,
+    };
   }
 
   // ---------- actions ----------
 
-  callService(domain, service, data, target) {
+  private async callService(domain: string, service: string, data: Record<string, unknown>, entityId: string): Promise<void> {
     this.errorText = "";
-    return this.hassObject.callService(domain, service, data || {}, target).catch((error) => {
-      this.errorText = error?.message || this.t("actionFailed");
-      this.lastSignature = "";
-      this.render();
+    try {
+      await this.hass!.callService(domain, service, data, { entity_id: entityId });
+    } catch (error) {
+      this.errorText = (error as { message?: string })?.message || this.t("actionFailed");
       throw error;
-    });
+    }
   }
 
-  openDialog() {
-    const path = this.config.navigation_path;
+  // service call whose error is only shown below the start button
+  private run(domain: string, service: string, data: Record<string, unknown>, entityId: string): void {
+    this.callService(domain, service, data, entityId).catch(() => undefined);
+  }
+
+  private openPanel(): void {
+    const path = this.config!.navigation_path;
     if (path) {
       history.pushState(null, "", path);
       window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
     } else {
-      this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: this.config.entity }, bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: this.config!.entity }, bubbles: true, composed: true }));
     }
   }
 
-  // applies mode, suction and boost if they were changed in the dialog, then cleans the selected rooms
-  async startCleaning() {
+  private onTileKey(event: KeyboardEvent): void {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    this.openPanel();
+  }
+
+  private onControl(event: Event, control: "pause" | "resume"): void {
+    event.stopPropagation();
+    this.run("vacuum", control === "resume" ? "start" : "pause", {}, this.config!.entity);
+  }
+
+  // applies mode, suction and boost if they were changed in the panel, then cleans the selected rooms
+  private async startCleaning(): Promise<void> {
     if (this.selected.length === 0) return;
-    const target = { entity_id: this.config.entity };
     try {
       if (this.chosenMode && this.chosenMode !== this.stateOf(this.entities.mode)?.state)
-        await this.callService("select", "select_option", { option: this.chosenMode }, { entity_id: this.entities.mode });
+        await this.callService("select", "select_option", { option: this.chosenMode }, this.entities.mode);
       if (this.chosenSuction && this.chosenSuction !== this.stateOf(this.entities.suction)?.state)
-        await this.callService("select", "select_option", { option: this.chosenSuction }, { entity_id: this.entities.suction });
-      if (this.chosenBoost !== null && this.chosenBoost !== (this.stateOf(this.entities.boost)?.state === "on"))
-        await this.callService("switch", this.chosenBoost ? "turn_on" : "turn_off", {}, { entity_id: this.entities.boost });
-      await this.callService("dreame_vacuum", "vacuum_clean_segment", { segments: [...this.selected] }, target);
+        await this.callService("select", "select_option", { option: this.chosenSuction }, this.entities.suction);
+      if (this.chosenBoost !== undefined && this.chosenBoost !== (this.stateOf(this.entities.boost)?.state === "on"))
+        await this.callService("switch", this.chosenBoost ? "turn_on" : "turn_off", {}, this.entities.boost);
+      await this.callService("dreame_vacuum", "vacuum_clean_segment", { segments: [...this.selected] }, this.config!.entity);
       this.selected = [];
-      this.chosenMode = null;
-      this.chosenSuction = null;
-      this.chosenBoost = null;
-    } catch (error) {
-      // message is shown below the start button
+      this.chosenMode = undefined;
+      this.chosenSuction = undefined;
+      this.chosenBoost = undefined;
+    } catch {
+      // the message is shown below the start button
     }
-    this.lastSignature = "";
-    this.render();
   }
 
-  presetMatches(preset) {
+  private onStart(status: VacuumStatus): void {
+    if (status.control === "pause" && status.key !== "returning") this.run("vacuum", "pause", {}, this.config!.entity);
+    else if (status.control === "resume") this.run("vacuum", "start", {}, this.config!.entity);
+    else this.startCleaning();
+  }
+
+  // preset rooms by id, by shown name or by the name of the integration
+  private presetRooms(preset: VacuumPreset): number[] {
+    const rooms = this.rooms();
+    const mapRooms = this.mapRooms();
+    return (preset.rooms || []).flatMap((key) => {
+      const room = this.findRoom(rooms, key) || this.findRoom(mapRooms, key);
+      return room ? [room.id] : [];
+    });
+  }
+
+  private presetMatches(preset: VacuumPreset): boolean {
     const rooms = this.presetRooms(preset);
     if (rooms.length !== this.selected.length || !rooms.every((id) => this.selected.includes(id))) return false;
     if (preset.mode && preset.mode !== this.currentMode()) return false;
@@ -778,231 +583,265 @@ export class GraphiteVacuum extends HTMLElement {
     return true;
   }
 
-  presetRooms(preset) {
-    // preset rooms by id, by shown name or by the name of the integration
-    const rooms = this.rooms(), mapRooms = this.mapRooms();
-    return (preset.rooms || []).map((key) => (this.findRoom(rooms, key) || this.findRoom(mapRooms, key))?.id).filter((id) => id !== undefined);
+  private choosePreset(preset: VacuumPreset): void {
+    this.selected = this.presetRooms(preset);
+    if (preset.mode) this.chosenMode = preset.mode;
+    if (preset.suction) this.chosenSuction = preset.suction;
   }
 
-  handleClick(event) {
-    if (this.view === "card") {
-      const control = event.target.closest("[data-action='control']");
-      if (control) {
-        event.stopPropagation();
-        const status = this.status();
-        if (status.control === "resume") this.callService("vacuum", "start", {}, { entity_id: this.config.entity }).catch(() => {});
-        else if (status.control) this.callService("vacuum", "pause", {}, { entity_id: this.config.entity }).catch(() => {});
-        return;
-      }
-      if (event.target.closest("ha-card")) this.openDialog();
-      return;
-    }
+  private toggleRoom(id: number): void {
+    this.selected = this.selected.includes(id) ? this.selected.filter((room) => room !== id) : [...this.selected, id];
+  }
 
-    const target = event.target.closest("[data-action]");
-    if (!target) return;
-    const { action, value } = target.dataset;
-    if (action === "preset") {
-      const preset = (this.config.presets || [])[Number(value)];
-      if (!preset) return;
-      this.selected = this.presetRooms(preset);
-      if (preset.mode) this.chosenMode = preset.mode;
-      if (preset.suction) this.chosenSuction = preset.suction;
-    } else if (action === "mode") {
-      this.chosenMode = value;
-    } else if (action === "suction") {
-      this.chosenSuction = value;
-    } else if (action === "boost") {
-      this.chosenBoost = !this.currentBoost();
-    } else if (action === "room") {
-      const id = Number(value);
-      const index = this.selected.indexOf(id);
-      if (index >= 0) this.selected.splice(index, 1);
-      else this.selected.push(id);
-    } else if (action === "allRooms") {
-      const all = this.rooms().map((room) => room.id);
-      this.selected = this.selected.length === all.length ? [] : all;
-    } else if (action === "start") {
-      const status = this.status();
-      if (status.control === "pause" && status.key !== "returning") this.callService("vacuum", "pause", {}, { entity_id: this.config.entity }).catch(() => {});
-      else if (status.control === "resume") this.callService("vacuum", "start", {}, { entity_id: this.config.entity }).catch(() => {});
-      else this.startCleaning();
-      return;
-    } else if (action === "dock") {
-      this.callService("vacuum", "return_to_base", {}, { entity_id: this.config.entity }).catch(() => {});
-      return;
-    } else if (action === "reset") {
-      // two taps: the first one asks for confirmation (4 s)
-      if (this.confirmReset === value) {
-        this.confirmReset = null;
-        this.callService("button", "press", {}, { entity_id: value }).catch(() => {});
-      } else {
-        this.confirmReset = value;
-        clearTimeout(this.confirmTimer);
-        this.confirmTimer = setTimeout(() => { this.confirmReset = null; this.lastSignature = ""; this.render(); }, 4000);
-      }
-    } else if (action === "press") {
-      this.callService("button", "press", {}, { entity_id: value }).then(() => {
-        this.pressedAction = value;
-        clearTimeout(this.pressedTimer);
-        this.pressedTimer = setTimeout(() => { this.pressedAction = null; this.lastSignature = ""; this.render(); }, 2500);
-        this.lastSignature = "";
-        this.render();
-      }).catch(() => {});
+  private toggleAllRooms(): void {
+    const all = this.rooms().map((room) => room.id);
+    this.selected = this.selected.length === all.length ? [] : all;
+  }
+
+  // two taps: the first one asks for confirmation
+  private onReset(entityId: string): void {
+    window.clearTimeout(this.confirmTimer);
+    if (this.confirmReset === entityId) {
+      this.confirmReset = undefined;
+      this.run("button", "press", {}, entityId);
       return;
     }
-    this.lastSignature = "";
-    this.render();
+    this.confirmReset = entityId;
+    this.confirmTimer = window.setTimeout(() => { this.confirmReset = undefined; }, confirmMilliseconds);
+  }
+
+  private async onPress(entityId: string): Promise<void> {
+    try {
+      await this.callService("button", "press", {}, entityId);
+    } catch {
+      return;
+    }
+    this.pressedAction = entityId;
+    window.clearTimeout(this.pressedTimer);
+    this.pressedTimer = window.setTimeout(() => { this.pressedAction = undefined; }, pressedMilliseconds);
   }
 
   // ---------- rendering ----------
 
-  // only re-render when one of the used entities changed
-  signature() {
-    const ids = [this.config.entity, ...Object.values(this.entities), ...this.stationActions.map((action) => action.entity)];
-    return ids.map((id) => this.stateOf(id)?.last_updated || "").join("|")
-      + `|${this.language()}|${this.selected.join(",")}|${this.chosenMode}|${this.chosenSuction}|${this.chosenBoost}|${this.confirmReset}|${this.pressedAction}|${this.errorText}`;
+  protected willUpdate(changed: PropertyValues): void {
+    super.willUpdate(changed);
+    const issues = this.isPanel && this.hass ? this.roomIssues() : [];
+    if (issues.length && issues.length !== this.warnedIssues) console.warn("graphite-vacuum: room ids do not match the map", issues);
+    this.warnedIssues = issues.length;
   }
 
-  render() {
-    if (!this.config || !this.hassObject) return;
-    const signature = this.signature();
-    if (signature === this.lastSignature) return;
-    this.lastSignature = signature;
-    if (this.view === "card") this.renderCard();
-    else this.renderDialog();
+  protected render(): TemplateResult | typeof nothing {
+    if (!this.config || !this.hass) return nothing;
+    return this.isPanel ? this.renderPanel() : this.renderTile();
   }
 
-  renderCard() {
-    const root = this.shadowRoot;
+  private renderArt(status: VacuumStatus): TemplateResult {
+    return html`<div class="art ${status.art}">${robotArt}</div>`;
+  }
+
+  private renderTile(): TemplateResult {
     const status = this.status();
-    root.querySelector("ha-card").classList.toggle("active", !!status.active);
-    root.querySelector(".art").className = `art ${status.art}`;
-    const name = root.querySelector(".name");
-    name.hidden = this.config.name === false;
-    name.textContent = this.deviceName();
-    root.querySelector(".title").textContent = status.title;
-    root.querySelector(".subtitle").textContent = status.subtitle || "";
-    const progress = root.querySelector(".progress");
-    const hasProgress = status.progress !== undefined && status.progress !== null && status.active;
-    progress.hidden = !hasProgress;
-    if (hasProgress) progress.firstElementChild.style.width = `${Math.min(100, Math.max(0, Number(status.progress) || 0))}%`;
-    const control = root.querySelector(".control");
-    control.hidden = !status.control;
-    if (status.control) {
-      control.querySelector("ha-icon").setAttribute("icon", status.control === "resume" ? "mdi:play" : "mdi:pause");
-      control.setAttribute("aria-label", status.control === "resume" ? this.t("resume") : this.t("pause"));
-    }
-    // hint pill only while not cleaning (ready, charging, drying, error)
-    const pill = root.querySelector(".pill");
-    const hints = ["ready", "charging", "drying", "error"].includes(status.key) ? (status.hint ? [status.hint] : this.hints()) : [];
-    pill.hidden = status.control || hints.length === 0;
-    pill.textContent = hints[0] || "";
-    pill.title = hints.join(", ");
+    const hasProgress = status.active && status.progress !== undefined && status.progress !== null;
+    const progress = Math.min(100, Math.max(0, Number(status.progress) || 0));
+    const hints = hintStates.includes(status.key) ? (status.hint ? [status.hint] : this.hints()) : [];
+    return html`
+      <ha-card class=${status.active ? "active" : ""} role="button" tabindex="0" @click=${this.openPanel} @keydown=${this.onTileKey}>
+        ${this.renderArt(status)}
+        <div class="text">
+          ${this.config!.name === false ? nothing : html`<div class="name">${this.deviceName()}</div>`}
+          <div class="title">${status.title}</div>
+          <div class="subtitle">${status.subtitle}</div>
+          ${hasProgress ? html`<div class="progress"><div style="width: ${progress}%"></div></div>` : nothing}
+        </div>
+        ${status.control
+          ? html`<button class="control" aria-label=${status.control === "resume" ? this.t("resume") : this.t("pause")}
+              @click=${(event: Event) => this.onControl(event, status.control!)}>
+              <ha-icon icon=${status.control === "resume" ? "mdi:play" : "mdi:pause"}></ha-icon>
+            </button>`
+          : hints.length
+            ? html`<span class="pill" title=${hints.join(", ")}>${hints[0]}</span>`
+            : nothing}
+      </ha-card>
+    `;
   }
 
-  renderDialog() {
-    const root = this.shadowRoot;
+  private renderPanel(): TemplateResult {
     const status = this.status();
-    const presets = this.config.presets || [];
+    return html`
+      <div class="columns ${this.config!.panels === false ? "plain" : ""}">
+        <div class="column">${this.renderCleaning(status)}</div>
+        <div class="column">${this.renderStation(status)}</div>
+      </div>
+    `;
+  }
+
+  private renderCleaning(status: VacuumStatus): TemplateResult {
+    const config = this.config!;
+    const presets = config.presets || [];
     const rooms = this.rooms();
     const mode = this.currentMode();
     const suction = this.currentSuction();
     const boost = this.currentBoost();
-    const hasBoost = this.config.boost !== false && !!this.stateOf(this.entities.boost);
-
-    // cleaning column
-    let html = `<div class="panelTitle">${this.escape(this.config.cleaning_title || this.t("cleaningTitle"))}</div>`;
-    if (presets.length) {
-      html += `<div class="label">${this.escape(this.config.presets_title || this.t("presetsTitle"))}</div><div class="presets">`
-        + presets.map((preset, index) => `<button class="preset${this.presetMatches(preset) ? " selected" : ""}" data-action="preset" data-value="${index}">${preset.icon ? `<ha-icon icon="${this.escape(preset.icon)}"></ha-icon>` : ""}<span>${this.escape(preset.name)}</span></button>`).join("")
-        + `</div>`;
-    }
-    html += `<div class="label">${this.t("mode")}</div><div class="modes">`
-      + this.modes.map((item) => `<button class="mode${item.value === mode ? " selected" : ""}" data-action="mode" data-value="${this.escape(item.value)}">${item.icon ? `<ha-icon icon="${this.escape(item.icon)}"></ha-icon>` : ""}<span>${this.escape(this.itemName(item, "modes"))}</span></button>`).join("")
-      + `</div>`;
-    html += `<div class="label">${this.t("suction")}</div><div class="suctions${hasBoost ? "" : " noBoost"}" style="--suctionCount:${this.suctionLevels.length}">`
-      + this.suctionLevels.map((level) => `<button class="suction${level.value === suction ? " selected" : ""}" data-action="suction" data-value="${this.escape(level.value)}">${this.escape(this.itemName(level, "suctionLevels"))}</button>`).join("")
-      + (hasBoost ? `<button class="boost${boost ? " on" : ""}" data-action="boost" aria-pressed="${boost}">${this.escape(this.config.boost_name || "Max+")}</button>` : "")
-      + `</div>`;
-    const boostName = this.config.boost_name || "Max+";
-    if (hasBoost) html += `<div class="hint">${this.escape(boost ? this.t("boostActive", { name: boostName }) : this.t("boostHint", { name: boostName }))}</div>`;
+    const boostName = config.boost_name || "Max+";
+    const hasBoost = config.boost !== false && !!this.stateOf(this.entities.boost);
     const allSelected = rooms.length > 0 && this.selected.length === rooms.length;
     const issues = this.roomIssues();
-    if (issues.length && this.warnedIssues !== issues.length) {
-      this.warnedIssues = issues.length;
-      console.warn("graphite-vacuum: room ids do not match the map", issues);
-    }
-    html += `<div class="label">${this.t("rooms")}<button data-action="allRooms">${allSelected ? this.t("selectNone") : this.t("selectAll")}</button></div>`
-      + (issues.length
-        ? `<div class="roomWarning"><ha-icon icon="ic:twotone-warning-amber"></ha-icon><div><strong>${this.t("roomIssuesTitle")}</strong>`
-          + issues.map((issue) => `<span>${this.escape(issue.name)}: ${this.escape(issue.text)}${issue.newId !== undefined ? ` ${this.t("roomNewId", { id: issue.newId })}` : ""}</span>`).join("")
-          + `<span>${this.t("roomIssuesHint")}</span></div></div>`
-        : "")
-      + `<div class="rooms">`
-      + rooms.map((room) => {
-        const order = this.selected.indexOf(room.id);
-        return `<button class="room${order >= 0 ? " selected" : ""}" data-action="room" data-value="${room.id}" aria-pressed="${order >= 0}"><ha-icon icon="${this.escape(room.icon)}"></ha-icon><span>${this.escape(room.name)}</span>${order >= 0 ? `<span class="order">${order + 1}</span>` : ""}</button>`;
-      }).join("")
-      + `</div>`;
-    let startText, startClass = "start", startDisabled = false;
-    if (status.control === "pause" && status.key !== "returning") startText = this.t("pause");
-    else if (status.control === "resume") startText = this.t("resume");
-    else if (this.selected.length) startText = this.selected.length === 1 ? this.t("cleanOneRoom") : this.t("cleanRooms", { count: this.selected.length });
-    else { startText = this.t("chooseRooms"); startClass += " idle"; startDisabled = true; }
-    html += `<div class="startRow"><button class="${startClass}" data-action="start"${startDisabled ? " disabled" : ""}>${startText}</button>`
-      + `<button class="toStation" data-action="dock" aria-label="${this.t("toStation")}" title="${this.t("toStation")}"><ha-icon icon="mdi:home-import-outline"></ha-icon></button></div>`
-      + `<div class="error">${this.escape(this.errorText)}</div>`;
-    root.querySelector(".cleaning").innerHTML = html;
+    return html`
+      <div class="panelTitle">${config.cleaning_title || this.t("cleaningTitle")}</div>
+      ${presets.length
+        ? html`
+          <div class="label">${config.presets_title || this.t("presetsTitle")}</div>
+          <div class="presets">
+            ${presets.map((preset) => html`
+              <button class="preset ${this.presetMatches(preset) ? "selected" : ""}" @click=${() => this.choosePreset(preset)}>
+                ${preset.icon ? html`<ha-icon icon=${preset.icon}></ha-icon>` : nothing}<span>${preset.name}</span>
+              </button>`)}
+          </div>`
+        : nothing}
+      <div class="label">${this.t("mode")}</div>
+      <div class="modes">
+        ${this.modes.map((item) => html`
+          <button class="mode ${item.value === mode ? "selected" : ""}" @click=${() => { this.chosenMode = item.value; }}>
+            ${item.icon ? html`<ha-icon icon=${item.icon}></ha-icon>` : nothing}<span>${this.itemName(item, "modes")}</span>
+          </button>`)}
+      </div>
+      <div class="label">${this.t("suction")}</div>
+      <div class="suctions ${hasBoost ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
+        ${this.suctionLevels.map((level) => html`
+          <button class="suction ${level.value === suction ? "selected" : ""}" @click=${() => { this.chosenSuction = level.value; }}>
+            ${this.itemName(level, "suctionLevels")}
+          </button>`)}
+        ${hasBoost
+          ? html`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => { this.chosenBoost = !this.currentBoost(); }}>${boostName}</button>`
+          : nothing}
+      </div>
+      ${hasBoost ? html`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : nothing}
+      <div class="label">
+        ${this.t("rooms")}
+        <button @click=${this.toggleAllRooms}>${allSelected ? this.t("selectNone") : this.t("selectAll")}</button>
+      </div>
+      ${issues.length ? this.renderRoomIssues(issues) : nothing}
+      <div class="rooms">
+        ${rooms.map((room) => {
+          const order = this.selected.indexOf(room.id);
+          return html`
+            <button class="room ${order >= 0 ? "selected" : ""}" aria-pressed=${order >= 0 ? "true" : "false"} @click=${() => this.toggleRoom(room.id)}>
+              <ha-icon icon=${room.icon}></ha-icon><span>${room.name}</span>${order >= 0 ? html`<span class="order">${order + 1}</span>` : nothing}
+            </button>`;
+        })}
+      </div>
+      ${this.renderStartRow(status)}
+      ${this.errorText ? html`<div class="error">${this.errorText}</div>` : nothing}
+    `;
+  }
 
-    // station column
-    const attributes = this.stateOf(this.config.entity)?.attributes || {};
+  private renderRoomIssues(issues: RoomIssue[]): TemplateResult {
+    return html`
+      <div class="roomWarning">
+        <ha-icon icon="ic:twotone-warning-amber"></ha-icon>
+        <div>
+          <strong>${this.t("roomIssuesTitle")}</strong>
+          ${issues.map((issue) => html`<span>${issue.name}: ${issue.text}${issue.newId !== undefined ? ` ${this.t("roomNewId", { id: issue.newId })}` : ""}</span>`)}
+          <span>${this.t("roomIssuesHint")}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private renderStartRow(status: VacuumStatus): TemplateResult {
+    let text: string;
+    let idle = false;
+    if (status.control === "pause" && status.key !== "returning") text = this.t("pause");
+    else if (status.control === "resume") text = this.t("resume");
+    else if (this.selected.length) text = this.selected.length === 1 ? this.t("cleanOneRoom") : this.t("cleanRooms", { count: this.selected.length });
+    else {
+      text = this.t("chooseRooms");
+      idle = true;
+    }
+    return html`
+      <div class="startRow">
+        <button class="start ${idle ? "idle" : ""}" ?disabled=${idle} @click=${() => this.onStart(status)}>${text}</button>
+        <button class="toStation" aria-label=${this.t("toStation")} title=${this.t("toStation")}
+          @click=${() => this.run("vacuum", "return_to_base", {}, this.config!.entity)}>
+          <ha-icon icon="mdi:home-import-outline"></ha-icon>
+        </button>
+      </div>
+    `;
+  }
+
+  // robot state, battery, station (one line when everything is fine, otherwise what needs attention), last cleaning
+  private facts(status: VacuumStatus): Array<TemplateResult | string> {
+    const attributes = this.vacuumAttributes;
     const battery = attributes.battery ?? attributes.battery_level;
-    const facts = [`<b>${this.escape(status.title)}</b>`];
-    if (status.subtitle && status.key !== "ready") facts.push(this.escape(status.subtitle));
-    if (battery !== undefined) facts.push(this.escape(this.t("battery", { battery })));
-    // station: one line when everything is fine, otherwise only what needs attention
-    const stationParts = [
+    const facts: Array<TemplateResult | string> = [html`<b>${status.title}</b>`];
+    if (status.subtitle && status.key !== "ready") facts.push(status.subtitle);
+    if (battery !== undefined) facts.push(this.t("battery", { battery }));
+    const ok = this.t("station.ok");
+    const stationParts: Array<[string, string]> = [
       [this.t("freshWater"), attributes.low_water ? this.t("station.empty") : this.stationValue(attributes.clean_water_tank_status)],
       [this.t("dirtyWater"), this.stationValue(attributes.dirty_water_tank_status)],
       [this.t("dustBag"), this.stationValue(attributes.dust_bag_status)],
-    ].filter(([, value]) => value);
-    const stationIssues = stationParts.filter(([, value]) => value !== this.t("station.ok"));
-    if (stationParts.length) facts.push(stationIssues.length ? stationIssues.map(([name, value]) => `<span class="warn">${this.escape(name)} ${this.escape(value)}</span>`).join("<br>") : this.escape(this.t("stationOk")));
+    ];
+    const known = stationParts.filter(([, value]) => value);
+    const issues = known.filter(([, value]) => value !== ok);
+    if (issues.length) facts.push(...issues.map(([name, value]) => html`<span class="warn">${name} ${value}</span>`));
+    else if (known.length) facts.push(this.t("stationOk"));
     const last = this.formatLastCleaning();
-    if (last) facts.push(this.escape(this.t("lastCleaning", { time: last })));
+    if (last) facts.push(this.t("lastCleaning", { time: last }));
+    return facts;
+  }
 
-    let station = `<div class="panelTitle">${this.escape(this.config.station_title || this.t("stationTitle"))}</div>`
-      + `<div class="robotInfo"><div class="art ${status.art}">${robotSvg}</div><div class="facts">${facts.join("<br>")}</div></div>`;
-    station += this.wearItems().map((item) => {
-      const value = item.due && item.reset
-        ? `<button class="reset${this.confirmReset === item.reset ? " confirm" : ""}" data-action="reset" data-value="${this.escape(item.reset)}">${this.confirmReset === item.reset ? this.t("confirmReset") : this.t("reset")}</button>`
-        : `<span class="value">${item.left} %${item.hours !== null ? ` · ${item.hours} h` : ""}</span>`;
-      return `<div class="wear${item.due ? " due" : ""}"><div class="name">${this.escape(item.name)}</div>${value}<div class="line"><div style="width:${Math.max(2, Math.min(100, item.left))}%"></div></div></div>`;
-    }).join("");
+  private renderStation(status: VacuumStatus): TemplateResult {
     const actions = this.stationActions.filter((action) => this.stateOf(action.entity));
-    if (actions.length) {
-      station += `<div class="actions">` + actions.map((action) => {
-        const unavailable = this.stateOf(action.entity).state === "unavailable";
-        const done = this.pressedAction === action.entity;
-        return `<button class="action${done ? " done" : ""}" data-action="press" data-value="${this.escape(action.entity)}"${unavailable ? " disabled" : ""}>${action.icon ? `<ha-icon icon="${this.escape(done ? "mdi:check" : action.icon)}"></ha-icon>` : ""}<span>${this.escape(this.itemName(action, "actions"))}</span></button>`;
-      }).join("") + `</div>`;
-    }
-    root.querySelector(".station").innerHTML = station;
+    return html`
+      <div class="panelTitle">${this.config!.station_title || this.t("stationTitle")}</div>
+      <div class="robotInfo">
+        ${this.renderArt(status)}
+        <div class="facts">${this.facts(status).map((fact, index) => html`${index ? html`<br>` : nothing}${fact}`)}</div>
+      </div>
+      ${this.wearItems().map((item) => this.renderWear(item))}
+      ${actions.length
+        ? html`<div class="actions">${actions.map((action) => {
+          const done = this.pressedAction === action.entity;
+          return html`
+            <button class="action ${done ? "done" : ""}" ?disabled=${this.stateOf(action.entity)?.state === "unavailable"} @click=${() => this.onPress(action.entity)}>
+              ${action.icon ? html`<ha-icon icon=${done ? "mdi:check" : action.icon}></ha-icon>` : nothing}
+              <span>${this.itemName(action, "actions")}</span>
+            </button>`;
+        })}</div>`
+        : nothing}
+    `;
   }
 
-  getCardSize() {
-    return this.view === "dialog" ? 8 : 2;
+  private renderWear(item: WearItem): TemplateResult {
+    const confirming = this.confirmReset === item.reset;
+    const value = item.due && item.reset
+      ? html`<button class="reset ${confirming ? "confirm" : ""}" @click=${() => this.onReset(item.reset!)}>
+          ${confirming ? this.t("confirmReset") : this.t("reset")}
+        </button>`
+      : html`<span class="value">${item.left} %${item.hours !== null ? ` · ${item.hours} h` : ""}</span>`;
+    return html`
+      <div class="wear ${item.due ? "due" : ""}">
+        <div class="name">${item.name}</div>
+        ${value}
+        <div class="line"><div style="width: ${Math.max(2, Math.min(100, item.left))}%"></div></div>
+      </div>
+    `;
   }
 
-  getGridOptions() {
-    return this.view === "dialog" ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
+  getCardSize(): number {
+    return this.isPanel ? 8 : 2;
   }
 
-  static getStubConfig() {
+  getGridOptions(): Record<string, unknown> {
+    return this.isPanel ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
+  }
+
+  static getStubConfig(): Record<string, unknown> {
     return { entity: "vacuum.robot" };
   }
 
-  static async getConfigElement() {
+  static async getConfigElement(): Promise<HTMLElement> {
     return document.createElement("graphite-vacuum-editor");
   }
 }
