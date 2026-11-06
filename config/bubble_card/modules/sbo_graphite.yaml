@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.132'
+  version: '0.133'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds the clock card and the pop-up styling.
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds the pop-up styling.
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -133,8 +133,8 @@ sbo_graphite:
       opacity: 1;
       color: var(--sbo-text-secondary);
     }
-    /* header summary (sbo_graphite.header_summary): right after the title, separated by a thin
-       line like time and date of the clock; the right side of the header stays for the buttons */
+    /* header summary (sbo_graphite.header_summary): right after the title, separated by a thin line;
+       the right side of the header stays for the buttons */
     /* title and summary share one baseline; the line is centered in the header height
        (align-content needs a wrapping flex container) */
     .bubble-pop-up:not(.popup-style-classic) .bubble-header .bubble-name-container.sbo-has-summary {
@@ -210,262 +210,9 @@ sbo_graphite:
       padding: 16px !important;
     }
 
-    /* CLOCK CARD: status pills on top, large time left and date right, no panel.
-       The card background stays the (invisible) action area, e.g. for a hold action. */
-    .bubble-container.sbo-clock-card {
-      height: auto !important;
-      background: none !important;
-      /* no card radius: it would clip the first pill (top left corner) */
-      border-radius: 0 !important;
-      overflow: visible !important;
-    }
-    ha-card:has(.sbo-clock-card) {
-      border-radius: 0 !important;
-      overflow: visible !important;
-    }
-    .sbo-clock-card .bubble-wrapper {
-      position: relative;
-      display: grid !important;
-      grid-template-areas: "pills" "clock";
-      grid-template-columns: minmax(0, 1fr);
-      row-gap: var(--sbo-clock-gap, 14px);
-      height: auto;
-      /* extra air below the time before the next panel */
-      padding: 0 0 var(--sbo-clock-space-below, 12px) 0;
-    }
-    .sbo-clock-card .bubble-button-background {
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background: none !important;
-      opacity: 1 !important;
-      cursor: default;
-    }
-    /* the empty content container would otherwise add a grid row (min height) */
-    .sbo-clock-card .bubble-content-container,
-    .sbo-clock-card .bubble-button-background ha-ripple,
-    .sbo-clock-card .bubble-icon-container,
-    .sbo-clock-card .bubble-name-container,
-    .sbo-clock-card .bubble-sub-button-container {
-      display: none !important;
-    }
-    /* status pills (bottom sub-buttons) */
-    .sbo-clock-card .bubble-sub-button-bottom-container {
-      grid-area: pills;
-      position: relative !important;
-      z-index: 1;
-      width: auto !important;
-      margin: 0 !important;
-    }
-    .sbo-clock-card .bubble-sub-button-bottom-container .bubble-sub-button-group {
-      display: flex !important;
-      flex-wrap: wrap;
-      justify-content: flex-start !important;
-      gap: 6px;
-      width: 100%;
-    }
-    .sbo-clock-card .bubble-sub-button-bottom-container .bubble-sub-button {
-      flex: none !important;
-      width: auto !important;
-      min-width: 0 !important;
-      height: 28px !important;
-      padding: 0 10px 0 8px !important;
-      gap: 5px;
-      border-radius: var(--sbo-radius-pill, 999px) !important;
-      background: var(--sbo-surface-panel) !important;
-      color: var(--sbo-text-secondary);
-      box-shadow: none !important;
-      --mdc-icon-size: 16px;
-    }
-    .sbo-clock-card .bubble-sub-button .bubble-sub-button-name-container {
-      margin: 0 !important;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--sbo-text-primary);
-    }
-    /* alert pill: selected via sub-button conditions */
-    .sbo-clock-card .bubble-sub-button.bubble-sub-button-selected {
-      background: color-mix(in srgb, var(--sbo-accent) 12%, var(--sbo-surface-panel)) !important;
-      color: var(--sbo-accent);
-    }
-    .sbo-clock-card .bubble-sub-button.bubble-sub-button-selected .bubble-sub-button-name-container {
-      color: var(--sbo-accent);
-    }
-    /* time and date */
-    .sbo-clock {
-      grid-area: clock;
-      position: relative;
-      z-index: 0;
-      display: flex;
-      /* date: last line on the baseline of the time */
-      align-items: last baseline;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 4px;
-      pointer-events: none;
-    }
-    .sbo-clock-time {
-      font-size: var(--sbo-clock-size, 76px);
-      font-weight: 300;
-      line-height: 1;
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-      color: var(--sbo-text-primary);
-    }
-    .sbo-clock-date {
-      font-size: 14px;
-      line-height: 1.4;
-      text-align: right;
-      color: var(--sbo-text-secondary);
-    }
-
-    /* label pill (clock card, option "pill"): dimmed prefix, value in primary text, dimmed label;
-       icon and Bubble's own text are replaced by the module */
-    .bubble-sub-button.sbo-label-pill {
-      padding: 0 13px !important;
-    }
-    .bubble-sub-button.sbo-label-pill :is(.bubble-sub-button-icon, .bubble-sub-button-name-container) {
-      display: none !important;
-    }
-    .sbo-pill-text {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 4px;
-      font-size: 12px;
-      line-height: 1;
-      white-space: nowrap;
-      /* optical correction: centered by the numbers the text reads slightly high */
-      position: relative;
-      top: var(--sbo-pill-text-offset, 0.5px);
-    }
-    .sbo-pill-text:empty {
-      display: none;
-    }
-    .sbo-pill-value {
-      font-weight: 600;
-      color: var(--sbo-text-primary);
-      font-variant-numeric: tabular-nums;
-    }
-    .sbo-pill-prefix, .sbo-pill-label {
-      font-weight: 400;
-      color: var(--sbo-text-secondary);
-    }
-    .sbo-pill-prefix sub {
-      font-size: 0.75em;
-      vertical-align: baseline;
-      position: relative;
-      top: 0.25em;
-    }
-    /* highlighted: the number stays white, prefix and label turn accent */
-    .bubble-sub-button.sbo-label-pill.bubble-sub-button-selected :is(.sbo-pill-prefix, .sbo-pill-label) {
-      color: var(--sbo-accent);
-    }
-    /* pickup pill: same pill without icon */
-    .bubble-sub-button.sbo-pickup-pill .bubble-sub-button-icon {
-      display: none !important;
-    }
-    .bubble-sub-button.sbo-pickup-pill {
-      padding: 0 13px !important;
-    }
-
-    /* pickup pill (clock card): text comes from the module, hidden while nothing is due */
-    .bubble-sub-button.sbo-pickup-hidden {
-      display: none !important;
-    }
-    .bubble-sub-button.sbo-pickup-pill .bubble-sub-button-name-container {
-      display: none !important;
-    }
-    /* the pill row is reversed (icon-left layout), order -1 puts the text after the icon */
-    .bubble-sub-button.sbo-pickup-pill::after {
-      content: attr(data-sbo-text);
-      order: -1;
-      font-size: 12px;
-      font-weight: 500;
-      line-height: 1.1;
-      white-space: nowrap;
-      /* mostly lowercase text reads higher than the digits of the other pills: optical nudge */
-      position: relative;
-      top: 1px;
-    }
-
     /* Code for applying configuration */
     ${(() => {
       const config = this.config?.sbo_graphite || {};
-
-      // waste pickup: next collection day of a calendar entity.
-      // Events come from the calendar API (shared cache, refreshed every 30 minutes);
-      // until they are loaded, the start_time attribute of the entity is used.
-      const pickupCache = window.sboPickupCache || (window.sboPickupCache = {});
-      const pickupRefreshMs = 30 * 60 * 1000;
-      const dayMs = 86400000;
-      const startOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const dayFromDateString = (dateString) => {
-        const parts = String(dateString).substring(0, 10).split('-').map(Number);
-        return parts.length === 3 && parts.every(Number.isFinite) ? new Date(parts[0], parts[1] - 1, parts[2]) : null;
-      };
-      const eventDay = (eventStart) => {
-        if (!eventStart)
-          return null;
-        if (eventStart.date)
-          return dayFromDateString(eventStart.date);
-        const startTime = new Date(eventStart.dateTime || eventStart);
-        return isNaN(startTime.getTime()) ? null : startOfDay(startTime);
-      };
-      const loadPickupDays = (entityId, lookaheadDays, onLoaded) => {
-        const today = startOfDay(new Date());
-        const entry = pickupCache[entityId];
-        const isFresh = entry && entry.day === today.getTime() && Date.now() - entry.fetchedAt < pickupRefreshMs;
-        if (entry && entry.pending)
-        {
-          if (onLoaded && !entry.listeners.includes(onLoaded))
-            entry.listeners.push(onLoaded);
-        }
-        else if (!isFresh && hass?.callApi)
-        {
-          const pendingEntry = { days: entry?.days, day: entry?.day, fetchedAt: entry?.fetchedAt || 0, pending: true, listeners: onLoaded ? [onLoaded] : [] };
-          pickupCache[entityId] = pendingEntry;
-          const end = new Date(today.getTime() + lookaheadDays * dayMs);
-          const finish = (days) => {
-            pickupCache[entityId] = { days: days, day: today.getTime(), fetchedAt: Date.now(), pending: false, listeners: [] };
-            for (const listener of pendingEntry.listeners)
-              listener();
-          };
-          hass.callApi('GET', `calendars/${entityId}?start=${encodeURIComponent(today.toISOString())}&end=${encodeURIComponent(end.toISOString())}`)
-            .then(events => finish((Array.isArray(events) ? events : []).map(event => eventDay(event.start)).filter(Boolean)))
-            .catch(() => finish(pendingEntry.days));
-        }
-        return pickupCache[entityId]?.days;
-      };
-      // returns { date, days } of the next collection or null; a collection of today counts
-      // as done after dropAfter (HH:MM, default 12:00)
-      const nextPickup = (entityId, lookaheadDays, dropAfter, onLoaded) => {
-        const now = new Date();
-        const today = startOfDay(now);
-        const dropParts = String(dropAfter || '12:00').split(':').map(Number);
-        const dropTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), dropParts[0] || 0, dropParts[1] || 0);
-        let candidateDays = loadPickupDays(entityId, lookaheadDays, onLoaded);
-        if (!candidateDays)
-        {
-          const startAttribute = hass?.states?.[entityId]?.attributes?.start_time;
-          const startDay = startAttribute ? dayFromDateString(startAttribute) : null;
-          candidateDays = startDay ? [startDay] : [];
-        }
-        let next = null;
-        for (const date of candidateDays)
-        {
-          const days = Math.round((date.getTime() - today.getTime()) / dayMs);
-          if (days < 0 || (days === 0 && now >= dropTime))
-            continue;
-          if (!next || days < next.days)
-            next = { date: date, days: days };
-        }
-        return next;
-      };
-      const pickupName = (entityId) => {
-        const attributes = hass?.states?.[entityId]?.attributes || {};
-        return attributes.message || attributes.friendly_name || entityId;
-      };
 
       const applySubbuttonConfiguration = (subbuttonConfig) => {
         // sub-buttons are numbered across main and bottom, so bottom indexes are
@@ -475,98 +222,6 @@ sbo_graphite:
           : card.querySelector(`.bubble-sub-button-container .bubble-sub-button-${subbuttonConfig.index}`);
         if (!subbutton)
           return;
-
-        // pickup pill: shows the most urgent due collection ("<name> heute/morgen"),
-        // further due collections only as "+n"; hidden while nothing is due
-        if (Array.isArray(subbuttonConfig.pickup_entities))
-        {
-          const renderPill = () => {
-            const dueItems = [];
-            for (const [pickupIndex, pickupEntity] of subbuttonConfig.pickup_entities.entries())
-            {
-              // preview: first calendar due today, all others tomorrow (longest text)
-              const next = subbuttonConfig.preview
-                ? { days: pickupIndex === 0 ? 0 : 1 }
-                : nextPickup(pickupEntity, 14, subbuttonConfig.drop_after, renderPill);
-              if (next && next.days <= 1)
-                dueItems.push({ name: pickupName(pickupEntity), days: next.days });
-            }
-            dueItems.sort((a, b) => a.days - b.days);
-            let pillText = '';
-            if (dueItems.length > 0)
-            {
-              pillText = `${dueItems[0].name} ${dueItems[0].days === 0 ? 'heute' : 'morgen'}`;
-              if (dueItems.length > 1)
-                pillText += ` +${dueItems.length - 1}`;
-            }
-            subbutton.classList.add('sbo-pickup-pill');
-            subbutton.classList.toggle('sbo-pickup-hidden', dueItems.length === 0);
-            subbutton.classList.toggle('bubble-sub-button-selected', dueItems.length > 0);
-            subbutton.dataset.sboText = pillText;
-          };
-          renderPill();
-          return;
-        }
-
-        // label pill: "[prefix] value [label]" from the state of the sub-button's entity
-        if (subbuttonConfig.pill && typeof subbuttonConfig.pill === 'object')
-        {
-          const pill = subbuttonConfig.pill;
-          let pillEntity = pill.entity;
-          if (!pillEntity)
-          {
-            // bottom sub-buttons are numbered across all groups
-            const bottomButtons = [];
-            for (const entry of [].concat(this.config?.sub_button?.bottom || []))
-              bottomButtons.push(...(Array.isArray(entry?.group) ? entry.group : [entry]));
-            const mainButtons = [].concat(this.config?.sub_button?.main || []);
-            pillEntity = (subbuttonConfig.position === 'bottom' ? bottomButtons : mainButtons)[subbuttonConfig.index - 1]?.entity;
-          }
-          const rawState = hass?.states?.[pillEntity]?.state;
-          const number = Number(rawState);
-          const isNumber = rawState !== undefined && rawState !== '' && !isNaN(number);
-          const valueText = rawState === undefined || rawState === 'unavailable' || rawState === 'unknown'
-            ? '–'
-            : (isNumber ? String(Math.round(number)) : String(rawState));
-          const labelText = isNumber && Math.round(number) === 1 && pill.label_one ? pill.label_one : (pill.label || '');
-          subbutton.classList.add('sbo-label-pill');
-          let text = subbutton.querySelector(`.sbo-pill-text`);
-          if (!text)
-          {
-            text = document.createElement('span');
-            text.className = 'sbo-pill-text';
-            subbutton.appendChild(text);
-          }
-          const signature = [pill.prefix, valueText, pill.unit, labelText].join('|');
-          if (text.dataset.sboSignature !== signature)
-          {
-            text.dataset.sboSignature = signature;
-            text.textContent = '';
-            const addPart = (className, content) => {
-              if (!content)
-                return;
-              const part = document.createElement('span');
-              part.className = className;
-              part.textContent = content;
-              text.appendChild(part);
-            };
-            // "CO2" / "CO₂" prefix: the 2 as subscript
-            if (pill.prefix && (String(pill.prefix) === 'CO2' || String(pill.prefix) === 'CO₂'))
-            {
-              const prefix = document.createElement('span');
-              prefix.className = 'sbo-pill-prefix';
-              prefix.append('CO');
-              const subscript = document.createElement('sub');
-              subscript.textContent = '2';
-              prefix.appendChild(subscript);
-              text.appendChild(prefix);
-            }
-            else
-              addPart('sbo-pill-prefix', pill.prefix);
-            addPart('sbo-pill-value', pill.unit ? `${valueText} ${pill.unit}` : valueText);
-            addPart('sbo-pill-label', labelText);
-          }
-        }
 
         const conditions = subbuttonConfig.conditions;
         if (!conditions)
@@ -586,54 +241,6 @@ sbo_graphite:
         };
         for (const eventName of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'contextmenu'])
           actionContainer.addEventListener(eventName, stopSecondary, true);
-      }
-
-      // clock card: renders time and date, refreshed every 15 seconds while connected
-      if (config.appearance?.clock_card)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        const wrapper = card.querySelector(`.bubble-wrapper`);
-        if (container && wrapper)
-        {
-          container.classList.add(`sbo-clock-card`);
-          let clock = wrapper.querySelector(`.sbo-clock`);
-          if (!clock)
-          {
-            clock = document.createElement('div');
-            clock.className = 'sbo-clock';
-            const clockTime = document.createElement('div');
-            clockTime.className = 'sbo-clock-time';
-            const clockDate = document.createElement('div');
-            clockDate.className = 'sbo-clock-date';
-            const clockWeekday = document.createElement('div');
-            const clockDay = document.createElement('div');
-            clockDate.append(clockWeekday, clockDay);
-            clock.append(clockTime, clockDate);
-            wrapper.appendChild(clock);
-          }
-          const locale = hass?.locale?.language || 'de-CH';
-          const updateClock = () => {
-            const now = new Date();
-            const clockTime = clock.querySelector(`.sbo-clock-time`);
-            const dateLines = clock.querySelectorAll(`.sbo-clock-date div`);
-            clockTime.textContent = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-            dateLines[0].textContent = now.toLocaleDateString(locale, { weekday: 'long' });
-            dateLines[1].textContent = now.toLocaleDateString(locale, { day: 'numeric', month: 'long' });
-          };
-          updateClock();
-          if (!clock.sboClockTimer)
-          {
-            clock.sboClockTimer = setInterval(() => {
-              // stop when the card was removed from the page
-              if (!clock.isConnected)
-              {
-                clearInterval(clock.sboClockTimer);
-                return;
-              }
-              updateClock();
-            }, 15000);
-          }
-        }
       }
 
       // sub-button configurations
@@ -706,17 +313,6 @@ sbo_graphite:
       selector:
         text: {}
     - type: expandable
-      name: appearance
-      title: Appearance
-      icon: mdi:palette
-      expanded: false
-      schema:
-        - name: clock_card
-          label: Show as clock card (status pills, time, date)
-          selector:
-            boolean: {}
-          default: false
-    - type: expandable
       name: subbuttons
       title: Sub-button configuration
       icon: mdi:shape-square-rounded-plus
@@ -749,18 +345,3 @@ sbo_graphite:
                   label: Conditions for selecting the sub-button
                   selector:
                     condition: {}
-                pill:
-                  label: 'Label pill: prefix, unit, label, label_one, entity (optional)'
-                  selector:
-                    object: {}
-                pickup_entities:
-                  label: Pickup pill calendars (shown when a collection is due)
-                  selector:
-                    entity:
-                      multiple: true
-                      filter:
-                        domain: calendar
-                preview:
-                  label: Pickup pill preview (show as due, for testing)
-                  selector:
-                    boolean: {}
