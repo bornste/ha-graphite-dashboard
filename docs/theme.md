@@ -67,6 +67,7 @@ line). Other sizes work, the separator may then need a small adjustment.
 | `graphite-row-height` | `60px` | Rows (status and switch rows) |
 | `graphite-chip-padding` / `graphite-chip-gap` | `4px 10px` / `6px` | Chips in headers |
 | `graphite-row-icon-size` | `24px` | Icons in rows |
+| `graphite-watermark-inset` | `9px` | Watermark icon from the right edge (a full 34px glyph then sits on the 12px padding line) |
 | `graphite-watermark-size` | `34px` | Watermark icons in tiles |
 | `graphite-tint-active` | `18%` | Strength of the accent tint of active tiles and rows |
 

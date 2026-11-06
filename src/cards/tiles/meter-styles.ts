@@ -21,7 +21,7 @@ export const meterStyles = css`
   /* watermark icon top right */
   .meter-icon {
     position: absolute;
-    right: 6px;
+    right: var(--graphite-watermark-inset, 9px);
     top: 8px;
     display: flex;
     width: var(--graphite-watermark-size, 34px);

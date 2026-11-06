@@ -71,6 +71,7 @@ Graphite: &graphite
       graphite-chip-gap: 6px
       graphite-row-icon-size: 24px
       graphite-watermark-size: 34px
+      graphite-watermark-inset: 9px
       # strength of the accent tint of active tiles and rows
       graphite-tint-active: 18%
 

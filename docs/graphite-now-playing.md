@@ -51,7 +51,7 @@ sources:
   its online service) do not reset it.
 - **Technical names** such as `org.droidtv.playtv` are never shown as title or details.
 - The card is 88px high (`--graphite-tile-height-media`), the cover 64px, the watermark sits like
-  the meter and stopwatch icons (8px from the top, 6px from the right).
+  the meter and stopwatch icons (8px from the top, 9px from the right).
 
 ## Editor
 

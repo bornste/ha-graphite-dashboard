@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.21.3";
+var version = "0.21.4";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -2525,7 +2525,7 @@ var tileStyles = i`
   /* icon as watermark bottom right */
   .watermark {
     position: absolute;
-    right: 6px;
+    right: var(--graphite-watermark-inset, 9px);
     bottom: 7px;
     display: flex;
     width: var(--graphite-watermark-size, 34px);
@@ -2786,7 +2786,7 @@ var meterStyles = i`
   /* watermark icon top right */
   .meter-icon {
     position: absolute;
-    right: 6px;
+    right: var(--graphite-watermark-inset, 9px);
     top: 8px;
     display: flex;
     width: var(--graphite-watermark-size, 34px);
@@ -4717,7 +4717,7 @@ GraphiteNowPlaying.styles = i`
     .watermark {
       position: absolute;
       top: 8px;
-      right: 6px;
+      right: var(--graphite-watermark-inset, 9px);
       display: flex;
       width: var(--graphite-watermark-size, 34px);
       height: var(--graphite-watermark-size, 34px);

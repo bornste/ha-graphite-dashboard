@@ -128,7 +128,7 @@ export class GraphiteNowPlaying extends GraphiteCard<NowPlayingConfig> {
     .watermark {
       position: absolute;
       top: 8px;
-      right: 6px;
+      right: var(--graphite-watermark-inset, 9px);
       display: flex;
       width: var(--graphite-watermark-size, 34px);
       height: var(--graphite-watermark-size, 34px);
