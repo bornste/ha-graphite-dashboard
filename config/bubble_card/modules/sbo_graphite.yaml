@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.129'
+  version: '0.130'
   creator: Bornste
   supported:
     - button
@@ -654,27 +654,8 @@ sbo_graphite:
       row-gap: 12px;
     }
 
-    /* SLIDER CARD: sub-buttons card with sliders and no surface of its own (e.g. effect speed) */
-    .bubble-sub-buttons-container.sbo-slider-card,
-    .bubble-container.sbo-slider-card {
-      background: none !important;
-      --bubble-main-background-color: transparent;
-      height: auto !important;
-      padding: 4px 0 0 0 !important;
-      box-sizing: border-box;
-      --bubble-sub-slider-height: 42px;
-    }
-    .sbo-slider-card .bubble-sub-button-bottom-container {
-      position: relative !important;
-      inset: auto !important;
-      transform: none !important;
-      margin: 0 !important;
-      width: 100% !important;
-    }
-
-    /* SLIDERS (light tile, slider card): label row + thin 4px line + round knob */
-    .sbo-light-tile,
-    .sbo-slider-card {
+    /* SLIDERS (light tile): label row + thin 4px line + round knob */
+    .sbo-light-tile {
       --sbo-slider-track: color-mix(in srgb, var(--sbo-ink) 16%, var(--sbo-card-surface, var(--sbo-surface-tile)));
       --sbo-slider-fill: var(--sbo-accent);
       --sbo-slider-knob-size: 16px;
@@ -683,21 +664,18 @@ sbo_graphite:
     ha-card:not(.is-on) .sbo-light-tile {
       --sbo-slider-fill: var(--sbo-text-muted);
     }
-    .sbo-light-tile .bubble-sub-button-group.display-column,
-    .sbo-slider-card .bubble-sub-button-group.display-column {
+    .sbo-light-tile .bubble-sub-button-group.display-column {
       row-gap: 12px;
     }
     /* the slider row keeps its 42px: 16px label row, 6px gap, 20px touch area */
-    .sbo-light-tile .bubble-sub-button-slider,
-    .sbo-slider-card .bubble-sub-button-slider {
+    .sbo-light-tile .bubble-sub-button-slider {
       overflow: visible !important;
       height: 42px !important;
       border-radius: 0 !important;
       background: linear-gradient(var(--sbo-slider-track), var(--sbo-slider-track)) left 0 bottom 8px / 100% 4px no-repeat !important;
     }
     /* label and value share one color in every state (Bubble tints slider text for lights that are on) */
-    .sbo-light-tile .bubble-sub-button-slider::before,
-    .sbo-slider-card .bubble-sub-button-slider::before {
+    .sbo-light-tile .bubble-sub-button-slider::before {
       content: var(--sbo-slider-label, "");
       position: absolute;
       left: 0;
@@ -715,8 +693,7 @@ sbo_graphite:
       background: none !important;
     }
     /* value (Bubble's brightness value and the module's own values) top right */
-    .sbo-light-tile .bubble-sub-button-info-wrapper,
-    .sbo-slider-card .bubble-sub-button-info-wrapper {
+    .sbo-light-tile .bubble-sub-button-info-wrapper {
       position: absolute !important;
       top: 0;
       right: 0;
@@ -726,10 +703,7 @@ sbo_graphite:
     }
     .sbo-light-tile .bubble-sub-button-info-wrapper,
     .sbo-light-tile .bubble-range-value,
-    .sbo-light-tile .sbo-slider-value,
-    .sbo-slider-card .bubble-sub-button-info-wrapper,
-    .sbo-slider-card .bubble-range-value,
-    .sbo-slider-card .sbo-slider-value {
+    .sbo-light-tile .sbo-slider-value {
       height: 16px !important;
       font-size: 12px !important;
       line-height: 16px;
@@ -738,20 +712,13 @@ sbo_graphite:
       filter: none !important;
       mix-blend-mode: normal !important;
     }
-    .sbo-light-tile .sbo-slider-value,
-    .sbo-slider-card .sbo-slider-value {
+    .sbo-light-tile .sbo-slider-value {
       position: absolute;
       top: 0;
       right: 0;
     }
-    /* sliders with a module value hide Bubble's own (raw) value */
-    .sbo-light-tile .sbo-custom-value .bubble-sub-button-info-wrapper,
-    .sbo-slider-card .sbo-custom-value .bubble-sub-button-info-wrapper {
-      display: none !important;
-    }
     /* touch area is inset by half a knob, so the knob stays fully visible at 0 and 100 */
-    .sbo-light-tile .bubble-sub-button-slider > .bubble-range-slider,
-    .sbo-slider-card .bubble-sub-button-slider > .bubble-range-slider {
+    .sbo-light-tile .bubble-sub-button-slider > .bubble-range-slider {
       top: 22px !important;
       bottom: 0 !important;
       left: calc(var(--sbo-slider-knob-size) / 2) !important;
@@ -764,8 +731,7 @@ sbo_graphite:
       clip-path: inset(-4px calc(var(--sbo-slider-knob-size) / -2));
     }
     /* a shadow copy extends the fill to the left by half a knob, so it also covers the inset area at 100 % */
-    .sbo-light-tile .bubble-range-fill.fill-orientation-left,
-    .sbo-slider-card .bubble-range-fill.fill-orientation-left {
+    .sbo-light-tile .bubble-range-fill.fill-orientation-left {
       top: 8px !important;
       bottom: auto !important;
       height: 4px !important;
@@ -774,8 +740,7 @@ sbo_graphite:
       background: var(--sbo-slider-fill) !important;
       box-shadow: calc(var(--sbo-slider-knob-size) / -2) 0 0 0 var(--sbo-slider-fill) !important;
     }
-    .sbo-light-tile .bubble-range-fill.fill-orientation-left::before,
-    .sbo-slider-card .bubble-range-fill.fill-orientation-left::before {
+    .sbo-light-tile .bubble-range-fill.fill-orientation-left::before {
       content: "";
       position: absolute;
       right: calc(var(--sbo-slider-knob-size) / -2) !important;
@@ -1403,9 +1368,7 @@ sbo_graphite:
           actionContainer.addEventListener(eventName, stopSecondary, true);
       }
 
-      // slider values: kelvin for the white temperature slider (Bubble shows none),
-      // other sliders (e.g. number entities) get their label from the sub-button name
-      // and the value in percent of the range
+      // slider values of the light tile: kelvin for the white temperature slider (Bubble shows none)
       const applySliderValues = (container) => {
         const setValue = (slider, text) => {
           let valueElement = slider.querySelector(`.sbo-slider-value`);
@@ -1421,29 +1384,6 @@ sbo_graphite:
         const kelvin = this.config?.entity ? hass?.states?.[this.config.entity]?.attributes?.color_temp_kelvin : undefined;
         for (const tempSlider of container.querySelectorAll(`.bubble-sub-button-slider.temperature`))
           setValue(tempSlider, kelvin ? `${Math.round(kelvin)} K` : '');
-        const sliderConfigs = [
-          ...(this.config?.sub_button?.main || []),
-          ...(this.config?.sub_button?.bottom || []).flatMap(entry => entry.group || [entry])
-        ];
-        for (const otherSlider of container.querySelectorAll(`.bubble-sub-button-slider:not(.brightness):not(.temperature)`))
-        {
-          // no regex literals in the module: the index comes from the 'bubble-sub-button-slider-N' class
-          const indexClass = [...otherSlider.classList].find(c => c.startsWith('bubble-sub-button-slider-'));
-          const sliderIndex = indexClass ? Number(indexClass.substring('bubble-sub-button-slider-'.length)) : NaN;
-          const sliderConfig = isNaN(sliderIndex) ? null : sliderConfigs[sliderIndex - 1];
-          if (!sliderConfig)
-            continue;
-          otherSlider.classList.add(`sbo-custom-value`);
-          const label = String(sliderConfig.name || '').split('"').join('');
-          otherSlider.style.setProperty('--sbo-slider-label', `"${label}"`);
-          const sliderState = hass?.states?.[sliderConfig.entity || this.config?.entity];
-          const minValue = Number(sliderConfig.min_value ?? sliderState?.attributes?.min ?? 0);
-          const maxValue = Number(sliderConfig.max_value ?? sliderState?.attributes?.max ?? 100);
-          const currentValue = parseFloat(sliderState?.state);
-          setValue(otherSlider, isNaN(currentValue) || maxValue === minValue
-            ? ''
-            : `${Math.round((currentValue - minValue) / (maxValue - minValue) * 100)} %`);
-        }
       };
 
       // light tile: name, state, toggle and sliders
@@ -1463,17 +1403,6 @@ sbo_graphite:
           const nameContainer = card.querySelector(`.bubble-name-container`);
           if (nameContainer && this.config?.entity)
             attachSinceLine(container, nameContainer, this.config.entity, null, unavailableText);
-        }
-      }
-
-      // slider card: sub-buttons card with sliders and no surface of its own
-      if (config.appearance?.slider_card)
-      {
-        const container = card.querySelector(`.bubble-container`) || card.querySelector(`.bubble-sub-buttons-container`);
-        if (container)
-        {
-          container.classList.add(`sbo-slider-card`);
-          applySliderValues(container);
         }
       }
 
@@ -1640,11 +1569,6 @@ sbo_graphite:
           default: false
         - name: light_tile
           label: Show as light tile (name, state, toggle, sliders)
-          selector:
-            boolean: {}
-          default: false
-        - name: slider_card
-          label: Show as slider card (sliders without surface)
           selector:
             boolean: {}
           default: false

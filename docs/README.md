@@ -17,7 +17,8 @@ the special cases – also for cards with a visual editor.
 | graphite-todo | tile | [graphite-todo.md](graphite-todo.md) | ready |
 | graphite-ink | tile | [graphite-ink.md](graphite-ink.md) | ready |
 | graphite-pickup | tile | [graphite-pickup.md](graphite-pickup.md) | ready |
-| graphite-calendar | list | [graphite-calendar.md](graphite-calendar.md) | in test |
+| graphite-calendar | list | [graphite-calendar.md](graphite-calendar.md) | ready |
+| graphite-slider | inline, row | [graphite-slider.md](graphite-slider.md) | ready |
 
 Cards with more than one look have a `layout` option (`row` or `tile`), so you can switch between
 them without changing the card type. The editor only shows it where there is a choice. The former

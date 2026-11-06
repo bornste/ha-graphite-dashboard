@@ -229,5 +229,45 @@
       "tap_action": "Aktion beim Tippen (More-Info = Details)",
       "hold_action": "Aktion beim Halten (auf den Kalender)"
     }
+  },
+  "slider": {
+    "editor": {
+      "entity": "Entität (number, input_number oder Licht)",
+      "name": "Bezeichnung (Standard: Name der Entität bzw. was gesteuert wird)",
+      "min": "Minimum",
+      "max": "Maximum",
+      "step": "Schritt (Werte sind Vielfache davon)",
+      "value_format": "Wertanzeige",
+      "valueFormat": {
+        "percent": "Prozent des Bereichs",
+        "state": "Wert der Entität"
+      },
+      "attribute": "Steuert (nur Licht)",
+      "allow_off": "Ganz links schaltet das Licht aus",
+      "attributes": {
+        "brightness": "Helligkeit",
+        "color_temp": "Weisston",
+        "hue": "Farbe",
+        "saturation": "Sättigung"
+      },
+      "layout": "Darstellung",
+      "icon": "Icon links (Zeile: Standard Icon der Entität)",
+      "layouts": {
+        "inline": "Eingebettet (ohne Fläche, Bezeichnung über dem Regler)",
+        "row": "Zeile (eigene Fläche wie die Status-Zeilen)"
+      },
+      "ticks": "Ticks unter der Linie",
+      "major_every": "Lange Ticks alle (Standard: runder Wert)",
+      "tickModes": {
+        "auto": "Automatisch (Schritte, sonst Viertel)",
+        "steps": "Jeder Schritt",
+        "quarters": "Viertel",
+        "none": "Keine"
+      }
+    },
+    "brightness": "Helligkeit",
+    "color_temp": "Weisston",
+    "hue": "Farbe",
+    "saturation": "Sättigung"
   }
 }

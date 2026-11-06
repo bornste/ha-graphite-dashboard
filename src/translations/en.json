@@ -229,5 +229,45 @@
       "tap_action": "Tap action (more-info = details)",
       "hold_action": "Hold action (on the calendar)"
     }
+  },
+  "slider": {
+    "editor": {
+      "entity": "Entity (number, input_number or light)",
+      "name": "Label (default: entity name or what is controlled)",
+      "min": "Minimum",
+      "max": "Maximum",
+      "step": "Step (values are multiples of it)",
+      "value_format": "Value display",
+      "valueFormat": {
+        "percent": "Percent of the range",
+        "state": "Entity value"
+      },
+      "attribute": "Controls (lights only)",
+      "allow_off": "Leftmost turns the light off",
+      "attributes": {
+        "brightness": "Brightness",
+        "color_temp": "White temperature",
+        "hue": "Color",
+        "saturation": "Saturation"
+      },
+      "layout": "Layout",
+      "icon": "Icon on the left (row: default entity icon)",
+      "layouts": {
+        "inline": "Inline (no surface, label above the slider)",
+        "row": "Row (own surface like the status rows)"
+      },
+      "ticks": "Ticks below the track",
+      "major_every": "Long ticks every (default: round value)",
+      "tickModes": {
+        "auto": "Automatic (steps, else quarters)",
+        "steps": "Every step",
+        "quarters": "Quarters",
+        "none": "None"
+      }
+    },
+    "brightness": "Brightness",
+    "color_temp": "White",
+    "hue": "Color",
+    "saturation": "Saturation"
   }
 }

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.15.2";
+var version = "0.18.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -783,6 +783,46 @@ var de_default = {
       tap_action: "Aktion beim Tippen (More-Info = Details)",
       hold_action: "Aktion beim Halten (auf den Kalender)"
     }
+  },
+  slider: {
+    editor: {
+      entity: "Entit\xE4t (number, input_number oder Licht)",
+      name: "Bezeichnung (Standard: Name der Entit\xE4t bzw. was gesteuert wird)",
+      min: "Minimum",
+      max: "Maximum",
+      step: "Schritt (Werte sind Vielfache davon)",
+      value_format: "Wertanzeige",
+      valueFormat: {
+        percent: "Prozent des Bereichs",
+        state: "Wert der Entit\xE4t"
+      },
+      attribute: "Steuert (nur Licht)",
+      allow_off: "Ganz links schaltet das Licht aus",
+      attributes: {
+        brightness: "Helligkeit",
+        color_temp: "Weisston",
+        hue: "Farbe",
+        saturation: "S\xE4ttigung"
+      },
+      layout: "Darstellung",
+      icon: "Icon links (Zeile: Standard Icon der Entit\xE4t)",
+      layouts: {
+        inline: "Eingebettet (ohne Fl\xE4che, Bezeichnung \xFCber dem Regler)",
+        row: "Zeile (eigene Fl\xE4che wie die Status-Zeilen)"
+      },
+      ticks: "Ticks unter der Linie",
+      major_every: "Lange Ticks alle (Standard: runder Wert)",
+      tickModes: {
+        auto: "Automatisch (Schritte, sonst Viertel)",
+        steps: "Jeder Schritt",
+        quarters: "Viertel",
+        none: "Keine"
+      }
+    },
+    brightness: "Helligkeit",
+    color_temp: "Weisston",
+    hue: "Farbe",
+    saturation: "S\xE4ttigung"
   }
 };
 
@@ -1018,6 +1058,46 @@ var en_default = {
       tap_action: "Tap action (more-info = details)",
       hold_action: "Hold action (on the calendar)"
     }
+  },
+  slider: {
+    editor: {
+      entity: "Entity (number, input_number or light)",
+      name: "Label (default: entity name or what is controlled)",
+      min: "Minimum",
+      max: "Maximum",
+      step: "Step (values are multiples of it)",
+      value_format: "Value display",
+      valueFormat: {
+        percent: "Percent of the range",
+        state: "Entity value"
+      },
+      attribute: "Controls (lights only)",
+      allow_off: "Leftmost turns the light off",
+      attributes: {
+        brightness: "Brightness",
+        color_temp: "White temperature",
+        hue: "Color",
+        saturation: "Saturation"
+      },
+      layout: "Layout",
+      icon: "Icon on the left (row: default entity icon)",
+      layouts: {
+        inline: "Inline (no surface, label above the slider)",
+        row: "Row (own surface like the status rows)"
+      },
+      ticks: "Ticks below the track",
+      major_every: "Long ticks every (default: round value)",
+      tickModes: {
+        auto: "Automatic (steps, else quarters)",
+        steps: "Every step",
+        quarters: "Quarters",
+        none: "None"
+      }
+    },
+    brightness: "Brightness",
+    color_temp: "White",
+    hue: "Color",
+    saturation: "Saturation"
   }
 };
 
@@ -4136,7 +4216,7 @@ var calendarStyles = i`
     display: flex;
     align-items: baseline;
     gap: 6px;
-    margin: 14px 0 6px 4px;
+    margin: 14px 0 6px;
     font-size: var(--graphite-font-label-size, 13px);
     line-height: 18px;
     color: var(--graphite-text-secondary);
@@ -4645,6 +4725,635 @@ registerElement("graphite-calendar-editor", GraphiteCalendarEditor);
 registerCard("graphite-calendar", GraphiteCalendar, {
   name: "Graphite Calendar",
   description: "Events of one or more calendars, grouped by day, with color and icon per calendar or keyword."
+});
+
+// src/core/graphite-range.ts
+var knobSize = 16;
+var minTickGap = 12;
+var quarterTicks = [0, 0.25, 0.5, 0.75, 1].map((share) => ({ share, major: share === 0 || share === 0.5 || share === 1 }));
+var GraphiteRange = class extends i4 {
+  constructor() {
+    super();
+    this.dragging = false;
+    // the parent card must not see the gesture (e.g. the light tile toggles on tap)
+    this.stop = (event) => event.stopPropagation();
+    this.onPointerDown = (event) => {
+      event.stopPropagation();
+      if (this.disabled || event.button !== 0) return;
+      this.dragging = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      this.dragShare = this.shareAt(event);
+      this.emit("range-input", this.dragShare);
+    };
+    this.onPointerMove = (event) => {
+      if (!this.dragging) return;
+      this.dragShare = this.shareAt(event);
+      this.emit("range-input", this.dragShare);
+    };
+    this.onPointerUp = (event) => {
+      event.stopPropagation();
+      if (!this.dragging) return;
+      this.dragging = false;
+      const share = this.shareAt(event);
+      this.emit("range-change", share);
+      this.dragShare = share;
+    };
+    this.onPointerCancel = () => {
+      this.dragging = false;
+      this.dragShare = void 0;
+    };
+    this.onKeyDown = (event) => {
+      if (this.disabled) return;
+      let share = this.shownShare;
+      if (event.key === "ArrowRight" || event.key === "ArrowUp") share += this.keyStep;
+      else if (event.key === "ArrowLeft" || event.key === "ArrowDown") share -= this.keyStep;
+      else if (event.key === "Home") share = 0;
+      else if (event.key === "End") share = 1;
+      else return;
+      event.preventDefault();
+      event.stopPropagation();
+      share = this.snapped(Math.min(1, Math.max(0, share)));
+      this.dragShare = share;
+      this.emit("range-change", share);
+    };
+    this.label = "";
+    this.valueText = "";
+    this.share = 0;
+    this.mode = "fill";
+    this.track = "";
+    this.disabled = false;
+    this.compact = false;
+    this.stepTicks = [];
+    this.tickMode = "auto";
+    this.snap = true;
+    this.areaWidth = 0;
+    this.keyStep = 0.01;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - this.areaWidth) >= 1) this.areaWidth = width;
+    });
+    this.updateComplete.then(() => {
+      const area = this.renderRoot.querySelector(".area");
+      if (area && this.resizeObserver) this.resizeObserver.observe(area);
+    });
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = void 0;
+  }
+  ticks() {
+    if (this.tickMode === "none") return [];
+    if (this.tickMode === "quarters") return quarterTicks;
+    const steps = this.stepTicks ?? [];
+    if (this.tickMode === "steps") return steps;
+    const gaps = steps.length - 1;
+    if (gaps >= 1 && this.areaWidth > 0 && this.areaWidth / gaps >= minTickGap) return steps;
+    return quarterTicks;
+  }
+  get shownShare() {
+    const share = this.dragShare ?? this.share;
+    return Number.isFinite(share) ? Math.min(1, Math.max(0, share)) : 0;
+  }
+  shareAt(event) {
+    const area = this.renderRoot.querySelector(".area");
+    const rect = area.getBoundingClientRect();
+    const share = rect.width > 0 ? Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)) : 0;
+    return this.snapped(share);
+  }
+  // nearest possible value while dragging, so the knob never rests between two steps
+  snapped(share) {
+    const points = this.snap ? this.stepTicks ?? [] : [];
+    if (points.length < 2) return share;
+    let best = points[0].share;
+    for (const point of points) if (Math.abs(point.share - share) < Math.abs(best - share)) best = point.share;
+    return best;
+  }
+  emit(name, share) {
+    this.dispatchEvent(new CustomEvent(name, { detail: { share }, bubbles: true, composed: true }));
+  }
+  // a new state from Home Assistant replaces the dragged position
+  willUpdate(changed) {
+    if (changed.has("share") && !this.dragging) this.dragShare = void 0;
+  }
+  render() {
+    const share = this.shownShare;
+    const position = `calc(${share * 100}%)`;
+    return b2`<div class="labels"><span class="label">${this.label}</span><span class="value">${this.valueText}</span></div><div
+      class=${this.mode === "color" ? "track color" : "track"} style=${this.mode === "color" && this.track ? `--range-color-track: ${this.track}` : A}></div><div class="area" role="slider" tabindex=${this.disabled ? "-1" : "0"}
+      aria-label=${this.label} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(share * 100)}
+      aria-valuetext=${this.valueText || A} aria-disabled=${this.disabled ? "true" : "false"}
+      @pointerdown=${this.onPointerDown} @pointermove=${this.onPointerMove} @pointerup=${this.onPointerUp}
+      @pointercancel=${this.onPointerCancel} @click=${this.stop} @dblclick=${this.stop} @keydown=${this.onKeyDown}>${this.ticks().map((tick) => b2`<div class=${tick.major ? "tick major" : "tick"} style=${`left: ${tick.share * 100}%`}></div>`)}${this.mode === "fill" ? b2`<div class="fill" style=${`width: calc(${position} + ${knobSize / 2}px)`}></div>` : A}<div class="knob"
+      style=${`left: ${position}`}></div></div>`;
+  }
+};
+GraphiteRange.properties = {
+  label: {},
+  valueText: { attribute: false },
+  share: { type: Number },
+  mode: {},
+  track: {},
+  disabled: { type: Boolean, reflect: true },
+  compact: { type: Boolean, reflect: true },
+  stepTicks: { attribute: false },
+  snap: { type: Boolean },
+  tickMode: {},
+  areaWidth: { state: true },
+  keyStep: { type: Number, attribute: false },
+  dragShare: { state: true }
+};
+GraphiteRange.styles = i`
+    :host {
+      display: block;
+      position: relative;
+      height: 42px;
+      --range-track: var(--graphite-slider-track, color-mix(in srgb, var(--graphite-ink) 16%, var(--graphite-card-surface, var(--graphite-surface-tile))));
+      --range-fill: var(--graphite-slider-fill, var(--graphite-accent));
+      -webkit-tap-highlight-color: transparent;
+    }
+    :host([compact]) {
+      height: 20px;
+    }
+    :host([compact]) .labels {
+      display: none;
+    }
+    :host([compact]) .area {
+      top: 0;
+    }
+    .labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      height: 16px;
+      font-size: var(--graphite-font-caption-size, 12px);
+      line-height: 16px;
+      color: var(--graphite-slider-text, var(--graphite-text-secondary));
+      white-space: nowrap;
+    }
+    .label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 8px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--range-track);
+    }
+    .track.color {
+      background: var(--range-color-track);
+    }
+    /* touch area: inset by half a knob */
+    .area {
+      position: absolute;
+      left: ${knobSize / 2}px;
+      right: ${knobSize / 2}px;
+      top: 22px;
+      height: 20px;
+      cursor: pointer;
+      touch-action: pan-y;
+      outline: none;
+    }
+    :host([disabled]) .area {
+      cursor: default;
+    }
+    .area:focus-visible .knob {
+      box-shadow: 0 0 0 2px var(--graphite-accent), 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+    /* fill from the left edge to the knob center */
+    .fill {
+      position: absolute;
+      left: -${knobSize / 2}px;
+      top: 8px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--range-fill);
+    }
+    /* ticks below the track, like a ruler; round values (and both ends) longer */
+    .tick {
+      position: absolute;
+      top: 14px;
+      width: 1px;
+      height: 3px;
+      margin-left: -0.5px;
+      border-radius: 1px;
+      background: var(--graphite-slider-tick, var(--graphite-text-muted));
+      pointer-events: none;
+    }
+    .tick.major {
+      height: 5px;
+      background: var(--graphite-slider-tick-major, var(--graphite-text-secondary));
+    }
+    .knob {
+      position: absolute;
+      top: 2px;
+      width: ${knobSize}px;
+      height: ${knobSize}px;
+      margin-left: -${knobSize / 2}px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+  `;
+if (!customElements.get("graphite-range")) customElements.define("graphite-range", GraphiteRange);
+
+// src/cards/controls/graphite-slider-editor.ts
+var GraphiteSliderEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "slider.editor";
+  }
+  isLight() {
+    return String(this.config.entity ?? "").startsWith("light.");
+  }
+  skipValue(key, value) {
+    return key === "layout" && value === "inline";
+  }
+  schemaKey() {
+    return `${this.isLight()}|${this.config.attribute ?? "brightness"}`;
+  }
+  schema() {
+    const attribute = this.config.attribute ?? "brightness";
+    const lightFields = [
+      { name: "attribute", selector: { select: { mode: "dropdown", options: ["brightness", "color_temp", "hue", "saturation"].map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
+      ...attribute === "brightness" ? [{ name: "allow_off", selector: { boolean: {} } }] : []
+    ];
+    const numberFields = [
+      { name: "value_format", selector: { select: { mode: "dropdown", options: ["percent", "state"].map((value) => ({ value, label: this.optionLabel(`valueFormat.${value}`) })) } } }
+    ];
+    return [
+      { name: "entity", required: true, selector: { entity: { domain: ["number", "input_number", "light"] } } },
+      { name: "layout", selector: { select: { mode: "list", options: ["inline", "row"].map((value) => ({ value, label: this.optionLabel(`layouts.${value}`) })) } } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      ...this.isLight() ? lightFields : numberFields,
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "min", selector: { number: { mode: "box", step: "any" } } },
+          { name: "max", selector: { number: { mode: "box", step: "any" } } },
+          { name: "step", selector: { number: { mode: "box", step: "any" } } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "ticks", selector: { select: { mode: "dropdown", options: ["auto", "steps", "quarters", "none"].map((value) => ({ value, label: this.optionLabel(`tickModes.${value}`) })) } } },
+          { name: "major_every", selector: { number: { mode: "box", step: "any" } } }
+        ]
+      }
+    ];
+  }
+};
+
+// src/cards/controls/graphite-slider.ts
+var colorModes = ["hs", "xy", "rgb", "rgbw", "rgbww"];
+var hueTrack = "linear-gradient(90deg, #f00, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00)";
+var whiteTrack = "linear-gradient(90deg, rgb(210, 231, 255), rgb(243, 247, 255) 35%, rgb(255, 241, 224) 65%, rgb(255, 181, 107))";
+var GraphiteSlider = class extends GraphiteCard {
+  constructor() {
+    super(...arguments);
+    this.onInput = (event) => {
+      const model = this.model();
+      if (!model) return;
+      this.dragValue = this.valueOf(model, event.detail.share);
+      this.requestUpdate();
+    };
+    this.onChange = (event) => {
+      const model = this.model();
+      if (!model || !this.hass) return;
+      const value = this.valueOf(model, event.detail.share);
+      const entity = this.config.entity;
+      const target = { entity_id: entity };
+      if (this.isLight()) {
+        const attributes = this.hass.states[entity]?.attributes ?? {};
+        const hs = attributes.hs_color ?? [0, 100];
+        const attribute = this.attribute();
+        if (attribute === "color_temp") this.hass.callService("light", "turn_on", { color_temp_kelvin: value }, target);
+        else if (attribute === "hue") {
+          this.setHue = value;
+          this.hass.callService("light", "turn_on", { hs_color: [value % 360, hs[1] || 100] }, target);
+        } else if (attribute === "saturation") this.hass.callService("light", "turn_on", { hs_color: [hs[0] ?? 0, value] }, target);
+        else if (value <= 0) this.hass.callService("light", "turn_off", {}, target);
+        else this.hass.callService("light", "turn_on", { brightness_pct: value }, target);
+      } else {
+        const domain = entity.split(".")[0] === "input_number" ? "input_number" : "number";
+        this.hass.callService(domain, "set_value", { value }, target);
+      }
+      this.dragValue = value;
+      this.requestUpdate();
+    };
+  }
+  pinnedHue(hue) {
+    if (!Number.isFinite(hue) || this.setHue === void 0) return hue;
+    const distance = Math.abs(((hue - this.setHue) % 360 + 540) % 360 - 180);
+    if (distance <= 1) return this.setHue;
+    this.setHue = void 0;
+    return hue;
+  }
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return config;
+  }
+  isLight() {
+    return this.config.entity.startsWith("light.");
+  }
+  attribute() {
+    return this.config.attribute ?? "brightness";
+  }
+  configNumber(key, fallback) {
+    const value = Number(this.config[key]);
+    return this.config[key] !== void 0 && Number.isFinite(value) ? value : fallback;
+  }
+  lightModel(stateObj) {
+    const attributes = stateObj.attributes;
+    const isOn = stateObj.state === "on";
+    const modes = attributes.supported_color_modes ?? [];
+    const attribute = this.attribute();
+    if (attribute === "color_temp") {
+      const min = this.configNumber("min", Number(attributes.min_color_temp_kelvin ?? 2e3));
+      const max = this.configNumber("max", Number(attributes.max_color_temp_kelvin ?? 6500));
+      return {
+        min,
+        max,
+        step: this.configNumber("step", 50),
+        value: Number(attributes.color_temp_kelvin ?? NaN),
+        reversed: true,
+        mode: "color",
+        track: whiteTrack,
+        supported: modes.includes("color_temp")
+      };
+    }
+    const hs = attributes.hs_color;
+    if (attribute === "hue") {
+      return {
+        min: 0,
+        max: 360,
+        step: this.configNumber("step", 1),
+        value: this.pinnedHue(Number(hs?.[0] ?? NaN)),
+        reversed: false,
+        mode: "color",
+        track: hueTrack,
+        supported: modes.some((mode) => colorModes.includes(mode))
+      };
+    }
+    if (attribute === "saturation") {
+      const hue = Number(hs?.[0] ?? 0);
+      return {
+        min: 0,
+        max: 100,
+        step: this.configNumber("step", 1),
+        value: Number(hs?.[1] ?? NaN),
+        reversed: false,
+        mode: "color",
+        track: `linear-gradient(90deg, #fff, hsl(${hue}, 100%, 50%))`,
+        supported: modes.some((mode) => colorModes.includes(mode))
+      };
+    }
+    const allowOff = !!this.config.allow_off;
+    const brightness = isOn ? Math.round(Number(attributes.brightness ?? 0) / 2.55) : 0;
+    return {
+      min: this.configNumber("min", allowOff ? 0 : 1),
+      max: this.configNumber("max", 100),
+      step: this.configNumber("step", 1),
+      value: brightness,
+      reversed: false,
+      mode: "fill",
+      track: "",
+      supported: true
+    };
+  }
+  model() {
+    const stateObj = this.hass?.states[this.config.entity];
+    if (!stateObj) return null;
+    const model = this.isLight() ? this.lightModel(stateObj) : {
+      min: this.configNumber("min", Number(stateObj.attributes.min ?? 0)),
+      max: this.configNumber("max", Number(stateObj.attributes.max ?? 100)),
+      step: this.configNumber("step", Number(stateObj.attributes.step ?? 1)),
+      value: parseFloat(stateObj.state),
+      reversed: false,
+      mode: "fill",
+      track: "",
+      supported: true
+    };
+    if (!(model.max > model.min)) model.max = model.min + 1;
+    if (!(model.step > 0)) model.step = 1;
+    return model;
+  }
+  decimals(step) {
+    const text = String(step);
+    return text.includes(".") ? text.split(".")[1].length : 0;
+  }
+  // value of a share: whole multiples of the step, kept inside min and max
+  valueOf(model, share) {
+    const position = model.reversed ? 1 - share : share;
+    const raw = model.min + position * (model.max - model.min);
+    const stepped = Math.round(raw / model.step) * model.step;
+    return Number(Math.min(model.max, Math.max(model.min, stepped)).toFixed(this.decimals(model.step)));
+  }
+  shareOf(model, value) {
+    if (!Number.isFinite(value)) return model.reversed ? 1 : 0;
+    const share = Math.min(1, Math.max(0, (value - model.min) / (model.max - model.min)));
+    return model.reversed ? 1 - share : share;
+  }
+  valueText(model, value) {
+    if (!Number.isFinite(value)) return "";
+    if (this.isLight()) {
+      const attribute = this.attribute();
+      if (attribute === "color_temp") return `${Math.round(value)} K`;
+      if (attribute === "hue") return `${Math.round(value)}\xB0`;
+      return `${Math.round(value)} %`;
+    }
+    if (this.config.value_format === "state") {
+      const stateObj = this.hass.states[this.config.entity];
+      return this.hass?.formatEntityState?.(stateObj, String(value)) ?? String(value);
+    }
+    return `${Math.round((value - model.min) / (model.max - model.min) * 100)} %`;
+  }
+  // a round multiple of the step for the longer ticks: 60 for minutes, otherwise the smallest nice
+  // number that gives at most 10 intervals
+  majorEvery(model) {
+    const configured = Number(this.config.major_every);
+    if (configured > 0) return configured;
+    const isMultiple = (value) => Math.abs(value / model.step - Math.round(value / model.step)) < 1e-6;
+    const unit = this.hass?.states[this.config.entity]?.attributes?.unit_of_measurement;
+    if (unit === "min" && isMultiple(60)) return 60;
+    const span = model.max - model.min;
+    for (let magnitude = 1e-3; magnitude <= 1e6; magnitude *= 10) {
+      for (const factor of [1, 2, 2.5, 5]) {
+        const candidate = Number((factor * magnitude).toPrecision(6));
+        if (candidate >= model.step && isMultiple(candidate) && span / candidate <= 10) return candidate;
+      }
+    }
+    return span;
+  }
+  // one tick per step (whole multiples of the step, like the values) plus both ends
+  stepTicks(model) {
+    const span = model.max - model.min;
+    const count = Math.floor(model.max / model.step) - Math.ceil(model.min / model.step) + 1;
+    if (count > 400) return [];
+    const major = this.majorEvery(model);
+    const ticks = [{ share: 0, major: true }];
+    for (let index = Math.ceil(model.min / model.step); index <= Math.floor(model.max / model.step); index++) {
+      const value = index * model.step;
+      const share = (value - model.min) / span;
+      if (share <= 1e-6 || share >= 1 - 1e-6) continue;
+      const ratio = value / major;
+      ticks.push({ share: model.reversed ? 1 - share : share, major: Math.abs(ratio - Math.round(ratio)) < 1e-6 });
+    }
+    ticks.push({ share: 1, major: true });
+    return ticks;
+  }
+  label(stateObj) {
+    const config = this.config;
+    if (config.name) return config.name;
+    if (this.isLight()) return this.localize(`slider.${this.attribute()}`);
+    return stateObj?.attributes?.friendly_name ?? config.entity;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.hass?.states[config.entity];
+    const model = this.model();
+    const offline = isUnavailable(stateObj);
+    const usable = !!model && !offline && model.supported;
+    this.toggleAttribute("inactive", !usable);
+    this.style.setProperty("--graphite-slider-fill", this.isLight() && stateObj?.state !== "on" ? "var(--graphite-text-muted)" : "");
+    if (this.dragValue !== void 0 && model && Math.abs(model.value - this.dragValue) < model.step / 2) this.dragValue = void 0;
+    const value = this.dragValue ?? model?.value ?? NaN;
+    const range = model ? Math.abs(model.max - model.min) : 1;
+    const isRow = config.layout === "row";
+    const valueText = model && usable ? this.valueText(model, value) : "";
+    this.toggleAttribute("on", this.isLight() && stateObj?.state === "on");
+    const slider = b2`<graphite-range .label=${isRow ? "" : this.label(stateObj)} .valueText=${isRow ? "" : valueText}
+      .share=${model ? this.shareOf(model, model.value) : 0} .keyStep=${model ? model.step / range : 0.01}
+      .mode=${model?.mode ?? "fill"} .track=${model?.track ?? ""} ?disabled=${!usable} ?compact=${isRow}
+      .stepTicks=${model ? this.stepTicks(model) : []} .tickMode=${config.ticks ?? "auto"}
+      @range-input=${this.onInput} @range-change=${this.onChange}></graphite-range>`;
+    const icon = config.icon ? b2`<div class="icon"><ha-icon .icon=${config.icon}></ha-icon></div>` : isRow ? b2`<div class="icon"><ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon></div>` : A;
+    if (isRow) {
+      return b2`<div class="row"><div class="head">${icon}<div class="name">${this.label(stateObj)}</div><div
+        class="value">${valueText}</div></div>${slider}</div>`;
+    }
+    return b2`<div class="inline">${icon}${slider}</div>`;
+  }
+  getCardSize() {
+    return 1;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto", min_columns: 3 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("number.") || id.startsWith("input_number.")) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-slider-editor");
+  }
+};
+GraphiteSlider.styles = i`
+    :host {
+      display: block;
+    }
+    .inline {
+      display: flex;
+      align-items: center;
+      padding-top: 4px;
+    }
+    .inline graphite-range {
+      flex: 1;
+      min-width: 0;
+    }
+    /* row: 72px like the compact tiles; icon centered on the left, name and value in the first line,
+       the slider below the name (text and slider at 60px) */
+    .row {
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+      grid-template-rows: 24px 20px;
+      row-gap: 4px;
+      column-gap: 10px;
+      padding: 12px 14px 12px 8px;
+      border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+      background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    }
+    .head {
+      display: contents;
+    }
+    /* icon box like the rows: 42px */
+    .icon {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      color: var(--graphite-text-secondary);
+      --mdc-icon-size: var(--graphite-row-icon-size, 24px);
+    }
+    .inline .icon {
+      margin-right: 6px;
+    }
+    .row .icon {
+      grid-row: 1 / 3;
+      grid-column: 1;
+      align-self: center;
+    }
+    :host([on]) .icon {
+      color: var(--graphite-accent);
+    }
+    .name {
+      min-width: 0;
+      align-self: center;
+      font-size: var(--graphite-font-name-size, 15px);
+      line-height: 18px;
+      color: var(--graphite-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .row .name {
+      grid-row: 1;
+      grid-column: 2;
+    }
+    .value {
+      align-self: center;
+      margin-left: 12px;
+      font-size: var(--graphite-font-name-size, 15px);
+      line-height: 18px;
+      color: var(--graphite-text-secondary);
+      white-space: nowrap;
+    }
+    .row .value {
+      grid-row: 1;
+      grid-column: 3;
+    }
+    .row graphite-range {
+      grid-row: 2;
+      grid-column: 2 / 4;
+    }
+    :host([inactive]) graphite-range,
+    :host([inactive]) .value {
+      opacity: 0.5;
+    }
+  `;
+registerElement("graphite-slider-editor", GraphiteSliderEditor);
+registerCard("graphite-slider", GraphiteSlider, {
+  name: "Graphite Slider",
+  description: "A single slider without a surface: number, input_number, or brightness, white temperature, hue or saturation of a light."
 });
 
 // src/index.ts

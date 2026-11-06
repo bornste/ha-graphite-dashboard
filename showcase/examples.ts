@@ -32,7 +32,14 @@ export const sampleStates: Record<string, any> = {
   "sensor.power_strip_power": entity("sensor.power_strip_power", "38.5", { unit_of_measurement: "W", friendly_name: "Power", display_precision: 0 }),
   "binary_sensor.bedroom_window": entity("binary_sensor.bedroom_window", "on", { friendly_name: "Bedroom window", device_class: "window" }, 18),
   "binary_sensor.office_window": entity("binary_sensor.office_window", "off", { friendly_name: "Office window", device_class: "window" }, 190),
-  "light.floor_lamp": entity("light.floor_lamp", "on", { friendly_name: "Floor lamp" }, 42),
+  "light.floor_lamp": entity("light.floor_lamp", "on", { friendly_name: "Floor lamp", brightness: 158, color_mode: "color_temp",
+    supported_color_modes: ["color_temp", "hs"], color_temp_kelvin: 3200, min_color_temp_kelvin: 2000, max_color_temp_kelvin: 6500,
+    hs_color: [32, 45] }, 42),
+  "input_number.play_time_weekend": entity("input_number.play_time_weekend", "120", { friendly_name: "Play time weekend",
+    min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
+  "input_number.play_time_weekday": entity("input_number.play_time_weekday", "60", { friendly_name: "Play time weekday",
+    min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
+  "number.lamp_effect_speed": entity("number.lamp_effect_speed", "0.74", { friendly_name: "Effect speed", min: 0, max: 1, step: 0.02 }, 90),
   "light.ceiling_lamp": entity("light.ceiling_lamp", "unavailable", { friendly_name: "Ceiling lamp" }, 300),
   "sensor.server_power": entity("sensor.server_power", "24.6", { unit_of_measurement: "W", friendly_name: "Server", display_precision: 0 }),
   "sensor.garden_temperature": entity("sensor.garden_temperature", "unavailable", { unit_of_measurement: "°C", friendly_name: "Garden" }, 95),
@@ -527,6 +534,40 @@ export function examples(language: string): ShowcaseSection[] {
                 highlight_days: 2,
                 rules: [{ starts_with: "Exam", color: "#e8908a", icon: "mdi:alert-outline", highlight: true }],
               },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-slider",
+      description: `One slider: number, input_number, or brightness, white temperature, color and saturation of a light. Snaps to the steps, ticks below the track.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-slider.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Rows (layout: row)",
+          note: "Play time in 15-minute steps with a long tick per hour; a card of its own like the status rows.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Spielzeit" : "Play time",
+            cards: [
+              { type: "custom:graphite-slider", layout: "row", entity: "input_number.play_time_weekday", name: german ? "Werktags" : "Weekdays", value_format: "state" },
+              { type: "custom:graphite-slider", layout: "row", entity: "input_number.play_time_weekend", name: german ? "Wochenende" : "Weekend", value_format: "state" },
+            ],
+          },
+        },
+        {
+          title: "Light and effect speed (inline)",
+          note: "Without a surface: brightness (off at 0), white temperature, color and saturation; the effect speed shows quarters.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Stehlampe" : "Floor lamp",
+            cards: [
+              { type: "custom:graphite-slider", entity: "light.floor_lamp", allow_off: true, step: 5 },
+              { type: "custom:graphite-slider", entity: "light.floor_lamp", attribute: "color_temp" },
+              { type: "custom:graphite-slider", entity: "light.floor_lamp", attribute: "hue" },
+              { type: "custom:graphite-slider", entity: "light.floor_lamp", attribute: "saturation" },
+              { type: "custom:graphite-slider", entity: "number.lamp_effect_speed", name: german ? "Geschwindigkeit" : "Speed" },
             ],
           },
         },

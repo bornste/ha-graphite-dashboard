@@ -13,7 +13,7 @@ export const calendarStyles = css`
     display: flex;
     align-items: baseline;
     gap: 6px;
-    margin: 14px 0 6px 4px;
+    margin: 14px 0 6px;
     font-size: var(--graphite-font-label-size, 13px);
     line-height: 18px;
     color: var(--graphite-text-secondary);
