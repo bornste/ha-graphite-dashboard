@@ -230,12 +230,13 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
     return config;
   }
 
-  private get isPanel(): boolean {
+  // not "isPanel": Home Assistant sets that property on cards in panel views
+  private get panelLayout(): boolean {
     return this.config?.layout === "panel";
   }
 
   protected stylesForConfig(): CSSResultGroup {
-    return this.isPanel ? [artStyles, panelStyles] : [artStyles, tileStyles];
+    return this.panelLayout ? [artStyles, panelStyles] : [artStyles, tileStyles];
   }
 
   protected watchedEntities(): string[] {
@@ -625,14 +626,14 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
 
   protected willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
-    const issues = this.isPanel && this.hass ? this.roomIssues() : [];
+    const issues = this.panelLayout && this.hass ? this.roomIssues() : [];
     if (issues.length && issues.length !== this.warnedIssues) console.warn("graphite-vacuum: room ids do not match the map", issues);
     this.warnedIssues = issues.length;
   }
 
   protected render(): TemplateResult | typeof nothing {
     if (!this.config || !this.hass) return nothing;
-    return this.isPanel ? this.renderPanel() : this.renderTile();
+    return this.panelLayout ? this.renderPanel() : this.renderTile();
   }
 
   private renderArt(status: VacuumStatus): TemplateResult {
@@ -830,11 +831,11 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
   }
 
   getCardSize(): number {
-    return this.isPanel ? 8 : 2;
+    return this.panelLayout ? 8 : 2;
   }
 
   getGridOptions(): Record<string, unknown> {
-    return this.isPanel ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
+    return this.panelLayout ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
   }
 
   static getStubConfig(): Record<string, unknown> {

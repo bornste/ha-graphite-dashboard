@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.24.0";
+var version = "0.24.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -5487,11 +5487,12 @@ var GraphiteVacuum = class extends GraphiteCard {
     ];
     return config;
   }
-  get isPanel() {
+  // not "isPanel": Home Assistant sets that property on cards in panel views
+  get panelLayout() {
     return this.config?.layout === "panel";
   }
   stylesForConfig() {
-    return this.isPanel ? [artStyles, panelStyles] : [artStyles, tileStyles2];
+    return this.panelLayout ? [artStyles, panelStyles] : [artStyles, tileStyles2];
   }
   watchedEntities() {
     if (!this.config) return [];
@@ -5837,13 +5838,13 @@ var GraphiteVacuum = class extends GraphiteCard {
   // ---------- rendering ----------
   willUpdate(changed) {
     super.willUpdate(changed);
-    const issues = this.isPanel && this.hass ? this.roomIssues() : [];
+    const issues = this.panelLayout && this.hass ? this.roomIssues() : [];
     if (issues.length && issues.length !== this.warnedIssues) console.warn("graphite-vacuum: room ids do not match the map", issues);
     this.warnedIssues = issues.length;
   }
   render() {
     if (!this.config || !this.hass) return A;
-    return this.isPanel ? this.renderPanel() : this.renderTile();
+    return this.panelLayout ? this.renderPanel() : this.renderTile();
   }
   renderArt(status) {
     return b2`<div class="art ${status.art}">${robotArt}</div>`;
@@ -6025,10 +6026,10 @@ var GraphiteVacuum = class extends GraphiteCard {
     `;
   }
   getCardSize() {
-    return this.isPanel ? 8 : 2;
+    return this.panelLayout ? 8 : 2;
   }
   getGridOptions() {
-    return this.isPanel ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
+    return this.panelLayout ? { columns: 12, rows: "auto" } : { columns: 12, rows: "auto", min_rows: 2 };
   }
   static getStubConfig() {
     return { entity: "vacuum.robot" };
