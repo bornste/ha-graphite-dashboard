@@ -29,6 +29,7 @@ export class GraphiteRange extends LitElement {
     disabled: { type: Boolean, reflect: true },
     compact: { type: Boolean, reflect: true },
     stepTicks: { attribute: false },
+    markTicks: { attribute: false },
     snap: { type: Boolean },
     tickMode: {},
     areaWidth: { state: true },
@@ -47,6 +48,8 @@ export class GraphiteRange extends LitElement {
   // ticks of the steps (incl. both ends) and when to show them; quarters when the steps are too dense
   declare stepTicks: RangeTick[];
   declare tickMode: TickMode;
+  // ticks independent of the steps (e.g. every 10 % on a 1 % slider); the knob still snaps to the steps
+  declare markTicks?: RangeTick[];
   // the knob jumps from step to step (the shares of stepTicks are the possible values)
   declare snap: boolean;
   declare areaWidth: number;
@@ -190,6 +193,7 @@ export class GraphiteRange extends LitElement {
 
   private ticks(): RangeTick[] {
     if (this.tickMode === "none") return [];
+    if (this.markTicks?.length) return this.markTicks;
     if (this.tickMode === "quarters") return quarterTicks;
     const steps = this.stepTicks ?? [];
     if (this.tickMode === "steps") return steps;

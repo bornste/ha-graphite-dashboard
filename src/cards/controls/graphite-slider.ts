@@ -30,6 +30,8 @@ export interface SliderConfig extends GraphiteCardConfig {
   ticks?: TickMode;
   // round values with a longer tick (default: a "nice" multiple of the step, 60 for minutes)
   major_every?: number;
+  // ticks at multiples of this value instead of the steps (e.g. 10 on a 1 % slider); long every fifth
+  tick_every?: number;
 }
 
 interface SliderModel {
@@ -285,6 +287,26 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
     return ticks;
   }
 
+  // ticks every tick_every (independent of the step) plus both ends; long ticks every major_every
+  // (default: five ticks)
+  private markTicks(model: SliderModel): RangeTick[] | undefined {
+    const every = Number(this.config!.tick_every);
+    if (!(every > 0)) return undefined;
+    const span = model.max - model.min;
+    if (span / every > 400) return undefined;
+    const major = Number(this.config!.major_every) > 0 ? Number(this.config!.major_every) : every * 5;
+    const ticks: RangeTick[] = [{ share: 0, major: true }];
+    for (let index = Math.ceil(model.min / every); index <= Math.floor(model.max / every); index++) {
+      const value = index * every;
+      const share = (value - model.min) / span;
+      if (share <= 1e-6 || share >= 1 - 1e-6) continue;
+      const ratio = value / major;
+      ticks.push({ share: model.reversed ? 1 - share : share, major: Math.abs(ratio - Math.round(ratio)) < 1e-6 });
+    }
+    ticks.push({ share: 1, major: true });
+    return ticks;
+  }
+
   private onInput = (event: CustomEvent) => {
     const model = this.model();
     if (!model) return;
@@ -344,7 +366,8 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
     const slider = html`<graphite-range .label=${isRow ? "" : this.label(stateObj)} .valueText=${isRow ? "" : valueText}
       .share=${model ? this.shareOf(model, model.value) : 0} .keyStep=${model ? model.step / range : 0.01}
       .mode=${model?.mode ?? "fill"} .track=${model?.track ?? ""} ?disabled=${!usable} ?compact=${isRow}
-      .stepTicks=${model ? this.stepTicks(model) : []} .tickMode=${config.ticks ?? "auto"}
+      .stepTicks=${model ? this.stepTicks(model) : []} .markTicks=${model ? this.markTicks(model) : undefined}
+      .tickMode=${config.ticks ?? "auto"}
       @range-input=${this.onInput} @range-change=${this.onChange}></graphite-range>`;
     // the row shows the entity icon unless an icon is set; inline only a configured icon
     const icon = config.icon

@@ -42,7 +42,7 @@ wall_switch: true
   brightness with `light.turn_on`). The fill is quiet (`--graphite-text-muted`).
 - **Unavailable:** dimmed head with an offline badge, sliders locked. With `wall_switch` no badge and no
   dimming: the line says "aus am Wandschalter seit …".
-- **Ticks:** only the brightness slider shows ticks (quarters); the color tracks have none.
+- **Ticks:** only the brightness slider shows ticks, every 10 % (long at 0, 50 and 100 %); the color tracks have none.
 - Gestures on the sliders never toggle the lamp.
 
 ## Geometry

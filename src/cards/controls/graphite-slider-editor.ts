@@ -58,6 +58,7 @@ export class GraphiteSliderEditor extends GraphiteFormEditor {
         schema: [
           { name: "ticks", selector: { select: { mode: "dropdown", options: ["auto", "steps", "quarters", "none"]
             .map((value) => ({ value, label: this.optionLabel(`tickModes.${value}`) })) } } },
+          { name: "tick_every", selector: { number: { mode: "box", step: "any" } } },
           { name: "major_every", selector: { number: { mode: "box", step: "any" } } },
         ],
       },

@@ -263,7 +263,8 @@
         "steps": "Every step",
         "quarters": "Quarters",
         "none": "None"
-      }
+      },
+      "tick_every": "Ticks every (instead of each step)"
     },
     "brightness": "Brightness",
     "color_temp": "White",

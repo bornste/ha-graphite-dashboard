@@ -263,7 +263,8 @@
         "steps": "Jeder Schritt",
         "quarters": "Viertel",
         "none": "Keine"
-      }
+      },
+      "tick_every": "Ticks alle (statt bei jedem Schritt)"
     },
     "brightness": "Helligkeit",
     "color_temp": "Weisston",

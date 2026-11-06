@@ -36,6 +36,7 @@ attribute: color_temp
 | `step` | number | entity step, 1 | Values are whole multiples of the step (step 5: 5, 10, 15 %). White temperature: 50 K. |
 | `value_format` | `percent` \| `state` | `percent` | Numbers only: value in percent of the range or as the formatted state ("120 min"). Lights always show %, K or °. |
 | `ticks` | `auto` \| `steps` \| `quarters` \| `none` | `auto` | Ticks below the track. `auto`: every step while they are at least 12px apart, otherwise the quarters. |
+| `tick_every` | number | – | Ticks at multiples of this value instead of the steps (e.g. 10 on a 1 % slider); the knob still snaps to the steps. Long ticks every fifth unless `major_every` is set. |
 | `major_every` | number | round value | Values with a longer tick. Default: 60 for minutes, otherwise the smallest round multiple of the step with at most 10 intervals (10 for 0–100 %). Both ends are always long. |
 
 ## Behaviour

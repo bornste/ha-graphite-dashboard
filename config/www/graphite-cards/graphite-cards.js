@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.19.7";
+var version = "0.19.8";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -817,7 +817,8 @@ var de_default = {
         steps: "Jeder Schritt",
         quarters: "Viertel",
         none: "Keine"
-      }
+      },
+      tick_every: "Ticks alle (statt bei jedem Schritt)"
     },
     brightness: "Helligkeit",
     color_temp: "Weisston",
@@ -1118,7 +1119,8 @@ var en_default = {
         steps: "Every step",
         quarters: "Quarters",
         none: "None"
-      }
+      },
+      tick_every: "Ticks every (instead of each step)"
     },
     brightness: "Brightness",
     color_temp: "White",
@@ -4865,6 +4867,7 @@ var GraphiteRange = class extends i4 {
   }
   ticks() {
     if (this.tickMode === "none") return [];
+    if (this.markTicks?.length) return this.markTicks;
     if (this.tickMode === "quarters") return quarterTicks;
     const steps = this.stepTicks ?? [];
     if (this.tickMode === "steps") return steps;
@@ -4918,6 +4921,7 @@ GraphiteRange.properties = {
   disabled: { type: Boolean, reflect: true },
   compact: { type: Boolean, reflect: true },
   stepTicks: { attribute: false },
+  markTicks: { attribute: false },
   snap: { type: Boolean },
   tickMode: {},
   areaWidth: { state: true },
@@ -5071,6 +5075,7 @@ var GraphiteSliderEditor = class extends GraphiteFormEditor {
         name: "",
         schema: [
           { name: "ticks", selector: { select: { mode: "dropdown", options: ["auto", "steps", "quarters", "none"].map((value) => ({ value, label: this.optionLabel(`tickModes.${value}`) })) } } },
+          { name: "tick_every", selector: { number: { mode: "box", step: "any" } } },
           { name: "major_every", selector: { number: { mode: "box", step: "any" } } }
         ]
       }
@@ -5276,6 +5281,25 @@ var GraphiteSlider = class extends GraphiteCard {
     ticks.push({ share: 1, major: true });
     return ticks;
   }
+  // ticks every tick_every (independent of the step) plus both ends; long ticks every major_every
+  // (default: five ticks)
+  markTicks(model) {
+    const every = Number(this.config.tick_every);
+    if (!(every > 0)) return void 0;
+    const span = model.max - model.min;
+    if (span / every > 400) return void 0;
+    const major = Number(this.config.major_every) > 0 ? Number(this.config.major_every) : every * 5;
+    const ticks = [{ share: 0, major: true }];
+    for (let index = Math.ceil(model.min / every); index <= Math.floor(model.max / every); index++) {
+      const value = index * every;
+      const share = (value - model.min) / span;
+      if (share <= 1e-6 || share >= 1 - 1e-6) continue;
+      const ratio = value / major;
+      ticks.push({ share: model.reversed ? 1 - share : share, major: Math.abs(ratio - Math.round(ratio)) < 1e-6 });
+    }
+    ticks.push({ share: 1, major: true });
+    return ticks;
+  }
   label(stateObj) {
     const config = this.config;
     if (config.name) return config.name;
@@ -5299,7 +5323,8 @@ var GraphiteSlider = class extends GraphiteCard {
     const slider = b2`<graphite-range .label=${isRow ? "" : this.label(stateObj)} .valueText=${isRow ? "" : valueText}
       .share=${model ? this.shareOf(model, model.value) : 0} .keyStep=${model ? model.step / range : 0.01}
       .mode=${model?.mode ?? "fill"} .track=${model?.track ?? ""} ?disabled=${!usable} ?compact=${isRow}
-      .stepTicks=${model ? this.stepTicks(model) : []} .tickMode=${config.ticks ?? "auto"}
+      .stepTicks=${model ? this.stepTicks(model) : []} .markTicks=${model ? this.markTicks(model) : void 0}
+      .tickMode=${config.ticks ?? "auto"}
       @range-input=${this.onInput} @range-change=${this.onChange}></graphite-range>`;
     const icon = config.icon ? b2`<div class="icon"><ha-icon .icon=${config.icon}></ha-icon></div>` : isRow ? b2`<div class="icon"><ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon></div>` : A;
     if (isRow) {
@@ -5564,8 +5589,8 @@ var GraphiteLight = class extends GraphiteRow {
       entity: config.entity,
       attribute,
       ...attribute === "brightness" && config.allow_off ? { allow_off: true } : {},
-      // ticks only for the brightness; the color tracks speak for themselves
-      ...attribute === "brightness" ? {} : { ticks: "none" }
+      // ticks only for the brightness (every 10 %, long at 50 %); the color tracks speak for themselves
+      ...attribute === "brightness" ? { tick_every: 10 } : { ticks: "none" }
     }}></graphite-slider>`)}</div>` : A}</div>`;
   }
   getCardSize() {

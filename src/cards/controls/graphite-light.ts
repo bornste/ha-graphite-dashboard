@@ -146,8 +146,8 @@ export class GraphiteLight extends GraphiteRow {
       ? html`<div class="sliders">${sliders.map((attribute) => html`<graphite-slider .hass=${this.hass}
         .config=${{ type: "custom:graphite-slider", entity: config.entity, attribute,
           ...(attribute === "brightness" && config.allow_off ? { allow_off: true } : {}),
-          // ticks only for the brightness; the color tracks speak for themselves
-          ...(attribute === "brightness" ? {} : { ticks: "none" }) }}></graphite-slider>`)}</div>`
+          // ticks only for the brightness (every 10 %, long at 50 %); the color tracks speak for themselves
+          ...(attribute === "brightness" ? { tick_every: 10 } : { ticks: "none" }) }}></graphite-slider>`)}</div>`
       : nothing}</div>`;
   }
 
