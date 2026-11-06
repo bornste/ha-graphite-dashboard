@@ -16,8 +16,14 @@ export const tileStyles = css`
     grid-template-columns: 64px minmax(0, 1fr) auto;
     gap: 14px;
     align-items: center;
+    position: relative;
+    overflow: hidden;
+    outline: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+  }
+  ha-card:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--vacAccent);
   }
   ha-card.active {
     --vacArtBg: var(--vacTile);

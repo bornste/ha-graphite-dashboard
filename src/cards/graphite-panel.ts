@@ -94,6 +94,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       gap: var(--graphite-gap-tile, 8px);
     }
     .button {
+      position: relative;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -321,7 +323,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       : html`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
     const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
     return html`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
-      aria-label=${label} @click=${(event: Event) => this.buttonClick(event, button)}>${icon}</button>`;
+      aria-label=${label} @click=${(event: Event) => this.buttonClick(event, button)}><ha-ripple></ha-ripple>${icon}</button>`;
   }
 
   private chipConfigs(): PanelChipConfig[] {

@@ -647,6 +647,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
     const hints = hintStates.includes(status.key) ? (status.hint ? [status.hint] : this.hints()) : [];
     return html`
       <ha-card class=${status.active ? "active" : ""} role="button" tabindex="0" @click=${this.openPanel} @keydown=${this.onTileKey}>
+        <ha-ripple></ha-ripple>
         ${this.renderArt(status)}
         <div class="text">
           ${this.config!.name === false ? nothing : html`<div class="name">${this.deviceName()}</div>`}
@@ -657,6 +658,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
         ${status.control
           ? html`<button class="control" aria-label=${status.control === "resume" ? this.t("resume") : this.t("pause")}
               @click=${(event: Event) => this.onControl(event, status.control!)}>
+              <ha-ripple></ha-ripple>
               <ha-icon icon=${status.control === "resume" ? "mdi:play" : "mdi:pause"}></ha-icon>
             </button>`
           : hints.length
@@ -695,6 +697,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
           <div class="presets">
             ${presets.map((preset) => html`
               <button class="preset ${this.presetMatches(preset) ? "selected" : ""}" @click=${() => this.choosePreset(preset)}>
+                <ha-ripple></ha-ripple>
                 ${preset.icon ? html`<ha-icon icon=${preset.icon}></ha-icon>` : nothing}<span>${preset.name}</span>
               </button>`)}
           </div>`
@@ -703,6 +706,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
       <div class="modes">
         ${this.modes.map((item) => html`
           <button class="mode ${item.value === mode ? "selected" : ""}" @click=${() => { this.chosenMode = item.value; }}>
+            <ha-ripple></ha-ripple>
             ${item.icon ? html`<ha-icon icon=${item.icon}></ha-icon>` : nothing}<span>${this.itemName(item, "modes")}</span>
           </button>`)}
       </div>
@@ -710,10 +714,11 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
       <div class="suctions ${hasBoost ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
         ${this.suctionLevels.map((level) => html`
           <button class="suction ${level.value === suction ? "selected" : ""}" @click=${() => { this.chosenSuction = level.value; }}>
+            <ha-ripple></ha-ripple>
             ${this.itemName(level, "suctionLevels")}
           </button>`)}
         ${hasBoost
-          ? html`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => { this.chosenBoost = !this.currentBoost(); }}>${boostName}</button>`
+          ? html`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => { this.chosenBoost = !this.currentBoost(); }}><ha-ripple></ha-ripple>${boostName}</button>`
           : nothing}
       </div>
       ${hasBoost ? html`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : nothing}
@@ -727,6 +732,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
           const order = this.selected.indexOf(room.id);
           return html`
             <button class="room ${order >= 0 ? "selected" : ""}" aria-pressed=${order >= 0 ? "true" : "false"} @click=${() => this.toggleRoom(room.id)}>
+              <ha-ripple></ha-ripple>
               <ha-icon icon=${room.icon}></ha-icon><span>${room.name}</span>${order >= 0 ? html`<span class="order">${order + 1}</span>` : nothing}
             </button>`;
         })}
@@ -761,9 +767,10 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
     }
     return html`
       <div class="startRow">
-        <button class="start ${idle ? "idle" : ""}" ?disabled=${idle} @click=${() => this.onStart(status)}>${text}</button>
+        <button class="start ${idle ? "idle" : ""}" ?disabled=${idle} @click=${() => this.onStart(status)}>${idle ? nothing : html`<ha-ripple></ha-ripple>`}${text}</button>
         <button class="toStation" aria-label=${this.t("toStation")} title=${this.t("toStation")}
           @click=${() => this.run("vacuum", "return_to_base", {}, this.config!.entity)}>
+          <ha-ripple></ha-ripple>
           <ha-icon icon="mdi:home-import-outline"></ha-icon>
         </button>
       </div>
@@ -806,6 +813,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
           const done = this.pressedAction === action.entity;
           return html`
             <button class="action ${done ? "done" : ""}" ?disabled=${this.stateOf(action.entity)?.state === "unavailable"} @click=${() => this.onPress(action.entity)}>
+              <ha-ripple></ha-ripple>
               ${action.icon ? html`<ha-icon icon=${done ? "mdi:check" : action.icon}></ha-icon>` : nothing}
               <span>${this.itemName(action, "actions")}</span>
             </button>`;
@@ -818,6 +826,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
     const confirming = this.confirmReset === item.reset;
     const value = item.due && item.reset
       ? html`<button class="reset ${confirming ? "confirm" : ""}" @click=${() => this.onReset(item.reset!)}>
+          <ha-ripple></ha-ripple>
           ${confirming ? this.t("confirmReset") : this.t("reset")}
         </button>`
       : html`<span class="value">${item.left} %${item.hours !== null ? ` · ${item.hours} h` : ""}</span>`;

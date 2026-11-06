@@ -43,7 +43,10 @@ export const artStyles = css`
     --vacTone: var(--graphite-vacuum-tone, 0.12);
     --vacRadius: var(--graphite-radius-tile, 12px);
   }
+  /* position and clip for the ripple (hover and press like the other Graphite tiles) */
   button {
+    position: relative;
+    overflow: hidden;
     border: none;
     font: inherit;
     cursor: pointer;
