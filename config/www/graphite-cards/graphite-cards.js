@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.23.0";
+var version = "0.23.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -5509,6 +5509,9 @@ var GraphiteVacuum = class extends HTMLElement {
   get hass() {
     return this.hassObject;
   }
+  connectedCallback() {
+    this.render();
+  }
   disconnectedCallback() {
     clearTimeout(this.confirmTimer);
     clearTimeout(this.pressedTimer);
@@ -5536,8 +5539,12 @@ var GraphiteVacuum = class extends HTMLElement {
   }
   // ---------- texts ----------
   // translated text (vacuum.*): theme variable --graphite-language, else the Home Assistant language
+  // the theme variable is only readable once connected, so the language is part of the render signature
+  language() {
+    return languageOf(this.isConnected ? this : void 0, this.hassObject);
+  }
   t(key, params = {}) {
-    return translate(languageOf(this.isConnected ? this : void 0, this.hassObject), `vacuum.${key}`, params);
+    return translate(this.language(), `vacuum.${key}`, params);
   }
   // name of a configured or default item: own name, else the translation of its key, else the key
   itemName(item, group) {
@@ -5854,7 +5861,7 @@ var GraphiteVacuum = class extends HTMLElement {
   // only re-render when one of the used entities changed
   signature() {
     const ids = [this.config.entity, ...Object.values(this.entities), ...this.stationActions.map((action) => action.entity)];
-    return ids.map((id) => this.stateOf(id)?.last_updated || "").join("|") + `|${this.selected.join(",")}|${this.chosenMode}|${this.chosenSuction}|${this.chosenBoost}|${this.confirmReset}|${this.pressedAction}|${this.errorText}`;
+    return ids.map((id) => this.stateOf(id)?.last_updated || "").join("|") + `|${this.language()}|${this.selected.join(",")}|${this.chosenMode}|${this.chosenSuction}|${this.chosenBoost}|${this.confirmReset}|${this.pressedAction}|${this.errorText}`;
   }
   render() {
     if (!this.config || !this.hassObject) return;

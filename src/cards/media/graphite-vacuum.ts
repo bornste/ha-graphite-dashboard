@@ -482,6 +482,10 @@ export class GraphiteVacuum extends HTMLElement {
     return this.hassObject;
   }
 
+  connectedCallback() {
+    this.render();
+  }
+
   disconnectedCallback() {
     clearTimeout(this.confirmTimer);
     clearTimeout(this.pressedTimer);
@@ -509,8 +513,13 @@ export class GraphiteVacuum extends HTMLElement {
   // ---------- texts ----------
 
   // translated text (vacuum.*): theme variable --graphite-language, else the Home Assistant language
+  // the theme variable is only readable once connected, so the language is part of the render signature
+  language() {
+    return languageOf(this.isConnected ? this : undefined, this.hassObject);
+  }
+
   t(key, params = {}) {
-    return translate(languageOf(this.isConnected ? this : undefined, this.hassObject), `vacuum.${key}`, params);
+    return translate(this.language(), `vacuum.${key}`, params);
   }
 
   // name of a configured or default item: own name, else the translation of its key, else the key
@@ -851,7 +860,7 @@ export class GraphiteVacuum extends HTMLElement {
   signature() {
     const ids = [this.config.entity, ...Object.values(this.entities), ...this.stationActions.map((action) => action.entity)];
     return ids.map((id) => this.stateOf(id)?.last_updated || "").join("|")
-      + `|${this.selected.join(",")}|${this.chosenMode}|${this.chosenSuction}|${this.chosenBoost}|${this.confirmReset}|${this.pressedAction}|${this.errorText}`;
+      + `|${this.language()}|${this.selected.join(",")}|${this.chosenMode}|${this.chosenSuction}|${this.chosenBoost}|${this.confirmReset}|${this.pressedAction}|${this.errorText}`;
   }
 
   render() {
