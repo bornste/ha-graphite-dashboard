@@ -1,6 +1,6 @@
 sbo_graphite:
   name: SBO Graphite
-  version: '0.131'
+  version: '0.132'
   creator: Bornste
   supported:
     - button
@@ -10,7 +10,7 @@ sbo_graphite:
     - separator
     - sub-buttons
     - media-player
-  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds room card, light tile and clock card.
+  description: Bubble Card styling for the SBO Graphite theme. Maps the theme tokens to Bubble Card variables and adds the clock card and the pop-up styling.
   code: |-
     /* BASE: theme tokens mapped to Bubble Card variables.
        --sbo-card-surface, --sbo-card-radius and --sbo-card-inner-surface are context tokens:
@@ -27,8 +27,6 @@ sbo_graphite:
       --bubble-slider-background-color: var(--sbo-surface-track);
       --bubble-pop-up-main-background-color: var(--sbo-overlay);
       --bubble-pop-up-border-radius: var(--sbo-radius-panel);
-      --sbo-room-padding: var(--sbo-padding-panel, 16px);
-      --sbo-scene-height: 64px;
     }
 
     /* NO LAYOUT ANIMATIONS: the module styles and the view theme apply after the first render.
@@ -47,197 +45,6 @@ sbo_graphite:
     }
     ha-card.is-unavailable .bubble-name {
       color: var(--sbo-text-secondary) !important;
-    }
-
-    /* ROOM CARD: panel with room name, light status, header buttons and scene tiles */
-    .bubble-container.sbo-room-card {
-      height: auto !important;
-    }
-    /* layout: name and status left, header buttons right, scene tiles below */
-    .sbo-room-card .bubble-wrapper {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto !important;
-      grid-template-rows: auto auto !important;
-      grid-template-areas:
-        "content buttons"
-        "scenes scenes" !important;
-    }
-    /* the room card never changes its background with the entity state */
-    .sbo-room-card .bubble-background {
-      background: none !important;
-      box-shadow: none !important;
-    }
-    /* more specific than Bubble's ".bubble-wrapper.fixed-top .bubble-content-container" (min-height 54px):
-       the header is only as high as name and status */
-    .sbo-room-card .bubble-wrapper.fixed-top .bubble-content-container {
-      grid-area: content;
-      align-items: flex-start !important;
-      margin: var(--sbo-room-padding) 0 12px var(--sbo-room-padding) !important;
-      min-height: 0 !important;
-    }
-    /* name and status in one line, separated by a thin line (same as the dialog header summary),
-       as high as the header buttons on the right */
-    .sbo-room-card .bubble-name-container {
-      margin: 0 !important;
-      flex-direction: row !important;
-      /* name and status share one baseline; the line is centered in the button height
-         (align-content needs a wrapping flex container) */
-      flex-wrap: wrap;
-      align-content: center;
-      align-items: baseline !important;
-      justify-content: flex-start !important;
-      gap: 0 12px;
-      min-height: 36px;
-    }
-    /* same title style as the panel titles (theme tokens) */
-    .sbo-room-card .bubble-name {
-      flex: none;
-      font-size: var(--sbo-title-size, 18px);
-      font-weight: var(--sbo-title-weight, 400);
-      color: var(--sbo-title-color, var(--sbo-text-primary));
-      line-height: 1.2;
-    }
-    .sbo-room-card .bubble-state {
-      min-width: 0;
-      padding-left: 12px;
-      position: relative;
-      /* 2px more room on top for the separator line (it reads too short at cap height);
-         the negative margin keeps the text on the shared baseline */
-      padding-top: 2px;
-      margin-top: -2px;
-      font-size: 13px;
-      line-height: 16px;
-      white-space: nowrap !important;
-      opacity: 1;
-      color: var(--sbo-text-secondary);
-    }
-    /* separator line from the title's cap height down to the shared baseline
-       (13px text in a 16px line: the baseline sits 3.5px above the bottom) */
-    .sbo-room-card .bubble-state::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 3.5px;
-      width: 1px;
-      background: var(--sbo-separator, color-mix(in srgb, var(--sbo-ink, #f3f3f4) 24%, var(--sbo-ground, #0a0a0b)));
-    }
-    /* empty status (e.g. all lights off): no line and no gap; Bubble shows the raw entity state
-       when the state_content template renders empty, the module marks that case */
-    .sbo-room-card .bubble-state:empty,
-    .sbo-room-card.sbo-state-empty .bubble-state {
-      display: none !important;
-    }
-    /* lights on: accent and weight 500, like every highlighted status (header summary, panel info_alert) */
-    ha-card.is-on .sbo-room-card .bubble-state {
-      color: var(--sbo-accent);
-      font-weight: 500;
-    }
-
-    /* header buttons (light off, settings) */
-    .sbo-room-card .bubble-sub-button-container {
-      grid-area: buttons;
-      position: relative !important;
-      right: auto !important;
-      width: auto !important;
-      /* aligned to the top: same distance to the top and the right edge */
-      align-self: start;
-      margin: var(--sbo-room-padding) var(--sbo-room-padding) 0 12px !important;
-      gap: var(--sbo-gap-tile, 8px);
-    }
-    .sbo-room-card .bubble-sub-button-container .bubble-sub-button {
-      --mdc-icon-size: 18px;
-      width: 44px !important;
-      min-width: 44px !important;
-      height: 36px !important;
-      border-radius: var(--sbo-radius-tile) !important;
-      background: var(--sbo-card-inner-surface, var(--sbo-surface-tile)) !important;
-      color: var(--sbo-text-secondary);
-      box-shadow: none !important;
-    }
-    .sbo-room-card .bubble-sub-button-container .bubble-sub-button.bubble-sub-button-selected {
-      background: var(--sbo-accent) !important;
-      color: var(--sbo-accent-ink);
-    }
-
-    /* scene tiles (bottom sub-buttons) */
-    .sbo-room-card .bubble-sub-button-bottom-container {
-      grid-area: scenes;
-      position: static !important;
-      width: auto !important;
-      margin: 0 var(--sbo-room-padding) var(--sbo-room-padding) var(--sbo-room-padding) !important;
-    }
-    /* scene tiles in a fixed grid (default 4 columns), so tiles keep the same width in every room */
-    .sbo-room-card .bubble-sub-button-bottom-container .bubble-sub-button-group {
-      display: grid !important;
-      grid-template-columns: repeat(var(--sbo-scene-columns, 4), minmax(0, 1fr));
-      gap: var(--sbo-gap-tile, 8px);
-      width: 100%;
-    }
-    .sbo-room-card .bubble-sub-button-bottom-container .bubble-sub-button-group .bubble-sub-button {
-      width: auto !important;
-      min-width: 0 !important;
-      flex: none !important;
-    }
-    .bubble-sub-button.sbo-scene-tile {
-      position: relative;
-      overflow: hidden;
-      height: var(--sbo-scene-height) !important;
-      padding: 0 12px 9px 12px !important;
-      justify-content: flex-start !important;
-      align-items: flex-end !important;
-      border-radius: var(--sbo-radius-tile) !important;
-      background: var(--sbo-card-inner-surface, var(--sbo-surface-tile)) !important;
-      box-shadow: none !important;
-      color: var(--sbo-text-primary);
-    }
-    /* color stripe: shows the scene's colors on inactive tiles */
-    .bubble-sub-button.sbo-scene-tile::before {
-      content: "";
-      position: absolute;
-      left: 12px;
-      top: 10px;
-      width: 28px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--sbo-gradient);
-      z-index: 1;
-    }
-    .bubble-sub-button.sbo-scene-tile .bubble-sub-button-name-container {
-      position: relative;
-      z-index: 1;
-      margin: 0 auto 0 0 !important;
-      justify-content: flex-start;
-      text-align: left;
-      font-size: 13px;
-      font-weight: 400;
-    }
-    .bubble-sub-button.sbo-scene-tile.bubble-sub-button-selected .bubble-sub-button-name-container {
-      font-weight: 500;
-    }
-    /* scene icon as watermark */
-    .bubble-sub-button.sbo-scene-tile .bubble-sub-button-icon {
-      position: absolute;
-      right: 6px;
-      bottom: 3px;
-      margin: 0 !important;
-      --mdc-icon-size: 34px;
-      color: var(--sbo-text-primary);
-      opacity: 0.16;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .bubble-sub-button.sbo-scene-tile.bubble-sub-button-selected {
-      background: var(--sbo-gradient) !important;
-      color: var(--sbo-scene-ink);
-    }
-    .bubble-sub-button.sbo-scene-tile.bubble-sub-button-selected::before {
-      background: color-mix(in srgb, var(--sbo-scene-ink) 60%, transparent);
-    }
-    .bubble-sub-button.sbo-scene-tile.bubble-sub-button-selected .bubble-sub-button-icon {
-      color: var(--sbo-scene-ink);
-      opacity: 0.3;
     }
 
     /* POP-UP (dialog): darker than the panels inside, so the levels read ground → panel → tile */
@@ -586,16 +393,6 @@ sbo_graphite:
     ${(() => {
       const config = this.config?.sbo_graphite || {};
 
-      // relative luminance of a hex color (0 = black, 1 = white), null for other formats
-      const hexLuminance = (color) => {
-        const hex = String(color).trim().replace('#', '');
-        if (hex.length !== 6)
-          return null;
-        const channels = [0, 2, 4].map(start => parseInt(hex.substring(start, start + 2), 16) / 255)
-          .map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-        return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-      };
-
       // waste pickup: next collection day of a calendar entity.
       // Events come from the calendar API (shared cache, refreshed every 30 minutes);
       // until they are loaded, the start_time attribute of the entity is used.
@@ -678,20 +475,6 @@ sbo_graphite:
           : card.querySelector(`.bubble-sub-button-container .bubble-sub-button-${subbuttonConfig.index}`);
         if (!subbutton)
           return;
-
-        // scene tile look when gradient colors are configured
-        const colors = Array.isArray(subbuttonConfig.gradient_colors)
-          ? subbuttonConfig.gradient_colors.map(c => String(c).trim()).filter(Boolean)
-          : [];
-        if (colors.length > 0)
-        {
-          subbutton.classList.add(`sbo-scene-tile`);
-          subbutton.style.setProperty('--sbo-gradient', `linear-gradient(90deg, ${colors.join(', ')})`);
-          // text on the filled tile: dark on bright gradients, white on dark ones
-          const luminances = colors.map(hexLuminance).filter(l => l !== null);
-          const averageLuminance = luminances.length ? luminances.reduce((a, b) => a + b, 0) / luminances.length : 0;
-          subbutton.style.setProperty('--sbo-scene-ink', averageLuminance > 0.35 ? '#2a1a0c' : '#ffffff');
-        }
 
         // pickup pill: shows the most urgent due collection ("<name> heute/morgen"),
         // further due collections only as "+n"; hidden while nothing is due
@@ -790,43 +573,6 @@ sbo_graphite:
           return;
         subbutton.classList.toggle('bubble-sub-button-selected', checkConditionsMet([].concat(conditions), hass));
       };
-
-      // room card
-      if (config.appearance?.room_card)
-      {
-        const container = card.querySelector(`.bubble-container`);
-        if (container)
-        {
-          container.classList.add(`sbo-room-card`);
-          // optional number of scene columns (default 4 from the CSS)
-          const sceneColumns = Number(config.appearance?.scene_columns);
-          if (sceneColumns > 0)
-            container.style.setProperty('--sbo-scene-columns', String(Math.round(sceneColumns)));
-          else
-            container.style.removeProperty('--sbo-scene-columns');
-
-          // empty status: a template that renders nothing makes Bubble fall back to the raw state
-          // (e.g. "0" lights); hide the status in that case (re-checked whenever Bubble changes the text)
-          const stateElement = container.querySelector(`.bubble-state`);
-          const entityId = this.config?.entity;
-          if (stateElement && entityId)
-          {
-            const markEmptyState = () => {
-              const stateObj = hass.states[entityId];
-              const text = stateElement.textContent.trim();
-              const rawTexts = stateObj ? [String(stateObj.state), String(hass.formatEntityState?.(stateObj) ?? '')] : [];
-              container.classList.toggle(`sbo-state-empty`, !text || rawTexts.includes(text));
-            };
-            markEmptyState();
-            stateElement.sboMarkEmptyState = markEmptyState;
-            if (!stateElement.sboStateObserver)
-            {
-              stateElement.sboStateObserver = new MutationObserver(() => stateElement.sboMarkEmptyState?.());
-              stateElement.sboStateObserver.observe(stateElement, { childList: true, characterData: true, subtree: true });
-            }
-          }
-        }
-      }
 
       // right click (e.g. to open the inspector) must not trigger the card actions:
       // secondary mouse buttons are stopped before they reach Bubble's action handlers
@@ -965,24 +711,11 @@ sbo_graphite:
       icon: mdi:palette
       expanded: false
       schema:
-        - name: room_card
-          label: Show as room card
-          selector:
-            boolean: {}
-          default: false
         - name: clock_card
           label: Show as clock card (status pills, time, date)
           selector:
             boolean: {}
           default: false
-        - name: scene_columns
-          label: Scene columns in the room card (default 4)
-          selector:
-            number:
-              min: 1
-              max: 6
-              step: 1
-              mode: box
     - type: expandable
       name: subbuttons
       title: Sub-button configuration
@@ -1031,8 +764,3 @@ sbo_graphite:
                   label: Pickup pill preview (show as due, for testing)
                   selector:
                     boolean: {}
-                gradient_colors:
-                  label: Gradient colors (scene tile)
-                  selector:
-                    text:
-                      multiple: true

@@ -20,11 +20,21 @@ export interface PanelChipConfig {
   tap_action?: ActionConfig | "none";
 }
 
+// round button on the right of the header (e.g. "lights off", settings); highlighted while active
+export interface PanelButtonConfig {
+  icon?: string;
+  entity?: string;
+  name?: string;
+  active?: ValueCondition;
+  tap_action?: ActionConfig;
+}
+
 export interface PanelConfig extends GraphiteCardConfig {
   title?: string;
   info?: string;
   info_alert?: ValueCondition;
   chips?: PanelChipConfig[];
+  buttons?: PanelButtonConfig[];
   layout: "vertical" | "horizontal" | "grid";
   columns?: number;
   min_column_width?: string;
@@ -66,9 +76,47 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     .header {
       display: flex;
       justify-content: flex-start;
-      align-items: baseline;
+      align-items: center;
       gap: var(--graphite-gap-header, 12px);
       margin-bottom: var(--graphite-gap-header, 12px);
+    }
+    /* title and info share one baseline; with buttons the row is as high as the buttons */
+    .heading {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: baseline;
+      gap: var(--graphite-gap-header, 12px);
+      min-width: 0;
+    }
+    .buttons {
+      display: flex;
+      flex: none;
+      gap: var(--graphite-gap-tile, 8px);
+    }
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: var(--graphite-radius-tile, 12px);
+      background: var(--graphite-surface-tile);
+      color: var(--graphite-text-secondary);
+      cursor: pointer;
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+      --mdc-icon-size: 18px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .button:focus-visible {
+      outline: 2px solid var(--graphite-accent);
+      outline-offset: 2px;
+    }
+    .button.active {
+      background: var(--graphite-accent);
+      color: var(--graphite-accent-ink);
     }
     .title {
       flex: none;
@@ -119,7 +167,6 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       display: flex;
       gap: var(--graphite-chip-gap, 6px);
       flex: none;
-      margin-left: auto;
       align-self: center;
       margin-block: -2px;
     }
@@ -233,6 +280,10 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
 
   protected watchedEntities(): string[] {
     const entities = this.chipConfigs().map((chip) => chip.entity);
+    for (const button of this.buttonConfigs()) {
+      if (button.entity) entities.push(button.entity);
+      if (button.active?.entity) entities.push(button.active.entity);
+    }
     if (this.config?.info_alert?.entity) entities.push(this.config.info_alert.entity);
     return entities;
   }
@@ -245,6 +296,32 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.unsubscribeInfo();
+  }
+
+  private buttonConfigs(): PanelButtonConfig[] {
+    return Array.isArray(this.config?.buttons) ? this.config!.buttons.filter((button) => button && (button.icon || button.entity)) : [];
+  }
+
+  // default: a scene is activated, other entities open more-info
+  private buttonClick(event: Event, button: PanelButtonConfig): void {
+    event.stopPropagation();
+    const entity = button.entity;
+    const fallback: ActionConfig = entity?.startsWith("scene.")
+      ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: entity } }
+      : { action: entity ? "more-info" : "none" };
+    fireAction(this, { type: "button", entity, tap_action: button.tap_action ?? fallback }, "tap");
+  }
+
+  private renderButton(button: PanelButtonConfig) {
+    const activeState = button.active?.entity ? this.hass?.states[button.active.entity]?.state
+      : button.entity ? this.hass?.states[button.entity]?.state : undefined;
+    const stateObj = button.entity ? this.hass?.states[button.entity] : undefined;
+    const icon = button.icon
+      ? html`<ha-icon .icon=${button.icon}></ha-icon>`
+      : html`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
+    return html`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
+      aria-label=${label} @click=${(event: Event) => this.buttonClick(event, button)}>${icon}</button>`;
   }
 
   private chipConfigs(): PanelChipConfig[] {
@@ -349,7 +426,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const info = isTemplate(config.info) ? this.infoText : config.info || "";
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : undefined;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
-    const showHeader = !!(config.title || config.info || chips.length);
+    const buttons = this.buttonConfigs();
+    const showHeader = !!(config.title || config.info || chips.length || buttons.length);
     // columns and min_column_width apply to this panel only (set on this panel only, not inherited)
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;
@@ -361,7 +439,9 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
     return html`<ha-card style=${cardStyle}>${showHeader
-      ? html`<div class="header"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span><span class="chips">${chips.map((chip) => this.renderChip(chip))}</span></div>`
+      ? html`<div class="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
+        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length ? html`<span class="buttons">${buttons
+        .map((button) => this.renderButton(button))}</span>` : nothing}</div>`
       : nothing}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
   }
 

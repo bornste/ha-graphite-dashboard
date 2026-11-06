@@ -26,7 +26,8 @@
       "gap": "Abstand zwischen Karten (z.B. 8px)",
       "padding": "Innenabstand (z.B. 16px)",
       "min_column_width": "Mindestbreite pro Spalte (nur Raster, z.B. 380px – bricht auf schmalen Bildschirmen um)",
-      "frame": "Panel-Fläche anzeigen (aus = nur Layout-Container)"
+      "frame": "Panel-Fläche anzeigen (aus = nur Layout-Container)",
+      "buttons": "Knöpfe rechts im Kopf (Liste: icon, entity, name, active, tap_action)"
     }
   },
   "rows": {
@@ -295,6 +296,18 @@
         "hide": "Ausblenden (nur der Kopf)"
       },
       "show_sliders": "Regler anzeigen"
+    }
+  },
+  "scene": {
+    "editor": {
+      "entity": "Szene (oder andere Entität)",
+      "name": "Name",
+      "icon": "Icon (Wasserzeichen)",
+      "colors": "Farben des Verlaufs (Liste, z.B. [\"#f5c48a\", \"#e89a5c\"])",
+      "active": "Aktiv wenn (z.B. {entity: input_select.wohnzimmer_szenen, state: Relax})",
+      "tap_action": "Aktion beim Tippen (Standard: Szene aktivieren)",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen"
     }
   }
 }

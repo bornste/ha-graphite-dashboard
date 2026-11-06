@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.19.8";
+var version = "0.20.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -580,7 +580,8 @@ var de_default = {
       gap: "Abstand zwischen Karten (z.B. 8px)",
       padding: "Innenabstand (z.B. 16px)",
       min_column_width: "Mindestbreite pro Spalte (nur Raster, z.B. 380px \u2013 bricht auf schmalen Bildschirmen um)",
-      frame: "Panel-Fl\xE4che anzeigen (aus = nur Layout-Container)"
+      frame: "Panel-Fl\xE4che anzeigen (aus = nur Layout-Container)",
+      buttons: "Kn\xF6pfe rechts im Kopf (Liste: icon, entity, name, active, tap_action)"
     }
   },
   rows: {
@@ -850,6 +851,18 @@ var de_default = {
       },
       show_sliders: "Regler anzeigen"
     }
+  },
+  scene: {
+    editor: {
+      entity: "Szene (oder andere Entit\xE4t)",
+      name: "Name",
+      icon: "Icon (Wasserzeichen)",
+      colors: 'Farben des Verlaufs (Liste, z.B. ["#f5c48a", "#e89a5c"])',
+      active: "Aktiv wenn (z.B. {entity: input_select.wohnzimmer_szenen, state: Relax})",
+      tap_action: "Aktion beim Tippen (Standard: Szene aktivieren)",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -882,7 +895,8 @@ var en_default = {
       gap: "Gap between cards (e.g. 8px)",
       padding: "Padding (e.g. 16px)",
       min_column_width: "Minimum column width (grid only, e.g. 380px \u2013 wraps on narrow screens)",
-      frame: "Show panel surface (off = layout container only)"
+      frame: "Show panel surface (off = layout container only)",
+      buttons: "Buttons on the right of the header (list: icon, entity, name, active, tap_action)"
     }
   },
   rows: {
@@ -1151,6 +1165,18 @@ var en_default = {
         hide: "Hide (head only)"
       },
       show_sliders: "Show sliders"
+    }
+  },
+  scene: {
+    editor: {
+      entity: "Scene (or another entity)",
+      name: "Name",
+      icon: "Icon (watermark)",
+      colors: 'Gradient colors (list, e.g. ["#f5c48a", "#e89a5c"])',
+      active: "Active when (e.g. {entity: input_select.living_room_scenes, state: Relax})",
+      tap_action: "Tap action (default: activate the scene)",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
     }
   }
 };
@@ -1506,7 +1532,8 @@ function editorSchema(language) {
     },
     // the object selector renders a YAML editor
     { name: "info_alert", selector: { object: {} } },
-    { name: "chips", selector: { object: {} } }
+    { name: "chips", selector: { object: {} } },
+    { name: "buttons", selector: { object: {} } }
   ];
 }
 var objectKeys = ["info_alert"];
@@ -1632,6 +1659,10 @@ var GraphitePanel = class extends GraphiteCard {
   }
   watchedEntities() {
     const entities = this.chipConfigs().map((chip) => chip.entity);
+    for (const button of this.buttonConfigs()) {
+      if (button.entity) entities.push(button.entity);
+      if (button.active?.entity) entities.push(button.active.entity);
+    }
     if (this.config?.info_alert?.entity) entities.push(this.config.info_alert.entity);
     return entities;
   }
@@ -1642,6 +1673,24 @@ var GraphitePanel = class extends GraphiteCard {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.unsubscribeInfo();
+  }
+  buttonConfigs() {
+    return Array.isArray(this.config?.buttons) ? this.config.buttons.filter((button) => button && (button.icon || button.entity)) : [];
+  }
+  // default: a scene is activated, other entities open more-info
+  buttonClick(event, button) {
+    event.stopPropagation();
+    const entity = button.entity;
+    const fallback = entity?.startsWith("scene.") ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: entity } } : { action: entity ? "more-info" : "none" };
+    fireAction(this, { type: "button", entity, tap_action: button.tap_action ?? fallback }, "tap");
+  }
+  renderButton(button) {
+    const activeState = button.active?.entity ? this.hass?.states[button.active.entity]?.state : button.entity ? this.hass?.states[button.entity]?.state : void 0;
+    const stateObj = button.entity ? this.hass?.states[button.entity] : void 0;
+    const icon = button.icon ? b2`<ha-icon .icon=${button.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
+    return b2`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
+      aria-label=${label} @click=${(event) => this.buttonClick(event, button)}>${icon}</button>`;
   }
   chipConfigs() {
     return Array.isArray(this.config?.chips) ? this.config.chips.filter((chip) => chip?.entity) : [];
@@ -1731,7 +1780,8 @@ var GraphitePanel = class extends GraphiteCard {
     const info = isTemplate(config.info) ? this.infoText : config.info || "";
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : void 0;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
-    const showHeader = !!(config.title || config.info || chips.length);
+    const buttons = this.buttonConfigs();
+    const showHeader = !!(config.title || config.info || chips.length || buttons.length);
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;
     else if (config.columns) columns = `repeat(${Number(config.columns)}, minmax(0, 1fr))`;
@@ -1741,7 +1791,8 @@ var GraphitePanel = class extends GraphiteCard {
     ].filter(Boolean).join("; ");
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
-    return b2`<ha-card style=${cardStyle}>${showHeader ? b2`<div class="header"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span><span class="chips">${chips.map((chip) => this.renderChip(chip))}</span></div>` : A}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
+    return b2`<ha-card style=${cardStyle}>${showHeader ? b2`<div class="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
+        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}</span>` : A}</div>` : A}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
   }
   getCardSize() {
     return 1 + this.childCards.length;
@@ -1791,9 +1842,47 @@ GraphitePanel.styles = i`
     .header {
       display: flex;
       justify-content: flex-start;
-      align-items: baseline;
+      align-items: center;
       gap: var(--graphite-gap-header, 12px);
       margin-bottom: var(--graphite-gap-header, 12px);
+    }
+    /* title and info share one baseline; with buttons the row is as high as the buttons */
+    .heading {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: baseline;
+      gap: var(--graphite-gap-header, 12px);
+      min-width: 0;
+    }
+    .buttons {
+      display: flex;
+      flex: none;
+      gap: var(--graphite-gap-tile, 8px);
+    }
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: var(--graphite-radius-tile, 12px);
+      background: var(--graphite-surface-tile);
+      color: var(--graphite-text-secondary);
+      cursor: pointer;
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+      --mdc-icon-size: 18px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .button:focus-visible {
+      outline: 2px solid var(--graphite-accent);
+      outline-offset: 2px;
+    }
+    .button.active {
+      background: var(--graphite-accent);
+      color: var(--graphite-accent-ink);
     }
     .title {
       flex: none;
@@ -1844,7 +1933,6 @@ GraphitePanel.styles = i`
       display: flex;
       gap: var(--graphite-chip-gap, 6px);
       flex: none;
-      margin-left: auto;
       align-self: center;
       margin-block: -2px;
     }
@@ -4194,6 +4282,130 @@ registerCard("graphite-pickup", GraphitePickup, {
   aliases: ["graphite-pickup-tile"],
   name: "Graphite Pickup",
   description: "Next waste collection of a calendar entity; today and tomorrow are highlighted."
+});
+
+// src/cards/tiles/graphite-scene-editor.ts
+var GraphiteSceneEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "scene.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+        ]
+      },
+      { name: "colors", selector: { object: {} } },
+      { name: "active", selector: { object: {} } },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+};
+
+// src/cards/tiles/graphite-scene.ts
+var sceneStyles = i`
+  .tile.scene {
+    height: var(--graphite-tile-height-scene, 64px);
+  }
+  .tile.scene .stripe {
+    background: var(--scene-gradient, var(--graphite-accent));
+  }
+  /* active: the whole tile in the scene colors */
+  .tile.scene.active {
+    background: var(--scene-gradient, var(--graphite-accent));
+  }
+  .tile.scene.active .name {
+    font-weight: 500;
+    color: var(--scene-ink);
+  }
+  .tile.scene.active .stripe {
+    background: color-mix(in srgb, var(--scene-ink) 60%, transparent);
+  }
+  .tile.scene.active .watermark {
+    color: var(--scene-ink);
+    opacity: 0.3;
+  }
+`;
+function luminanceOf(color) {
+  const hex = color.trim().replace("#", "");
+  if (hex.length !== 6) return null;
+  const channels = [0, 2, 4].map((start) => parseInt(hex.substring(start, start + 2), 16) / 255);
+  if (channels.some((channel) => Number.isNaN(channel))) return null;
+  const linear = channels.map((channel) => channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4));
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+var GraphiteScene = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    const tapAction = config.entity.startsWith("scene.") ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: config.entity } } : { action: "more-info" };
+    return { tap_action: tapAction, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    return config.active?.entity ? [config.entity, config.active.entity] : [config.entity];
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.hass?.states[config.entity];
+    const colors = (Array.isArray(config.colors) ? config.colors : []).map((color) => String(color).trim()).filter(Boolean);
+    const gradient = colors.length > 1 ? `linear-gradient(90deg, ${colors.join(", ")})` : colors[0] ?? "";
+    const luminances = colors.map(luminanceOf).filter((value) => value !== null);
+    const average = luminances.length ? luminances.reduce((sum, value) => sum + value, 0) / luminances.length : 0;
+    const ink = average > 0.35 ? "#2a1a0c" : "#ffffff";
+    const activeState = config.active?.entity ? this.hass?.states[config.active.entity]?.state : stateObj?.state;
+    const active = matchesCondition(config.active, activeState);
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    const classes = ["tile", "scene", active ? "active" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const style = [gradient ? `--scene-gradient: ${gradient}` : "", `--scene-ink: ${ink}`].filter(Boolean).join("; ");
+    const icon = config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    return b2`<div class=${classes} style=${style} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}
+      aria-label=${name} aria-pressed=${active ? "true" : "false"}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+      class="stripe"></div><div class="watermark">${icon}</div><div class="name">${name}</div></div>`;
+  }
+  getCardSize() {
+    return 1;
+  }
+  getGridOptions() {
+    return { columns: 3, rows: "auto", min_columns: 2 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("scene.")) ?? "";
+    return { entity, colors: ["#f5c48a", "#e89a5c", "#c9733f"] };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-scene-editor");
+  }
+};
+GraphiteScene.styles = [tileStyles, labelStyles, sceneStyles];
+registerElement("graphite-scene-editor", GraphiteSceneEditor);
+registerCard("graphite-scene", GraphiteScene, {
+  name: "Graphite Scene",
+  description: "Scene as a tile: color stripe and watermark, filled with the scene colors while active."
 });
 
 // src/core/calendar.ts

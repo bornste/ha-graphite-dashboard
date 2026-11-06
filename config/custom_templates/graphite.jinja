@@ -1,4 +1,5 @@
-{# Status text for room cards: number of lights that are on (numeric sensor);
+{# Graphite macros (import with: from 'graphite.jinja' import lightStatus).
+   Status text for room panels: number of lights that are on (numeric sensor);
    all off returns nothing (normal state, the card hides the empty status) #}
 {%- macro lightStatus(entityId) -%}
   {%- set lightCount = states(entityId) | int(-1) -%}

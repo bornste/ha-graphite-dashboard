@@ -36,6 +36,7 @@ function editorSchema(language: string) {
     // the object selector renders a YAML editor
     { name: "info_alert", selector: { object: {} } },
     { name: "chips", selector: { object: {} } },
+    { name: "buttons", selector: { object: {} } },
   ];
 }
 

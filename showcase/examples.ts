@@ -35,6 +35,13 @@ export const sampleStates: Record<string, any> = {
   "light.floor_lamp": entity("light.floor_lamp", "on", { friendly_name: "Floor lamp", brightness: 158, color_mode: "color_temp",
     supported_color_modes: ["color_temp", "hs"], color_temp_kelvin: 3200, min_color_temp_kelvin: 2000, max_color_temp_kelvin: 6500,
     hs_color: [32, 45] }, 42),
+  "scene.living_room_default": entity("scene.living_room_default", "2026-11-06T18:00:00", { friendly_name: "Default", icon: "mdi:lamps-outline" }, 120),
+  "scene.living_room_bright": entity("scene.living_room_bright", "2026-11-06T18:00:00", { friendly_name: "Bright", icon: "mdi:white-balance-sunny" }, 120),
+  "scene.living_room_relax": entity("scene.living_room_relax", "2026-11-06T18:00:00", { friendly_name: "Relax", icon: "mdi:sofa-outline" }, 120),
+  "scene.living_room_tv": entity("scene.living_room_tv", "2026-11-06T18:00:00", { friendly_name: "TV", icon: "mdi:television" }, 120),
+  "scene.living_room_off": entity("scene.living_room_off", "2026-11-06T18:00:00", { friendly_name: "Lights off", icon: "mdi:power" }, 120),
+  "input_select.living_room_scenes": entity("input_select.living_room_scenes", "Relax", { friendly_name: "Living room scene" }, 30),
+  "sensor.living_room_lights_on": entity("sensor.living_room_lights_on", "2", { friendly_name: "Lights on" }, 30),
   "input_number.play_time_weekend": entity("input_number.play_time_weekend", "120", { friendly_name: "Play time weekend",
     min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
   "input_number.play_time_weekday": entity("input_number.play_time_weekday", "60", { friendly_name: "Play time weekday",
@@ -587,6 +594,35 @@ export function examples(language: string): ShowcaseSection[] {
             cards: [
               { type: "custom:graphite-light", entity: "light.floor_lamp" },
               { type: "custom:graphite-light", entity: "light.ceiling_lamp", wall_switch: true },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-scene",
+      description: `Scene as a tile; several of them with header buttons in a graphite-panel make a room.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-scene.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Room (panel with buttons and scenes)",
+          note: "Relax is active (filled), two lights are on: status and the lights-off button are highlighted.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Wohnen" : "Living room",
+            info: german ? "2 Lichter an" : "2 lights on",
+            info_alert: { entity: "sensor.living_room_lights_on", above: 0 },
+            buttons: [
+              { entity: "scene.living_room_off", name: german ? "Licht aus" : "Lights off", active: { entity: "sensor.living_room_lights_on", above: 0 } },
+              { icon: "mdi:tune-variant", name: german ? "Einstellungen" : "Settings", tap_action: { action: "none" } },
+            ],
+            layout: "grid",
+            columns: 4,
+            cards: [
+              { type: "custom:graphite-scene", entity: "scene.living_room_default", name: "Standard", colors: ["#f5c48a", "#e89a5c", "#c9733f"], active: { entity: "input_select.living_room_scenes", state: "Standard" } },
+              { type: "custom:graphite-scene", entity: "scene.living_room_bright", name: german ? "Hell" : "Bright", colors: ["#f4a93c", "#ffd166", "#ffe9a8"], active: { entity: "input_select.living_room_scenes", state: "Hell" } },
+              { type: "custom:graphite-scene", entity: "scene.living_room_relax", name: "Relax", colors: ["#ff9a3c", "#ff6f61", "#b8478a"], active: { entity: "input_select.living_room_scenes", state: "Relax" } },
+              { type: "custom:graphite-scene", entity: "scene.living_room_tv", name: "TV", colors: ["#1e3cff", "#4b6bff", "#9a7bff"], active: { entity: "input_select.living_room_scenes", state: "TV" } },
             ],
           },
         },
