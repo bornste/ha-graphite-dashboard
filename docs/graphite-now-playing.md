@@ -1,7 +1,8 @@
 # graphite-now-playing
 
-What runs on the most important media device: cover or app image on the left (a calm monogram
-without one), title, a second line with details and the running time, a progress bar for media with
+What runs on the most important media device, in the pattern of the label tiles: cover or app
+image on the left (a calm monogram without one), the device as label (13px), the title as value
+(20px / 300), a line with details and the running time, a progress bar for media with
 a duration and the source icon as watermark top right. The sources are checked in order and the
 first one that runs is shown, so the order sets the priority (e.g. a game before a console home
 screen before the TV). Without a running source the card hides itself. Display only, no actions.
@@ -16,8 +17,7 @@ sources:
     name: Console
     icon: mdi:controller
     states: [idle]
-    fallback_title: Console
-    fallback_subtitle: Startseite
+    fallback_title: Startseite
   - entity: media_player.tv
     name: TV
     icon: mdi:television
@@ -29,7 +29,7 @@ sources:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `entity` | entity id | required | Media player, binary sensor or any entity whose state says that it runs. |
-| `name` | string | friendly name | Name for screen readers. |
+| `name` | string | friendly name | Label above the title (the device, e.g. "XBOX"). |
 | `icon` | icon | entity icon | Watermark top right. |
 | `states` | list | `on`, `playing`, `paused`, `buffering` | States that count as running, e.g. `[idle]` for a console menu. |
 | `requires` | entity id or list | – | Entities that must run too (e.g. the console next to a profile sensor). |
@@ -39,7 +39,7 @@ sources:
 | `subtitle` | text | – | Second line from attributes of the title entity, e.g. `"{progress} abgeschlossen ({gamerscore})"`; left out while a placeholder has no value. |
 | `titles` | map | – | Readable names for raw titles or app names, e.g. `{ Home: Startbildschirm }`. A title listed here is shown even if it is ignored otherwise. |
 | `ignore_titles` | list | `off`, `standby`, `home`, `screensaver`, `unknown`, `unavailable` | Titles that do not count. |
-| `fallback_title` | text | – | Shown when the source runs without a usable title (e.g. a console home screen). Without it such a source is skipped. |
+| `fallback_title` | text | – | Title when the source runs without a usable one (e.g. "Startseite" for a console home screen). Without it such a source is skipped. |
 | `fallback_subtitle` | text | – | Second line next to the fallback title, e.g. "Startseite". |
 | `backdrop` | boolean | `true` | Cover as blurred, dimmed background of the card. |
 

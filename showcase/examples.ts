@@ -643,7 +643,7 @@ export function examples(language: string): ShowcaseSection[] {
             cards: [
               { type: "custom:graphite-now-playing", sources: [
                 { entity: "media_player.game_console", name: "Console", icon: "mdi:controller" },
-                { entity: "media_player.game_console", name: "Console", icon: "mdi:controller", states: ["idle"], fallback_title: "Console", fallback_subtitle: "Startseite" },
+                { entity: "media_player.game_console", name: "Console", icon: "mdi:controller", states: ["idle"], fallback_title: "Startseite" },
               ] },
             ],
           },

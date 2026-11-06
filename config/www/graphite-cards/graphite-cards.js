@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.21.4";
+var version = "0.22.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -4633,7 +4633,7 @@ var GraphiteNowPlaying = class extends GraphiteCard {
     return b2`<div class=${backdrop ? "card has-backdrop" : "card"} aria-label=${label}><div class="backdrop"
       style=${backdrop ? `background-image: url("${image}")` : A}></div><div class="watermark"><ha-icon
       .icon=${source.icon ?? attributes.icon ?? "mdi:play-circle-outline"}></ha-icon></div><div class=${image ? "art has-image" : "art"}
-      style=${`--art-color: ${this.monogramColor(title)};${image ? ` background-image: url("${image}")` : ""}`}>${image ? "" : title.charAt(0).toUpperCase()}</div><div class="text"><div class="title">${title}</div><div class="subtitle">${subtitle}</div>${progress ? b2`<div class="progress"><div style=${`width: ${progress.percent}%`}></div></div>` : A}</div></div>`;
+      style=${`--art-color: ${this.monogramColor(title)};${image ? ` background-image: url("${image}")` : ""}`}>${image ? "" : title.charAt(0).toUpperCase()}</div><div class="text"><div class="label">${source.name ?? attributes.friendly_name ?? source.entity}</div><div class="title">${title}</div><div class="subtitle">${subtitle}</div>${progress ? b2`<div class="progress"><div style=${`width: ${progress.percent}%`}></div></div>` : A}</div></div>`;
   }
   getCardSize() {
     return 2;
@@ -4661,7 +4661,7 @@ GraphiteNowPlaying.styles = i`
       position: relative;
       display: grid;
       grid-template-columns: var(--graphite-tile-height-scene, 64px) minmax(0, 1fr);
-      gap: var(--graphite-gap-header, 12px);
+      gap: 14px;
       align-items: center;
       box-sizing: border-box;
       min-height: var(--graphite-tile-height-media, 88px);
@@ -4689,7 +4689,7 @@ GraphiteNowPlaying.styles = i`
     .card.has-backdrop .backdrop {
       opacity: 1;
     }
-    .card.has-backdrop .subtitle {
+    .card.has-backdrop :is(.label, .subtitle) {
       color: rgba(255, 255, 255, 0.72);
     }
     @media (prefers-reduced-motion: reduce) {
@@ -4726,30 +4726,45 @@ GraphiteNowPlaying.styles = i`
       pointer-events: none;
       --mdc-icon-size: var(--graphite-watermark-size, 34px);
     }
+    /* text column as high as the cover (like Dreamie): label at its top, details at its bottom,
+       the free space sits between label and title */
     .text {
       min-width: 0;
+      height: var(--graphite-tile-height-scene, 64px);
+      display: flex;
+      flex-direction: column;
       padding-right: 32px;
     }
+    .label {
+      font-size: var(--graphite-font-label-size, 13px);
+      line-height: 13px;
+      color: var(--graphite-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .title {
-      font-size: var(--graphite-font-name-size, 15px);
-      font-weight: 500;
-      line-height: 18px;
+      margin-top: auto;
+      font-size: var(--graphite-font-value-text-size, 20px);
+      font-weight: var(--graphite-font-value-weight, 300);
+      line-height: 1.1;
       color: var(--graphite-text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .subtitle {
-      margin-top: 2px;
+      margin-top: 3px;
       font-size: var(--graphite-font-caption-size, 12px);
-      line-height: 15px;
+      line-height: 12px;
       color: var(--graphite-text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .progress {
-      margin-top: 8px;
+      flex: none;
+      margin-top: 6px;
       height: 4px;
       border-radius: 2px;
       background: var(--graphite-surface-tile);
