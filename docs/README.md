@@ -21,6 +21,7 @@ the special cases – also for cards with a visual editor.
 | graphite-slider | inline, row | [graphite-slider.md](graphite-slider.md) | ready |
 | graphite-light | tile | [graphite-light.md](graphite-light.md) | ready |
 | graphite-scene | tile | [graphite-scene.md](graphite-scene.md) | ready |
+| graphite-now-playing | tile | [graphite-now-playing.md](graphite-now-playing.md) | ready |
 
 Cards with more than one look have a `layout` option (`row` or `tile`), so you can switch between
 them without changing the card type. The editor only shows it where there is a choice. The former

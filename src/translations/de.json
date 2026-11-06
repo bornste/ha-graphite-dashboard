@@ -309,5 +309,15 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen"
     }
+  },
+  "nowPlaying": {
+    "justStarted": "gerade gestartet",
+    "sinceMinutes": "seit {minutes} Min.",
+    "sinceHours": "seit {hours}:{minutes} h",
+    "paused": "pausiert",
+    "remaining": "noch {minutes} Min.",
+    "editor": {
+      "sources": "Quellen in Reihenfolge der Priorität (Liste: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
+    }
   }
 }

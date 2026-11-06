@@ -42,6 +42,7 @@ export const sampleStates: Record<string, any> = {
   "scene.living_room_off": entity("scene.living_room_off", "2026-11-06T18:00:00", { friendly_name: "Lights off", icon: "mdi:power" }, 120),
   "input_select.living_room_scenes": entity("input_select.living_room_scenes", "Relax", { friendly_name: "Living room scene" }, 30),
   "sensor.living_room_lights_on": entity("sensor.living_room_lights_on", "2", { friendly_name: "Lights on" }, 30),
+  "media_player.game_console": entity("media_player.game_console", "playing", { friendly_name: "Game console", media_title: "Star Voyager", media_content_type: "game" }, 75),
   "input_number.play_time_weekend": entity("input_number.play_time_weekend", "120", { friendly_name: "Play time weekend",
     min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
   "input_number.play_time_weekday": entity("input_number.play_time_weekday", "60", { friendly_name: "Play time weekday",
@@ -623,6 +624,27 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-scene", entity: "scene.living_room_bright", name: german ? "Hell" : "Bright", colors: ["#f4a93c", "#ffd166", "#ffe9a8"], active: { entity: "input_select.living_room_scenes", state: "Hell" } },
               { type: "custom:graphite-scene", entity: "scene.living_room_relax", name: "Relax", colors: ["#ff9a3c", "#ff6f61", "#b8478a"], active: { entity: "input_select.living_room_scenes", state: "Relax" } },
               { type: "custom:graphite-scene", entity: "scene.living_room_tv", name: "TV", colors: ["#1e3cff", "#4b6bff", "#9a7bff"], active: { entity: "input_select.living_room_scenes", state: "TV" } },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-now-playing",
+      description: `What runs on the most important media device; the order of the sources sets the priority.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-now-playing.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Console with a game",
+          note: "Title from the console, monogram without a cover, running time from the history.",
+          config: {
+            type: "custom:graphite-panel",
+            title: "Multimedia",
+            cards: [
+              { type: "custom:graphite-now-playing", sources: [
+                { entity: "media_player.game_console", name: "Console", icon: "mdi:controller" },
+                { entity: "media_player.game_console", name: "Console", icon: "mdi:controller", states: ["idle"], fallback_title: "Console", fallback_subtitle: "Startseite" },
+              ] },
             ],
           },
         },
