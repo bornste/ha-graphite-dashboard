@@ -43,6 +43,13 @@ export const sampleStates: Record<string, any> = {
   "input_select.living_room_scenes": entity("input_select.living_room_scenes", "Relax", { friendly_name: "Living room scene" }, 30),
   "sensor.living_room_lights_on": entity("sensor.living_room_lights_on", "2", { friendly_name: "Lights on" }, 30),
   "media_player.game_console": entity("media_player.game_console", "playing", { friendly_name: "Game console", media_title: "Star Voyager", media_content_type: "game" }, 75),
+  "vacuum.robot": entity("vacuum.robot", "cleaning", { friendly_name: "Robot", battery: 76, cleaning_mode: "Mopping after sweeping", cleaning_progress: 42, cleaned_area: 18,
+    started: true, running: true, current_segment: 2, selected_map: "home", clean_water_tank_status: "installed", dirty_water_tank_status: "installed", dust_bag_status: "installed",
+    main_brush_left: 64, main_brush_time_left: 192, side_brush_left: 38, side_brush_time_left: 76, filter_left: 8, filter_time_left: 12, sensor_dirty_left: 71, sensor_dirty_time_left: 21,
+    rooms: { home: [{ id: 1, name: "Kitchen" }, { id: 2, name: "Living room" }, { id: 3, name: "Bathroom" }, { id: 4, name: "Hall" }] } }, 25),
+  "select.robot_cleaning_mode": entity("select.robot_cleaning_mode", "mopping_after_sweeping"),
+  "select.robot_suction_level": entity("select.robot_suction_level", "standard"),
+  "switch.robot_max_suction_power": entity("switch.robot_max_suction_power", "off"),
   "input_number.play_time_weekend": entity("input_number.play_time_weekend", "120", { friendly_name: "Play time weekend",
     min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
   "input_number.play_time_weekday": entity("input_number.play_time_weekday", "60", { friendly_name: "Play time weekday",
@@ -646,6 +653,34 @@ export function examples(language: string): ShowcaseSection[] {
                 { entity: "media_player.game_console", name: "Console", icon: "mdi:controller", states: ["idle"], fallback_title: "Startseite" },
               ] },
             ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-vacuum",
+      description: `Robot vacuum (Dreame) as animated tile and as panel for the pop-up.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-vacuum.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Tile while cleaning",
+          note: "Current room as value, mode and progress below, pause as quick control.",
+          config: { type: "custom:graphite-vacuum", entity: "vacuum.robot" },
+        },
+        {
+          title: "Panel",
+          note: "Quick picks, mode, suction, rooms and station with maintenance.",
+          config: {
+            type: "custom:graphite-vacuum",
+            entity: "vacuum.robot",
+            layout: "panel",
+            rooms: [
+              { id: 1, name: "Kitchen", icon: "mdi:chef-hat" },
+              { id: 2, name: "Living room", icon: "mdi:sofa-outline" },
+              { id: 3, name: "Bathroom", icon: "mdi:toilet" },
+              { id: 4, name: "Hall", icon: "mdi:foot-print" },
+            ],
+            presets: [{ name: "Kitchen", icon: "mdi:chef-hat", rooms: ["Kitchen"], mode: "mopping_after_sweeping" }],
           },
         },
       ],

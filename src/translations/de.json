@@ -319,5 +319,114 @@
     "editor": {
       "sources": "Quellen in Reihenfolge der Priorität (Liste: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
     }
+  },
+  "vacuum": {
+    "room": "Raum {id}",
+    "roomMissing": "ID {id} gibt es auf der Karte nicht",
+    "roomChanged": "ID {id} ist jetzt «{name}»",
+    "roomNewId": "(neu ID {id})",
+    "roomIssuesTitle": "Raum-IDs passen nicht zur Karte",
+    "roomIssuesHint": "Diese Räume sind ausgeblendet, bis die IDs in der Karte angepasst sind.",
+    "minutes": "{minutes} Min.",
+    "hours": "{hours} Std.",
+    "hoursMinutes": "{hours} Std. {minutes} Min.",
+    "today": "heute {time}",
+    "yesterday": "gestern {time}",
+    "due": "{name} fällig",
+    "refillWater": "Wasser auffüllen",
+    "dirtyWater": "Schmutzwasser",
+    "freshWater": "Frischwasser",
+    "dustBag": "Staubbeutel",
+    "maintenanceCount": "{count} Wartungen fällig",
+    "battery": "Akku {battery} %",
+    "intermediateWash": "Zwischenwäsche",
+    "remaining": "noch {duration}",
+    "actionFailed": "Aktion fehlgeschlagen",
+    "resume": "Fortsetzen",
+    "pause": "Pausieren",
+    "cleaningTitle": "Reinigung",
+    "presetsTitle": "Kurzwahl",
+    "mode": "Modus",
+    "suction": "Saugkraft",
+    "boostActive": "{name} aktiv – maximale Saugkraft für diese Reinigung",
+    "boostHint": "{name}: maximale Saugkraft nur für diese Reinigung",
+    "rooms": "Räume",
+    "selectNone": "keine",
+    "selectAll": "alle wählen",
+    "cleanOneRoom": "1 Raum reinigen",
+    "cleanRooms": "{count} Räume reinigen",
+    "chooseRooms": "Räume wählen",
+    "toStation": "Zur Station",
+    "stationOk": "Station ok",
+    "lastCleaning": "zuletzt {time}",
+    "stationTitle": "Station & Wartung",
+    "confirmReset": "sicher?",
+    "reset": "zurücksetzen",
+    "states": {
+      "offline": "offline",
+      "error": "Fehler",
+      "returningToWash": "Fährt zum Waschen",
+      "washingPaused": "Mopp-Wäsche pausiert",
+      "washing": "Wäscht Mopp",
+      "returning": "Fährt zur Station",
+      "paused": "Pausiert",
+      "cleaning": "Reinigt",
+      "drying": "Trocknet Mopp",
+      "charging": "Lädt",
+      "ready": "Bereit"
+    },
+    "modes": {
+      "sweeping": "Saugen",
+      "mopping": "Wischen",
+      "sweeping_and_mopping": "Saugen + Wischen",
+      "mopping_after_sweeping": "Saugen, dann Wischen"
+    },
+    "suctionLevels": {
+      "quiet": "Leise",
+      "standard": "Standard",
+      "strong": "Stark",
+      "turbo": "Turbo"
+    },
+    "maintenance": {
+      "main_brush": "Hauptbürste",
+      "side_brush": "Seitenbürste",
+      "filter": "Filter",
+      "sensor_dirty": "Sensoren"
+    },
+    "maintenanceDue": {
+      "main_brush": "Hauptbürste ersetzen",
+      "side_brush": "Seitenbürste ersetzen",
+      "filter": "Filter ersetzen",
+      "sensor_dirty": "Sensoren reinigen"
+    },
+    "actions": {
+      "self_clean": "Mopp waschen",
+      "manual_drying": "Trocknen",
+      "base_station_cleaning": "Station reinigen",
+      "start_auto_empty": "Absaugen"
+    },
+    "station": {
+      "ok": "ok",
+      "missing": "fehlt",
+      "full": "voll",
+      "low": "niedrig",
+      "check": "prüfen",
+      "empty": "leer"
+    },
+    "editor": {
+      "entity": "Saugroboter",
+      "layout": "Layout",
+      "layouts": {
+        "tile": "Kachel",
+        "panel": "Panel"
+      },
+      "name": "Name",
+      "prefix": "Entitäts-Präfix (optional)",
+      "navigation_path": "Ziel beim Antippen",
+      "rooms": "Räume (YAML)",
+      "presets": "Kurzwahl (YAML)",
+      "maintenance_threshold": "Wartung fällig ab",
+      "boost": "Max+ anzeigen"
+    }
   }
 }

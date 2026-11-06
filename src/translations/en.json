@@ -319,5 +319,114 @@
     "editor": {
       "sources": "Sources in order of priority (list: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
     }
+  },
+  "vacuum": {
+    "room": "Room {id}",
+    "roomMissing": "ID {id} does not exist on the map",
+    "roomChanged": "ID {id} is now «{name}»",
+    "roomNewId": "(new ID {id})",
+    "roomIssuesTitle": "Room IDs do not match the map",
+    "roomIssuesHint": "These rooms stay hidden until the IDs in the card are updated.",
+    "minutes": "{minutes} min",
+    "hours": "{hours} h",
+    "hoursMinutes": "{hours} h {minutes} min",
+    "today": "today {time}",
+    "yesterday": "yesterday {time}",
+    "due": "{name} due",
+    "refillWater": "Refill water",
+    "dirtyWater": "Dirty water",
+    "freshWater": "Clean water",
+    "dustBag": "Dust bag",
+    "maintenanceCount": "{count} maintenance items due",
+    "battery": "Battery {battery} %",
+    "intermediateWash": "Intermediate wash",
+    "remaining": "{duration} left",
+    "actionFailed": "Action failed",
+    "resume": "Resume",
+    "pause": "Pause",
+    "cleaningTitle": "Cleaning",
+    "presetsTitle": "Quick picks",
+    "mode": "Mode",
+    "suction": "Suction",
+    "boostActive": "{name} on – maximum suction for this cleaning",
+    "boostHint": "{name}: maximum suction for this cleaning only",
+    "rooms": "Rooms",
+    "selectNone": "none",
+    "selectAll": "select all",
+    "cleanOneRoom": "Clean 1 room",
+    "cleanRooms": "Clean {count} rooms",
+    "chooseRooms": "Choose rooms",
+    "toStation": "To the station",
+    "stationOk": "Station ok",
+    "lastCleaning": "last {time}",
+    "stationTitle": "Station & maintenance",
+    "confirmReset": "sure?",
+    "reset": "reset",
+    "states": {
+      "offline": "offline",
+      "error": "Error",
+      "returningToWash": "Returning to wash",
+      "washingPaused": "Mop wash paused",
+      "washing": "Washing mop",
+      "returning": "Returning to station",
+      "paused": "Paused",
+      "cleaning": "Cleaning",
+      "drying": "Drying mop",
+      "charging": "Charging",
+      "ready": "Ready"
+    },
+    "modes": {
+      "sweeping": "Vacuum",
+      "mopping": "Mop",
+      "sweeping_and_mopping": "Vacuum + mop",
+      "mopping_after_sweeping": "Vacuum, then mop"
+    },
+    "suctionLevels": {
+      "quiet": "Quiet",
+      "standard": "Standard",
+      "strong": "Strong",
+      "turbo": "Turbo"
+    },
+    "maintenance": {
+      "main_brush": "Main brush",
+      "side_brush": "Side brush",
+      "filter": "Filter",
+      "sensor_dirty": "Sensors"
+    },
+    "maintenanceDue": {
+      "main_brush": "Replace main brush",
+      "side_brush": "Replace side brush",
+      "filter": "Replace filter",
+      "sensor_dirty": "Clean sensors"
+    },
+    "actions": {
+      "self_clean": "Wash mop",
+      "manual_drying": "Dry",
+      "base_station_cleaning": "Clean station",
+      "start_auto_empty": "Empty bin"
+    },
+    "station": {
+      "ok": "ok",
+      "missing": "missing",
+      "full": "full",
+      "low": "low",
+      "check": "check",
+      "empty": "empty"
+    },
+    "editor": {
+      "entity": "Robot vacuum",
+      "layout": "Layout",
+      "layouts": {
+        "tile": "Tile",
+        "panel": "Panel"
+      },
+      "name": "Name",
+      "prefix": "Entity prefix (optional)",
+      "navigation_path": "Tap target",
+      "rooms": "Rooms (YAML)",
+      "presets": "Quick picks (YAML)",
+      "maintenance_threshold": "Maintenance due at",
+      "boost": "Show Max+"
+    }
   }
 }
