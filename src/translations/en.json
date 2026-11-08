@@ -428,5 +428,31 @@
       "maintenance_threshold": "Maintenance due at",
       "boost": "Show Max+"
     }
+  },
+  "summary": {
+    "and": "and",
+    "calm": "All quiet.",
+    "pickupOne": "{names} is collected {when}",
+    "pickupMany": "{names} are collected {when}",
+    "when": {
+      "0": "today",
+      "1": "tomorrow",
+      "2": "the day after tomorrow"
+    },
+    "inDays": "in {days} days",
+    "greeting": {
+      "night": "Good night",
+      "morning": "Good morning",
+      "day": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "editor": {
+      "clock": "Show clock",
+      "greeting": "Show greeting",
+      "calm_text": "Text without messages (default: All quiet.)",
+      "and_word": "Word for “and”",
+      "items": "Items (YAML)",
+      "hold_action": "Hold action"
+    }
   }
 }

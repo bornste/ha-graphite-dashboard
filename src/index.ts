@@ -14,6 +14,7 @@ import "./cards/tiles/graphite-scene";
 import "./cards/media/graphite-now-playing";
 import "./cards/media/graphite-vacuum";
 import "./cards/lists/graphite-calendar";
+import "./cards/lists/graphite-summary";
 import "./cards/controls/graphite-slider";
 import "./cards/controls/graphite-light";
 

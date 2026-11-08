@@ -93,6 +93,8 @@ export const sampleStates: Record<string, any> = {
   "sensor.photo_printer_cyan": entity("sensor.photo_printer_cyan", "70", { friendly_name: "Cyan", unit_of_measurement: "%" }),
   "sensor.photo_printer_magenta": entity("sensor.photo_printer_magenta", "66", { friendly_name: "Magenta", unit_of_measurement: "%" }),
   "sensor.photo_printer_yellow": entity("sensor.photo_printer_yellow", "90", { friendly_name: "Yellow", unit_of_measurement: "%" }),
+  "sensor.open_windows": entity("sensor.open_windows", "1", { friendly_name: "Open windows" }),
+  "input_boolean.guest_mode": entity("input_boolean.guest_mode", "on", { friendly_name: "Guest mode", icon: "mdi:account-circle-outline" }),
   "calendar.paper_collection": entity("calendar.paper_collection", "off", { friendly_name: "Paper", message: "Paper" }),
   "calendar.cardboard_collection": entity("calendar.cardboard_collection", "off", { friendly_name: "Cardboard", message: "Cardboard" }),
   "calendar.school_homework": entity("calendar.school_homework", "off", { friendly_name: "Homework" }),
@@ -681,6 +683,27 @@ export function examples(language: string): ShowcaseSection[] {
               { id: 4, name: "Hall", icon: "mdi:foot-print" },
             ],
             presets: [{ name: "Kitchen", icon: "mdi:chef-hat", rooms: ["Kitchen"], mode: "mopping_after_sweeping" }],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-summary",
+      description: `Clock with date and the state of the home as prose; highlights are tappable.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-summary.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Alerts, pickup and a second line",
+          note: "Alerts first in the accent, the rest as second sentence, guest mode on its own line.",
+          config: {
+            type: "custom:graphite-summary",
+            items: [
+              { entity: "sensor.open_windows", alert: { above: 0 }, alert_text: "[{value} windows] are open", alert_text_one: "[1 window] is open", navigation_path: "#windows" },
+              { entity: "sensor.living_room_co2", levels: [{ above: 1499, text: "[open a window], CO₂ is at {value}" }, { above: 999, text: "time to [air out]" }] },
+              { pickup: ["calendar.paper_collection", "calendar.cardboard_collection"] },
+              { entity: "sensor.living_room_lights_on", show: { above: 0 }, text: "[{value} lights] are on", text_one: "[1 light] is on", navigation_path: "#lights" },
+              { entity: "input_boolean.guest_mode", alert: { state: "on" }, alert_text: "[{icon} guest mode] on", color: "success", line: 2 },
+            ],
           },
         },
       ],

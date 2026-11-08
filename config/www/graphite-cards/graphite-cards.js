@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.24.3";
+var version = "0.25.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -982,6 +982,32 @@ var de_default = {
       maintenance_threshold: "Wartung f\xE4llig ab",
       boost: "Max+ anzeigen"
     }
+  },
+  summary: {
+    and: "und",
+    calm: "Alles ruhig.",
+    pickupOne: "{names} wird {when} abgeholt",
+    pickupMany: "{names} werden {when} abgeholt",
+    when: {
+      "0": "heute",
+      "1": "morgen",
+      "2": "\xFCbermorgen"
+    },
+    inDays: "in {days} Tagen",
+    greeting: {
+      night: "Gute Nacht",
+      morning: "Guten Morgen",
+      day: "Guten Tag",
+      evening: "Guten Abend"
+    },
+    editor: {
+      clock: "Uhr anzeigen",
+      greeting: "Begr\xFCssung anzeigen",
+      calm_text: "Text ohne Meldungen (Standard: Alles ruhig.)",
+      and_word: "Wort f\xFCr \xABund\xBB",
+      items: "Eintr\xE4ge (YAML)",
+      hold_action: "Aktion beim Halten"
+    }
   }
 };
 
@@ -1415,6 +1441,32 @@ var en_default = {
       presets: "Quick picks (YAML)",
       maintenance_threshold: "Maintenance due at",
       boost: "Show Max+"
+    }
+  },
+  summary: {
+    and: "and",
+    calm: "All quiet.",
+    pickupOne: "{names} is collected {when}",
+    pickupMany: "{names} are collected {when}",
+    when: {
+      "0": "today",
+      "1": "tomorrow",
+      "2": "the day after tomorrow"
+    },
+    inDays: "in {days} days",
+    greeting: {
+      night: "Good night",
+      morning: "Good morning",
+      day: "Good afternoon",
+      evening: "Good evening"
+    },
+    editor: {
+      clock: "Show clock",
+      greeting: "Show greeting",
+      calm_text: "Text without messages (default: All quiet.)",
+      and_word: "Word for \u201Cand\u201D",
+      items: "Items (YAML)",
+      hold_action: "Hold action"
     }
   }
 };
@@ -2538,13 +2590,13 @@ var GraphiteRow = class extends GraphiteCard {
   render() {
     const config = this.config;
     const stateObj = this.hass?.states[config.entity];
-    const unavailable = this.unavailable(stateObj);
+    const unavailable2 = this.unavailable(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const since = this.sinceLine(stateObj);
     const interactive = this.isInteractive(stateObj);
     return b2`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : A}
       tabindex=${interactive ? "0" : A}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
-      class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj, unavailable)}<div
+      class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj, unavailable2)}<div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
   getCardSize() {
@@ -6666,6 +6718,396 @@ registerCard("graphite-calendar", GraphiteCalendar, {
   description: "Events of one or more calendars, grouped by day, with color and icon per calendar or keyword."
 });
 
+// src/cards/lists/graphite-summary-editor.ts
+var GraphiteSummaryEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "summary.editor";
+  }
+  defaults() {
+    return { clock: true, greeting: false };
+  }
+  schema() {
+    return [
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "clock", selector: { boolean: {} } },
+          { name: "greeting", selector: { boolean: {} } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "calm_text", selector: { text: {} } },
+          { name: "and_word", selector: { text: {} } }
+        ]
+      },
+      { name: "items", required: true, selector: { object: {} } },
+      { name: "hold_action", selector: { ui_action: {} } }
+    ];
+  }
+};
+
+// src/cards/lists/graphite-summary.ts
+var markColors = {
+  accent: "var(--graphite-accent, #f5c48a)",
+  success: "var(--graphite-success, #a8d5a2)",
+  danger: "var(--graphite-danger, #e8908a)"
+};
+var unavailable = ["unavailable", "unknown"];
+var summaryStyles = i`
+  :host {
+    display: block;
+    --summaryText: var(--graphite-text-primary, #f3f3f4);
+    --summaryText2: var(--graphite-text-secondary, #b4b4b8);
+    --summaryText3: var(--graphite-text-muted, #8f8f92);
+    --summaryAccent: var(--graphite-accent, #f5c48a);
+  }
+  ha-card {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0 4px var(--graphite-clock-space-below, 12px);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* date next to the time, separated by a thin line: line from cap top to baseline of the digits,
+     weekday above the date, the date line on the baseline of the time (all measured) */
+  .clock {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .time {
+    font-size: var(--graphite-clock-size, 76px);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--summaryText);
+  }
+  .separator {
+    width: 1px;
+    margin: var(--capTop, 10px) 0 var(--baseGap, 6px);
+    /* same opaque separator as the title | status headers */
+    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 18%, var(--graphite-ground, #0a0a0b)));
+  }
+  .date {
+    margin: var(--capTop, 10px) 0 var(--dateBaseGap, 2px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-size: 18px;
+    line-height: 1.3;
+    color: var(--summaryText);
+  }
+  .date .weekday {
+    font-size: 14px;
+    color: var(--summaryText2);
+  }
+  .greeting {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--summaryText3);
+    letter-spacing: 0.02em;
+  }
+  .prose {
+    margin-top: var(--graphite-summary-gap, 14px);
+    font-size: var(--graphite-summary-size, 17px);
+    line-height: 1.5;
+    font-weight: 300;
+    color: var(--summaryText2);
+  }
+  .greeting + .prose { margin-top: 4px; }
+  .prose:empty { display: none; }
+  .prose.noClock { margin-top: 0; }
+  .mark {
+    font-weight: 500;
+    color: var(--summaryText);
+  }
+  .mark.alert { color: var(--markColor, var(--summaryAccent)); }
+  .mark.colored { color: var(--markColor); }
+  /* inline icon ({icon} / {icon:mdi:name}), sized and aligned like a capital letter */
+  .inlineIcon {
+    --mdc-icon-size: 1.05em;
+    display: inline-flex;
+    vertical-align: -0.12em;
+    margin-right: 0.15em;
+  }
+  /* items with line: 2, 3 … start on their own line */
+  .line + .line { margin-top: var(--graphite-summary-line-gap, 10px); }
+  .mark.link {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border-radius: 4px;
+    outline: none;
+  }
+  .mark.link:active { opacity: 0.7; }
+  .mark.link:focus-visible { box-shadow: 0 0 0 2px var(--summaryAccent); }
+`;
+var GraphiteSummary = class extends GraphiteCard {
+  constructor() {
+    super();
+    this.now = /* @__PURE__ */ new Date();
+  }
+  normalizeConfig(config) {
+    if (!Array.isArray(config.items)) throw new Error("items is required");
+    const hold = config.hold_action;
+    if (hold && !hold.action && hold.perform_action) return { ...config, hold_action: { ...hold, action: "perform-action" } };
+    return config;
+  }
+  watchedEntities() {
+    return (this.config?.items ?? []).flatMap((item) => [...item.entity ? [item.entity] : [], ...item.pickup ?? []]);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    const tick = () => {
+      this.now = /* @__PURE__ */ new Date();
+      this.tickTimer = window.setTimeout(tick, 6e4 - Date.now() % 6e4 + 50);
+    };
+    window.clearTimeout(this.tickTimer);
+    tick();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => false
+    }, (action) => {
+      if (action === "hold" && this.config && hasAction(this.config.hold_action)) fireAction(this, this.config, "hold");
+    });
+    (document.fonts?.ready ?? Promise.resolve()).then(() => this.alignDate());
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.clearTimeout(this.tickTimer);
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  updated(changed) {
+    super.updated(changed);
+    if (changed.has("config")) this.alignDate();
+  }
+  // ---------- texts ----------
+  t(key, params = {}) {
+    return this.localize(`summary.${key}`, params);
+  }
+  join(parts) {
+    if (parts.length <= 1) return parts[0] ?? "";
+    return `${parts.slice(0, -1).join(", ")} ${this.config.and_word || this.t("and")} ${parts[parts.length - 1]}`;
+  }
+  // ---------- phrases ----------
+  // "[Karton] wird morgen abgeholt" / "[Karton] und [Papier] werden heute abgeholt"
+  pickupPhrases(item, index) {
+    const maxDays = Number(item.days ?? 1);
+    const byDay = /* @__PURE__ */ new Map();
+    for (const entityId of item.pickup ?? []) {
+      const next = nextPickup(this.hass, entityId, 14, item.drop_after, () => this.requestUpdate());
+      if (!next || next.days > maxDays) continue;
+      const attributes = this.hass.states[entityId]?.attributes ?? {};
+      const name = item.names?.[entityId] || attributes.message || attributes.friendly_name || entityId;
+      byDay.set(next.days, [...byDay.get(next.days) ?? [], name]);
+    }
+    return [...byDay.keys()].sort((first, second) => first - second).map((days) => {
+      const names = byDay.get(days).map((name) => `[${name}]`);
+      const template = names.length === 1 ? item.text_one || this.t("pickupOne") : item.text || this.t("pickupMany");
+      const when = item.when?.[days] ?? (days <= 2 ? this.t(`when.${days}`) : this.t("inDays", { days }));
+      return { index, alert: item.alert !== false, text: template.split("{names}").join(this.join(names)).split("{when}").join(when) };
+    });
+  }
+  meets(condition, state) {
+    if (condition === false) return false;
+    return condition === true || matchesCondition(condition, state);
+  }
+  // phrases of all items whose condition is met
+  phrases() {
+    const states = this.hass.states;
+    return this.config.items.flatMap((item, index) => {
+      if (Array.isArray(item.pickup)) return this.pickupPhrases(item, index);
+      const state = item.entity ? states[item.entity]?.state : void 0;
+      if (state === void 0 || unavailable.includes(state)) return [];
+      const number = Number(state);
+      const value = state !== "" && !isNaN(number) ? String(Math.round(number)) : state;
+      if (Array.isArray(item.levels)) {
+        const level = item.levels.find((entry) => this.meets(entry, state));
+        return level?.text ? [{ index, alert: level.alert !== false, text: level.text.split("{value}").join(value) }] : [];
+      }
+      const isAlert = this.meets(item.alert, state);
+      const isShown = isAlert || (item.show === void 0 ? !item.alert : this.meets(item.show, state));
+      if (!isShown) return [];
+      const one = isAlert && item.alert_text_one ? item.alert_text_one : item.text_one;
+      let template = isAlert && item.alert_text ? item.alert_text : item.text;
+      if (Number(value) === 1 && one) template = one;
+      return template ? [{ index, alert: isAlert, text: template.split("{value}").join(value) }] : [];
+    });
+  }
+  // ---------- rendering of the prose ----------
+  onMark(event, item) {
+    if (event instanceof KeyboardEvent && event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    event.stopPropagation();
+    const action = item.tap_action || (item.navigation_path ? { action: "navigate", navigation_path: item.navigation_path } : { action: "more-info" });
+    fireAction(this, { type: "graphite-summary", entity: item.entity, tap_action: action }, "tap");
+  }
+  // text with {icon} (the item's or the entity's icon) and {icon:mdi:name} as icons
+  withIcons(text, item) {
+    const parts = [];
+    let rest = text;
+    for (let guard = 0; guard < 10; guard++) {
+      const start = rest.indexOf("{icon");
+      const end = start < 0 ? -1 : rest.indexOf("}", start);
+      if (start < 0 || end < 0) break;
+      const spec = rest.slice(start + 1, end);
+      const icon = spec === "icon" ? item.icon || (item.entity ? this.hass.states[item.entity]?.attributes?.icon : "") || "" : spec.slice(5);
+      if (rest.slice(0, start)) parts.push(rest.slice(0, start));
+      if (icon) parts.push(b2`<ha-icon class="inlineIcon" icon=${icon}></ha-icon>`);
+      rest = rest.slice(end + 1);
+    }
+    if (rest) parts.push(rest);
+    return parts;
+  }
+  // a phrase with its [highlights]; capitalize marks the first letter of the sentence
+  renderPhrase(phrase, capitalize) {
+    const item = this.config.items[phrase.index];
+    const tappable = !!(item.navigation_path || item.tap_action || item.more_info);
+    const color = item.color ? markColors[item.color] || item.color : "";
+    let text = phrase.text;
+    if (capitalize) {
+      let position = 0;
+      for (let guard = 0; guard < 10; guard++) {
+        if (text.charAt(position) === "[") position++;
+        else if (text.startsWith("{icon", position) && text.indexOf("}", position) > 0) position = text.indexOf("}", position) + 1;
+        else if (text.charAt(position) === " ") position++;
+        else break;
+      }
+      text = text.slice(0, position) + text.charAt(position).toUpperCase() + text.slice(position + 1);
+    }
+    const parts = [];
+    let rest = text;
+    for (let guard = 0; guard < 10; guard++) {
+      const start = rest.indexOf("[");
+      const end = start < 0 ? -1 : rest.indexOf("]", start);
+      if (start < 0 || end < 0) break;
+      parts.push(...this.withIcons(rest.slice(0, start), item));
+      const classes = ["mark", phrase.alert ? "alert" : "", color ? "colored" : "", tappable ? "link" : ""].filter(Boolean).join(" ");
+      const content = this.withIcons(rest.slice(start + 1, end), item);
+      parts.push(tappable ? b2`<span class=${classes} style=${color ? `--markColor: ${color}` : ""} role="link" tabindex="0"
+            @pointerdown=${(event) => event.stopPropagation()}
+            @click=${(event) => this.onMark(event, item)} @keydown=${(event) => this.onMark(event, item)}>${content}</span>` : b2`<span class=${classes} style=${color ? `--markColor: ${color}` : ""}>${content}</span>`);
+      rest = rest.slice(end + 1);
+    }
+    parts.push(...this.withIcons(rest, item));
+    return b2`${parts}`;
+  }
+  // "a, b und c." – phrases joined like a sentence
+  renderSentence(phrases) {
+    if (!phrases.length) return A;
+    const andWord = this.config.and_word || this.t("and");
+    return b2`${phrases.map((phrase, index) => {
+      const separator = index === 0 ? "" : index === phrases.length - 1 ? ` ${andWord} ` : ", ";
+      return b2`${separator}${this.renderPhrase(phrase, index === 0)}`;
+    })}.`;
+  }
+  renderLines() {
+    const config = this.config;
+    const phrases = this.phrases();
+    const lineOf = (phrase) => Number(config.items[phrase.index].line) || 1;
+    const lineNumbers = [.../* @__PURE__ */ new Set([1, ...phrases.map(lineOf)])].sort((first, second) => first - second);
+    return lineNumbers.flatMap((lineNumber) => {
+      const linePhrases = phrases.filter((phrase) => lineOf(phrase) === lineNumber);
+      const alerts = linePhrases.filter((phrase) => phrase.alert);
+      const others = linePhrases.filter((phrase) => !phrase.alert);
+      const calm = lineNumber === 1 && !alerts.length && config.calm_text !== false && others.length <= 1 ? config.calm_text || this.t("calm") : "";
+      if (!alerts.length && !others.length && !calm) return [];
+      const parts = [
+        calm ? b2`${calm}` : A,
+        alerts.length ? b2`${calm ? " " : ""}${this.renderSentence(alerts)}` : A,
+        others.length ? b2`${calm || alerts.length ? " " : ""}${this.renderSentence(others)}` : A
+      ];
+      return [b2`<div class="line">${parts}</div>`];
+    });
+  }
+  // ---------- clock ----------
+  greeting() {
+    const hour = this.now.getHours();
+    const key = hour < 5 ? "night" : hour < 11 ? "morning" : hour < 17 ? "day" : hour < 22 ? "evening" : "night";
+    return this.t(`greeting.${key}`);
+  }
+  renderClock() {
+    const now = this.now;
+    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    return b2`
+      <div class="clock">
+        <div class="time">${time}</div>
+        <div class="separator"></div>
+        <div class="date">
+          <span class="weekday">${now.toLocaleDateString(this.language, { weekday: "long" })}</span>
+          <span>${now.toLocaleDateString(this.language, { day: "numeric", month: "long" })}</span>
+        </div>
+      </div>
+      ${this.config.greeting ? b2`<div class="greeting">${this.greeting()}</div>` : A}
+    `;
+  }
+  // positions of the separator and the date, measured on the digits with the font actually used
+  alignDate() {
+    const root = this.renderRoot;
+    const time = root?.querySelector(".time");
+    const date = root?.querySelector(".date");
+    const card = root?.querySelector("ha-card");
+    if (!time || !date || !card || !time.isConnected) return;
+    const context = document.createElement("canvas").getContext("2d");
+    if (!context) return;
+    const metricsOf = (element, sample) => {
+      const style = getComputedStyle(element);
+      const size = parseFloat(style.fontSize);
+      const lineHeight = parseFloat(style.lineHeight) || size * 1.2;
+      context.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+      const metrics = context.measureText(sample);
+      const baseline = (lineHeight - metrics.fontBoundingBoxAscent - metrics.fontBoundingBoxDescent) / 2 + metrics.fontBoundingBoxAscent;
+      return { metrics, lineHeight, baseline };
+    };
+    const timeMetrics = metricsOf(time, "2");
+    if (!timeMetrics.metrics.fontBoundingBoxAscent) return;
+    const capTop = timeMetrics.baseline - timeMetrics.metrics.actualBoundingBoxAscent;
+    const belowBaseline = timeMetrics.lineHeight - timeMetrics.baseline;
+    card.style.setProperty("--capTop", `${Math.max(0, capTop).toFixed(1)}px`);
+    card.style.setProperty("--baseGap", `${Math.max(0, belowBaseline).toFixed(1)}px`);
+    const dateMetrics = metricsOf(date, "D");
+    card.style.setProperty("--dateBaseGap", `${(belowBaseline - (dateMetrics.lineHeight - dateMetrics.baseline)).toFixed(1)}px`);
+  }
+  render() {
+    if (!this.config || !this.hass) return A;
+    const showClock = this.config.clock !== false;
+    return b2`
+      <ha-card>
+        ${showClock ? this.renderClock() : A}
+        <div class="prose ${showClock ? "" : "noClock"}">${this.renderLines()}</div>
+      </ha-card>
+    `;
+  }
+  getCardSize() {
+    return 3;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto" };
+  }
+  static getStubConfig() {
+    return { items: [{ entity: "sensor.lights_on", show: { above: 0 }, text: "[{value} lights] are on", text_one: "[1 light] is on" }] };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-summary-editor");
+  }
+};
+GraphiteSummary.properties = {
+  ...GraphiteCard.properties,
+  now: { state: true }
+};
+GraphiteSummary.styles = summaryStyles;
+registerElement("graphite-summary-editor", GraphiteSummaryEditor);
+registerCard("graphite-summary", GraphiteSummary, {
+  name: "Graphite Summary",
+  description: "Clock with date and a status summary written as prose with tappable highlights."
+});
+
 // src/core/graphite-range.ts
 var knobSize = 16;
 var minTickGap = 12;
@@ -7454,7 +7896,7 @@ var GraphiteLight = class extends GraphiteRow {
   render() {
     const config = this.lightConfig;
     const stateObj = this.hass?.states[config.entity];
-    const unavailable = this.unavailable(stateObj);
+    const unavailable2 = this.unavailable(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const since = this.sinceLine(stateObj);
     const interactive = this.isInteractive(stateObj);

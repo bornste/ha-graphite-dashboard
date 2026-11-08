@@ -18,6 +18,7 @@ the special cases – also for cards with a visual editor.
 | graphite-ink | tile | [graphite-ink.md](graphite-ink.md) | ready |
 | graphite-pickup | tile | [graphite-pickup.md](graphite-pickup.md) | ready |
 | graphite-calendar | list | [graphite-calendar.md](graphite-calendar.md) | ready |
+| graphite-summary | – | [graphite-summary.md](graphite-summary.md) | ready |
 | graphite-slider | inline, row | [graphite-slider.md](graphite-slider.md) | ready |
 | graphite-light | tile | [graphite-light.md](graphite-light.md) | ready |
 | graphite-scene | tile | [graphite-scene.md](graphite-scene.md) | ready |

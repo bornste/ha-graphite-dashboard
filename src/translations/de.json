@@ -428,5 +428,31 @@
       "maintenance_threshold": "Wartung fällig ab",
       "boost": "Max+ anzeigen"
     }
+  },
+  "summary": {
+    "and": "und",
+    "calm": "Alles ruhig.",
+    "pickupOne": "{names} wird {when} abgeholt",
+    "pickupMany": "{names} werden {when} abgeholt",
+    "when": {
+      "0": "heute",
+      "1": "morgen",
+      "2": "übermorgen"
+    },
+    "inDays": "in {days} Tagen",
+    "greeting": {
+      "night": "Gute Nacht",
+      "morning": "Guten Morgen",
+      "day": "Guten Tag",
+      "evening": "Guten Abend"
+    },
+    "editor": {
+      "clock": "Uhr anzeigen",
+      "greeting": "Begrüssung anzeigen",
+      "calm_text": "Text ohne Meldungen (Standard: Alles ruhig.)",
+      "and_word": "Wort für «und»",
+      "items": "Einträge (YAML)",
+      "hold_action": "Aktion beim Halten"
+    }
   }
 }
