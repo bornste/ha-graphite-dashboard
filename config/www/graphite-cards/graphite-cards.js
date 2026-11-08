@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.25.0";
+var version = "0.26.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -1008,6 +1008,34 @@ var de_default = {
       items: "Eintr\xE4ge (YAML)",
       hold_action: "Aktion beim Halten"
     }
+  },
+  shopping: {
+    listTitle: "Einkaufsliste",
+    quickTitle: "Schnellwahl",
+    placeholder: "Anderer Artikel \u2026",
+    addItem: "Artikel hinzuf\xFCgen",
+    add: "Hinzuf\xFCgen",
+    empty: "Noch nichts auf der Liste.",
+    addVariant: "+ Sorte",
+    remove: "{name} entfernen",
+    variantHint: "{name} \u2013 Sorte oder Menge (optional)",
+    none: "ohne",
+    removeVariant: "entfernen",
+    done: "fertig",
+    notSaved: "nicht gespeichert",
+    saving: "speichert \u2026",
+    savingCount: "speichert ({count}) \u2026",
+    synced: "synchronisiert",
+    error: "Fehler",
+    editor: {
+      entity: "Einkaufsliste (Todo)",
+      list_title: "Titel der Liste",
+      quick_title: "Titel der Schnellwahl",
+      placeholder: "Platzhalter der Eingabe",
+      empty_text: "Text bei leerer Liste",
+      panels: "Spalten als Panels",
+      groups: "Schnellwahl-Gruppen (YAML)"
+    }
   }
 };
 
@@ -1467,6 +1495,34 @@ var en_default = {
       and_word: "Word for \u201Cand\u201D",
       items: "Items (YAML)",
       hold_action: "Hold action"
+    }
+  },
+  shopping: {
+    listTitle: "Shopping list",
+    quickTitle: "Quick picks",
+    placeholder: "Other item \u2026",
+    addItem: "Add item",
+    add: "Add",
+    empty: "Nothing on the list yet.",
+    addVariant: "+ kind",
+    remove: "Remove {name}",
+    variantHint: "{name} \u2013 kind or amount (optional)",
+    none: "none",
+    removeVariant: "remove",
+    done: "done",
+    notSaved: "not saved",
+    saving: "saving \u2026",
+    savingCount: "saving ({count}) \u2026",
+    synced: "synced",
+    error: "Error",
+    editor: {
+      entity: "Shopping list (todo)",
+      list_title: "Title of the list",
+      quick_title: "Title of the quick picks",
+      placeholder: "Input placeholder",
+      empty_text: "Text of an empty list",
+      panels: "Columns as panels",
+      groups: "Quick pick groups (YAML)"
     }
   }
 };
@@ -7106,6 +7162,679 @@ registerElement("graphite-summary-editor", GraphiteSummaryEditor);
 registerCard("graphite-summary", GraphiteSummary, {
   name: "Graphite Summary",
   description: "Clock with date and a status summary written as prose with tappable highlights."
+});
+
+// src/cards/lists/graphite-shopping-editor.ts
+var GraphiteShoppingEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "shopping.editor";
+  }
+  defaults() {
+    return { panels: true };
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: { domain: "todo" } } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "list_title", selector: { text: {} } },
+          { name: "quick_title", selector: { text: {} } },
+          { name: "placeholder", selector: { text: {} } },
+          { name: "empty_text", selector: { text: {} } }
+        ]
+      },
+      { name: "panels", selector: { boolean: {} } },
+      { name: "groups", selector: { object: {} } }
+    ];
+  }
+};
+
+// src/cards/lists/shopping-styles.ts
+var shoppingStyles = i`
+  :host {
+    display: block;
+    container-type: inline-size;
+    --shopTile: var(--graphite-surface-tile, #1f1f20);
+    --shopTileHi: var(--graphite-surface-tile-active, #2b2b2c);
+    --shopText: var(--graphite-text-primary, #f3f3f4);
+    --shopText2: var(--graphite-text-secondary, #b4b4b8);
+    --shopText3: var(--graphite-text-muted, #8f8f92);
+    --shopAccent: var(--graphite-accent, #f5c48a);
+    --shopAccentInk: var(--graphite-accent-ink, #3a2410);
+    --shopDanger: var(--graphite-danger, #e8908a);
+    --shopRadius: var(--graphite-radius-tile, 12px);
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  /* panel look per column (same tokens as graphite-panel); tiles inside use the tile surface */
+  .columns.panels .listColumn,
+  .columns.panels .quickColumn {
+    background: var(--graphite-surface-panel, #161617);
+    border-radius: var(--graphite-radius-panel, 20px);
+    padding: var(--graphite-padding-panel, 16px);
+  }
+  .panelTitle {
+    font-size: var(--graphite-title-size, 18px);
+    font-weight: var(--graphite-title-weight, 400);
+    line-height: 1.2;
+    color: var(--graphite-title-color, var(--shopText));
+    margin-bottom: 12px;
+  }
+  /* title and sync state in one line on one baseline, separated by a thin line */
+  .panelHeader {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .panelHeader .panelTitle { flex: none; margin-bottom: 0; }
+  /* sync state of the todo integration: saved / saving (n) / error */
+  .syncStatus {
+    min-width: 0;
+    padding-left: 12px;
+    position: relative;
+    /* 2px more room on top for the separator line; the negative margin keeps the shared baseline */
+    padding-top: 2px;
+    margin-top: -2px;
+    font-size: 13px;
+    line-height: 16px;
+    color: var(--shopText2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    --mdc-icon-size: 14px;
+  }
+  /* separator line from the title's cap height down to the shared baseline */
+  .syncStatus::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 3.5px;
+    width: 1px;
+    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 24%, var(--graphite-ground, #0a0a0b)));
+  }
+  .syncStatus.saving { color: var(--shopAccent); }
+  .syncStatus.error { color: var(--shopDanger); }
+  /* icon and spinner share one fixed 14px slot, so the text never moves */
+  .syncStatus ha-icon,
+  .syncStatus .syncSpinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 5px;
+    vertical-align: -2px;
+  }
+  .syncStatus ha-icon {
+    overflow: hidden;
+    line-height: 0;
+  }
+  .syncSpinner {
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--shopAccent) 30%, transparent);
+    border-top-color: var(--shopAccent);
+    animation: shopSpin 0.9s linear infinite;
+  }
+  @keyframes shopSpin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .syncSpinner { animation-duration: 3s; } }
+  .inputRow {
+    display: flex;
+    gap: 8px;
+  }
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+    border: none;
+    outline: none;
+    border-radius: var(--shopRadius);
+    background: var(--shopTile);
+    color: var(--shopText);
+    font: inherit;
+    font-size: 15px;
+    padding: 0 14px;
+  }
+  input::placeholder { color: var(--shopText3); }
+  input:focus-visible { box-shadow: inset 0 0 0 1.5px var(--shopAccent); }
+  button {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* the ripple covers its button or item and takes no place in the flex row */
+  ha-ripple {
+    position: absolute;
+    inset: 0;
+  }
+  .addButton {
+    width: 52px;
+    height: 48px;
+    border-radius: var(--shopRadius);
+    background: var(--shopAccent);
+    color: var(--shopAccentInk);
+    display: grid;
+    place-items: center;
+    --mdc-icon-size: 22px;
+  }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .emptyList {
+    font-size: 15px;
+    color: var(--shopText3);
+    padding: 10px 2px;
+  }
+  .item {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 12px 0 6px;
+    border-radius: var(--shopRadius);
+    background: var(--shopTile);
+    outline: none;
+  }
+  .item.editable { cursor: pointer; }
+  /* on its way to the todo integration */
+  .item.pending .name { color: var(--shopText2); }
+  .remove {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: none;
+    color: var(--shopText3);
+    display: grid;
+    place-items: center;
+    flex: none;
+    --mdc-icon-size: 20px;
+  }
+  .remove:hover, .remove:focus-visible { color: var(--shopDanger); background: color-mix(in srgb, var(--shopDanger) 14%, var(--shopTile)); }
+  .name {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+    color: var(--shopText);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .detail {
+    font-size: 13px;
+    color: var(--shopAccent);
+    background: color-mix(in srgb, var(--shopAccent) 14%, var(--shopTile));
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .detail.empty {
+    color: var(--shopText3);
+    background: none;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--shopText) 14%, transparent);
+  }
+  .groups {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 16px;
+  }
+  .group.wide { grid-column: 1 / -1; }
+  .groupLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--shopText);
+    margin: 18px 2px 10px;
+  }
+  .group:first-child .groupLabel { margin-top: 0; }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: var(--shopTile);
+    color: var(--shopText2);
+    font-size: 15px;
+    display: inline-flex;
+    /* name and detail share one baseline, the line is centered in the chip height */
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: baseline;
+    gap: 6px;
+    user-select: none;
+  }
+  .chip .more { font-size: 12px; color: var(--shopText3); }
+  /* fixed description of a product (config): a quiet detail after the name, not a choice */
+  .chip .fixedDetail { font-size: 13px; color: var(--shopText3); }
+  .chip.on .fixedDetail { color: var(--shopText2); }
+  .item .fixedDetail { margin-left: 6px; font-size: 13px; color: var(--shopText2); }
+  /* marks chips with a variant choice */
+  .chip .moreIcon { --mdc-icon-size: 18px; display: inline-flex; align-self: center; margin: 0 -4px 0 -2px; color: var(--shopText2); }
+  .chip.on .moreIcon { color: var(--shopAccent); }
+  .chip.on { background: color-mix(in srgb, var(--shopAccent) 20%, var(--shopTileHi)); color: var(--shopText); }
+  .chip.on .more { color: var(--shopAccent); }
+  /* variant chooser floats below the chips (overlay), so the page keeps its height and position */
+  .chipArea {
+    position: relative;
+  }
+  .variants {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 16px;
+    background: var(--shopTileHi);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 0 0 1px color-mix(in srgb, var(--shopText) 8%, transparent);
+  }
+  .hint {
+    width: 100%;
+    font-size: 13px;
+    color: var(--shopText2);
+    margin: 0 2px 2px;
+  }
+  .variant {
+    height: 44px;
+    min-width: 52px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background: var(--shopTile);
+    color: var(--shopText);
+    font-size: 15px;
+  }
+  .variant.selected { background: var(--shopAccent); color: var(--shopAccentInk); font-weight: 500; }
+  .variant.removeVariant { margin-left: auto; background: none; color: var(--shopDanger); }
+  .variant.close { margin-left: auto; background: none; color: var(--shopText2); }
+  .variant.removeVariant + .variant.close { margin-left: 0; }
+  /* two columns once the card is wide enough; after the base rules so it wins */
+  @container (min-width: 640px) {
+    .columns { grid-template-columns: 360px minmax(0, 1fr); }
+    .columns.panels { gap: var(--graphite-gap-panel, 16px); }
+    .listColumn { max-height: var(--graphite-shopping-list-height, 600px); overflow-y: auto; scrollbar-width: thin; }
+    .groups { grid-template-columns: 1fr 1fr; }
+    .group:first-child:not(.wide) + .group:not(.wide) .groupLabel { margin-top: 0; }
+  }
+  .chip:focus-visible, .variant:focus-visible, .addButton:focus-visible, .item:focus-visible {
+    outline: 2px solid var(--shopAccent);
+    outline-offset: 1px;
+  }
+`;
+
+// src/cards/lists/graphite-shopping.ts
+var pendingTimeout = 3e4;
+var syncRecheck = 5e3;
+var GraphiteShopping = class extends GraphiteCard {
+  constructor() {
+    super();
+    this.groups = [];
+    this.fixedKeys = /* @__PURE__ */ new Set();
+    this.pending = /* @__PURE__ */ new Map();
+    this.items = [];
+  }
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error("entity (todo list) is required");
+    this.groups = (config.groups ?? []).map((group) => ({
+      name: group.name,
+      wide: !!group.wide,
+      items: (group.items ?? []).map((item) => {
+        if (typeof item === "string") return { name: item, description: "", variants: null };
+        const description = item.description != null ? String(item.description).trim() : "";
+        return {
+          name: item.name,
+          description,
+          // a fixed description and a variant choice exclude each other
+          variants: !description && Array.isArray(item.variants) ? item.variants.map(String) : null
+        };
+      })
+    }));
+    this.fixedKeys = new Set(this.groups.flatMap((group) => group.items).filter((item) => item.description).map((item) => this.productKey(item.name, item.description)));
+    if (this.unsubscribe && this.config?.entity !== config.entity) this.stopSubscription();
+    return config;
+  }
+  hassChanged(_hass) {
+    this.subscribe();
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.subscribe();
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.stopSubscription();
+    window.clearTimeout(this.syncTimer);
+  }
+  updated(changed) {
+    super.updated(changed);
+    if (changed.has("config")) this.subscribe();
+    window.clearTimeout(this.syncTimer);
+    if (this.pending.size > 0) {
+      this.syncTimer = window.setTimeout(() => {
+        this.syncPending();
+        this.requestUpdate();
+      }, syncRecheck);
+    }
+  }
+  // ---------- todo list ----------
+  // live item list of the todo entity
+  subscribe() {
+    if (this.unsubscribe || !this.hass || !this.config || !this.isConnected) return;
+    this.unsubscribe = this.hass.connection.subscribeMessage((message) => {
+      this.items = message.items ?? [];
+      this.syncPending();
+      if (this.pending.size === 0) this.syncError = void 0;
+      this.requestUpdate();
+    }, { type: "todo/item/subscribe", entity_id: this.config.entity });
+    this.unsubscribe.catch(() => {
+      this.unsubscribe = void 0;
+    });
+  }
+  stopSubscription() {
+    this.unsubscribe?.then((unsubscribe) => unsubscribe()).catch(() => void 0);
+    this.unsubscribe = void 0;
+  }
+  t(key, params = {}) {
+    return this.localize(`shopping.${key}`, params);
+  }
+  nameKey(name) {
+    return String(name).trim().toLowerCase();
+  }
+  productKey(name, description) {
+    return description ? `${this.nameKey(name)}|${this.nameKey(description)}` : this.nameKey(name);
+  }
+  // key of a list item: name and description for products with a fixed description,
+  // otherwise only the name (a variant or free text description belongs to the same product)
+  itemKey(item) {
+    const fixedKey = this.productKey(item.summary, item.description || "");
+    return this.fixedKeys.has(fixedKey) ? fixedKey : this.nameKey(item.summary);
+  }
+  findItem(key, status) {
+    return this.items.find((item) => this.itemKey(item) === key && (!status || item.status === status));
+  }
+  // The todo integration (Bring) needs a few seconds until a change shows up in the list.
+  // Pending changes are kept locally (shown right away) and finished once the item arrives,
+  // so a quick "add, then pick a variant" never creates a second item.
+  syncPending() {
+    const now = Date.now();
+    for (const [key, change] of this.pending) {
+      const open = this.findItem(key, "needs_action");
+      if (change.removed) {
+        if (open && !change.removeSent) {
+          change.removeSent = true;
+          this.callTodo("update_item", { item: open.uid, status: "completed" });
+        }
+        if (!open && change.removeSent || now - change.since > pendingTimeout) this.pending.delete(key);
+        continue;
+      }
+      if (!open) {
+        if (now - change.since > pendingTimeout) this.pending.delete(key);
+        continue;
+      }
+      if ((open.description || "") === change.description) {
+        this.pending.delete(key);
+      } else if (!change.updateSent) {
+        change.updateSent = true;
+        this.callTodo("update_item", { item: open.uid, description: change.description });
+      } else if (now - change.since > pendingTimeout) {
+        this.pending.delete(key);
+      }
+    }
+  }
+  // open items as shown: list items with pending changes applied, plus items still on their way
+  openItems() {
+    const shown = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const item of this.items) {
+      if (item.status !== "needs_action") continue;
+      const key = this.itemKey(item);
+      const change = seen.has(key) ? void 0 : this.pending.get(key);
+      seen.add(key);
+      if (change?.removed) continue;
+      shown.push({ uid: item.uid, key, summary: item.summary, description: change ? change.description : item.description || "" });
+    }
+    for (const [key, change] of this.pending)
+      if (!seen.has(key) && !change.removed) shown.push({ uid: "", key, summary: change.name, description: change.description, pending: true });
+    return shown;
+  }
+  isOnList(key) {
+    const change = this.pending.get(key);
+    if (change) return !change.removed;
+    return !!this.findItem(key, "needs_action");
+  }
+  shownDescription(key) {
+    const change = this.pending.get(key);
+    if (change) return change.description;
+    return this.findItem(key, "needs_action")?.description || "";
+  }
+  variantsOf(name) {
+    const key = this.nameKey(name);
+    for (const group of this.groups)
+      for (const item of group.items)
+        if (!item.description && this.nameKey(item.name) === key) return item.variants;
+    return null;
+  }
+  callTodo(service, data) {
+    this.hass?.callService("todo", service, data, { entity_id: this.config.entity }).catch((error) => {
+      this.syncError = error?.message || this.t("error");
+    });
+  }
+  // add an item or change its description; reactivates a completed item of the same product
+  setItem(key, name, description) {
+    const change = this.pending.get(key);
+    if (change && !change.removed) {
+      change.description = description;
+      change.updateSent = false;
+      change.since = Date.now();
+      this.syncPending();
+      return;
+    }
+    const open = this.findItem(key, "needs_action");
+    const newChange = { name: open ? open.summary : name, description, since: Date.now(), updateSent: !!open };
+    this.pending.set(key, newChange);
+    if (open) {
+      if ((open.description || "") !== description) this.callTodo("update_item", { item: open.uid, description });
+      else this.pending.delete(key);
+      return;
+    }
+    const completed = this.findItem(key, "completed");
+    if (completed) this.callTodo("update_item", { item: completed.uid, status: "needs_action", description });
+    else this.callTodo("add_item", description ? { item: name, description } : { item: name });
+    newChange.updateSent = true;
+  }
+  // removing = marking as completed; kept as a pending change until the list confirms it
+  removeItem(key, name) {
+    const description = this.fixedKeys.has(key) ? this.shownDescription(key) : "";
+    this.pending.set(key, { name, description, since: Date.now(), removed: true, removeSent: false });
+    this.syncPending();
+  }
+  // ---------- interaction ----------
+  changed() {
+    this.requestUpdate();
+  }
+  onSubmit(event) {
+    event.preventDefault();
+    const input = this.renderRoot.querySelector("input");
+    const name = input?.value.trim() ?? "";
+    if (name) this.setItem(this.nameKey(name), name, "");
+    if (input) input.value = "";
+    this.changed();
+  }
+  onRemove(event, item) {
+    event.stopPropagation();
+    this.removeItem(item.key, item.summary);
+    if (this.openVariants && this.nameKey(this.openVariants) === item.key) this.openVariants = void 0;
+    this.changed();
+  }
+  onEdit(item, event) {
+    if (event && event.key !== "Enter" && event.key !== " ") return;
+    event?.preventDefault();
+    this.openVariants = this.openVariants === item.summary ? void 0 : item.summary;
+  }
+  onChip(product) {
+    const key = this.productKey(product.name, product.description);
+    const isOn = this.isOnList(key);
+    if (!product.description && product.variants) {
+      if (!isOn) this.setItem(key, product.name, "");
+      this.openVariants = this.openVariants === product.name ? void 0 : product.name;
+    } else if (isOn) {
+      this.removeItem(key, product.name);
+    } else {
+      this.setItem(key, product.name, product.description);
+    }
+    this.changed();
+  }
+  onVariant(variant) {
+    const name = this.openVariants;
+    if (name) this.setItem(this.nameKey(name), name, variant);
+    this.openVariants = void 0;
+    this.changed();
+  }
+  onRemoveOpen() {
+    const name = this.openVariants;
+    if (name) this.removeItem(this.nameKey(name), name);
+    this.openVariants = void 0;
+    this.changed();
+  }
+  // ---------- rendering ----------
+  renderSyncStatus() {
+    const openChanges = this.pending.size;
+    if (openChanges === 0 && this.syncError)
+      return b2`<div class="syncStatus error" role="status" aria-live="polite" title=${this.syncError}>
+        <ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>${this.t("notSaved")}</span></div>`;
+    if (openChanges > 0)
+      return b2`<div class="syncStatus saving" role="status" aria-live="polite">
+        <span class="syncSpinner"></span><span>${openChanges > 1 ? this.t("savingCount", { count: openChanges }) : this.t("saving")}</span></div>`;
+    return b2`<div class="syncStatus" role="status" aria-live="polite"><ha-icon icon="mdi:check"></ha-icon><span>${this.t("synced")}</span></div>`;
+  }
+  renderItem(item) {
+    const isFixed = this.fixedKeys.has(item.key);
+    const variants = isFixed ? null : this.variantsOf(item.summary);
+    const label = isFixed ? `${item.summary} ${item.description}` : item.summary;
+    const pill = isFixed ? A : item.description ? b2`<span class="detail">${item.description}</span>` : variants ? b2`<span class="detail empty">${this.t("addVariant")}</span>` : A;
+    const classes = ["item", item.pending ? "pending" : "", variants ? "editable" : ""].filter(Boolean).join(" ");
+    return b2`
+      <div class=${classes} role="listitem" tabindex=${variants ? "0" : A}
+        @click=${variants ? () => this.onEdit(item) : A} @keydown=${variants ? (event) => this.onEdit(item, event) : A}>
+        ${variants ? b2`<ha-ripple></ha-ripple>` : A}
+        <button class="remove" aria-label=${this.t("remove", { name: label })} @click=${(event) => this.onRemove(event, item)}>
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+        <div class="name">${item.summary}${isFixed ? b2`<span class="fixedDetail">${item.description}</span>` : A}</div>
+        ${pill}
+      </div>
+    `;
+  }
+  renderChip(product) {
+    const key = this.productKey(product.name, product.description);
+    const isOn = this.isOnList(key);
+    const description = isOn && product.variants ? this.shownDescription(key) : "";
+    const more = product.description ? b2`<span class="fixedDetail">${product.description}</span>` : product.variants ? description ? b2`<span class="more">${description}</span>` : b2`<ha-icon class="moreIcon" icon="mdi:chevron-down"></ha-icon>` : A;
+    return b2`<button class="chip ${isOn ? "on" : ""}" aria-pressed=${isOn ? "true" : "false"} @click=${() => this.onChip(product)}><ha-ripple></ha-ripple>${product.name}${more}</button>`;
+  }
+  renderVariants() {
+    const name = this.openVariants;
+    const current = this.shownDescription(this.nameKey(name));
+    return b2`
+      <div class="variants">
+        <div class="hint">${this.t("variantHint", { name })}</div>
+        <button class="variant ${current === "" ? "selected" : ""}" @click=${() => this.onVariant("")}><ha-ripple></ha-ripple>${this.t("none")}</button>
+        ${(this.variantsOf(name) ?? []).map((variant) => b2`
+          <button class="variant ${current === variant ? "selected" : ""}" @click=${() => this.onVariant(variant)}><ha-ripple></ha-ripple>${variant}</button>`)}
+        ${this.isOnList(this.nameKey(name)) ? b2`<button class="variant removeVariant" @click=${this.onRemoveOpen}><ha-ripple></ha-ripple>${this.t("removeVariant")}</button>` : A}
+        <button class="variant close" @click=${() => {
+      this.openVariants = void 0;
+    }}><ha-ripple></ha-ripple>${this.t("done")}</button>
+      </div>
+    `;
+  }
+  renderGroup(group) {
+    const showsVariants = !!this.openVariants && group.items.some((item) => !item.description && item.name === this.openVariants);
+    return b2`
+      <div class="group ${group.wide ? "wide" : ""}">
+        <div class="groupLabel">${group.name}</div>
+        <div class="chipArea">
+          <div class="chips">${group.items.map((product) => this.renderChip(product))}</div>
+          ${showsVariants ? this.renderVariants() : A}
+        </div>
+      </div>
+    `;
+  }
+  render() {
+    if (!this.config) return A;
+    const config = this.config;
+    const listTitle = config.list_title ?? this.t("listTitle");
+    const quickTitle = config.quick_title ?? this.t("quickTitle");
+    const openItems = this.openItems();
+    return b2`
+      <div class="columns ${config.panels === false ? "" : "panels"}">
+        <div class="listColumn">
+          <div class="panelHeader">
+            ${listTitle ? b2`<div class="panelTitle">${listTitle}</div>` : A}
+            ${this.renderSyncStatus()}
+          </div>
+          <form class="inputRow" @submit=${this.onSubmit}>
+            <input type="text" enterkeyhint="done" autocomplete="off" aria-label=${this.t("addItem")}
+              placeholder=${config.placeholder || this.t("placeholder")}>
+            <button class="addButton" type="submit" aria-label=${this.t("add")}><ha-ripple></ha-ripple><ha-icon icon="mdi:plus"></ha-icon></button>
+          </form>
+          <div class="list" role="list">
+            ${openItems.length ? openItems.map((item) => this.renderItem(item)) : b2`<div class="emptyList">${config.empty_text || this.t("empty")}</div>`}
+          </div>
+        </div>
+        <div class="quickColumn">
+          ${quickTitle ? b2`<div class="panelTitle">${quickTitle}</div>` : A}
+          <div class="groups">${this.groups.map((group) => this.renderGroup(group))}</div>
+        </div>
+      </div>
+    `;
+  }
+  getCardSize() {
+    return 8;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto" };
+  }
+  static getStubConfig() {
+    return {
+      entity: "todo.shopping_list",
+      groups: [{ name: "Basics", items: ["Bread", { name: "Eggs", variants: ["6", "10", "12"] }, { name: "Onions", description: "yellow" }, { name: "Onions", description: "red" }] }]
+    };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-shopping-editor");
+  }
+};
+GraphiteShopping.properties = {
+  ...GraphiteCard.properties,
+  items: { state: true },
+  openVariants: { state: true },
+  syncError: { state: true }
+};
+GraphiteShopping.styles = shoppingStyles;
+registerElement("graphite-shopping-editor", GraphiteShoppingEditor);
+registerCard("graphite-shopping", GraphiteShopping, {
+  name: "Graphite Shopping",
+  description: "Shopping list with quick pick groups, variants and products with a fixed description (todo entity, e.g. Bring)."
 });
 
 // src/core/graphite-range.ts

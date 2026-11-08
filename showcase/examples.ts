@@ -141,8 +141,10 @@ export const calendarDays: Record<string, number[]> = {
 };
 
 // canned results for todo/item/list (preview of the todo tile)
-export const todoItems: Record<string, Array<{ summary: string; status: string }>> = {
+export const todoItems: Record<string, Array<{ summary: string; status: string; description?: string }>> = {
   "todo.shopping": [
+    { summary: "Eggs", status: "needs_action", description: "10" },
+    { summary: "Onions", status: "needs_action", description: "red" },
     { summary: "Milk", status: "needs_action" },
     { summary: "Bread", status: "needs_action" },
     { summary: "Apples", status: "needs_action" },
@@ -703,6 +705,28 @@ export function examples(language: string): ShowcaseSection[] {
               { pickup: ["calendar.paper_collection", "calendar.cardboard_collection"] },
               { entity: "sensor.living_room_lights_on", show: { above: 0 }, text: "[{value} lights] are on", text_one: "[1 light] is on", navigation_path: "#lights" },
               { entity: "input_boolean.guest_mode", alert: { state: "on" }, alert_text: "[{icon} guest mode] on", color: "success", line: 2 },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-shopping",
+      description: `Shopping list of a todo entity with quick pick groups, variants and products with a fixed description.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-shopping.md">Documentation</a>`,
+      examples: [
+        {
+          title: "List and quick picks",
+          note: "Eggs with a chosen amount, red onions as product of their own; tap a chip to add or remove it.",
+          config: {
+            type: "custom:graphite-shopping",
+            entity: "todo.shopping",
+            groups: [
+              { name: "Dairy", wide: true, items: [{ name: "Milk", variants: ["1", "2", "3"] }, "Butter", "Yoghurt", "Cream"] },
+              { name: "Bread & baking", wide: true, items: ["Bread", { name: "Eggs", variants: ["6", "10", "12"] }, "Flour", "Sugar"] },
+              { name: "Vegetables", wide: true, items: [{ name: "Onions", description: "yellow" }, { name: "Onions", description: "red" }, "Tomatoes", { name: "Potatoes", variants: ["waxy", "floury"] }, "Carrots"] },
+              { name: "Fruit", items: ["Apples", "Bananas", "Lemons"] },
+              { name: "Household", items: ["Kitchen roll", "Dish soap"] },
             ],
           },
         },

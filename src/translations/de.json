@@ -454,5 +454,33 @@
       "items": "Einträge (YAML)",
       "hold_action": "Aktion beim Halten"
     }
+  },
+  "shopping": {
+    "listTitle": "Einkaufsliste",
+    "quickTitle": "Schnellwahl",
+    "placeholder": "Anderer Artikel …",
+    "addItem": "Artikel hinzufügen",
+    "add": "Hinzufügen",
+    "empty": "Noch nichts auf der Liste.",
+    "addVariant": "+ Sorte",
+    "remove": "{name} entfernen",
+    "variantHint": "{name} – Sorte oder Menge (optional)",
+    "none": "ohne",
+    "removeVariant": "entfernen",
+    "done": "fertig",
+    "notSaved": "nicht gespeichert",
+    "saving": "speichert …",
+    "savingCount": "speichert ({count}) …",
+    "synced": "synchronisiert",
+    "error": "Fehler",
+    "editor": {
+      "entity": "Einkaufsliste (Todo)",
+      "list_title": "Titel der Liste",
+      "quick_title": "Titel der Schnellwahl",
+      "placeholder": "Platzhalter der Eingabe",
+      "empty_text": "Text bei leerer Liste",
+      "panels": "Spalten als Panels",
+      "groups": "Schnellwahl-Gruppen (YAML)"
+    }
   }
 }

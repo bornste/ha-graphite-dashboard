@@ -105,8 +105,14 @@ function createHass(language: string): any {
       return unit ? `${value} ${unit}` : value;
     },
     connection: {
-      async subscribeMessage(callback: (message: { result: string }) => void, message: Config) {
-        callback({ result: templateResults[message.template] ?? "" });
+      async subscribeMessage(callback: (message: Record<string, unknown>) => void, message: Config) {
+        // live todo list of the shopping card, otherwise a template result
+        if (message.type === "todo/item/subscribe") {
+          const items = (todoItems[message.entity_id] ?? []).map((item, index) => ({ uid: `item${index}`, ...item }));
+          callback({ items });
+        } else {
+          callback({ result: templateResults[message.template] ?? "" });
+        }
         return () => undefined;
       },
     },

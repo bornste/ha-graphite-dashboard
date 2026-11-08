@@ -454,5 +454,33 @@
       "items": "Items (YAML)",
       "hold_action": "Hold action"
     }
+  },
+  "shopping": {
+    "listTitle": "Shopping list",
+    "quickTitle": "Quick picks",
+    "placeholder": "Other item …",
+    "addItem": "Add item",
+    "add": "Add",
+    "empty": "Nothing on the list yet.",
+    "addVariant": "+ kind",
+    "remove": "Remove {name}",
+    "variantHint": "{name} – kind or amount (optional)",
+    "none": "none",
+    "removeVariant": "remove",
+    "done": "done",
+    "notSaved": "not saved",
+    "saving": "saving …",
+    "savingCount": "saving ({count}) …",
+    "synced": "synced",
+    "error": "Error",
+    "editor": {
+      "entity": "Shopping list (todo)",
+      "list_title": "Title of the list",
+      "quick_title": "Title of the quick picks",
+      "placeholder": "Input placeholder",
+      "empty_text": "Text of an empty list",
+      "panels": "Columns as panels",
+      "groups": "Quick pick groups (YAML)"
+    }
   }
 }
