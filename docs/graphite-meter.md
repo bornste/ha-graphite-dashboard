@@ -40,6 +40,35 @@ low: 20
 |---|---|---|
 | `gradient` | The whole color scale is visible, dimmed beyond the value; a needle marks the value. | Values with a comfort range (temperature, CPU load). |
 | `level` (default) | The bar is filled up to the value in the color of its band, the track is a muted step of that color. | Percentages (memory, disk, battery, ink). |
+| `change` | A needle in the middle marks a reference; the bar runs to the right (gain, green) or to the left (loss, red), the change in percent (green or red, with its sign) stands next to the value. | Share and crypto prices. |
+
+### Prices (`style: change`)
+
+```yaml
+# bought: compared with the purchase price
+type: custom:graphite-meter
+entity: sensor.acme_share
+style: change
+reference: 128.40
+decimals: 2
+```
+
+```yaml
+# only watched: compared with 24 hours ago
+type: custom:graphite-meter
+entity: sensor.sample_coin
+style: change
+reference: 24h
+change_attribute: 24h_change   # optional: change in percent from an attribute
+decimals: 4
+```
+
+- **Reference:** a number or an entity (purchase price, shown as "Kauf 128.40"), or a period `24h`,
+  `7d`, … (shown as "24 h", "7 Tage"). For a period the card reads the value of that time ago from the
+  history (Home Assistant keeps 10 days by default). With `change_attribute` the percent comes from
+  that attribute instead (e.g. Cryptoinfo: `24h_change`, `7d_change`, `30d_change`).
+- **Bar:** half the bar is `scale` percent (default 20). Beyond it the bar stays full and its end fades out.
+- **Narrow tiles** (below 200px): the change moves up next to the name and the reference is left out.
 
 ## Options
 
@@ -48,12 +77,17 @@ low: 20
 | `entity` | entity id | required | Numeric sensor. |
 | `layout` | `tile` \| `row` | `tile` | Look, see above. |
 | `name` | string | friendly name | Name. |
-| `style` | `gradient` \| `level` | `level` | Instrument, see above. |
+| `style` | `gradient` \| `level` \| `change` | `level` | Instrument, see above. |
 | `min` / `max` | number | `0` / `min + 100` | Range of the bar. Values outside are clamped. |
 | `color` | CSS color | accent | One color for the whole bar (e.g. the ink color). Ignored when `colors` is set. |
 | `colors` | map | – | Color stops `value: color`. The band color is the color of the highest stop at or below the value; `gradient` draws all stops as a scale. |
 | `low` | number | – | Below this value the meter counts as soon empty, see Behaviour. |
-| `decimals` | number | `1` | Decimals of the value (number format of the Home Assistant user). |
+| `decimals` | number | display precision, else `1` | Decimals of the value, up to 4 (number format of the Home Assistant user). Without it the display precision of the entity is used. |
+| `reference` | number \| entity \| period | – | `style: change`: purchase price, an entity holding it, or a period like `24h`, `7d`. |
+| `reference_name` | string | "Kauf …" / "24 h" | `style: change`: text for the reference top right. |
+| `change_attribute` | string | – | `style: change`: attribute with the change in percent; takes precedence over the computed change. |
+| `scale` | number | `20` | `style: change`: percent that fill half the bar. |
+| `change_decimals` | number | `1` | `style: change`: decimals of the percent. |
 | `unit` | string | entity unit | Unit after the value; `""` hides it. |
 | `secondary_entity` | entity id | – | Second value: on the right of the value row (tile) or as status line (row). |
 | `secondary_decimals` | number | `0` | Decimals of the second value. |
@@ -97,4 +131,5 @@ With `low` set, the meter shows a status:
 
 ## Editor
 
-Layout first; icon and watermark are only shown with `layout: tile`.
+Layout first; icon and watermark are only shown with `layout: tile`. With `style: change` the
+reference fields replace min, max, colors and the second value.

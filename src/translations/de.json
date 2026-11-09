@@ -66,13 +66,16 @@
     }
   },
   "meter": {
+    "purchase": "Kauf {value}",
+    "periodHours": "{count} h",
+    "periodDays": "{count} Tage",
     "editor": {
       "entity": "Entität (Messwert)",
       "name": "Name (Standard: Name der Entität)",
-      "style": "Darstellung (gradient = Farbskala mit Nadel, level = Füllbalken)",
+      "style": "Darstellung (gradient = Farbskala mit Nadel, level = Füllbalken, change = Veränderung zur Referenz)",
       "min": "Minimum",
       "max": "Maximum",
-      "decimals": "Nachkommastellen (Standard 1)",
+      "decimals": "Nachkommastellen (Standard: Anzeigegenauigkeit der Entität, sonst 1)",
       "unit": "Einheit (Standard: Einheit der Entität)",
       "colors": "Farbstufen (YAML: Wert: Farbe, z.B. 24: \"#6fbf5a\")",
       "icon": "Icon oben rechts",
@@ -86,7 +89,12 @@
       "double_tap_action": "Aktion beim Doppeltippen",
       "color": "Feste Farbe (statt Farbstufen)",
       "low": "Bald leer unter (für Verbrauchsmaterial, zeigt den Zustand)",
-      "layout": "Darstellung"
+      "layout": "Darstellung",
+      "reference": "Referenz (Kaufpreis, Entität oder Zeitraum wie 24h, 7d)",
+      "reference_name": "Text zur Referenz (Standard: Kauf … / 24 h)",
+      "change_attribute": "Attribut mit Veränderung in % (z.B. 24h_change)",
+      "scale": "Halber Balken entspricht (%)",
+      "change_decimals": "Nachkommastellen der %"
     }
   },
   "effect": {

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.34.3";
+var version = "0.35.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -620,13 +620,16 @@ var de_default = {
     }
   },
   meter: {
+    purchase: "Kauf {value}",
+    periodHours: "{count} h",
+    periodDays: "{count} Tage",
     editor: {
       entity: "Entit\xE4t (Messwert)",
       name: "Name (Standard: Name der Entit\xE4t)",
-      style: "Darstellung (gradient = Farbskala mit Nadel, level = F\xFCllbalken)",
+      style: "Darstellung (gradient = Farbskala mit Nadel, level = F\xFCllbalken, change = Ver\xE4nderung zur Referenz)",
       min: "Minimum",
       max: "Maximum",
-      decimals: "Nachkommastellen (Standard 1)",
+      decimals: "Nachkommastellen (Standard: Anzeigegenauigkeit der Entit\xE4t, sonst 1)",
       unit: "Einheit (Standard: Einheit der Entit\xE4t)",
       colors: 'Farbstufen (YAML: Wert: Farbe, z.B. 24: "#6fbf5a")',
       icon: "Icon oben rechts",
@@ -640,7 +643,12 @@ var de_default = {
       double_tap_action: "Aktion beim Doppeltippen",
       color: "Feste Farbe (statt Farbstufen)",
       low: "Bald leer unter (f\xFCr Verbrauchsmaterial, zeigt den Zustand)",
-      layout: "Darstellung"
+      layout: "Darstellung",
+      reference: "Referenz (Kaufpreis, Entit\xE4t oder Zeitraum wie 24h, 7d)",
+      reference_name: "Text zur Referenz (Standard: Kauf \u2026 / 24 h)",
+      change_attribute: "Attribut mit Ver\xE4nderung in % (z.B. 24h_change)",
+      scale: "Halber Balken entspricht (%)",
+      change_decimals: "Nachkommastellen der %"
     }
   },
   effect: {
@@ -1168,13 +1176,16 @@ var en_default = {
     }
   },
   meter: {
+    purchase: "bought {value}",
+    periodHours: "{count} h",
+    periodDays: "{count} days",
     editor: {
       entity: "Entity (measurement)",
       name: "Name (default: entity name)",
-      style: "Style (gradient = color scale with needle, level = fill bar)",
+      style: "Style (gradient = color scale with needle, level = fill bar, change = change against the reference)",
       min: "Minimum",
       max: "Maximum",
-      decimals: "Decimals (default 1)",
+      decimals: "Decimals (default: display precision of the entity, otherwise 1)",
       unit: "Unit (default: entity unit)",
       colors: 'Color stops (YAML: value: color, e.g. 24: "#6fbf5a")',
       icon: "Icon top right",
@@ -1188,7 +1199,12 @@ var en_default = {
       double_tap_action: "Double tap action",
       color: "Single color (instead of color stops)",
       low: "Low below (consumables, shows the status)",
-      layout: "Layout"
+      layout: "Layout",
+      reference: "Reference (purchase price, entity or period like 24h, 7d)",
+      reference_name: "Reference text (default: bought \u2026 / 24 h)",
+      change_attribute: "Attribute with the change in % (e.g. 24h_change)",
+      scale: "Half the bar equals (%)",
+      change_decimals: "Decimals of the %"
     }
   },
   effect: {
@@ -3147,10 +3163,11 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
     return "meter.editor";
   }
   schemaKey() {
-    return layoutOf(this.config, "tile");
+    return `${layoutOf(this.config, "tile")}|${this.config.style ?? "level"}`;
   }
   schema() {
     const isTile = layoutOf(this.config, "tile") === "tile";
+    const isChange = this.config.style === "change";
     return [
       layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
@@ -3159,28 +3176,42 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
         name: "",
         schema: [
           { name: "name", selector: { text: {} } },
-          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level"] } } }
+          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level", "change"] } } }
         ]
       },
-      {
+      ...isChange ? [{
         type: "grid",
         name: "",
         schema: [
-          { name: "min", selector: { number: { mode: "box" } } },
-          { name: "max", selector: { number: { mode: "box" } } },
+          { name: "reference", selector: { text: {} } },
+          { name: "reference_name", selector: { text: {} } },
+          { name: "change_attribute", selector: { text: {} } },
+          { name: "scale", selector: { number: { mode: "box", min: 1, max: 1e3 } } },
           { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "change_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
           { name: "unit", selector: { text: {} } }
         ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "color", selector: { text: {} } },
-          { name: "low", selector: { number: { mode: "box" } } }
-        ]
-      },
-      { name: "colors", selector: { object: {} } },
+      }] : [
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "min", selector: { number: { mode: "box" } } },
+            { name: "max", selector: { number: { mode: "box" } } },
+            { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+            { name: "unit", selector: { text: {} } }
+          ]
+        },
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "color", selector: { text: {} } },
+            { name: "low", selector: { number: { mode: "box" } } }
+          ]
+        },
+        { name: "colors", selector: { object: {} } }
+      ],
       ...isTile ? [{
         type: "grid",
         name: "",
@@ -3189,16 +3220,18 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
           { name: "show_icon", selector: { boolean: {} } }
         ]
       }] : [],
-      { name: "secondary_entity", selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "secondary_unit", selector: { text: {} } },
-          { name: "secondary_icon", selector: { icon: {} } }
-        ]
-      },
+      ...isChange ? [] : [
+        { name: "secondary_entity", selector: { entity: {} } },
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+            { name: "secondary_unit", selector: { text: {} } },
+            { name: "secondary_icon", selector: { icon: {} } }
+          ]
+        }
+      ],
       { name: "tap_action", selector: { ui_action: {} } },
       { name: "hold_action", selector: { ui_action: {} } },
       { name: "double_tap_action", selector: { ui_action: {} } }
@@ -3472,12 +3505,95 @@ var meterRowStyles = i`
     font-weight: 400;
   }
 `;
+var meterChangeStyles = i`
+  :is(.tile, .row).change .bar {
+    background: color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  :is(.tile, .row).change .fill {
+    left: 50%;
+    right: auto;
+    width: var(--change-share, 0%);
+    border-radius: 0 2px 2px 0;
+    background: var(--graphite-success);
+  }
+  :is(.tile, .row).change.down .fill {
+    left: auto;
+    right: 50%;
+    border-radius: 2px 0 0 2px;
+    background: var(--graphite-danger);
+  }
+  :is(.tile, .row).change.up.beyond .fill {
+    background: linear-gradient(to right, var(--graphite-success) 75%, color-mix(in srgb, var(--graphite-success) 30%, transparent));
+  }
+  :is(.tile, .row).change.down.beyond .fill {
+    background: linear-gradient(to left, var(--graphite-danger) 75%, color-mix(in srgb, var(--graphite-danger) 30%, transparent));
+  }
+  :is(.tile, .row).change .needle {
+    left: 50%;
+  }
+  .delta {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--graphite-text-secondary);
+  }
+  .up .delta {
+    color: var(--graphite-success);
+  }
+  .down .delta {
+    color: var(--graphite-danger);
+  }
+  /* reference on the right of the name ("Kauf 2.80", "24 h") */
+  .tile.change.captioned .name {
+    right: 50%;
+  }
+  .reference {
+    position: absolute;
+    right: var(--graphite-padding-tile, 12px);
+    top: 10px;
+    max-width: 50%;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 1.8;
+    color: var(--graphite-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* narrow tiles: the change moves up to the name row, the reference is left out */
+  .tile.change {
+    container-type: inline-size;
+  }
+  .topDelta {
+    display: none;
+    position: absolute;
+    right: var(--graphite-padding-tile, 12px);
+    top: 10px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 1.6;
+  }
+  @container (max-width: 200px) {
+    .tile.change .reference,
+    .tile.change .value-row .secondary {
+      display: none;
+    }
+    .tile.change .topDelta {
+      display: block;
+    }
+    .tile.change .name {
+      right: 50%;
+    }
+  }
+  .row .caption {
+    margin-left: 4px;
+    color: var(--graphite-text-muted);
+  }
+`;
 
 // src/cards/tiles/graphite-meter.ts
-var meterTileStyles = [tileStyles, meterStyles];
+var meterTileStyles = [tileStyles, meterStyles, meterChangeStyles];
+var referenceRefreshMilliseconds = 5 * 60 * 1e3;
 var GraphiteMeter = class extends GraphiteCard {
   stylesForConfig() {
-    return layoutOf(this.config, "tile") === "row" ? meterRowStyles : meterTileStyles;
+    return layoutOf(this.config, "tile") === "row" ? [meterRowStyles, meterChangeStyles] : meterTileStyles;
   }
   normalizeConfig(config) {
     if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
@@ -3485,7 +3601,8 @@ var GraphiteMeter = class extends GraphiteCard {
   }
   watchedEntities() {
     const config = this.config;
-    return config.secondary_entity ? [config.entity, config.secondary_entity] : [config.entity];
+    const reference = typeof config.reference === "string" && config.reference.includes(".") ? [config.reference] : [];
+    return [config.entity, ...config.secondary_entity ? [config.secondary_entity] : [], ...reference];
   }
   connectedCallback() {
     super.connectedCallback();
@@ -3523,10 +3640,86 @@ var GraphiteMeter = class extends GraphiteCard {
     const icon = config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
     return b2`<div class="meter-icon">${icon}</div>`;
   }
+  // "24h" -> 24, "7d" -> 168; undefined for anything else
+  periodHours(text) {
+    const unit = text.slice(-1).toLowerCase();
+    const count = Number(text.slice(0, -1));
+    if (!Number.isFinite(count) || count <= 0) return void 0;
+    if (unit === "h") return count;
+    if (unit === "d") return count * 24;
+    return void 0;
+  }
+  periodText(hours) {
+    if (hours <= 48 || hours % 24 !== 0) return this.localize("meter.periodHours", { count: hours });
+    return this.localize("meter.periodDays", { count: hours / 24 });
+  }
+  // value of the entity "hours" ago from the history; undefined until it is loaded
+  valueAgo(hours) {
+    const entityId = this.config.entity;
+    const key = `${entityId}|${hours}`;
+    const cached = this.periodValue?.key === key ? this.periodValue : void 0;
+    const fresh = cached && Date.now() - cached.fetchedAt < referenceRefreshMilliseconds;
+    const api = this.hass;
+    if (!fresh && !cached?.pending && api?.callApi) {
+      const start = new Date(Date.now() - hours * 36e5);
+      const end = new Date(start.getTime() + 6e4);
+      const path = `history/period/${encodeURIComponent(start.toISOString())}?filter_entity_id=${entityId}&end_time=${encodeURIComponent(end.toISOString())}&minimal_response&no_attributes`;
+      this.periodValue = { key, value: cached?.value, fetchedAt: cached?.fetchedAt ?? 0, pending: true };
+      api.callApi("GET", path).then((result) => {
+        const first = result?.[0]?.[0];
+        const value = parseFloat(first?.state ?? first?.s ?? "");
+        this.periodValue = { key, value: Number.isFinite(value) ? value : void 0, fetchedAt: Date.now() };
+        this.requestUpdate();
+      }).catch(() => {
+        this.periodValue = { key, value: void 0, fetchedAt: Date.now() };
+      });
+    }
+    return this.periodValue?.key === key ? this.periodValue.value : void 0;
+  }
+  // change in percent against the reference and the caption naming the reference
+  changeModel(stateObj, value, hasValue, decimals) {
+    const config = this.config;
+    const reference = config.reference;
+    let percent;
+    let caption = "";
+    if (config.change_attribute && stateObj) {
+      const attributeValue = Number(stateObj.attributes?.[config.change_attribute]);
+      if (Number.isFinite(attributeValue)) percent = attributeValue;
+    }
+    if (reference !== void 0 && reference !== null && reference !== "") {
+      const text = String(reference).trim();
+      const hours = typeof reference === "string" ? this.periodHours(text) : void 0;
+      let base;
+      if (hours !== void 0) {
+        caption = this.periodText(hours);
+        if (percent === void 0) base = this.valueAgo(hours);
+      } else if (typeof reference === "string" && text.includes(".") && this.hass?.states[text]) {
+        base = parseFloat(this.hass.states[text].state);
+        if (Number.isFinite(base)) caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, decimals) });
+      } else {
+        base = Number(text);
+        const ownDecimals = text.includes(".") ? text.split(".")[1].length : 0;
+        if (Number.isFinite(base)) {
+          caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, Math.max(decimals, ownDecimals)) });
+        }
+      }
+      if (percent === void 0 && hasValue && base !== void 0 && Number.isFinite(base) && base !== 0) {
+        percent = (value - base) / Math.abs(base) * 100;
+      }
+    }
+    return { percent, caption: config.reference_name ?? caption };
+  }
+  // "+11.6 %" / "−8.0 %"
+  percentText(percent) {
+    const decimals = this.config.change_decimals ?? 1;
+    const rounded = Number(percent.toFixed(decimals));
+    const sign = rounded > 0 ? "+" : rounded < 0 ? "\u2212" : "";
+    return `${sign}${formatNumber(this.hass, Math.abs(rounded), decimals)} %`;
+  }
   // value, band color and scale shared by both layouts
   model() {
     const config = this.config;
-    const style = config.style === "gradient" ? "gradient" : "level";
+    const style = config.style === "gradient" ? "gradient" : config.style === "change" ? "change" : "level";
     const stateObj = this.hass?.states[config.entity];
     const value = stateObj ? parseFloat(stateObj.state) : NaN;
     const hasValue = Number.isFinite(value);
@@ -3547,8 +3740,38 @@ var GraphiteMeter = class extends GraphiteCard {
     const empty = hasLow && hasValue && value <= minValue;
     const low = hasLow && hasValue && !empty && value < Number(config.low);
     const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
-    const valueText = hasValue ? formatNumber(this.hass, value, config.decimals ?? 1) : "\u2013";
-    return { style, stateObj, hasValue, unit, name, variables, hasLow, empty, low, interactive, valueText };
+    const precision = Number(this.hass?.entities?.[config.entity]?.display_precision);
+    const decimals = config.decimals ?? (Number.isFinite(precision) ? precision : 1);
+    const valueText = hasValue ? formatNumber(this.hass, value, decimals) : "\u2013";
+    let change;
+    let changeVariables = "";
+    let direction = "";
+    let beyond = false;
+    if (style === "change") {
+      change = this.changeModel(stateObj, value, hasValue, decimals);
+      const scale2 = Number(config.scale) > 0 ? Number(config.scale) : 20;
+      if (change.percent !== void 0) {
+        direction = change.percent > 0 ? "up" : change.percent < 0 ? "down" : "";
+        beyond = Math.abs(change.percent) > scale2;
+        changeVariables = ` --change-share: ${Math.min(50, Math.abs(change.percent) / scale2 * 50)}%;`;
+      }
+    }
+    return {
+      style,
+      stateObj,
+      hasValue,
+      unit,
+      name,
+      variables: variables + changeVariables,
+      hasLow,
+      empty,
+      low,
+      interactive,
+      valueText,
+      change,
+      direction,
+      beyond
+    };
   }
   // status of a consumable ("OK", "bald leer", "leer"); empty without "low"
   statusText(model) {
@@ -3571,15 +3794,34 @@ var GraphiteMeter = class extends GraphiteCard {
     ].filter(Boolean).join(" ");
     const status = model.empty || model.low ? this.statusText(model) : "";
     const secondary = status || this.secondaryText();
+    if (model.style === "change") return this.renderChangeTile(model, classes);
     return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}
       tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(model.stateObj)}<div class="name">${model.name}</div><div
       class="value-row"><div class="value">${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}</div>${secondary ? b2`<div class=${status ? "secondary status" : "secondary"}>${!status && config.secondary_icon ? b2`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : A}${secondary}</div>` : A}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
+  }
+  // change in percent, colored by direction (sign and color are enough, no arrow)
+  renderChange(model) {
+    const percent = model.change?.percent;
+    return b2`<span class="delta">${percent === void 0 ? "\u2013" : this.percentText(percent)}</span>`;
+  }
+  // change tile: name and reference on top, value and change, bar with the needle in the middle;
+  // on narrow tiles the change takes the place of the reference (container query)
+  renderChangeTile(model, baseClasses) {
+    const caption = model.change?.caption ?? "";
+    const classes = [baseClasses, model.direction, model.beyond ? "beyond" : "", caption ? "captioned" : ""].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}
+      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="name">${model.name}</div>${caption ? b2`<div class="reference">${caption}</div>` : A}<div class="topDelta">${this.renderChange(model)}</div><div class="value-row"><div class="value">${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}</div><div class="secondary">${this.renderChange(model)}</div></div><div
+      class="bar"><div class="fill"></div><div class="needle"></div></div></div>`;
   }
   // row: name and status line on the left, the value on the right, the bar along the bottom
   renderRow() {
     const model = this.model();
     const offline = isUnavailable(model.stateObj);
     let status = this.statusText(model) || this.secondaryText();
+    if (model.style === "change") {
+      const caption = model.change?.caption;
+      status = b2`${this.renderChange(model)}${caption ? b2`<span class="caption">· ${caption}</span>` : A}`;
+    }
     if (offline && model.stateObj) {
       status = this.localize("rows.since", {
         state: this.localize("rows.unavailable"),
@@ -3593,10 +3835,12 @@ var GraphiteMeter = class extends GraphiteCard {
       offline ? "unavailable" : "",
       model.empty ? "empty" : "",
       model.low ? "low" : "",
-      model.interactive ? "interactive" : ""
+      model.interactive ? "interactive" : "",
+      model.direction,
+      model.beyond ? "beyond" : ""
     ].filter(Boolean).join(" ");
     return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}
-      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="name">${model.name}</div>${status ? b2`<div class="status">${status}</div>` : A}<div class="value">${offline ? this.localize("rows.offline") : b2`${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}`}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
+      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="name">${model.name}</div>${status ? b2`<div class="status">${status}</div>` : A}<div class="value">${offline ? this.localize("rows.offline") : b2`${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}`}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" || model.style === "change" ? b2`<div class="needle"></div>` : A}</div></div>`;
   }
   getCardSize() {
     return layoutOf(this.config, "tile") === "row" ? 1 : 2;
@@ -3616,7 +3860,7 @@ GraphiteMeter.styles = [];
 registerElement("graphite-meter-editor", GraphiteMeterEditor);
 registerCard("graphite-meter", GraphiteMeter, {
   name: "Graphite Meter",
-  description: "Sensor value with a color scale (gradient with needle) or a level bar, optional secondary value."
+  description: "Sensor value with a color scale (gradient with needle), a level bar or the change against a reference (prices)."
 });
 
 // src/cards/tiles/graphite-effect-editor.ts

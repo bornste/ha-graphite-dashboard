@@ -107,6 +107,9 @@ export const sampleStates: Record<string, any> = {
   "calendar.school_exams": entity("calendar.school_exams", "off", { friendly_name: "Exams" }),
   "calendar.school_events": entity("calendar.school_events", "off", { friendly_name: "Events" }),
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
+  "sensor.acme_share": entity("sensor.acme_share", "142.8", { unit_of_measurement: "CHF", friendly_name: "ACME" }),
+  "sensor.northwind_share": entity("sensor.northwind_share", "61.2", { unit_of_measurement: "CHF", friendly_name: "Northwind" }),
+  "sensor.sample_coin": entity("sensor.sample_coin", "0.1777", { unit_of_measurement: "$", friendly_name: "Sample Coin", "24h_change": -3.24, "7d_change": 5.8 }),
 };
 
 // canned results for the info templates (the showcase has no template engine)
@@ -337,9 +340,37 @@ export function examples(language: string): ShowcaseSection[] {
     },
     {
       title: "graphite-meter",
-      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient) or a fill bar (level); as a tile or, with layout: row, as a row with a status line (ink cartridges, batteries).
+      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient), a fill bar (level) or the change against a reference (change, for prices); as a tile or, with layout: row, as a row with a status line (ink cartridges, batteries).
         <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-meter.md">Documentation</a>`,
       examples: [
+        {
+          title: "Prices (change)",
+          note: "style: change – the needle marks the reference (purchase price or 24 hours ago), the bar runs right for a gain and left for a loss; half the bar is 20 %. Up to 4 decimals.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Depot" : "Portfolio",
+            layout: "grid",
+            columns: 2,
+            cards: [
+              { type: "custom:graphite-meter", entity: "sensor.acme_share", style: "change", reference: 128 },
+              { type: "custom:graphite-meter", entity: "sensor.northwind_share", style: "change", reference: 66.5 },
+            ],
+          },
+        },
+        {
+          title: "Watchlist (narrow tiles)",
+          note: "Prices you only watch: compared with 24 hours / 7 days ago (here from an attribute with the change in percent). On narrow tiles the change moves up next to the name.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Beobachtet" : "Watchlist",
+            layout: "horizontal",
+            cards: [
+              { type: "custom:graphite-meter", entity: "sensor.sample_coin", style: "change", reference: "24h", change_attribute: "24h_change", decimals: 4 },
+              { type: "custom:graphite-meter", entity: "sensor.sample_coin", style: "change", reference: "7d", change_attribute: "7d_change", decimals: 4 },
+              { type: "custom:graphite-meter", entity: "sensor.acme_share", style: "change", reference: 128 },
+            ],
+          },
+        },
         {
           title: "Room climate (gradient)",
           note: "Temperature on a comfort scale, humidity as second value; the garden sensor has no value.",

@@ -264,3 +264,88 @@ export const meterRowStyles = css`
     font-weight: 400;
   }
 `;
+
+// Style "change" (tile and row): the needle in the middle marks the reference, the bar runs from there
+// to the right (gain, success) or to the left (loss, danger); beyond the scale its end fades out.
+export const meterChangeStyles = css`
+  :is(.tile, .row).change .bar {
+    background: color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+  }
+  :is(.tile, .row).change .fill {
+    left: 50%;
+    right: auto;
+    width: var(--change-share, 0%);
+    border-radius: 0 2px 2px 0;
+    background: var(--graphite-success);
+  }
+  :is(.tile, .row).change.down .fill {
+    left: auto;
+    right: 50%;
+    border-radius: 2px 0 0 2px;
+    background: var(--graphite-danger);
+  }
+  :is(.tile, .row).change.up.beyond .fill {
+    background: linear-gradient(to right, var(--graphite-success) 75%, color-mix(in srgb, var(--graphite-success) 30%, transparent));
+  }
+  :is(.tile, .row).change.down.beyond .fill {
+    background: linear-gradient(to left, var(--graphite-danger) 75%, color-mix(in srgb, var(--graphite-danger) 30%, transparent));
+  }
+  :is(.tile, .row).change .needle {
+    left: 50%;
+  }
+  .delta {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--graphite-text-secondary);
+  }
+  .up .delta {
+    color: var(--graphite-success);
+  }
+  .down .delta {
+    color: var(--graphite-danger);
+  }
+  /* reference on the right of the name ("Kauf 2.80", "24 h") */
+  .tile.change.captioned .name {
+    right: 50%;
+  }
+  .reference {
+    position: absolute;
+    right: var(--graphite-padding-tile, 12px);
+    top: 10px;
+    max-width: 50%;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 1.8;
+    color: var(--graphite-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* narrow tiles: the change moves up to the name row, the reference is left out */
+  .tile.change {
+    container-type: inline-size;
+  }
+  .topDelta {
+    display: none;
+    position: absolute;
+    right: var(--graphite-padding-tile, 12px);
+    top: 10px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 1.6;
+  }
+  @container (max-width: 200px) {
+    .tile.change .reference,
+    .tile.change .value-row .secondary {
+      display: none;
+    }
+    .tile.change .topDelta {
+      display: block;
+    }
+    .tile.change .name {
+      right: 50%;
+    }
+  }
+  .row .caption {
+    margin-left: 4px;
+    color: var(--graphite-text-muted);
+  }
+`;

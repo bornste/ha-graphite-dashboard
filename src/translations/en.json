@@ -66,13 +66,16 @@
     }
   },
   "meter": {
+    "purchase": "bought {value}",
+    "periodHours": "{count} h",
+    "periodDays": "{count} days",
     "editor": {
       "entity": "Entity (measurement)",
       "name": "Name (default: entity name)",
-      "style": "Style (gradient = color scale with needle, level = fill bar)",
+      "style": "Style (gradient = color scale with needle, level = fill bar, change = change against the reference)",
       "min": "Minimum",
       "max": "Maximum",
-      "decimals": "Decimals (default 1)",
+      "decimals": "Decimals (default: display precision of the entity, otherwise 1)",
       "unit": "Unit (default: entity unit)",
       "colors": "Color stops (YAML: value: color, e.g. 24: \"#6fbf5a\")",
       "icon": "Icon top right",
@@ -86,7 +89,12 @@
       "double_tap_action": "Double tap action",
       "color": "Single color (instead of color stops)",
       "low": "Low below (consumables, shows the status)",
-      "layout": "Layout"
+      "layout": "Layout",
+      "reference": "Reference (purchase price, entity or period like 24h, 7d)",
+      "reference_name": "Reference text (default: bought … / 24 h)",
+      "change_attribute": "Attribute with the change in % (e.g. 24h_change)",
+      "scale": "Half the bar equals (%)",
+      "change_decimals": "Decimals of the %"
     }
   },
   "effect": {

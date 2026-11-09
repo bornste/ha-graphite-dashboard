@@ -8,12 +8,13 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
   }
 
   protected schemaKey(): string {
-    return layoutOf(this.config, "tile");
+    return `${layoutOf(this.config, "tile")}|${this.config.style ?? "level"}`;
   }
 
   protected schema(): unknown[] {
     // the icon is a watermark of the tile; the row has none
     const isTile = layoutOf(this.config, "tile") === "tile";
+    const isChange = this.config.style === "change";
     return [
       layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
@@ -22,10 +23,22 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
         name: "",
         schema: [
           { name: "name", selector: { text: {} } },
-          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level"] } } },
+          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level", "change"] } } },
         ],
       },
-      {
+      ...(isChange ? [{
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "reference", selector: { text: {} } },
+          { name: "reference_name", selector: { text: {} } },
+          { name: "change_attribute", selector: { text: {} } },
+          { name: "scale", selector: { number: { mode: "box", min: 1, max: 1000 } } },
+          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "change_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "unit", selector: { text: {} } },
+        ],
+      }] : [{
         type: "grid",
         name: "",
         schema: [
@@ -43,7 +56,7 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
           { name: "low", selector: { number: { mode: "box" } } },
         ],
       },
-      { name: "colors", selector: { object: {} } },
+      { name: "colors", selector: { object: {} } }]),
       ...(isTile ? [{
         type: "grid",
         name: "",
@@ -52,16 +65,16 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
           { name: "show_icon", selector: { boolean: {} } },
         ],
       }] : []),
-      { name: "secondary_entity", selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "secondary_unit", selector: { text: {} } },
-          { name: "secondary_icon", selector: { icon: {} } },
-        ],
-      },
+      ...(isChange ? [] : [{ name: "secondary_entity", selector: { entity: {} } },
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+            { name: "secondary_unit", selector: { text: {} } },
+            { name: "secondary_icon", selector: { icon: {} } },
+          ],
+        }]),
       { name: "tap_action", selector: { ui_action: {} } },
       { name: "hold_action", selector: { ui_action: {} } },
       { name: "double_tap_action", selector: { ui_action: {} } },
