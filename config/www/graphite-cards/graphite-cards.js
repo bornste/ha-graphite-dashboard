@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.27.0";
+var version = "0.28.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -6228,6 +6228,128 @@ registerCard("graphite-vacuum", GraphiteVacuum, {
   name: "Graphite Vacuum",
   description: "Robot vacuum (Dreame) as animated tile and as panel with quick picks, rooms and maintenance."
 });
+
+// src/cards/media/graphite-weather.ts
+var baseTag = "weather-forecast-card";
+var cardTag = "graphite-weather";
+var headerItemsTag = "wfc-forecast-header-items";
+var graphiteCss = `
+  /* condition and temperature like the panel titles */
+  .wfc-current-state,
+  .wfc-current-temperature {
+    font-size: var(--graphite-title-size, 18px) !important;
+    font-weight: var(--graphite-title-weight, 400) !important;
+    color: var(--graphite-title-color, var(--graphite-text-primary, var(--primary-text-color))) !important;
+    line-height: 1.3 !important;
+  }
+  .wfc-current-temperature {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* location and min/max are hidden unless show_secondary_info is set */
+  :host(:not([show-secondary-info])) .wfc-secondary {
+    display: none !important;
+  }
+
+  /* current weather row: small inset, more air above, icon closer to the text */
+  .wfc-current-weather {
+    padding-inline: var(--graphite-gap-tile, 8px);
+    padding-top: var(--graphite-weather-space-above, 0) !important;
+    width: calc(100% - 2 * var(--graphite-gap-tile, 8px));
+  }
+  .wfc-weather-condition-icon-slot.wfc-current-icon {
+    margin-right: var(--graphite-gap-tile, 8px) !important;
+  }
+
+  /* condition effects: calmer layer so the text stays readable */
+  wfc-animation-provider {
+    opacity: var(--graphite-weather-effects-opacity, 90%);
+  }
+
+  /* forecast day labels: quieter, icons and chart lead */
+  .wfc-forecast-slot-time-primary {
+    font-size: var(--graphite-font-caption-size, 12px) !important;
+    color: var(--graphite-text-secondary, var(--secondary-text-color)) !important;
+  }
+`;
+var effectsCss = `
+  .cloud-track {
+    opacity: var(--graphite-weather-cloud-opacity, 35%);
+  }
+`;
+function createSheet(cssText) {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
+  return sheet;
+}
+function defineWeatherCard(baseCard) {
+  if (customElements.get(cardTag)) return;
+  const graphiteSheet = createSheet(graphiteCss);
+  const effectsSheet = createSheet(effectsCss);
+  class GraphiteWeather extends baseCard {
+    // original styles first, Graphite styles last so they win on equal specificity
+    static get styles() {
+      const baseStyles = baseCard.styles;
+      return [].concat(baseStyles ?? [], graphiteSheet);
+    }
+    setConfig(config) {
+      super.setConfig(config);
+      this.toggleAttribute("show-secondary-info", config?.show_secondary_info === true);
+      this.toggleAttribute("sun-time-labels", config?.sun_time_labels === true);
+    }
+    // the effect layer is a separate element with its own shadow root:
+    // add the effect styles after every render (the layer can be re-created)
+    updated(changedProperties) {
+      super.updated?.(changedProperties);
+      this.applyEffectStyles();
+    }
+    applyEffectStyles() {
+      const effectLayer = this.renderRoot?.querySelector("wfc-animation-provider");
+      if (!effectLayer) return;
+      const effectRoot = effectLayer.shadowRoot;
+      if (!effectRoot) {
+        effectLayer.updateComplete?.then(() => this.applyEffectStyles());
+        return;
+      }
+      if (!effectRoot.adoptedStyleSheets.includes(effectsSheet)) {
+        effectRoot.adoptedStyleSheets = [...effectRoot.adoptedStyleSheets, effectsSheet];
+      }
+    }
+  }
+  registerCard(cardTag, GraphiteWeather, {
+    name: "Graphite Weather",
+    description: "Weather Forecast Card in the Graphite look (needs the Weather Forecast Card from HACS).",
+    preview: true
+  });
+}
+function keepsIntervalLabels(element) {
+  let node = element;
+  for (let depth = 0; depth < 10 && node; depth++) {
+    const host = node.getRootNode().host;
+    if (!host) return false;
+    if (host.localName === cardTag) return !host.hasAttribute("sun-time-labels");
+    node = host;
+  }
+  return false;
+}
+function patchHeaderItems(headerItemsClass) {
+  const proto = headerItemsClass?.prototype;
+  if (!proto || typeof proto.getDateInfo !== "function" || proto.graphitePatched) return;
+  const originalGetDateInfo = proto.getDateInfo;
+  proto.getDateInfo = function() {
+    if (!keepsIntervalLabels(this)) return originalGetDateInfo.call(this);
+    const savedSuntimes = this.suntimesInfo;
+    this.suntimesInfo = void 0;
+    try {
+      return originalGetDateInfo.call(this);
+    } finally {
+      this.suntimesInfo = savedSuntimes;
+    }
+  };
+  proto.graphitePatched = true;
+}
+customElements.whenDefined(baseTag).then(() => defineWeatherCard(customElements.get(baseTag)));
+customElements.whenDefined(headerItemsTag).then(() => patchHeaderItems(customElements.get(headerItemsTag)));
 
 // src/core/calendar.ts
 var cache2 = {};

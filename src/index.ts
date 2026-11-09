@@ -13,6 +13,7 @@ import "./cards/tiles/graphite-pickup";
 import "./cards/tiles/graphite-scene";
 import "./cards/media/graphite-now-playing";
 import "./cards/media/graphite-vacuum";
+import "./cards/media/graphite-weather";
 import "./cards/lists/graphite-calendar";
 import "./cards/lists/graphite-summary";
 import "./cards/lists/graphite-shopping";
