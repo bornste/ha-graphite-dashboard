@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.34.2";
+var version = "0.34.3";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -763,7 +763,6 @@ var de_default = {
     nextWeekTitle: "N\xE4chste Woche",
     fromMonday: "Ab Montag",
     inTwoWeeks: "In zwei Wochen",
-    dayNumber: "{day}.",
     whenToday: "heute",
     whenTomorrow: "morgen",
     eventOne: "Eintrag",
@@ -1312,7 +1311,6 @@ var en_default = {
     nextWeekTitle: "Next week",
     fromMonday: "From Monday",
     inTwoWeeks: "In two weeks",
-    dayNumber: "{day}",
     whenToday: "today",
     whenTomorrow: "tomorrow",
     eventOne: "event",
@@ -6728,6 +6726,7 @@ var calendarStyles = i`
     place-items: center;
     font-size: var(--graphite-title-size, 18px);
     font-weight: 400;
+    text-transform: uppercase;
     color: var(--graphite-text-primary);
   }
   .compactDay.today .date span {
@@ -7384,10 +7383,7 @@ var GraphiteCalendar = class extends GraphiteCard {
       const items = [...byDay.get(day.getTime()) ?? []].sort((first, second) => Number(second.event.ruled) - Number(first.event.ruled) || first.index - second.index);
       const offset = daysBetween(today, day);
       const classes = ["compactDay", offset === 0 ? "today" : "", offset < 0 ? "past" : ""].filter(Boolean).join(" ");
-      return b2`<div class=${classes}><div class="date"><span>${this.localize(
-        "calendar.dayNumber",
-        { day: day.getDate() }
-      )}</span><b>${this.weekday(day)}</b></div><div class="items">${items.length ? items.map((item) => this.renderCompactItem(item.event, item.index)) : b2`<div class="none">–</div>`}</div></div>`;
+      return b2`<div class=${classes}><div class="date"><span>${day.getDate()}</span><b>${this.weekday(day)}</b></div><div class="items">${items.length ? items.map((item) => this.renderCompactItem(item.event, item.index)) : b2`<div class="none">–</div>`}</div></div>`;
     })}</div>`;
   }
   // minutes after midnight of "hh:mm"; undefined without a valid time

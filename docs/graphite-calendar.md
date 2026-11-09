@@ -134,8 +134,8 @@ today or tomorrow).
 
 ## Compact layout
 
-- **Days:** one block per day with a small calendar sheet on the left: the weekday large ("Mi"), the
-  date small in the band above ("11."), since in a school week the weekday matters more than the
+- **Days:** one block per day with a small calendar sheet on the left: the weekday large ("MI"), the
+  date small in the band above ("11"), since in a school week the weekday matters more than the
   date. Today in the accent color, earlier days of the week dimmed. The sheet is 42px like the row
   icons, 9px from the edge, with `--graphite-radius-tile`. Events of a day are `--graphite-gap-tile`
   apart.

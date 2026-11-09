@@ -244,6 +244,7 @@ export const calendarStyles = css`
     place-items: center;
     font-size: var(--graphite-title-size, 18px);
     font-weight: 400;
+    text-transform: uppercase;
     color: var(--graphite-text-primary);
   }
   .compactDay.today .date span {
