@@ -20,6 +20,7 @@ the special cases – also for cards with a visual editor.
 | graphite-calendar | list | [graphite-calendar.md](graphite-calendar.md) | ready |
 | graphite-summary | – | [graphite-summary.md](graphite-summary.md) | ready |
 | graphite-shopping | – | [graphite-shopping.md](graphite-shopping.md) | ready |
+| graphite-battery | – | [graphite-battery.md](graphite-battery.md) | ready |
 | graphite-slider | inline, row | [graphite-slider.md](graphite-slider.md) | ready |
 | graphite-light | tile | [graphite-light.md](graphite-light.md) | ready |
 | graphite-scene | tile | [graphite-scene.md](graphite-scene.md) | ready |

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.26.0";
+var version = "0.27.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -1036,6 +1036,29 @@ var de_default = {
       panels: "Spalten als Panels",
       groups: "Schnellwahl-Gruppen (YAML)"
     }
+  },
+  battery: {
+    offlineTitle: "Leer oder offline",
+    criticalTitle: "Kritisch",
+    lowTitle: "Bald wechseln",
+    okTitle: "In Ordnung",
+    okInfo: "{count} \xB7 tiefste {lowest} %",
+    below: "unter {level} %",
+    empty: "leer",
+    offline: "offline",
+    noReport: "keine Meldung seit {time}",
+    minutes: "{count} Min.",
+    hours: "{count} Std.",
+    days: "{count} Tagen",
+    none: "Keine Batteriesensoren gefunden.",
+    editor: {
+      critical: "Kritisch unter",
+      low: "Bald wechseln unter",
+      exclude_label: "Label zum Ausschliessen",
+      exclude: "Weitere Sensoren ausschliessen",
+      collapsed: "\xABIn Ordnung\xBB zugeklappt",
+      names: "Anzeigenamen (YAML)"
+    }
   }
 };
 
@@ -1523,6 +1546,29 @@ var en_default = {
       empty_text: "Text of an empty list",
       panels: "Columns as panels",
       groups: "Quick pick groups (YAML)"
+    }
+  },
+  battery: {
+    offlineTitle: "Empty or offline",
+    criticalTitle: "Critical",
+    lowTitle: "Replace soon",
+    okTitle: "In order",
+    okInfo: "{count} \xB7 lowest {lowest} %",
+    below: "below {level} %",
+    empty: "empty",
+    offline: "offline",
+    noReport: "no report for {time}",
+    minutes: "{count} min",
+    hours: "{count} h",
+    days: "{count} days",
+    none: "No battery sensors found.",
+    editor: {
+      critical: "Critical below",
+      low: "Replace soon below",
+      exclude_label: "Label to exclude",
+      exclude: "Further sensors to exclude",
+      collapsed: "\u201CIn order\u201D collapsed",
+      names: "Display names (YAML)"
     }
   }
 };
@@ -7835,6 +7881,447 @@ registerElement("graphite-shopping-editor", GraphiteShoppingEditor);
 registerCard("graphite-shopping", GraphiteShopping, {
   name: "Graphite Shopping",
   description: "Shopping list with quick pick groups, variants and products with a fixed description (todo entity, e.g. Bring)."
+});
+
+// src/cards/lists/battery-styles.ts
+var batteryStyles = i`
+  :host {
+    display: block;
+    --tileSurface: var(--graphite-surface-tile, #1f1f21);
+    --tileRaised: var(--graphite-surface-tile-active, #2b2b2c);
+    --textPrimary: var(--graphite-text-primary, var(--primary-text-color));
+    --textSecondary: var(--graphite-text-secondary, var(--secondary-text-color));
+    --textMuted: var(--graphite-text-muted, var(--disabled-text-color));
+    --accent: var(--graphite-accent, #f5c48a);
+    --danger: var(--graphite-danger, #e8908a);
+    --success: var(--graphite-success, #a8d5a2);
+    --radius: var(--graphite-radius-tile, 12px);
+    --gap: var(--graphite-gap-tile, 8px);
+  }
+  ha-card {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+  /* one panel per group, same look as graphite-panel */
+  .panel {
+    background: var(--graphite-surface-panel, var(--card-background-color));
+    border-radius: var(--graphite-radius-panel, 20px);
+    padding: var(--graphite-padding-panel, 16px);
+  }
+  .panel + .panel {
+    margin-top: var(--graphite-gap-panel, 16px);
+  }
+  /* title and info share one baseline; dot and chevron are centered on the line */
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .header i {
+    flex: none;
+    align-self: center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--labelColor);
+  }
+  .header .title {
+    flex: none;
+    font-size: var(--graphite-title-size, 18px);
+    font-weight: var(--graphite-title-weight, 400);
+    line-height: 1.2;
+    color: var(--graphite-title-color, var(--textPrimary));
+  }
+  /* info right after the title, separated by a thin line (same as panel card, room cards and dialog
+     headers); 2px margin + 10px gap = 12px like there. The right side stays for the chevron. */
+  .header .info {
+    min-width: 0;
+    margin-left: 2px;
+    padding-left: 12px;
+    position: relative;
+    /* 2px more room on top for the separator line (it reads too short at cap height);
+       the negative margin keeps the text on the shared baseline */
+    padding-top: 2px;
+    margin-top: -2px;
+    font-size: 13px;
+    line-height: 16px;
+    color: var(--textSecondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* separator line from the title's cap height down to the shared baseline
+     (13px text in a 16px line: the baseline sits 3.5px above the bottom) */
+  .header .info::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 3.5px;
+    width: 1px;
+    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 24%, var(--graphite-ground, #0a0a0b)));
+  }
+  /* "in order": the whole header toggles the compact tiles */
+  button.header {
+    position: relative;
+    width: 100%;
+    /* same gap to the tiles as the other panels when expanded */
+    margin: 0 0 12px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button.header[aria-expanded="false"] {
+    margin-bottom: 0;
+  }
+  button.header ha-icon {
+    margin-left: auto;
+    align-self: center;
+    --mdc-icon-size: 20px;
+    color: var(--textSecondary);
+    transition: transform 0.2s ease;
+  }
+  button.header[aria-expanded="true"] ha-icon {
+    transform: rotate(180deg);
+  }
+  .rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
+
+  /* large card for batteries that need attention */
+  .row {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    background: var(--tileSurface);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .row.offline {
+    background: color-mix(in srgb, var(--danger) 16%, var(--tileRaised));
+  }
+  .row.critical {
+    background: color-mix(in srgb, var(--accent) 14%, var(--tileRaised));
+  }
+  .row .name {
+    font-size: 15px;
+    color: var(--textPrimary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row .sub {
+    grid-column: 1;
+    font-size: 12px;
+    color: var(--textSecondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row .value {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--textPrimary);
+    font-variant-numeric: tabular-nums;
+  }
+  /* unit like the graphite-meter tiles */
+  .row .value small {
+    margin-left: 2px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--textMuted);
+  }
+  .row.offline .value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--danger);
+  }
+  .row.critical .value {
+    color: var(--accent);
+  }
+  .row .track {
+    grid-column: 1 / -1;
+    height: 4px;
+    margin-top: 6px;
+  }
+
+  /* level bar, shared by large and compact tiles */
+  .track {
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--textPrimary) 8%, transparent);
+  }
+  .track span {
+    display: block;
+    height: 100%;
+    width: var(--level);
+    border-radius: 2px;
+    background: var(--barColor);
+  }
+
+  .compact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .compact[hidden] {
+    display: none;
+  }
+  .item {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 8px;
+    padding: 8px 12px 10px;
+    border-radius: var(--radius);
+    background: var(--tileSurface);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .item .name {
+    font-size: 13px;
+    color: var(--textPrimary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item .value {
+    font-size: 13px;
+    color: var(--textSecondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .item .track {
+    grid-column: 1 / -1;
+    height: 3px;
+    --barColor: color-mix(in srgb, var(--success) 70%, var(--tileSurface));
+  }
+  .empty {
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--textSecondary);
+  }
+  /* the ripple covers its row and takes no place in the grid */
+  ha-ripple {
+    position: absolute;
+    inset: 0;
+  }
+  .row:focus-visible, .item:focus-visible, button.header:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+`;
+
+// src/cards/lists/graphite-battery-editor.ts
+var GraphiteBatteryEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "battery.editor";
+  }
+  defaults() {
+    return { critical: 20, low: 40, exclude_label: "exclude", collapsed: true };
+  }
+  schema() {
+    return [
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "critical", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
+          { name: "low", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } }
+        ]
+      },
+      { name: "exclude_label", selector: { label: {} } },
+      { name: "exclude", selector: { entity: { multiple: true, filter: { domain: "sensor", device_class: "battery" } } } },
+      { name: "collapsed", selector: { boolean: {} } },
+      { name: "names", selector: { object: {} } }
+    ];
+  }
+};
+
+// src/cards/lists/graphite-battery.ts
+var offlineStates = ["unavailable", "unknown"];
+var nameSuffixes = [" batterie", " battery", " batteriestand"];
+var refreshMilliseconds = 6e4;
+var GraphiteBattery = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (this.expanded === void 0) this.expanded = config.collapsed === false;
+    return config;
+  }
+  // every battery sensor (the offline age is refreshed by the timer)
+  watchedEntities() {
+    return this.batteries().map((battery) => battery.entityId);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.refreshTimer = window.setInterval(() => this.requestUpdate(), refreshMilliseconds);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.clearInterval(this.refreshTimer);
+  }
+  t(key, params = {}) {
+    return this.localize(`battery.${key}`, params);
+  }
+  // every battery sensor that is not excluded, with name, area and level
+  batteries() {
+    const hass = this.hass;
+    const config = this.config;
+    if (!hass || !config) return [];
+    const registries = hass;
+    const excluded = new Set(config.exclude ?? []);
+    const excludeLabel = config.exclude_label ?? "exclude";
+    return Object.entries(hass.states).flatMap(([entityId, stateObj]) => {
+      if (!entityId.startsWith("sensor.") || stateObj.attributes.device_class !== "battery") return [];
+      if (excluded.has(entityId)) return [];
+      const entry = registries.entities?.[entityId];
+      if (entry?.hidden) return [];
+      if (excludeLabel && (entry?.labels ?? []).includes(excludeLabel)) return [];
+      const device = entry?.device_id ? registries.devices?.[entry.device_id] : void 0;
+      const areaId = entry?.area_id || device?.area_id;
+      const offline = offlineStates.includes(stateObj.state);
+      const level = offline ? NaN : Number(stateObj.state);
+      return [{
+        entityId,
+        name: config.names?.[entityId] || this.defaultName(stateObj, device?.name_by_user || device?.name),
+        area: areaId ? registries.areas?.[areaId]?.name || "" : "",
+        level: Number.isFinite(level) ? Math.round(level) : null,
+        offline: offline || level === 0,
+        changed: stateObj.last_changed
+      }];
+    });
+  }
+  // device name without vendor details in brackets, otherwise the entity name without "Battery"
+  defaultName(stateObj, deviceName) {
+    if (deviceName) {
+      const trimmed = deviceName.trim();
+      const bracket = trimmed.endsWith(")") ? trimmed.lastIndexOf("(") : -1;
+      return bracket > 0 ? trimmed.slice(0, bracket).trim() : trimmed;
+    }
+    const name = String(stateObj.attributes.friendly_name || stateObj.entity_id);
+    const suffix = nameSuffixes.find((ending) => name.toLowerCase().endsWith(ending));
+    return suffix ? name.slice(0, name.length - suffix.length) : name;
+  }
+  age(timestamp) {
+    const minutes = Math.max(0, Math.round((Date.now() - new Date(timestamp).getTime()) / 6e4));
+    if (minutes < 60) return this.t("minutes", { count: minutes });
+    const hours = Math.round(minutes / 60);
+    if (hours < 48) return this.t("hours", { count: hours });
+    return this.t("days", { count: Math.round(hours / 24) });
+  }
+  moreInfo(entityId, event) {
+    if (event && event.key !== "Enter" && event.key !== " ") return;
+    event?.preventDefault();
+    this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }));
+  }
+  renderRow(battery, kind) {
+    const empty = battery.level === 0;
+    const sub = kind === "offline" ? empty ? this.t("empty") : this.t("noReport", { time: this.age(battery.changed) }) : battery.area;
+    const value = kind === "offline" ? empty ? this.t("empty") : this.t("offline") : b2`${battery.level}<small>%</small>`;
+    const barColor = { offline: "var(--danger)", critical: "var(--accent)", low: "var(--textSecondary)" }[kind];
+    return b2`
+      <div class="row ${kind}" role="button" tabindex="0"
+        @click=${() => this.moreInfo(battery.entityId)} @keydown=${(event) => this.moreInfo(battery.entityId, event)}>
+        <ha-ripple></ha-ripple>
+        <div class="name">${battery.name}</div>
+        <div class="sub">${sub}</div>
+        <div class="value">${value}</div>
+        <div class="track" style="--level: ${battery.level ?? 0}%; --barColor: ${barColor}"><span></span></div>
+      </div>
+    `;
+  }
+  renderPanel(title, info, color, batteries, kind) {
+    if (!batteries.length) return A;
+    return b2`
+      <div class="panel">
+        <div class="header" style="--labelColor: ${color}"><i></i><span class="title">${title}</span><span class="info">${info}</span></div>
+        <div class="rows">${batteries.map((battery) => this.renderRow(battery, kind))}</div>
+      </div>
+    `;
+  }
+  renderOk(batteries) {
+    if (!batteries.length) return A;
+    const expanded = !!this.expanded;
+    return b2`
+      <div class="panel">
+        <button class="header" style="--labelColor: var(--success)" aria-expanded=${expanded ? "true" : "false"}
+          @click=${() => {
+      this.expanded = !this.expanded;
+    }}>
+          <i></i><span class="title">${this.t("okTitle")}</span>
+          <span class="info">${this.t("okInfo", { count: batteries.length, lowest: batteries[0].level ?? 0 })}</span>
+          <ha-icon icon="mdi:chevron-down"></ha-icon>
+        </button>
+        <div class="compact" ?hidden=${!expanded}>
+          ${batteries.map((battery) => b2`
+            <div class="item" role="button" tabindex="0"
+              @click=${() => this.moreInfo(battery.entityId)} @keydown=${(event) => this.moreInfo(battery.entityId, event)}>
+              <ha-ripple></ha-ripple>
+              <div class="name">${battery.name}</div>
+              <div class="value">${battery.level} %</div>
+              <div class="track" style="--level: ${battery.level}%"><span></span></div>
+            </div>`)}
+        </div>
+      </div>
+    `;
+  }
+  render() {
+    if (!this.config || !this.hass) return A;
+    const all = this.batteries();
+    const critical = Number(this.config.critical ?? 20);
+    const low = Number(this.config.low ?? 40);
+    const offline = all.filter((battery) => battery.offline);
+    const levelled = all.filter((battery) => !battery.offline && battery.level !== null).sort((first, second) => first.level - second.level || first.name.localeCompare(second.name));
+    const criticalList = levelled.filter((battery) => battery.level < critical);
+    const lowList = levelled.filter((battery) => battery.level >= critical && battery.level < low);
+    const okList = levelled.filter((battery) => battery.level >= low);
+    return b2`
+      <ha-card>
+        ${all.length ? b2`
+            ${this.renderPanel(this.t("offlineTitle"), String(offline.length), "var(--danger)", offline, "offline")}
+            ${this.renderPanel(this.t("criticalTitle"), this.t("below", { level: critical }), "var(--accent)", criticalList, "critical")}
+            ${this.renderPanel(this.t("lowTitle"), this.t("below", { level: low }), "var(--textSecondary)", lowList, "low")}
+            ${this.renderOk(okList)}` : b2`<div class="panel empty">${this.t("none")}</div>`}
+      </ha-card>
+    `;
+  }
+  getCardSize() {
+    return 4;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto" };
+  }
+  static getStubConfig() {
+    return { critical: 20, low: 40 };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-battery-editor");
+  }
+};
+GraphiteBattery.properties = {
+  ...GraphiteCard.properties,
+  expanded: { state: true }
+};
+GraphiteBattery.styles = batteryStyles;
+registerElement("graphite-battery-editor", GraphiteBatteryEditor);
+registerCard("graphite-battery", GraphiteBattery, {
+  name: "Graphite Battery",
+  description: "All battery sensors grouped by urgency: offline, critical, replace soon and a collapsible list of the rest."
 });
 
 // src/core/graphite-range.ts

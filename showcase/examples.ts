@@ -93,6 +93,12 @@ export const sampleStates: Record<string, any> = {
   "sensor.photo_printer_cyan": entity("sensor.photo_printer_cyan", "70", { friendly_name: "Cyan", unit_of_measurement: "%" }),
   "sensor.photo_printer_magenta": entity("sensor.photo_printer_magenta", "66", { friendly_name: "Magenta", unit_of_measurement: "%" }),
   "sensor.photo_printer_yellow": entity("sensor.photo_printer_yellow", "90", { friendly_name: "Yellow", unit_of_measurement: "%" }),
+  "sensor.hall_motion_battery": entity("sensor.hall_motion_battery", "unavailable", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Hall motion Battery" }, 1440),
+  "sensor.balcony_door_battery": entity("sensor.balcony_door_battery", "12", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Balcony door Battery" }),
+  "sensor.office_switch_battery": entity("sensor.office_switch_battery", "31", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Office switch Battery" }),
+  "sensor.bedroom_climate_battery": entity("sensor.bedroom_climate_battery", "64", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Bedroom climate Battery" }),
+  "sensor.kitchen_window_battery": entity("sensor.kitchen_window_battery", "88", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Kitchen window Battery" }),
+  "sensor.living_room_switch_battery": entity("sensor.living_room_switch_battery", "100", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Living room switch Battery" }),
   "sensor.open_windows": entity("sensor.open_windows", "1", { friendly_name: "Open windows" }),
   "input_boolean.guest_mode": entity("input_boolean.guest_mode", "on", { friendly_name: "Guest mode", icon: "mdi:account-circle-outline" }),
   "calendar.paper_collection": entity("calendar.paper_collection", "off", { friendly_name: "Paper", message: "Paper" }),
@@ -729,6 +735,18 @@ export function examples(language: string): ShowcaseSection[] {
               { name: "Household", items: ["Kitchen roll", "Dish soap"] },
             ],
           },
+        },
+      ],
+    },
+    {
+      title: "graphite-battery",
+      description: `All battery sensors grouped by urgency; new devices appear by themselves.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-battery.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Battery overview",
+          note: "Offline, critical and soon in large rows; the batteries in order expanded as compact tiles.",
+          config: { type: "custom:graphite-battery", collapsed: false },
         },
       ],
     },

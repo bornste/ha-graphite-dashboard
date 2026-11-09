@@ -482,5 +482,28 @@
       "panels": "Spalten als Panels",
       "groups": "Schnellwahl-Gruppen (YAML)"
     }
+  },
+  "battery": {
+    "offlineTitle": "Leer oder offline",
+    "criticalTitle": "Kritisch",
+    "lowTitle": "Bald wechseln",
+    "okTitle": "In Ordnung",
+    "okInfo": "{count} · tiefste {lowest} %",
+    "below": "unter {level} %",
+    "empty": "leer",
+    "offline": "offline",
+    "noReport": "keine Meldung seit {time}",
+    "minutes": "{count} Min.",
+    "hours": "{count} Std.",
+    "days": "{count} Tagen",
+    "none": "Keine Batteriesensoren gefunden.",
+    "editor": {
+      "critical": "Kritisch unter",
+      "low": "Bald wechseln unter",
+      "exclude_label": "Label zum Ausschliessen",
+      "exclude": "Weitere Sensoren ausschliessen",
+      "collapsed": "«In Ordnung» zugeklappt",
+      "names": "Anzeigenamen (YAML)"
+    }
   }
 }

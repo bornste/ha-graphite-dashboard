@@ -482,5 +482,28 @@
       "panels": "Columns as panels",
       "groups": "Quick pick groups (YAML)"
     }
+  },
+  "battery": {
+    "offlineTitle": "Empty or offline",
+    "criticalTitle": "Critical",
+    "lowTitle": "Replace soon",
+    "okTitle": "In order",
+    "okInfo": "{count} · lowest {lowest} %",
+    "below": "below {level} %",
+    "empty": "empty",
+    "offline": "offline",
+    "noReport": "no report for {time}",
+    "minutes": "{count} min",
+    "hours": "{count} h",
+    "days": "{count} days",
+    "none": "No battery sensors found.",
+    "editor": {
+      "critical": "Critical below",
+      "low": "Replace soon below",
+      "exclude_label": "Label to exclude",
+      "exclude": "Further sensors to exclude",
+      "collapsed": "“In order” collapsed",
+      "names": "Display names (YAML)"
+    }
   }
 }
