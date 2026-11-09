@@ -750,5 +750,28 @@ export function examples(language: string): ShowcaseSection[] {
         },
       ],
     },
+    {
+      title: "graphite-legend",
+      description: `Legend for charts: color scales with the same stops as the chart thresholds, and swatch items.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-legend.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Climate legend in a panel",
+          note: "Two scales side by side on wide panels, a swatch for the window band.",
+          config: {
+            type: "custom:graphite-panel",
+            title: "Legend",
+            cards: [{
+              type: "custom:graphite-legend",
+              scales: [
+                { name: "Temperature", unit: "°C", min: -5, max: 35, opacity: 0.6, stops: [{ value: 0, color: "#9b7bd4" }, { value: 15, color: "#5b9bd5" }, { value: 20, color: "#6fbf5a" }, { value: 24, color: "#6fbf5a" }, { value: 28, color: "#f0a33c" }, { value: 32, color: "#e4644b" }] },
+                { name: "CO₂", unit: "ppm", min: 300, max: 2200, opacity: 0.6, stops: [{ value: 400, color: "#6fbf5a" }, { value: 1000, color: "#6fbf5a" }, { value: 1400, color: "#f0a33c" }, { value: 2000, color: "#e4644b" }], ticks: [400, 1000, 1400, 2000] },
+              ],
+              items: [{ name: "Window / door open", color: "#f5c48a", opacity: 0.4 }],
+            }],
+          },
+        },
+      ],
+    },
   ];
 }

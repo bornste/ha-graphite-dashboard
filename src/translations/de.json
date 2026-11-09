@@ -505,5 +505,11 @@
       "collapsed": "«In Ordnung» zugeklappt",
       "names": "Anzeigenamen (YAML)"
     }
+  },
+  "legend": {
+    "editor": {
+      "scales": "Farbskalen (YAML)",
+      "items": "Einträge (YAML)"
+    }
   }
 }

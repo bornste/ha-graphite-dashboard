@@ -505,5 +505,11 @@
       "collapsed": "“In order” collapsed",
       "names": "Display names (YAML)"
     }
+  },
+  "legend": {
+    "editor": {
+      "scales": "Color scales (YAML)",
+      "items": "Items (YAML)"
+    }
   }
 }

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.28.0";
+var version = "0.29.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -1059,6 +1059,12 @@ var de_default = {
       collapsed: "\xABIn Ordnung\xBB zugeklappt",
       names: "Anzeigenamen (YAML)"
     }
+  },
+  legend: {
+    editor: {
+      scales: "Farbskalen (YAML)",
+      items: "Eintr\xE4ge (YAML)"
+    }
   }
 };
 
@@ -1569,6 +1575,12 @@ var en_default = {
       exclude: "Further sensors to exclude",
       collapsed: "\u201CIn order\u201D collapsed",
       names: "Display names (YAML)"
+    }
+  },
+  legend: {
+    editor: {
+      scales: "Color scales (YAML)",
+      items: "Items (YAML)"
     }
   }
 };
@@ -8444,6 +8456,170 @@ registerElement("graphite-battery-editor", GraphiteBatteryEditor);
 registerCard("graphite-battery", GraphiteBattery, {
   name: "Graphite Battery",
   description: "All battery sensors grouped by urgency: offline, critical, replace soon and a collapsible list of the rest."
+});
+
+// src/cards/lists/graphite-legend-editor.ts
+var GraphiteLegendEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "legend.editor";
+  }
+  schema() {
+    return [
+      { name: "scales", selector: { object: {} } },
+      { name: "items", selector: { object: {} } }
+    ];
+  }
+};
+
+// src/cards/lists/graphite-legend.ts
+var legendStyles = i`
+  :host {
+    display: block;
+  }
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--graphite-gap-panel, 16px);
+  }
+  /* scales side by side on wide panels, stacked on narrow ones */
+  .scales {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--graphite-gap-panel, 16px) 40px;
+  }
+  .scaleHead {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 16px;
+    color: var(--graphite-text-secondary, var(--secondary-text-color));
+  }
+  .unit {
+    color: var(--graphite-text-muted, var(--secondary-text-color));
+  }
+  .bar {
+    height: 8px;
+    margin: 8px 0 6px;
+    border-radius: var(--graphite-radius-pill, 999px);
+  }
+  .ticks {
+    position: relative;
+    height: 14px;
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--graphite-text-muted, var(--secondary-text-color));
+    font-variant-numeric: tabular-nums;
+  }
+  .ticks span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  /* the outermost labels stay inside the bar */
+  .ticks span.start {
+    transform: none;
+  }
+  .ticks span.end {
+    transform: translateX(-100%);
+  }
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--graphite-gap-tile, 8px) 24px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 16px;
+    color: var(--graphite-text-secondary, var(--secondary-text-color));
+  }
+  .item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--graphite-gap-tile, 8px);
+  }
+  .swatch {
+    width: 18px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+`;
+var GraphiteLegend = class extends GraphiteCard {
+  normalizeConfig(config) {
+    const scales = config.scales ?? [];
+    const items = config.items ?? [];
+    if (!Array.isArray(scales) || !Array.isArray(items)) throw new Error("scales and items must be lists");
+    if (scales.some((scale) => !Array.isArray(scale.stops) || scale.stops.length === 0))
+      throw new Error("every scale needs stops with value and color");
+    return { ...config, scales, items };
+  }
+  // static legend: no re-render on state changes
+  watchedEntities() {
+    return [];
+  }
+  hassChanged(_hass) {
+  }
+  renderScale(scale) {
+    const stops = [...scale.stops].sort((first, second) => first.value - second.value);
+    const min = Number(scale.min ?? stops[0].value);
+    const max = Number(scale.max ?? stops[stops.length - 1].value);
+    const range = max - min || 1;
+    const percentOf = (value) => Math.min(100, Math.max(0, (value - min) / range * 100));
+    const gradient = stops.map((stop) => `${stop.color} ${percentOf(stop.value).toFixed(2)}%`).join(", ");
+    const opacity = scale.opacity !== void 0 ? `; opacity: ${scale.opacity}` : "";
+    const ticks = scale.ticks ?? [...new Set(stops.map((stop) => stop.value))];
+    return b2`
+      <div class="scale">
+        <div class="scaleHead"><span class="name">${scale.name ?? ""}</span><span class="unit">${scale.unit ?? ""}</span></div>
+        <div class="bar" style="background: linear-gradient(to right, ${gradient})${opacity}"></div>
+        <div class="ticks">
+          ${ticks.map((value) => {
+      const percent = percentOf(value);
+      const edge = percent <= 2 ? "start" : percent >= 98 ? "end" : "";
+      return b2`<span class=${edge} style="left: ${percent}%">${value}</span>`;
+    })}
+        </div>
+      </div>
+    `;
+  }
+  renderItem(item) {
+    const color = item.color || "var(--graphite-accent, #f5c48a)";
+    return b2`
+      <span class="item">
+        <span class="swatch" style="background: ${color}; opacity: ${item.opacity ?? 1}"></span>
+        <span class="name">${item.name ?? ""}</span>
+      </span>
+    `;
+  }
+  render() {
+    if (!this.config) return A;
+    const scales = this.config.scales ?? [];
+    const items = this.config.items ?? [];
+    return b2`
+      <div class="legend">
+        ${scales.length ? b2`<div class="scales">${scales.map((scale) => this.renderScale(scale))}</div>` : A}
+        ${items.length ? b2`<div class="items">${items.map((item) => this.renderItem(item))}</div>` : A}
+      </div>
+    `;
+  }
+  getCardSize() {
+    return 2;
+  }
+  static getStubConfig() {
+    return {
+      scales: [{ name: "Temperature", unit: "\xB0C", stops: [{ value: 15, color: "#5b9bd5" }, { value: 20, color: "#6fbf5a" }, { value: 28, color: "#f0a33c" }] }],
+      items: [{ name: "Window open", color: "#f5c48a", opacity: 0.2 }]
+    };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-legend-editor");
+  }
+};
+GraphiteLegend.styles = legendStyles;
+registerElement("graphite-legend-editor", GraphiteLegendEditor);
+registerCard("graphite-legend", GraphiteLegend, {
+  name: "Graphite Legend",
+  description: "Chart legend with color scales and swatch items in the Graphite look."
 });
 
 // src/core/graphite-range.ts
