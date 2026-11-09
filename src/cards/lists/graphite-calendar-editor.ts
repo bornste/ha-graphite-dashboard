@@ -22,7 +22,7 @@ export class GraphiteCalendarEditor extends GraphiteFormEditor {
   protected schema(): unknown[] {
     const range = this.config.range ?? "this_and_next_week";
     const compact = this.config.layout === "compact";
-    const summary = this.config.layout === "summary";
+    const tiles = this.config.layout === "tiles";
     const isWeek = range === "week";
     return [
       { name: "calendars", required: true, selector: { object: {} } },
@@ -30,27 +30,27 @@ export class GraphiteCalendarEditor extends GraphiteFormEditor {
         type: "grid",
         name: "",
         schema: [
-          this.select("layout", "layouts", ["list", "compact", "summary"]),
-          ...(summary ? [] : [this.select("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"])]),
+          this.select("layout", "layouts", ["list", "compact", "tiles"]),
+          ...(tiles ? [] : [this.select("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"])]),
         ],
       },
-      ...(summary ? [{
+      ...(tiles ? [{
         type: "grid",
         name: "",
         schema: [
           { name: "icon", selector: { icon: {} } },
-          { name: "highlight_text", selector: { text: {} } },
+          { name: "highlight_name", selector: { text: {} } },
         ],
       }, {
         type: "grid",
         name: "",
         schema: [
           { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } },
-          { name: "weekdays", selector: { boolean: {} } },
+          { name: "day_switch", selector: { text: {} } },
         ],
-      }] : []),
-      ...(range === "days" && !summary ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : []),
-      ...(isWeek && !summary ? [{
+      }, { name: "weekdays", selector: { boolean: {} } }] : []),
+      ...(range === "days" && !tiles ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : []),
+      ...(isWeek && !tiles ? [{
         type: "grid",
         name: "",
         schema: [
@@ -58,7 +58,7 @@ export class GraphiteCalendarEditor extends GraphiteFormEditor {
           { name: "week_rollover", selector: { text: {} } },
         ],
       }] : []),
-      ...(summary ? [] : [{
+      ...(tiles ? [] : [{
         type: "grid",
         name: "",
         schema: [
@@ -66,7 +66,7 @@ export class GraphiteCalendarEditor extends GraphiteFormEditor {
           { name: "max_items", selector: { number: { mode: "box", min: 1, max: 100 } } },
         ],
       }]),
-      ...(summary ? [] : compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [{
+      ...(tiles ? [] : compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [{
         type: "grid",
         name: "",
         schema: [

@@ -212,15 +212,18 @@
     "dayNumber": "{day}",
     "whenToday": "today",
     "whenTomorrow": "tomorrow",
-    "nextHighlight": "next exam: {title}",
-    "noHighlight": "no exam in the next {days} days",
+    "eventOne": "event",
+    "eventMany": "events",
+    "highlightName": "Exam",
+    "noneValue": "none",
+    "daysShort": "{days} days",
     "editor": {
       "calendars": "Calendars (list: entity, name, color, icon, highlight)",
       "layout": "Layout",
       "layouts": {
         "list": "List",
         "compact": "Compact",
-        "summary": "Summary"
+        "tiles": "Tiles"
       },
       "range": "Range",
       "ranges": {
@@ -240,7 +243,8 @@
       "weekdays": "Always show Mon–Fri",
       "title": "Title (week: automatic)",
       "icon": "Icon",
-      "highlight_text": "Text about the next highlight ({title})",
+      "highlight_name": "Name of the highlight tile",
+      "day_switch": "Next day from (e.g. 15:00)",
       "max_items": "Max. events",
       "secondary": "Second line",
       "secondaries": {

@@ -212,15 +212,18 @@
     "dayNumber": "{day}.",
     "whenToday": "heute",
     "whenTomorrow": "morgen",
-    "nextHighlight": "nächste Prüfung: {title}",
-    "noHighlight": "keine Prüfung in den nächsten {days} Tagen",
+    "eventOne": "Eintrag",
+    "eventMany": "Einträge",
+    "highlightName": "Prüfung",
+    "noneValue": "keine",
+    "daysShort": "{days} Tage",
     "editor": {
       "calendars": "Kalender (Liste: entity, name, color, icon, highlight)",
       "layout": "Layout",
       "layouts": {
         "list": "Liste",
         "compact": "Kompakt",
-        "summary": "Zusammenfassung"
+        "tiles": "Kacheln"
       },
       "range": "Zeitraum",
       "ranges": {
@@ -240,7 +243,8 @@
       "weekdays": "Mo–Fr immer anzeigen",
       "title": "Titel (Woche: automatisch)",
       "icon": "Symbol",
-      "highlight_text": "Text zur nächsten Hervorhebung ({title})",
+      "highlight_name": "Name der Hervorhebungs-Kachel",
+      "day_switch": "Nächster Tag ab (z. B. 15:00)",
       "max_items": "Max. Einträge",
       "secondary": "Zweite Zeile",
       "secondaries": {

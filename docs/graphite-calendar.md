@@ -7,8 +7,8 @@ homework, exams and events, but works with any calendar. Usually placed inside a
 [graphite-panel](graphite-panel.md), which gives it the title.
 
 Three layouts: `list` (rows with icon, second line and time), `compact` (one block per day, one line
-per event), for calendars with many all-day entries such as homework, and `summary` (one row with the
-number of events today and on the next day and the next highlighted event, e.g. to open a pop-up).
+per event), for calendars with many all-day entries such as homework, and `tiles` (two tiles: the
+events of today and when the next highlighted event is, e.g. to open a pop-up).
 Events with a description show a small note icon behind the title. With `range: week` the card shows
 a fixed calendar week and its own header ("Diese Woche | 9.–13. November").
 
@@ -69,38 +69,46 @@ cards:
             color: "#e8908a"
 ```
 
-### Summary row
+### Tiles: today and the next exam
 
 ```yaml
-type: custom:graphite-calendar
-calendars: [calendar.school_homework, calendar.school_events]
-layout: summary
-icon: mdi:school-outline
-weekdays: true
-rules:
-  - contains_any: [Test, Prüfung]
-    color: "#e8908a"
-    highlight: true
-tap_action:
-  action: navigate
-  navigation_path: "#school"
+type: custom:graphite-panel
+title: Schule
+cards:
+  - type: custom:graphite-calendar
+    calendars: [calendar.school_homework, calendar.school_events]
+    layout: tiles
+    icon: mdi:school-outline
+    weekdays: true
+    day_switch: "15:00"
+    rules:
+      - contains_any: [Test, Prüfung]
+        color: "#e8908a"
+        highlight: true
+    tap_action:
+      action: navigate
+      navigation_path: "#school"
+    hold_action:
+      action: none
 ```
 
-Shows "Heute 3 · Morgen 6", below "nächste Prüfung: …" and on the right "morgen" or "in 3 Tagen".
+Left "Heute – 3 Einträge – morgen 6", right "Prüfung – morgen – MU" (tinted red when the exam is
+today or tomorrow).
 
 ## Options
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `calendars` | list | required | Calendar entities, each an entity id or `{entity, name, color, icon, highlight}`. `name` is shown in the second line (default: friendly name), `color` colors stripe and icon (default: accent), `icon` defaults to the entity icon. |
-| `layout` | `list` \| `compact` \| `summary` | `list` | `list`: rows with icon, second line and time column. `compact`: one block per day, one line per event. `summary`: one row (see below). |
+| `layout` | `list` \| `compact` \| `tiles` | `list` | `list`: rows with icon, second line and time column. `compact`: one block per day, one line per event. `tiles`: two tiles (see below). |
 | `range` | `today` \| `this_week` \| `this_and_next_week` \| `days` \| `week` | `this_and_next_week` | Time range from today 00:00; `week` is a whole calendar week from Monday (see `week`). Weeks start on Monday and end on Sunday. |
 | `days` | number | `14` | Number of days with `range: days`. |
 | `week` | `current` \| `next` | `current` | Week shown with `range: week`. |
 | `week_rollover` | string | – | With `range: week`: from this moment the following week counts as the current one, as `<day> <hh:mm>` with the day as `mon` … `sun`. `sat 00:00` switches in the night to Saturday. Without it the week changes on Monday 00:00. |
-| `weekdays` | boolean | `false` | Compact layout: Monday to Friday are always shown (empty days with "–"), the weekend only with events. Summary layout: the second count is the next weekday ("Montag" on Friday and at the weekend), and the weekend itself is skipped unless it has events. |
-| `icon` | icon | calendar icon | Summary layout: icon of the row. |
-| `highlight_text` | string | "nächste Prüfung: {title}" | Summary layout: second line about the next highlighted event (`{title}` = its title). |
+| `weekdays` | boolean | `false` | Compact layout: Monday to Friday are always shown (empty days with "–"), the weekend only with events. Tiles layout: the next day is the next weekday (Friday: Monday), and an empty weekend day is skipped. |
+| `icon` | icon | calendar icon | Tiles layout: watermark of the day tile. |
+| `highlight_name` | string | "Prüfung" | Tiles layout: name of the highlight tile. |
+| `day_switch` | string | – | Tiles layout: from this time (`hh:mm`, e.g. `"15:00"`) the day tile shows the next (school) day. |
 | `title` | string | – | Header of the card with a date range on the right. With `range: week` the header is automatic ("Diese Woche", "Nächste Woche"; after the rollover "Ab Montag", "In zwei Wochen"); `title` replaces the text. |
 | `max_items` | number | – | Shows at most this many events; the rest appears as "+ n weitere bis …". |
 | `show_past_today` | boolean | `true` | Keeps today's events that are over until midnight (dimmed, struck through, "vorbei"). With `false` they disappear as soon as they end. Earlier days of a `range: week` always stay (dimmed). |
@@ -137,14 +145,18 @@ Shows "Heute 3 · Morgen 6", below "nächste Prüfung: …" and on the right "mo
   same as the panel header ("Diese Woche | 9.–13. November"). The range runs Monday to Friday, to the
   weekend when it has events.
 
-## Summary layout
+## Tiles layout
 
-- **Main line:** "Heute 3 · Morgen 6" – number of events today and on the next day ("–" for none).
-  With `weekdays` the next day is the next weekday, and "Heute" is left out at an empty weekend.
-- **Second line:** the next highlighted event within `highlight_days` (`highlight: true` on a calendar
-  or rule), otherwise "keine Prüfung in den nächsten 7 Tagen". On the right "heute", "morgen" or
-  "in 3 Tagen" in the event color.
-- **Actions:** the whole row is one button; `tap_action` and `hold_action` run on the first calendar
+- **Day tile:** name "Heute" (from `day_switch` on "Morgen" or the weekday), the number of events
+  ("3 Einträge") and on the right the following day ("morgen 6", "Mo 2").
+  The watermark is `icon`.
+- **Highlight tile:** the next highlighted event within `highlight_days` (`highlight: true` on a
+  calendar or rule): "heute", "morgen" or "in 3 Tagen", on the right its subject (first word of the
+  title, "MU: LZK Instrumentenkunde" → "MU"). Today or tomorrow the tile is tinted in the event color.
+  Without one: "keine" and "7 Tage".
+- **Geometry:** the label tiles (stopwatch, todo): `--graphite-tile-height-compact`, name top left,
+  value `--graphite-font-value-size` (words `--graphite-font-value-text-size`), watermark top right.
+- **Actions:** both tiles are one button; `tap_action` and `hold_action` run on the first calendar
   (e.g. `navigate` to a pop-up).
 
 ## Styling

@@ -4,8 +4,9 @@
 // holding opens the more-info dialog of its calendar.
 //
 // Three layouts: "list" (rows with icon, second line and time column), "compact" (one block per
-// day, one line per event, made for school calendars with many all-day entries) and "summary" (one
-// row: number of events today and on the next day, plus the next highlighted event). With range "week"
+// day, one line per event, made for school calendars with many all-day entries) and "tiles" (two
+// tiles: the events of today, from day_switch on of the next day, and when the next highlighted
+// event is, e.g. the next exam). With range "week"
 // the card shows a fixed calendar week (current or next) that can switch to the following week
 // before the weekend (week_rollover), with its own header ("Diese Woche | 9.–13. November").
 import { html, nothing } from "lit";
@@ -38,7 +39,7 @@ export interface CalendarRule {
 
 export type CalendarRange = "today" | "this_week" | "this_and_next_week" | "days" | "week";
 export type CalendarSecondary = "calendar_location" | "calendar" | "location" | "description" | "none";
-export type CalendarLayout = "list" | "compact" | "summary";
+export type CalendarLayout = "list" | "compact" | "tiles";
 
 export interface CalendarConfig extends GraphiteCardConfig {
   calendars: Array<string | CalendarSource>;
@@ -51,9 +52,11 @@ export interface CalendarConfig extends GraphiteCardConfig {
   // compact layout: Monday to Friday are always shown, the weekend only with events
   weekdays?: boolean;
   title?: string;
-  // summary layout: icon and text about the next highlighted event ("{title}")
+  // tiles layout: watermark of the day tile, name of the highlight tile and the time from which the
+  // day tile shows the next day ("15:00")
   icon?: string;
-  highlight_text?: string;
+  highlight_name?: string;
+  day_switch?: string;
   max_items?: number;
   show_past_today?: boolean;
   rules?: CalendarRule[];
@@ -123,7 +126,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     // the event row under the pointer, read when the gesture is recognized
     this.addEventListener("pointerdown", this.rememberRow, true);
     this.detachActions = attachActionHandler(this, {
-      hasHold: () => (this.isSummary || this.pressedIndex >= 0) && hasAction(this.config?.hold_action),
+      hasHold: () => (this.isTiles || this.pressedIndex >= 0) && hasAction(this.config?.hold_action),
       hasDoubleTap: () => false,
     }, (action: ActionKind) => this.handleAction(action));
     // past / running events, the day change and the week rollover happen without state changes
@@ -153,8 +156,8 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     const event = this.shown[index];
     this.pressedIndex = -1;
     this.pointerUsed = false;
-    if (config && this.isSummary) {
-      // the summary row is one button: actions run on the first calendar
+    if (config && this.isTiles) {
+      // both tiles are one button: actions run on the first calendar
       fireAction(this, { ...config, entity: this.sources()[0]?.entity }, action);
       return;
     }
@@ -169,8 +172,8 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     fireAction(this, { ...config, entity: event.entityId }, action);
   }
 
-  private get isSummary(): boolean {
-    return this.config?.layout === "summary";
+  private get isTiles(): boolean {
+    return this.config?.layout === "tiles";
   }
 
   private openDetails(event: ShownEvent): void {
@@ -213,8 +216,8 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
   private period(now: Date): Period {
     const config = this.config!;
     const today = startOfDay(now);
-    // summary: today, the next (school) day and the highlight horizon
-    if (config.layout === "summary") return { start: today, end: addDays(today, Math.max(8, this.highlightDays() + 1)) };
+    // tiles: today, the next (school) days and the highlight horizon
+    if (config.layout === "tiles") return { start: today, end: addDays(today, Math.max(8, this.highlightDays() + 1)) };
     if (config.range !== "week") return { start: today, end: this.rangeEnd(today) };
     let monday = addDays(today, -((today.getDay() + 6) % 7));
     const rollover = this.rolloverMoment(monday);
@@ -459,40 +462,79 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     })}</div>`;
   }
 
-  // summary: "Heute 3 · Morgen 6", below the next highlighted event, on the right when it is
-  private renderSummary(today: Date) {
+  // minutes after midnight of "hh:mm"; undefined without a valid time
+  private daySwitchMinutes(): number | undefined {
+    const value = String(this.config!.day_switch ?? "").trim();
+    if (!value) return undefined;
+    const [hours, minutes = 0] = value.split(":").map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minutes) ? hours * 60 + minutes : undefined;
+  }
+
+  // next day after this one; with weekdays the weekend is skipped (Friday: Monday)
+  private followingDay(day: Date): Date {
+    let next = addDays(day, 1);
+    const weekend = (date: Date) => date.getDay() === 0 || date.getDay() === 6;
+    for (let step = 0; step < 7 && this.config!.weekdays && weekend(next); step++) next = addDays(next, 1);
+    return next;
+  }
+
+  // "Heute", "Morgen" or the weekday
+  private dayName(day: Date, today: Date): string {
+    const offset = daysBetween(today, day);
+    if (offset === 0) return this.localize("calendar.today");
+    if (offset === 1) return this.localize("calendar.tomorrow");
+    return day.toLocaleDateString(this.language, { weekday: "long" });
+  }
+
+  // subject of an event: the first word of the title ("MU: LZK Instrumentenkunde" -> "MU")
+  private subject(title: string): string {
+    return title.split(":")[0].trim().split(" ")[0];
+  }
+
+  // tiles: the day tile (events of today, from day_switch on of the next day) and the highlight tile
+  // (when the next highlighted event is; tinted when it is today or tomorrow)
+  private renderTiles(now: Date, today: Date) {
     const config = this.config!;
     const events = this.shown;
-    const weekend = (day: Date) => day.getDay() === 0 || day.getDay() === 6;
-    // with weekdays the second slot is the next school day (Friday evening: Monday)
-    let next = addDays(today, 1);
-    for (let step = 0; step < 7 && config.weekdays && weekend(next); step++) next = addDays(next, 1);
-    const count = (day: Date) => events.filter((event) => event.day.getTime() === day.getTime()).length;
-    const slots: Array<{ label: string; count: number }> = [];
-    if (!config.weekdays || !weekend(today) || count(today) > 0) slots.push({ label: this.localize("calendar.today"), count: count(today) });
-    const nextOffset = daysBetween(today, next);
-    slots.push({
-      label: nextOffset === 1 ? this.localize("calendar.tomorrow") : next.toLocaleDateString(this.language, { weekday: "long" }),
-      count: count(next),
-    });
-    const upcoming = events.find((event) => event.highlight);
-    let sub = "";
-    let when = "";
+    const weekend = (date: Date) => date.getDay() === 0 || date.getDay() === 6;
+    const switchMinutes = this.daySwitchMinutes();
+    const switched = switchMinutes !== undefined && now.getHours() * 60 + now.getMinutes() >= switchMinutes;
+    // the day shown: today, after the switch (or on a free weekend day) the next (school) day
+    let day = today;
+    const count = (date: Date) => events.filter((event) => event.day.getTime() === date.getTime()).length;
+    if (switched || (config.weekdays && weekend(today) && count(today) === 0)) day = this.followingDay(today);
+    const following = this.followingDay(day);
+    const dayCount = count(day);
+    const followingCount = count(following);
+    const followingName = daysBetween(today, following) === 1
+      ? this.localize("calendar.tomorrow").toLocaleLowerCase(this.language)
+      : following.toLocaleDateString(this.language, { weekday: "short" }).replace(".", "");
+
+    const upcoming = events.find((event) => event.highlight && event.day.getTime() >= today.getTime());
+    let highlightValue = this.localize("calendar.noneValue");
+    let highlightSecondary = this.localize("calendar.daysShort", { days: this.highlightDays() });
+    let alert = false;
     if (upcoming) {
-      sub = (config.highlight_text ?? this.localize("calendar.nextHighlight", { title: "{title}" })).split("{title}").join(upcoming.summary);
       const days = daysBetween(today, upcoming.day);
-      when = days <= 0 ? this.localize("calendar.whenToday") : days === 1 ? this.localize("calendar.whenTomorrow")
+      highlightValue = days <= 0 ? this.localize("calendar.whenToday") : days === 1 ? this.localize("calendar.whenTomorrow")
         : this.localize("calendar.inDays", { days });
-    } else {
-      sub = this.localize("calendar.noHighlight", { days: this.highlightDays() });
+      highlightSecondary = this.subject(upcoming.summary);
+      alert = days <= 1;
     }
+
     const interactive = this.interactive;
     const icon = config.icon ?? this.hass?.states[this.sources()[0]?.entity ?? ""]?.attributes?.icon ?? defaultIcon;
-    return html`<div class=${interactive ? "summaryRow" : "summaryRow static"} role=${interactive ? "button" : nothing}
-      tabindex=${interactive ? "0" : nothing} style=${upcoming ? `--event-color: ${upcoming.color}` : ""}>${interactive
-      ? html`<ha-ripple></ha-ripple>` : nothing}<div class="icon"><ha-icon .icon=${icon}></ha-icon></div><div class="text"><div
-      class="name">${slots.map((slot, index) => html`${index ? " · " : ""}${slot.label} <b>${slot.count || "–"}</b>`)}</div><div
-      class="sub">${sub}</div></div>${when ? html`<div class="when">${when}</div>` : nothing}</div>`;
+    const tileClass = (extra: string) => ["tile", extra, interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const tile = (classes: string, style: string, content: unknown) => html`<div class=${classes} style=${style}
+      role=${interactive ? "button" : nothing} tabindex=${interactive ? "0" : nothing}>${interactive
+      ? html`<ha-ripple></ha-ripple>` : nothing}${content}</div>`;
+    return html`<div class="tiles">${tile(tileClass(""), "", html`<div class="tileName">${this.dayName(day, today)}</div><ha-icon
+      class="tileIcon" .icon=${icon}></ha-icon><div class="tileRow"><div class="tileValue">${dayCount}<span
+      class="tileUnit">${this.localize(dayCount === 1 ? "calendar.eventOne" : "calendar.eventMany")}</span></div><div
+      class="tileSecondary">${followingName} ${followingCount}</div></div>`)}${tile(tileClass(alert ? "alert" : ""),
+      upcoming ? `--event-color: ${upcoming.color}` : "", html`<div class="tileName">${config.highlight_name
+      ?? this.localize("calendar.highlightName")}</div><div class="tileRow"><div class="tileValue word">${highlightValue}</div><div
+      class="tileSecondary">${highlightSecondary}</div></div>`)}</div>`;
   }
 
   private renderDetails() {
@@ -525,15 +567,15 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     const period = this.period(now);
     const lastRangeDay = this.longDate(addDays(period.end, -1));
     const events = this.collect(period.start, period.end, today);
-    const limit = Number(config.max_items) > 0 && config.layout !== "summary" ? Math.round(Number(config.max_items)) : Infinity;
+    const limit = Number(config.max_items) > 0 && config.layout !== "tiles" ? Math.round(Number(config.max_items)) : Infinity;
     this.shown = (events ?? []).slice(0, limit);
     const hiddenCount = (events?.length ?? 0) - this.shown.length;
     const compact = config.layout === "compact";
     // the compact layout with weekdays always has days to show
-    const isEmpty = !!events && events.length === 0 && !(compact && config.weekdays) && !this.isSummary;
+    const isEmpty = !!events && events.length === 0 && !(compact && config.weekdays) && !this.isTiles;
     this.toggleAttribute("hidden-empty", isEmpty && !!config.hide_empty);
     if (!events) return html`${this.renderHeader(period, [])}`;
-    if (this.isSummary) return html`${this.renderSummary(today)}`;
+    if (this.isTiles) return html`${this.renderTiles(now, today)}`;
     const header = this.renderHeader(period, events);
     if (isEmpty) {
       const text = config.empty_text ?? this.localize("calendar.empty", { date: lastRangeDay });
@@ -545,7 +587,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
   }
 
   getCardSize(): number {
-    return this.isSummary ? 1 : Math.max(2, this.shown.length + 1);
+    return this.isTiles ? 2 : Math.max(2, this.shown.length + 1);
   }
 
   getGridOptions() {

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.33.0";
+var version = "0.34.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -766,15 +766,18 @@ var de_default = {
     dayNumber: "{day}.",
     whenToday: "heute",
     whenTomorrow: "morgen",
-    nextHighlight: "n\xE4chste Pr\xFCfung: {title}",
-    noHighlight: "keine Pr\xFCfung in den n\xE4chsten {days} Tagen",
+    eventOne: "Eintrag",
+    eventMany: "Eintr\xE4ge",
+    highlightName: "Pr\xFCfung",
+    noneValue: "keine",
+    daysShort: "{days} Tage",
     editor: {
       calendars: "Kalender (Liste: entity, name, color, icon, highlight)",
       layout: "Layout",
       layouts: {
         list: "Liste",
         compact: "Kompakt",
-        summary: "Zusammenfassung"
+        tiles: "Kacheln"
       },
       range: "Zeitraum",
       ranges: {
@@ -794,7 +797,8 @@ var de_default = {
       weekdays: "Mo\u2013Fr immer anzeigen",
       title: "Titel (Woche: automatisch)",
       icon: "Symbol",
-      highlight_text: "Text zur n\xE4chsten Hervorhebung ({title})",
+      highlight_name: "Name der Hervorhebungs-Kachel",
+      day_switch: "N\xE4chster Tag ab (z. B. 15:00)",
       max_items: "Max. Eintr\xE4ge",
       secondary: "Zweite Zeile",
       secondaries: {
@@ -1311,15 +1315,18 @@ var en_default = {
     dayNumber: "{day}",
     whenToday: "today",
     whenTomorrow: "tomorrow",
-    nextHighlight: "next exam: {title}",
-    noHighlight: "no exam in the next {days} days",
+    eventOne: "event",
+    eventMany: "events",
+    highlightName: "Exam",
+    noneValue: "none",
+    daysShort: "{days} days",
     editor: {
       calendars: "Calendars (list: entity, name, color, icon, highlight)",
       layout: "Layout",
       layouts: {
         list: "List",
         compact: "Compact",
-        summary: "Summary"
+        tiles: "Tiles"
       },
       range: "Range",
       ranges: {
@@ -1339,7 +1346,8 @@ var en_default = {
       weekdays: "Always show Mon\u2013Fri",
       title: "Title (week: automatic)",
       icon: "Icon",
-      highlight_text: "Text about the next highlight ({title})",
+      highlight_name: "Name of the highlight tile",
+      day_switch: "Next day from (e.g. 15:00)",
       max_items: "Max. events",
       secondary: "Second line",
       secondaries: {
@@ -6761,35 +6769,99 @@ var calendarStyles = i`
   .item ha-icon.note {
     display: inline-flex;
   }
-  /* summary layout: one row with the geometry of the status rows */
-  .summaryRow {
+  /* tiles layout: two tiles side by side with the geometry of the label tiles (stopwatch, todo):
+     72px, name top left, value and secondary value at the bottom, watermark top right */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--graphite-gap-tile, 8px);
+  }
+  .tile {
     position: relative;
     overflow: hidden;
-    display: flex;
-    align-items: center;
     box-sizing: border-box;
-    min-height: var(--graphite-row-height, 60px);
-    padding: 9px 0;
+    height: var(--graphite-tile-height-compact, 72px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
     background: var(--graphite-card-surface, var(--graphite-surface-tile));
-    cursor: pointer;
     outline: none;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease;
   }
-  .summaryRow:focus-visible {
+  .tile.interactive {
+    cursor: pointer;
+  }
+  .tile.interactive:focus-visible {
     box-shadow: inset 0 0 0 2px var(--graphite-accent);
   }
-  .summaryRow.static {
-    cursor: default;
+  /* next highlighted event today or tomorrow: tint and value in its color */
+  .tile.alert {
+    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
   }
-  .summaryRow .icon {
+  .tile.alert .tileValue {
+    color: var(--event-color);
+  }
+  .tileName {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    right: 52px;
+    top: 10px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tileIcon {
+    position: absolute;
+    right: var(--graphite-watermark-inset, 9px);
+    top: 8px;
+    display: flex;
+    width: var(--graphite-watermark-size, 34px);
+    height: var(--graphite-watermark-size, 34px);
+    color: var(--graphite-text-primary);
+    opacity: 0.16;
+    pointer-events: none;
+    --mdc-icon-size: var(--graphite-watermark-size, 34px);
+  }
+  .tileRow {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
+    bottom: 9px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .tileValue {
+    font-size: var(--graphite-font-value-size, 22px);
+    font-weight: var(--graphite-font-value-weight, 300);
+    line-height: 1.1;
+    white-space: nowrap;
+    color: var(--graphite-text-primary);
+  }
+  /* words as value ("morgen", "keine") read larger than numbers: 20px */
+  .tileValue.word {
+    font-size: var(--graphite-font-value-text-size, 20px);
+  }
+  .tileUnit {
+    margin-left: 3px;
+    font-size: var(--graphite-font-label-size, 13px);
+    font-weight: 400;
+    color: var(--graphite-text-muted);
+  }
+  .tile.alert .tileUnit {
     color: var(--graphite-text-secondary);
   }
-  .summaryRow .name b {
-    font-weight: 500;
-  }
-  .summaryRow .when {
-    color: var(--event-color, var(--graphite-text-secondary));
+  .tileSecondary {
+    min-width: 0;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 1.2;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   ha-ripple {
     position: absolute;
@@ -6903,7 +6975,7 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
   schema() {
     const range = this.config.range ?? "this_and_next_week";
     const compact = this.config.layout === "compact";
-    const summary = this.config.layout === "summary";
+    const tiles = this.config.layout === "tiles";
     const isWeek = range === "week";
     return [
       { name: "calendars", required: true, selector: { object: {} } },
@@ -6911,27 +6983,27 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
         type: "grid",
         name: "",
         schema: [
-          this.select("layout", "layouts", ["list", "compact", "summary"]),
-          ...summary ? [] : [this.select("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"])]
+          this.select("layout", "layouts", ["list", "compact", "tiles"]),
+          ...tiles ? [] : [this.select("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"])]
         ]
       },
-      ...summary ? [{
+      ...tiles ? [{
         type: "grid",
         name: "",
         schema: [
           { name: "icon", selector: { icon: {} } },
-          { name: "highlight_text", selector: { text: {} } }
+          { name: "highlight_name", selector: { text: {} } }
         ]
       }, {
         type: "grid",
         name: "",
         schema: [
           { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } },
-          { name: "weekdays", selector: { boolean: {} } }
+          { name: "day_switch", selector: { text: {} } }
         ]
-      }] : [],
-      ...range === "days" && !summary ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : [],
-      ...isWeek && !summary ? [{
+      }, { name: "weekdays", selector: { boolean: {} } }] : [],
+      ...range === "days" && !tiles ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : [],
+      ...isWeek && !tiles ? [{
         type: "grid",
         name: "",
         schema: [
@@ -6939,7 +7011,7 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
           { name: "week_rollover", selector: { text: {} } }
         ]
       }] : [],
-      ...summary ? [] : [{
+      ...tiles ? [] : [{
         type: "grid",
         name: "",
         schema: [
@@ -6947,7 +7019,7 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
           { name: "max_items", selector: { number: { mode: "box", min: 1, max: 100 } } }
         ]
       }],
-      ...summary ? [] : compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [{
+      ...tiles ? [] : compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [{
         type: "grid",
         name: "",
         schema: [
@@ -7013,7 +7085,7 @@ var GraphiteCalendar = class extends GraphiteCard {
     super.connectedCallback();
     this.addEventListener("pointerdown", this.rememberRow, true);
     this.detachActions = attachActionHandler(this, {
-      hasHold: () => (this.isSummary || this.pressedIndex >= 0) && hasAction(this.config?.hold_action),
+      hasHold: () => (this.isTiles || this.pressedIndex >= 0) && hasAction(this.config?.hold_action),
       hasDoubleTap: () => false
     }, (action) => this.handleAction(action));
     this.refreshTimer = window.setInterval(() => this.requestUpdate(), refreshInterval2);
@@ -7033,7 +7105,7 @@ var GraphiteCalendar = class extends GraphiteCard {
     const event = this.shown[index];
     this.pressedIndex = -1;
     this.pointerUsed = false;
-    if (config && this.isSummary) {
+    if (config && this.isTiles) {
       fireAction(this, { ...config, entity: this.sources()[0]?.entity }, action);
       return;
     }
@@ -7046,8 +7118,8 @@ var GraphiteCalendar = class extends GraphiteCard {
     }
     fireAction(this, { ...config, entity: event.entityId }, action);
   }
-  get isSummary() {
-    return this.config?.layout === "summary";
+  get isTiles() {
+    return this.config?.layout === "tiles";
   }
   openDetails(event) {
     this.selected = event;
@@ -7084,7 +7156,7 @@ var GraphiteCalendar = class extends GraphiteCard {
   period(now) {
     const config = this.config;
     const today = startOfDay2(now);
-    if (config.layout === "summary") return { start: today, end: addDays(today, Math.max(8, this.highlightDays() + 1)) };
+    if (config.layout === "tiles") return { start: today, end: addDays(today, Math.max(8, this.highlightDays() + 1)) };
     if (config.range !== "week") return { start: today, end: this.rangeEnd(today) };
     let monday = addDays(today, -((today.getDay() + 6) % 7));
     const rollover = this.rolloverMoment(monday);
@@ -7300,37 +7372,70 @@ var GraphiteCalendar = class extends GraphiteCard {
       )}</span></div><div class="items">${items.length ? items.map((item) => this.renderCompactItem(item.event, item.index)) : b2`<div class="none">–</div>`}</div></div>`;
     })}</div>`;
   }
-  // summary: "Heute 3 · Morgen 6", below the next highlighted event, on the right when it is
-  renderSummary(today) {
+  // minutes after midnight of "hh:mm"; undefined without a valid time
+  daySwitchMinutes() {
+    const value = String(this.config.day_switch ?? "").trim();
+    if (!value) return void 0;
+    const [hours, minutes = 0] = value.split(":").map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minutes) ? hours * 60 + minutes : void 0;
+  }
+  // next day after this one; with weekdays the weekend is skipped (Friday: Monday)
+  followingDay(day) {
+    let next = addDays(day, 1);
+    const weekend = (date) => date.getDay() === 0 || date.getDay() === 6;
+    for (let step = 0; step < 7 && this.config.weekdays && weekend(next); step++) next = addDays(next, 1);
+    return next;
+  }
+  // "Heute", "Morgen" or the weekday
+  dayName(day, today) {
+    const offset = daysBetween(today, day);
+    if (offset === 0) return this.localize("calendar.today");
+    if (offset === 1) return this.localize("calendar.tomorrow");
+    return day.toLocaleDateString(this.language, { weekday: "long" });
+  }
+  // subject of an event: the first word of the title ("MU: LZK Instrumentenkunde" -> "MU")
+  subject(title) {
+    return title.split(":")[0].trim().split(" ")[0];
+  }
+  // tiles: the day tile (events of today, from day_switch on of the next day) and the highlight tile
+  // (when the next highlighted event is; tinted when it is today or tomorrow)
+  renderTiles(now, today) {
     const config = this.config;
     const events = this.shown;
-    const weekend = (day) => day.getDay() === 0 || day.getDay() === 6;
-    let next = addDays(today, 1);
-    for (let step = 0; step < 7 && config.weekdays && weekend(next); step++) next = addDays(next, 1);
-    const count = (day) => events.filter((event) => event.day.getTime() === day.getTime()).length;
-    const slots = [];
-    if (!config.weekdays || !weekend(today) || count(today) > 0) slots.push({ label: this.localize("calendar.today"), count: count(today) });
-    const nextOffset = daysBetween(today, next);
-    slots.push({
-      label: nextOffset === 1 ? this.localize("calendar.tomorrow") : next.toLocaleDateString(this.language, { weekday: "long" }),
-      count: count(next)
-    });
-    const upcoming = events.find((event) => event.highlight);
-    let sub = "";
-    let when = "";
+    const weekend = (date) => date.getDay() === 0 || date.getDay() === 6;
+    const switchMinutes = this.daySwitchMinutes();
+    const switched = switchMinutes !== void 0 && now.getHours() * 60 + now.getMinutes() >= switchMinutes;
+    let day = today;
+    const count = (date) => events.filter((event) => event.day.getTime() === date.getTime()).length;
+    if (switched || config.weekdays && weekend(today) && count(today) === 0) day = this.followingDay(today);
+    const following = this.followingDay(day);
+    const dayCount = count(day);
+    const followingCount = count(following);
+    const followingName = daysBetween(today, following) === 1 ? this.localize("calendar.tomorrow").toLocaleLowerCase(this.language) : following.toLocaleDateString(this.language, { weekday: "short" }).replace(".", "");
+    const upcoming = events.find((event) => event.highlight && event.day.getTime() >= today.getTime());
+    let highlightValue = this.localize("calendar.noneValue");
+    let highlightSecondary = this.localize("calendar.daysShort", { days: this.highlightDays() });
+    let alert = false;
     if (upcoming) {
-      sub = (config.highlight_text ?? this.localize("calendar.nextHighlight", { title: "{title}" })).split("{title}").join(upcoming.summary);
       const days = daysBetween(today, upcoming.day);
-      when = days <= 0 ? this.localize("calendar.whenToday") : days === 1 ? this.localize("calendar.whenTomorrow") : this.localize("calendar.inDays", { days });
-    } else {
-      sub = this.localize("calendar.noHighlight", { days: this.highlightDays() });
+      highlightValue = days <= 0 ? this.localize("calendar.whenToday") : days === 1 ? this.localize("calendar.whenTomorrow") : this.localize("calendar.inDays", { days });
+      highlightSecondary = this.subject(upcoming.summary);
+      alert = days <= 1;
     }
     const interactive = this.interactive;
     const icon = config.icon ?? this.hass?.states[this.sources()[0]?.entity ?? ""]?.attributes?.icon ?? defaultIcon;
-    return b2`<div class=${interactive ? "summaryRow" : "summaryRow static"} role=${interactive ? "button" : A}
-      tabindex=${interactive ? "0" : A} style=${upcoming ? `--event-color: ${upcoming.color}` : ""}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="icon"><ha-icon .icon=${icon}></ha-icon></div><div class="text"><div
-      class="name">${slots.map((slot, index) => b2`${index ? " \xB7 " : ""}${slot.label} <b>${slot.count || "\u2013"}</b>`)}</div><div
-      class="sub">${sub}</div></div>${when ? b2`<div class="when">${when}</div>` : A}</div>`;
+    const tileClass = (extra) => ["tile", extra, interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const tile = (classes, style, content) => b2`<div class=${classes} style=${style}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${content}</div>`;
+    return b2`<div class="tiles">${tile(tileClass(""), "", b2`<div class="tileName">${this.dayName(day, today)}</div><ha-icon
+      class="tileIcon" .icon=${icon}></ha-icon><div class="tileRow"><div class="tileValue">${dayCount}<span
+      class="tileUnit">${this.localize(dayCount === 1 ? "calendar.eventOne" : "calendar.eventMany")}</span></div><div
+      class="tileSecondary">${followingName} ${followingCount}</div></div>`)}${tile(
+      tileClass(alert ? "alert" : ""),
+      upcoming ? `--event-color: ${upcoming.color}` : "",
+      b2`<div class="tileName">${config.highlight_name ?? this.localize("calendar.highlightName")}</div><div class="tileRow"><div class="tileValue word">${highlightValue}</div><div
+      class="tileSecondary">${highlightSecondary}</div></div>`
+    )}</div>`;
   }
   renderDetails() {
     const event = this.selected;
@@ -7361,14 +7466,14 @@ var GraphiteCalendar = class extends GraphiteCard {
     const period = this.period(now);
     const lastRangeDay = this.longDate(addDays(period.end, -1));
     const events = this.collect(period.start, period.end, today);
-    const limit = Number(config.max_items) > 0 && config.layout !== "summary" ? Math.round(Number(config.max_items)) : Infinity;
+    const limit = Number(config.max_items) > 0 && config.layout !== "tiles" ? Math.round(Number(config.max_items)) : Infinity;
     this.shown = (events ?? []).slice(0, limit);
     const hiddenCount = (events?.length ?? 0) - this.shown.length;
     const compact = config.layout === "compact";
-    const isEmpty = !!events && events.length === 0 && !(compact && config.weekdays) && !this.isSummary;
+    const isEmpty = !!events && events.length === 0 && !(compact && config.weekdays) && !this.isTiles;
     this.toggleAttribute("hidden-empty", isEmpty && !!config.hide_empty);
     if (!events) return b2`${this.renderHeader(period, [])}`;
-    if (this.isSummary) return b2`${this.renderSummary(today)}`;
+    if (this.isTiles) return b2`${this.renderTiles(now, today)}`;
     const header = this.renderHeader(period, events);
     if (isEmpty) {
       const text = config.empty_text ?? this.localize("calendar.empty", { date: lastRangeDay });
@@ -7377,7 +7482,7 @@ var GraphiteCalendar = class extends GraphiteCard {
     return b2`${header}${compact ? this.renderCompact(period, today) : this.renderList(today)}${hiddenCount > 0 ? b2`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>` : A}${this.renderDetails()}`;
   }
   getCardSize() {
-    return this.isSummary ? 1 : Math.max(2, this.shown.length + 1);
+    return this.isTiles ? 2 : Math.max(2, this.shown.length + 1);
   }
   getGridOptions() {
     return { columns: 12, rows: "auto", min_columns: 6 };

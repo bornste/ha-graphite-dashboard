@@ -1,6 +1,6 @@
 // Styles of graphite-calendar: day headers, event rows (geometry of the status rows: 60px, icon box
 // 42px, text at 60px) with a short stripe in the calendar color, the header of the week range, the
-// compact layout (one block per day) and the details dialog.
+// compact layout (one block per day), the tiles layout and the details dialog.
 import { css } from "lit";
 
 export const calendarStyles = css`
@@ -285,35 +285,99 @@ export const calendarStyles = css`
   .item ha-icon.note {
     display: inline-flex;
   }
-  /* summary layout: one row with the geometry of the status rows */
-  .summaryRow {
+  /* tiles layout: two tiles side by side with the geometry of the label tiles (stopwatch, todo):
+     72px, name top left, value and secondary value at the bottom, watermark top right */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--graphite-gap-tile, 8px);
+  }
+  .tile {
     position: relative;
     overflow: hidden;
-    display: flex;
-    align-items: center;
     box-sizing: border-box;
-    min-height: var(--graphite-row-height, 60px);
-    padding: 9px 0;
+    height: var(--graphite-tile-height-compact, 72px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
     background: var(--graphite-card-surface, var(--graphite-surface-tile));
-    cursor: pointer;
     outline: none;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease;
   }
-  .summaryRow:focus-visible {
+  .tile.interactive {
+    cursor: pointer;
+  }
+  .tile.interactive:focus-visible {
     box-shadow: inset 0 0 0 2px var(--graphite-accent);
   }
-  .summaryRow.static {
-    cursor: default;
+  /* next highlighted event today or tomorrow: tint and value in its color */
+  .tile.alert {
+    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
   }
-  .summaryRow .icon {
+  .tile.alert .tileValue {
+    color: var(--event-color);
+  }
+  .tileName {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    right: 52px;
+    top: 10px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tileIcon {
+    position: absolute;
+    right: var(--graphite-watermark-inset, 9px);
+    top: 8px;
+    display: flex;
+    width: var(--graphite-watermark-size, 34px);
+    height: var(--graphite-watermark-size, 34px);
+    color: var(--graphite-text-primary);
+    opacity: 0.16;
+    pointer-events: none;
+    --mdc-icon-size: var(--graphite-watermark-size, 34px);
+  }
+  .tileRow {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    right: var(--graphite-padding-tile, 12px);
+    bottom: 9px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .tileValue {
+    font-size: var(--graphite-font-value-size, 22px);
+    font-weight: var(--graphite-font-value-weight, 300);
+    line-height: 1.1;
+    white-space: nowrap;
+    color: var(--graphite-text-primary);
+  }
+  /* words as value ("morgen", "keine") read larger than numbers: 20px */
+  .tileValue.word {
+    font-size: var(--graphite-font-value-text-size, 20px);
+  }
+  .tileUnit {
+    margin-left: 3px;
+    font-size: var(--graphite-font-label-size, 13px);
+    font-weight: 400;
+    color: var(--graphite-text-muted);
+  }
+  .tile.alert .tileUnit {
     color: var(--graphite-text-secondary);
   }
-  .summaryRow .name b {
-    font-weight: 500;
-  }
-  .summaryRow .when {
-    color: var(--event-color, var(--graphite-text-secondary));
+  .tileSecondary {
+    min-width: 0;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 1.2;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   ha-ripple {
     position: absolute;
