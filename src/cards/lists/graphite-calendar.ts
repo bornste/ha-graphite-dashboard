@@ -1,7 +1,12 @@
-// graphite-calendar: events of one or more calendar entities as a list, grouped by day ("Heute",
-// "Morgen", "Fr 6. Nov."). Color and icon per calendar, optionally overridden by keyword rules on the
-// title; highlighted events (e.g. exams) get a tint and "in n Tagen". Tapping an event opens its
-// details, holding opens the more-info dialog of its calendar.
+// graphite-calendar: events of one or more calendar entities, grouped by day ("Heute", "Morgen",
+// "Fr 6. Nov."). Color and icon per calendar, optionally overridden by keyword rules on the title;
+// highlighted events (e.g. exams) get a tint and "in n Tagen". Tapping an event opens its details,
+// holding opens the more-info dialog of its calendar.
+//
+// Two layouts: "list" (rows with icon, second line and time column) and "compact" (one block per
+// day, one line per event, made for school calendars with many all-day entries). With range "week"
+// the card shows a fixed calendar week (current or next) that can switch to the following week
+// before the weekend (week_rollover), with its own header ("Diese Woche | 9.–13. November").
 import { html, nothing } from "lit";
 import { attachActionHandler, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { addDays, calendarEvents, daysBetween, startOfDay, type CalendarEvent } from "../../core/calendar";
@@ -27,13 +32,21 @@ export interface CalendarRule {
   highlight?: boolean;
 }
 
-export type CalendarRange = "today" | "this_week" | "this_and_next_week" | "days";
+export type CalendarRange = "today" | "this_week" | "this_and_next_week" | "days" | "week";
 export type CalendarSecondary = "calendar_location" | "calendar" | "location" | "description" | "none";
+export type CalendarLayout = "list" | "compact";
 
 export interface CalendarConfig extends GraphiteCardConfig {
   calendars: Array<string | CalendarSource>;
+  layout?: CalendarLayout;
   range?: CalendarRange;
   days?: number;
+  // range "week": which week, and when the following week takes over (e.g. "sat 00:00")
+  week?: "current" | "next";
+  week_rollover?: string;
+  // compact layout: Monday to Friday are always shown, the weekend only with events
+  weekdays?: boolean;
+  title?: string;
   max_items?: number;
   show_past_today?: boolean;
   rules?: CalendarRule[];
@@ -54,11 +67,23 @@ interface ShownEvent extends CalendarEvent {
   running: boolean;
   highlight: boolean;
   multiDay: boolean;
+  // color set by a keyword rule (compact: the title takes the color)
+  ruled: boolean;
+  // color set by a rule or the calendar (compact: colored dot, otherwise a muted one)
+  colored: boolean;
+}
+
+// shown time span: start and end (exclusive) and, for range "week", the week shown
+interface Period {
+  start: Date;
+  end: Date;
+  week?: { monday: Date; rolled: boolean; next: boolean };
 }
 
 const refreshInterval = 60 * 1000;
 const defaultIcon = "mdi:calendar-blank-outline";
 const lineBreak = String.fromCharCode(10);
+const weekdayNames = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
   static styles = calendarStyles;
@@ -73,7 +98,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
   protected normalizeConfig(config: CalendarConfig): CalendarConfig {
     const calendars = config.calendars ?? (config.entity ? [config.entity] : []);
     if (!Array.isArray(calendars) || calendars.length === 0) throw new Error(`${this.localName}: 'calendars' is required`);
-    return { range: "this_and_next_week", show_past_today: true, secondary: "calendar_location", highlight_days: 7,
+    return { layout: "list", range: "this_and_next_week", show_past_today: true, secondary: "calendar_location", highlight_days: 7,
       tap_action: { action: "more-info" }, hold_action: { action: "more-info" }, ...config, calendars };
   }
 
@@ -94,7 +119,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
       hasHold: () => this.pressedIndex >= 0 && hasAction(this.config?.hold_action),
       hasDoubleTap: () => false,
     }, (action: ActionKind) => this.handleAction(action));
-    // past / running events and the day change without state changes
+    // past / running events, the day change and the week rollover happen without state changes
     this.refreshTimer = window.setInterval(() => this.requestUpdate(), refreshInterval);
   }
 
@@ -145,7 +170,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     this.shadowRoot?.querySelector("dialog")?.close();
   }
 
-  // range [today 00:00, end) of the configured period
+  // end (exclusive) of the ranges that start today
   private rangeEnd(today: Date): Date {
     const config = this.config!;
     // days to the next Monday (weeks start on Monday)
@@ -156,6 +181,32 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     return addDays(today, toMonday + 7);
   }
 
+  // moment of the configured rollover in the week of this Monday ("sat 00:00" = night to Saturday)
+  private rolloverMoment(monday: Date): Date | undefined {
+    const value = String(this.config!.week_rollover ?? "").trim().toLowerCase();
+    if (!value || value === "none") return undefined;
+    const [dayPart, timePart = "00:00"] = value.split(" ").filter(Boolean);
+    const dayIndex = weekdayNames.indexOf(dayPart.slice(0, 3));
+    if (dayIndex < 0) return undefined;
+    const [hours, minutes] = timePart.split(":").map(Number);
+    const moment = addDays(monday, dayIndex);
+    moment.setHours(Number.isFinite(hours) ? hours : 0, Number.isFinite(minutes) ? minutes : 0);
+    return moment;
+  }
+
+  private period(now: Date): Period {
+    const config = this.config!;
+    const today = startOfDay(now);
+    if (config.range !== "week") return { start: today, end: this.rangeEnd(today) };
+    let monday = addDays(today, -((today.getDay() + 6) % 7));
+    const rollover = this.rolloverMoment(monday);
+    const rolled = !!rollover && now.getTime() >= rollover.getTime();
+    if (rolled) monday = addDays(monday, 7);
+    const next = config.week === "next";
+    if (next) monday = addDays(monday, 7);
+    return { start: monday, end: addDays(monday, 7), week: { monday, rolled, next } };
+  }
+
   private matchRule(summary: string): CalendarRule | undefined {
     const title = summary.toLocaleLowerCase();
     return (this.config!.rules ?? []).find((rule) => {
@@ -164,25 +215,26 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     });
   }
 
-  // all events of the range, decorated and sorted; undefined while nothing is loaded yet
-  private collect(today: Date, end: Date): ShownEvent[] | undefined {
+  // all events of the period, decorated and sorted; undefined while nothing is loaded yet
+  private collect(start: Date, end: Date, today: Date): ShownEvent[] | undefined {
     const config = this.config!;
     const now = new Date();
     const highlightDays = Number.isFinite(Number(config.highlight_days)) ? Number(config.highlight_days) : 7;
     let loaded = false;
     const events: ShownEvent[] = [];
     for (const source of this.sources()) {
-      const list = this.hass ? calendarEvents(this.hass, source.entity, today, end, () => this.requestUpdate()) : undefined;
+      const list = this.hass ? calendarEvents(this.hass, source.entity, start, end, () => this.requestUpdate()) : undefined;
       if (!list) continue;
       loaded = true;
       const stateObj = this.hass?.states[source.entity];
       const calendarName = source.name ?? stateObj?.attributes?.friendly_name ?? source.entity;
       for (const event of list) {
-        if (event.end.getTime() <= today.getTime() || event.start.getTime() >= end.getTime()) continue;
+        if (event.end.getTime() <= start.getTime() || event.start.getTime() >= end.getTime()) continue;
+        const day = event.start.getTime() < start.getTime() ? start : startOfDay(event.start);
         const past = event.end.getTime() <= now.getTime();
-        if (past && !config.show_past_today) continue;
+        // show_past_today only drops today's finished events; earlier days of a week stay (dimmed)
+        if (past && !config.show_past_today && day.getTime() >= today.getTime()) continue;
         const rule = this.matchRule(event.summary);
-        const day = event.start.getTime() < today.getTime() ? today : startOfDay(event.start);
         const daysAhead = daysBetween(today, day);
         const lastDay = event.allDay ? addDays(event.end, -1) : event.end;
         events.push({
@@ -195,6 +247,8 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
           running: !past && !event.allDay && event.start.getTime() <= now.getTime(),
           highlight: !past && !!(rule?.highlight ?? source.highlight) && daysAhead <= highlightDays,
           multiDay: daysBetween(event.start, lastDay) > 0,
+          ruled: !!rule?.color,
+          colored: !!(rule?.color ?? source.color),
         });
       }
     }
@@ -223,8 +277,36 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     return `${this.weekday(date)} ${this.date(date)}`;
   }
 
+  // "9.–13. November", "30. November – 4. Dezember"
+  private dateRange(from: Date, to: Date): string {
+    const format = new Intl.DateTimeFormat(this.language, { day: "numeric", month: "long" }) as Intl.DateTimeFormat
+      & { formatRange?: (startDate: Date, endDate: Date) => string };
+    if (from.getTime() === to.getTime()) return format.format(from);
+    return format.formatRange ? format.formatRange(from, to) : `${format.format(from)} – ${format.format(to)}`;
+  }
+
   private lastDay(event: CalendarEvent): Date {
     return event.allDay ? addDays(event.end, -1) : event.end;
+  }
+
+  // header like the panel header: title | date range; automatic for range "week"
+  private renderHeader(period: Period, events: ShownEvent[]) {
+    const config = this.config!;
+    const week = period.week;
+    if (!week && !config.title) return nothing;
+    let title = config.title ?? "";
+    let info = "";
+    if (week) {
+      if (!config.title) {
+        const key = week.rolled ? (week.next ? "inTwoWeeks" : "fromMonday") : (week.next ? "nextWeekTitle" : "thisWeek");
+        title = this.localize(`calendar.${key}`);
+      }
+      // Monday to Friday, longer when the weekend has events
+      const lastEventDay = events.reduce((last, event) => Math.max(last, event.day.getTime()), 0);
+      const friday = addDays(week.monday, 4);
+      info = this.dateRange(week.monday, lastEventDay > friday.getTime() ? new Date(lastEventDay) : friday);
+    }
+    return html`<div class="header"><span class="title">${title}</span><span class="info">${info}</span></div>`;
   }
 
   private renderDayHeader(day: Date, today: Date, nextMonday: Date, isFirst: boolean, marksNextWeek: boolean) {
@@ -233,7 +315,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     const weekday = day.toLocaleDateString(this.language, { weekday: "long" });
     const date = day.toLocaleDateString(this.language, { day: "numeric", month: "long" });
     const label = offset === 0 ? this.localize("calendar.today") : offset === 1 ? this.localize("calendar.tomorrow") : weekday;
-    const rest = offset <= 1 ? `${weekday} ${date}` : date;
+    const rest = offset === 0 || offset === 1 ? `${weekday} ${date}` : date;
     const nextWeek = marksNextWeek && day.getTime() >= nextMonday.getTime();
     return html`<div class=${["day", isFirst ? "first" : "", offset === 0 ? "today" : ""].filter(Boolean).join(" ")}><b>${label}</b>
       ${rest}${nextWeek ? html`<span>· ${this.localize("calendar.nextWeek")}</span>` : nothing}</div>`;
@@ -270,13 +352,73 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     return html`<div class="when">${main}${hint ? html`<span class="hint">${hint}</span>` : nothing}</div>`;
   }
 
+  // events react to tap or hold only when an action is set (tap_action and hold_action "none": static rows)
+  private get interactive(): boolean {
+    return hasAction(this.config?.tap_action) || hasAction(this.config?.hold_action);
+  }
+
   private renderEvent(event: ShownEvent, index: number, today: Date) {
     const secondary = this.secondaryText(event);
-    const classes = ["event", event.past ? "past" : "", event.running ? "running" : "", event.highlight ? "highlight" : ""]
-      .filter(Boolean).join(" ");
-    return html`<div class=${classes} style=${`--event-color: ${event.color}`} data-index=${index} role="button" tabindex="0"
-      aria-label=${event.summary}><div class="icon"><ha-icon .icon=${event.icon}></ha-icon></div><div class="text"><div
+    const interactive = this.interactive;
+    const classes = ["event", event.past ? "past" : "", event.running ? "running" : "", event.highlight ? "highlight" : "",
+      interactive ? "" : "static"].filter(Boolean).join(" ");
+    return html`<div class=${classes} style=${`--event-color: ${event.color}`} data-index=${index} role=${interactive ? "button" : nothing}
+      tabindex=${interactive ? "0" : nothing} aria-label=${event.summary}><div class="icon"><ha-icon .icon=${event.icon}></ha-icon></div><div class="text"><div
       class="name">${event.summary}</div>${secondary ? html`<div class="sub">${secondary}</div>` : nothing}</div>${this.renderWhen(event, today)}</div>`;
+  }
+
+  private renderList(today: Date) {
+    const nextMonday = addDays(today, ((8 - today.getDay()) % 7) || 7);
+    const marksNextWeek = this.shown.some((event) => event.day.getTime() < nextMonday.getTime());
+    const groups: Array<{ day: Date; items: Array<{ event: ShownEvent; index: number }> }> = [];
+    this.shown.forEach((event, index) => {
+      const last = groups[groups.length - 1];
+      if (last && last.day.getTime() === event.day.getTime()) last.items.push({ event, index });
+      else groups.push({ day: event.day, items: [{ event, index }] });
+    });
+    let markedNextWeek = false;
+    return groups.map((group, groupIndex) => {
+      const marks = marksNextWeek && !markedNextWeek && group.day.getTime() >= nextMonday.getTime();
+      if (marks) markedNextWeek = true;
+      return html`${this.renderDayHeader(group.day, today, nextMonday, groupIndex === 0, marks)}<div class="list">${group.items
+        .map((item) => this.renderEvent(item.event, item.index, today))}</div>`;
+    });
+  }
+
+  // compact: one line per event; the time only for timed events, rule-colored titles first
+  private renderCompactItem(event: ShownEvent, index: number) {
+    const interactive = this.interactive;
+    const classes = ["item", event.ruled || event.highlight ? "ruled" : "", event.past ? "past" : "", interactive ? "" : "static"]
+      .filter(Boolean).join(" ");
+    const style = event.colored || event.highlight ? `--event-color: ${event.color}` : "";
+    const until = event.multiDay ? this.localize("calendar.until", { date: this.weekday(this.lastDay(event)) }) : "";
+    return html`<div class=${classes} style=${style} data-index=${index} role=${interactive ? "button" : nothing}
+      tabindex=${interactive ? "0" : nothing}>${event.allDay
+      ? nothing : html`<span class="time">${this.time(event.start)}</span>`}${event.summary}${until
+      ? html`<span class="until">· ${until}</span>` : nothing}</div>`;
+  }
+
+  private renderCompact(period: Period, today: Date) {
+    const byDay = new Map<number, Array<{ event: ShownEvent; index: number }>>();
+    this.shown.forEach((event, index) => {
+      const key = event.day.getTime();
+      byDay.set(key, [...(byDay.get(key) ?? []), { event, index }]);
+    });
+    const days: Date[] = [];
+    for (let day = period.start; day.getTime() < period.end.getTime(); day = addDays(day, 1)) {
+      const weekend = day.getDay() === 0 || day.getDay() === 6;
+      if (byDay.has(day.getTime()) || (this.config!.weekdays && !weekend)) days.push(day);
+    }
+    return html`<div class="days">${days.map((day) => {
+      const items = [...(byDay.get(day.getTime()) ?? [])]
+        .sort((first, second) => Number(second.event.ruled) - Number(first.event.ruled) || first.index - second.index);
+      const offset = daysBetween(today, day);
+      const classes = ["compactDay", offset === 0 ? "today" : "", offset < 0 ? "past" : ""].filter(Boolean).join(" ");
+      return html`<div class=${classes}><div class="date"><b>${this.weekday(day)}</b><span>${this.localize("calendar.dayNumber",
+        { day: day.getDate() })}</span></div><div class="items">${items.length
+        ? items.map((item) => this.renderCompactItem(item.event, item.index))
+        : html`<div class="none">–</div>`}</div></div>`;
+    })}</div>`;
   }
 
   private renderDetails() {
@@ -304,38 +446,28 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
 
   protected render() {
     const config = this.config!;
-    const today = startOfDay(new Date());
-    const end = this.rangeEnd(today);
-    const lastRangeDay = this.longDate(addDays(end, -1));
-    const events = this.collect(today, end);
+    const now = new Date();
+    const today = startOfDay(now);
+    const period = this.period(now);
+    const lastRangeDay = this.longDate(addDays(period.end, -1));
+    const events = this.collect(period.start, period.end, today);
     const limit = Number(config.max_items) > 0 ? Math.round(Number(config.max_items)) : Infinity;
     this.shown = (events ?? []).slice(0, limit);
     const hiddenCount = (events?.length ?? 0) - this.shown.length;
-    const isEmpty = !!events && events.length === 0;
+    const compact = config.layout === "compact";
+    // the compact layout with weekdays always has days to show
+    const isEmpty = !!events && events.length === 0 && !(compact && config.weekdays);
     this.toggleAttribute("hidden-empty", isEmpty && !!config.hide_empty);
-    if (!events) return html``;
+    if (!events) return html`${this.renderHeader(period, [])}`;
+    const header = this.renderHeader(period, events);
     if (isEmpty) {
       const text = config.empty_text ?? this.localize("calendar.empty", { date: lastRangeDay });
-      return html`<div class="empty"><div class="icon"><ha-icon icon="mdi:check-circle"></ha-icon></div>${text}</div>`;
+      return html`${header}<div class="empty"><div class="icon"><ha-icon icon="mdi:check-circle"></ha-icon></div>${text}</div>`;
     }
-    const nextMonday = addDays(today, ((8 - today.getDay()) % 7) || 7);
-    const marksNextWeek = this.shown.some((event) => event.day.getTime() < nextMonday.getTime());
-    const groups: Array<{ day: Date; items: Array<{ event: ShownEvent; index: number }> }> = [];
-    this.shown.forEach((event, index) => {
-      const last = groups[groups.length - 1];
-      if (last && last.day.getTime() === event.day.getTime()) last.items.push({ event, index });
-      else groups.push({ day: event.day, items: [{ event, index }] });
-    });
-    let markedNextWeek = false;
-    return html`${groups.map((group, groupIndex) => {
-      const marks = marksNextWeek && !markedNextWeek && group.day.getTime() >= nextMonday.getTime();
-      if (marks) markedNextWeek = true;
-      return html`${this.renderDayHeader(group.day, today, nextMonday, groupIndex === 0, marks)}<div class="list">${group.items
-        .map((item) => this.renderEvent(item.event, item.index, today))}</div>`;
-    })}${hiddenCount > 0 ? html`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>`
+    return html`${header}${compact ? this.renderCompact(period, today) : this.renderList(today)}${hiddenCount > 0
+      ? html`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>`
       : nothing}${this.renderDetails()}`;
   }
-
 
   getCardSize(): number {
     return Math.max(2, this.shown.length + 1);
@@ -358,5 +490,5 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
 registerElement("graphite-calendar-editor", GraphiteCalendarEditor);
 registerCard("graphite-calendar", GraphiteCalendar, {
   name: "Graphite Calendar",
-  description: "Events of one or more calendars, grouped by day, with color and icon per calendar or keyword.",
+  description: "Events of one or more calendars, grouped by day, as a list or compact week, with color and icon per calendar or keyword.",
 });

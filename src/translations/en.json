@@ -205,17 +205,38 @@
     "more": "+ {count} more until {date}",
     "empty": "No events until {date}",
     "close": "Close",
+    "thisWeek": "This week",
+    "nextWeekTitle": "Next week",
+    "fromMonday": "From Monday",
+    "inTwoWeeks": "In two weeks",
+    "dayNumber": "{day}",
     "editor": {
       "calendars": "Calendars (list: entity, name, color, icon, highlight)",
-      "range": {
+      "layout": "Layout",
+      "layouts": {
+        "list": "List",
+        "compact": "Compact"
+      },
+      "range": "Range",
+      "ranges": {
         "today": "Today",
         "this_week": "This week",
         "this_and_next_week": "This and next week",
-        "days": "Next days"
+        "days": "Next days",
+        "week": "Week"
       },
       "days": "Number of days",
+      "week": "Week",
+      "weeks": {
+        "current": "Current week",
+        "next": "Next week"
+      },
+      "week_rollover": "Week rollover (e.g. sat 00:00)",
+      "weekdays": "Always show Mon–Fri",
+      "title": "Title (week: automatic)",
       "max_items": "Max. events",
-      "secondary": {
+      "secondary": "Second line",
+      "secondaries": {
         "calendar_location": "Calendar and location",
         "calendar": "Calendar",
         "location": "Location",

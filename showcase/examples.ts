@@ -544,6 +544,30 @@ export function examples(language: string): ShowcaseSection[] {
           },
         },
         {
+          title: "Two weeks side by side (compact layout)",
+          note: "One block per day, Monday to Friday always shown; from the night to Saturday both columns move on by one week. Exams are colored by a keyword rule, no matter which calendar they are in.",
+          config: {
+            type: "custom:graphite-panel",
+            layout: "horizontal",
+            frame: false,
+            cards: ["current", "next"].map((week) => ({
+              type: "custom:graphite-panel",
+              cards: [
+                {
+                  type: "custom:graphite-calendar",
+                  calendars: ["calendar.school_homework", "calendar.school_exams", "calendar.school_events"],
+                  layout: "compact",
+                  range: "week",
+                  week,
+                  week_rollover: "sat 00:00",
+                  weekdays: true,
+                  rules: [{ starts_with: "Exam", color: "#e8908a" }],
+                },
+              ],
+            })),
+          },
+        },
+        {
           title: "Exams (keyword rule, compact)",
           note: "The next 14 days without second line; the rule colors every title starting with «Exam».",
           config: {

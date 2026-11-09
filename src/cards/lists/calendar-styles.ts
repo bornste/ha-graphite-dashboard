@@ -1,5 +1,6 @@
 // Styles of graphite-calendar: day headers, event rows (geometry of the status rows: 60px, icon box
-// 42px, text at 60px) with a short stripe in the calendar color, and the details dialog.
+// 42px, text at 60px) with a short stripe in the calendar color, the header of the week range, the
+// compact layout (one block per day) and the details dialog.
 import { css } from "lit";
 
 export const calendarStyles = css`
@@ -145,6 +146,153 @@ export const calendarStyles = css`
   }
   .empty .icon {
     color: var(--graphite-success);
+  }
+  /* header like the panel header: title and info on one baseline, separated by a thin line */
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--graphite-gap-header, 12px);
+    margin-bottom: var(--graphite-gap-header, 12px);
+    min-width: 0;
+  }
+  .header .title {
+    flex: none;
+    font-size: var(--graphite-title-size, 18px);
+    font-weight: var(--graphite-title-weight, 400);
+    line-height: 1.2;
+    color: var(--graphite-title-color, var(--graphite-text-primary));
+  }
+  .header .title:empty {
+    display: none;
+  }
+  .header .info {
+    position: relative;
+    min-width: 0;
+    padding-left: var(--graphite-gap-header, 12px);
+    /* 2px more room on top for the separator line; the negative margin keeps the baseline */
+    padding-top: 2px;
+    margin-top: -2px;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 16px;
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* separator from the title's cap height down to the shared baseline */
+  .header .info::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 3.5px;
+    width: 1px;
+    background: var(--graphite-separator);
+  }
+  .header .info:empty {
+    display: none;
+  }
+  /* compact layout: one block per day, date on the left, one line per event */
+  .days {
+    display: flex;
+    flex-direction: column;
+    gap: var(--graphite-gap-tile, 8px);
+  }
+  .compactDay {
+    display: flex;
+    align-items: flex-start;
+    box-sizing: border-box;
+    min-height: var(--graphite-row-height, 60px);
+    padding: 11px 14px 11px 0;
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+  }
+  .compactDay.past {
+    opacity: 0.45;
+  }
+  .date {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: 60px;
+    padding-left: 14px;
+    box-sizing: border-box;
+    line-height: 18px;
+  }
+  .date b {
+    font-size: var(--graphite-font-name-size, 15px);
+    font-weight: 500;
+    color: var(--graphite-text-primary);
+  }
+  .date span {
+    font-size: var(--graphite-font-caption-size, 12px);
+    color: var(--graphite-text-secondary);
+  }
+  .compactDay.today .date b,
+  .compactDay.today .date span {
+    color: var(--graphite-accent);
+  }
+  .items {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  /* long titles wrap to at most two lines */
+  .item {
+    position: relative;
+    padding-left: 14px;
+    font-size: var(--graphite-font-name-size, 15px);
+    line-height: 18px;
+    color: var(--graphite-text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .item:focus-visible {
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px var(--graphite-accent);
+  }
+  .item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--event-color, var(--graphite-text-muted));
+  }
+  /* without tap and hold action the events are plain text */
+  .event.static,
+  .item.static {
+    cursor: default;
+  }
+  .item.ruled {
+    color: var(--event-color);
+  }
+  .item.past {
+    opacity: 0.45;
+  }
+  .item .time {
+    margin-right: 6px;
+    font-size: var(--graphite-font-label-size, 13px);
+    color: var(--graphite-text-secondary);
+  }
+  .item .until {
+    margin-left: 6px;
+    font-size: var(--graphite-font-label-size, 13px);
+    color: var(--graphite-text-secondary);
+  }
+  .none {
+    font-size: var(--graphite-font-name-size, 15px);
+    line-height: 18px;
+    color: var(--graphite-text-muted);
   }
   /* details of an event: native dialog, so it sits above pop-ups and transformed parents */
   dialog {

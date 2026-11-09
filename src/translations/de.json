@@ -205,17 +205,38 @@
     "more": "+ {count} weitere bis {date}",
     "empty": "Keine Einträge bis {date}",
     "close": "Schliessen",
+    "thisWeek": "Diese Woche",
+    "nextWeekTitle": "Nächste Woche",
+    "fromMonday": "Ab Montag",
+    "inTwoWeeks": "In zwei Wochen",
+    "dayNumber": "{day}.",
     "editor": {
       "calendars": "Kalender (Liste: entity, name, color, icon, highlight)",
-      "range": {
+      "layout": "Layout",
+      "layouts": {
+        "list": "Liste",
+        "compact": "Kompakt"
+      },
+      "range": "Zeitraum",
+      "ranges": {
         "today": "Heute",
         "this_week": "Diese Woche",
         "this_and_next_week": "Diese und nächste Woche",
-        "days": "Nächste Tage"
+        "days": "Nächste Tage",
+        "week": "Woche"
       },
       "days": "Anzahl Tage",
+      "week": "Woche",
+      "weeks": {
+        "current": "Aktuelle Woche",
+        "next": "Nächste Woche"
+      },
+      "week_rollover": "Wochenwechsel (z. B. sat 00:00)",
+      "weekdays": "Mo–Fr immer anzeigen",
+      "title": "Titel (Woche: automatisch)",
       "max_items": "Max. Einträge",
-      "secondary": {
+      "secondary": "Zweite Zeile",
+      "secondaries": {
         "calendar_location": "Kalender und Ort",
         "calendar": "Kalender",
         "location": "Ort",

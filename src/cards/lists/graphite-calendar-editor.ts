@@ -6,33 +6,58 @@ export class GraphiteCalendarEditor extends GraphiteFormEditor {
     return "calendar.editor";
   }
 
+  protected skipValue(key: string, value: unknown): boolean {
+    return (key === "layout" && value === "list") || (key === "week" && value === "current");
+  }
+
   protected schemaKey(): string {
-    return String(this.config.range ?? "this_and_next_week");
+    return `${this.config.layout ?? "list"}|${this.config.range ?? "this_and_next_week"}`;
+  }
+
+  private select(name: string, group: string, values: string[]) {
+    return { name, selector: { select: { mode: "dropdown", options: values
+      .map((value) => ({ value, label: this.optionLabel(`${group}.${value}`) })) } } };
   }
 
   protected schema(): unknown[] {
     const range = this.config.range ?? "this_and_next_week";
+    const compact = this.config.layout === "compact";
+    const isWeek = range === "week";
     return [
       { name: "calendars", required: true, selector: { object: {} } },
       {
         type: "grid",
         name: "",
         schema: [
-          { name: "range", selector: { select: { mode: "dropdown", options: ["today", "this_week", "this_and_next_week", "days"]
-            .map((value) => ({ value, label: this.optionLabel(`range.${value}`) })) } } },
-          ...(range === "days" ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : []),
-          { name: "max_items", selector: { number: { mode: "box", min: 1, max: 100 } } },
+          this.select("layout", "layouts", ["list", "compact"]),
+          this.select("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"]),
         ],
       },
+      ...(range === "days" ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : []),
+      ...(isWeek ? [{
+        type: "grid",
+        name: "",
+        schema: [
+          this.select("week", "weeks", ["current", "next"]),
+          { name: "week_rollover", selector: { text: {} } },
+        ],
+      }] : []),
       {
         type: "grid",
         name: "",
         schema: [
-          { name: "secondary", selector: { select: { mode: "dropdown", options: ["calendar_location", "calendar", "location", "description", "none"]
-            .map((value) => ({ value, label: this.optionLabel(`secondary.${value}`) })) } } },
-          { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } },
+          { name: "title", selector: { text: {} } },
+          { name: "max_items", selector: { number: { mode: "box", min: 1, max: 100 } } },
         ],
       },
+      ...(compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [{
+        type: "grid",
+        name: "",
+        schema: [
+          this.select("secondary", "secondaries", ["calendar_location", "calendar", "location", "description", "none"]),
+          { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } },
+        ],
+      }]),
       { name: "show_past_today", selector: { boolean: {} } },
       { name: "rules", selector: { object: {} } },
       {
