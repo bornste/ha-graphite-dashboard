@@ -455,8 +455,8 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
         .sort((first, second) => Number(second.event.ruled) - Number(first.event.ruled) || first.index - second.index);
       const offset = daysBetween(today, day);
       const classes = ["compactDay", offset === 0 ? "today" : "", offset < 0 ? "past" : ""].filter(Boolean).join(" ");
-      return html`<div class=${classes}><div class="date"><b>${this.weekday(day)}</b><span>${this.localize("calendar.dayNumber",
-        { day: day.getDate() })}</span></div><div class="items">${items.length
+      return html`<div class=${classes}><div class="date"><span>${this.localize("calendar.dayNumber",
+        { day: day.getDate() })}</span><b>${this.weekday(day)}</b></div><div class="items">${items.length
         ? items.map((item) => this.renderCompactItem(item.event, item.index))
         : html`<div class="none">–</div>`}</div></div>`;
     })}</div>`;

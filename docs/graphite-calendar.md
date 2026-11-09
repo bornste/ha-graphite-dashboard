@@ -134,8 +134,11 @@ today or tomorrow).
 
 ## Compact layout
 
-- **Days:** one block per day, weekday and date on the left; today in the accent color, earlier days
-  of the week dimmed.
+- **Days:** one block per day with a small calendar sheet on the left: the weekday large ("Mi"), the
+  date small in the band above ("11."), since in a school week the weekday matters more than the
+  date. Today in the accent color, earlier days of the week dimmed. The sheet is 42px like the row
+  icons, 9px from the edge, with `--graphite-radius-tile`. Events of a day are `--graphite-gap-tile`
+  apart.
 - **Events:** one line each, long titles wrap to two lines. No second line and no "ganztags"; timed
   events show their start time in front of the title, multi-day events "· bis Mi".
 - **Colors:** a dot in the calendar or rule color (muted without a color). Titles colored by a rule

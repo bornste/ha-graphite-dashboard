@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.34.0";
+var version = "0.34.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -6693,33 +6693,48 @@ var calendarStyles = i`
     align-items: flex-start;
     box-sizing: border-box;
     min-height: var(--graphite-row-height, 60px);
-    padding: 11px 14px 11px 0;
+    padding: 9px 14px 9px 0;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
     background: var(--graphite-card-surface, var(--graphite-surface-tile));
   }
   .compactDay.past {
     opacity: 0.45;
   }
+  /* small calendar sheet, 42px like the row icon box and 9px from the edge. The weekday is the
+     large part: in a school week "Mittwoch" matters more than the date */
   .date {
     flex: none;
     display: flex;
     flex-direction: column;
-    width: 60px;
-    padding-left: 14px;
-    box-sizing: border-box;
-    line-height: 18px;
-  }
-  .date b {
-    font-size: var(--graphite-font-name-size, 15px);
-    font-weight: 500;
-    color: var(--graphite-text-primary);
+    width: 42px;
+    height: 42px;
+    margin: 0 12px 0 9px;
+    border-radius: var(--graphite-radius-tile, 12px);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--graphite-text-primary) 6%, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   .date span {
-    font-size: var(--graphite-font-caption-size, 12px);
+    height: 15px;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 15px;
+    text-align: center;
     color: var(--graphite-text-secondary);
+    background: color-mix(in srgb, var(--graphite-text-primary) 8%, transparent);
   }
-  .compactDay.today .date b,
+  .date b {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    font-size: var(--graphite-title-size, 18px);
+    font-weight: 400;
+    color: var(--graphite-text-primary);
+  }
   .compactDay.today .date span {
+    color: var(--graphite-accent);
+    background: color-mix(in srgb, var(--graphite-accent) 16%, transparent);
+  }
+  .compactDay.today .date b {
     color: var(--graphite-accent);
   }
   .items {
@@ -6727,7 +6742,10 @@ var calendarStyles = i`
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    /* room between the events for fingers */
+    gap: var(--graphite-gap-tile, 8px);
+    /* first line level with the date band */
+    padding-top: 1px;
   }
   /* long titles wrap to at most two lines */
   .item {
@@ -7366,10 +7384,10 @@ var GraphiteCalendar = class extends GraphiteCard {
       const items = [...byDay.get(day.getTime()) ?? []].sort((first, second) => Number(second.event.ruled) - Number(first.event.ruled) || first.index - second.index);
       const offset = daysBetween(today, day);
       const classes = ["compactDay", offset === 0 ? "today" : "", offset < 0 ? "past" : ""].filter(Boolean).join(" ");
-      return b2`<div class=${classes}><div class="date"><b>${this.weekday(day)}</b><span>${this.localize(
+      return b2`<div class=${classes}><div class="date"><span>${this.localize(
         "calendar.dayNumber",
         { day: day.getDate() }
-      )}</span></div><div class="items">${items.length ? items.map((item) => this.renderCompactItem(item.event, item.index)) : b2`<div class="none">–</div>`}</div></div>`;
+      )}</span><b>${this.weekday(day)}</b></div><div class="items">${items.length ? items.map((item) => this.renderCompactItem(item.event, item.index)) : b2`<div class="none">–</div>`}</div></div>`;
     })}</div>`;
   }
   // minutes after midnight of "hh:mm"; undefined without a valid time
