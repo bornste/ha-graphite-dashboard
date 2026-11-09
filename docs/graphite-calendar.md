@@ -6,8 +6,10 @@ events (e.g. exams) get a tint in their color and "in n Tagen". Made for a schoo
 homework, exams and events, but works with any calendar. Usually placed inside a
 [graphite-panel](graphite-panel.md), which gives it the title.
 
-Two layouts: `list` (rows with icon, second line and time) and `compact` (one block per day, one line
-per event), for calendars with many all-day entries such as homework. With `range: week` the card shows
+Three layouts: `list` (rows with icon, second line and time), `compact` (one block per day, one line
+per event), for calendars with many all-day entries such as homework, and `summary` (one row with the
+number of events today and on the next day and the next highlighted event, e.g. to open a pop-up).
+Events with a description show a small note icon behind the title. With `range: week` the card shows
 a fixed calendar week and its own header ("Diese Woche | 9.–13. November").
 
 ```yaml
@@ -67,27 +69,48 @@ cards:
             color: "#e8908a"
 ```
 
+### Summary row
+
+```yaml
+type: custom:graphite-calendar
+calendars: [calendar.school_homework, calendar.school_events]
+layout: summary
+icon: mdi:school-outline
+weekdays: true
+rules:
+  - contains_any: [Test, Prüfung]
+    color: "#e8908a"
+    highlight: true
+tap_action:
+  action: navigate
+  navigation_path: "#school"
+```
+
+Shows "Heute 3 · Morgen 6", below "nächste Prüfung: …" and on the right "morgen" or "in 3 Tagen".
+
 ## Options
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `calendars` | list | required | Calendar entities, each an entity id or `{entity, name, color, icon, highlight}`. `name` is shown in the second line (default: friendly name), `color` colors stripe and icon (default: accent), `icon` defaults to the entity icon. |
-| `layout` | `list` \| `compact` | `list` | `list`: rows with icon, second line and time column. `compact`: one block per day, one line per event (see below). |
+| `layout` | `list` \| `compact` \| `summary` | `list` | `list`: rows with icon, second line and time column. `compact`: one block per day, one line per event. `summary`: one row (see below). |
 | `range` | `today` \| `this_week` \| `this_and_next_week` \| `days` \| `week` | `this_and_next_week` | Time range from today 00:00; `week` is a whole calendar week from Monday (see `week`). Weeks start on Monday and end on Sunday. |
 | `days` | number | `14` | Number of days with `range: days`. |
 | `week` | `current` \| `next` | `current` | Week shown with `range: week`. |
 | `week_rollover` | string | – | With `range: week`: from this moment the following week counts as the current one, as `<day> <hh:mm>` with the day as `mon` … `sun`. `sat 00:00` switches in the night to Saturday. Without it the week changes on Monday 00:00. |
-| `weekdays` | boolean | `false` | Compact layout: Monday to Friday are always shown (empty days with "–"), the weekend only with events. |
+| `weekdays` | boolean | `false` | Compact layout: Monday to Friday are always shown (empty days with "–"), the weekend only with events. Summary layout: the second count is the next weekday ("Montag" on Friday and at the weekend), and the weekend itself is skipped unless it has events. |
+| `icon` | icon | calendar icon | Summary layout: icon of the row. |
+| `highlight_text` | string | "nächste Prüfung: {title}" | Summary layout: second line about the next highlighted event (`{title}` = its title). |
 | `title` | string | – | Header of the card with a date range on the right. With `range: week` the header is automatic ("Diese Woche", "Nächste Woche"; after the rollover "Ab Montag", "In zwei Wochen"); `title` replaces the text. |
 | `max_items` | number | – | Shows at most this many events; the rest appears as "+ n weitere bis …". |
 | `show_past_today` | boolean | `true` | Keeps today's events that are over until midnight (dimmed, struck through, "vorbei"). With `false` they disappear as soon as they end. Earlier days of a `range: week` always stay (dimmed). |
-| `rules` | list | – | Keyword rules `{starts_with \| contains, color, icon, highlight}`; the first rule whose text the title starts with or contains (case-insensitive, no regular expressions) overrides color, icon and highlight of the calendar. |
+| `rules` | list | – | Keyword rules `{starts_with, contains, contains_any, contains_all, color, icon, highlight}`. `contains_any` and `contains_all` take a list of words (the title contains at least one / all of them). A rule matches when every criterion it sets matches (case-insensitive, no regular expressions); the first matching rule overrides color, icon and highlight of the calendar. |
 | `highlight_days` | number | `7` | Highlighted events get the tint only up to this many days ahead. |
 | `secondary` | `calendar_location` \| `calendar` \| `location` \| `description` \| `none` | `calendar_location` | Content of the second line. Multi-day events add "bis Fr 13. Nov." unless `none`. |
 | `empty_text` | string | "Keine Einträge bis …" | Text without events. |
 | `hide_empty` | boolean | `false` | Hides the card without events. |
 | `tap_action` | action | `more-info` | `more-info` opens the details of the event (title, time, calendar, location, description); other actions run on the event's calendar entity. |
-| `hold_action` | action | `more-info` | Runs on the event's calendar entity (more-info of the calendar). With `tap_action` and `hold_action` both `none` the events are plain text (no pointer, not focusable). |
+| `hold_action` | action | `more-info` | Runs on the event's calendar entity (more-info of the calendar). With `tap_action` and `hold_action` both `none` the events are plain text (no pointer, not focusable). Events with a description show a note icon either way. |
 
 ## Behaviour
 
@@ -113,6 +136,16 @@ cards:
 - **Header** (`range: week` or `title`): title and date range on one baseline with the separator line,
   same as the panel header ("Diese Woche | 9.–13. November"). The range runs Monday to Friday, to the
   weekend when it has events.
+
+## Summary layout
+
+- **Main line:** "Heute 3 · Morgen 6" – number of events today and on the next day ("–" for none).
+  With `weekdays` the next day is the next weekday, and "Heute" is left out at an empty weekend.
+- **Second line:** the next highlighted event within `highlight_days` (`highlight: true` on a calendar
+  or rule), otherwise "keine Prüfung in den nächsten 7 Tagen". On the right "heute", "morgen" or
+  "in 3 Tagen" in the event color.
+- **Actions:** the whole row is one button; `tap_action` and `hold_action` run on the first calendar
+  (e.g. `navigate` to a pop-up).
 
 ## Styling
 

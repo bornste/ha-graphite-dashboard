@@ -210,12 +210,17 @@
     "fromMonday": "Ab Montag",
     "inTwoWeeks": "In zwei Wochen",
     "dayNumber": "{day}.",
+    "whenToday": "heute",
+    "whenTomorrow": "morgen",
+    "nextHighlight": "nächste Prüfung: {title}",
+    "noHighlight": "keine Prüfung in den nächsten {days} Tagen",
     "editor": {
       "calendars": "Kalender (Liste: entity, name, color, icon, highlight)",
       "layout": "Layout",
       "layouts": {
         "list": "Liste",
-        "compact": "Kompakt"
+        "compact": "Kompakt",
+        "summary": "Zusammenfassung"
       },
       "range": "Zeitraum",
       "ranges": {
@@ -234,6 +239,8 @@
       "week_rollover": "Wochenwechsel (z. B. sat 00:00)",
       "weekdays": "Mo–Fr immer anzeigen",
       "title": "Titel (Woche: automatisch)",
+      "icon": "Symbol",
+      "highlight_text": "Text zur nächsten Hervorhebung ({title})",
       "max_items": "Max. Einträge",
       "secondary": "Zweite Zeile",
       "secondaries": {

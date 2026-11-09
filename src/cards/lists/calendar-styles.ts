@@ -80,7 +80,13 @@ export const calendarStyles = css`
     flex-direction: column;
     gap: 2px;
   }
+  .nameRow {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
   .name {
+    min-width: 0;
     font-size: var(--graphite-font-name-size, 15px);
     line-height: 18px;
     color: var(--graphite-text-primary);
@@ -267,6 +273,51 @@ export const calendarStyles = css`
     height: 6px;
     border-radius: 50%;
     background: var(--event-color, var(--graphite-text-muted));
+  }
+  /* events with a description: small note icon behind the title */
+  ha-icon.note {
+    flex: none;
+    margin-left: 6px;
+    color: var(--graphite-text-secondary);
+    --mdc-icon-size: 14px;
+    vertical-align: -1px;
+  }
+  .item ha-icon.note {
+    display: inline-flex;
+  }
+  /* summary layout: one row with the geometry of the status rows */
+  .summaryRow {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: var(--graphite-row-height, 60px);
+    padding: 9px 0;
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .summaryRow:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--graphite-accent);
+  }
+  .summaryRow.static {
+    cursor: default;
+  }
+  .summaryRow .icon {
+    color: var(--graphite-text-secondary);
+  }
+  .summaryRow .name b {
+    font-weight: 500;
+  }
+  .summaryRow .when {
+    color: var(--event-color, var(--graphite-text-secondary));
+  }
+  ha-ripple {
+    position: absolute;
+    inset: 0;
   }
   /* without tap and hold action the events are plain text */
   .event.static,

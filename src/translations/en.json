@@ -210,12 +210,17 @@
     "fromMonday": "From Monday",
     "inTwoWeeks": "In two weeks",
     "dayNumber": "{day}",
+    "whenToday": "today",
+    "whenTomorrow": "tomorrow",
+    "nextHighlight": "next exam: {title}",
+    "noHighlight": "no exam in the next {days} days",
     "editor": {
       "calendars": "Calendars (list: entity, name, color, icon, highlight)",
       "layout": "Layout",
       "layouts": {
         "list": "List",
-        "compact": "Compact"
+        "compact": "Compact",
+        "summary": "Summary"
       },
       "range": "Range",
       "ranges": {
@@ -234,6 +239,8 @@
       "week_rollover": "Week rollover (e.g. sat 00:00)",
       "weekdays": "Always show Mon–Fri",
       "title": "Title (week: automatic)",
+      "icon": "Icon",
+      "highlight_text": "Text about the next highlight ({title})",
       "max_items": "Max. events",
       "secondary": "Second line",
       "secondaries": {
