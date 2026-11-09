@@ -5,7 +5,8 @@
 // low: for consumables (ink, batteries) – soon empty below "low", empty at the minimum.
 // style "change": change against a reference (purchase price, a value of 24 hours ago, or a change in
 // percent from an attribute) – a needle in the middle marks the reference, the bar runs to the right
-// (gain, green) or to the left (loss, red), the change in percent stands next to the value.
+// (more, green) or to the left (less, red), the change stands next to the value: in percent, or with
+// change_mode absolute as a difference in the unit of the sensor. invert swaps the colors (consumption).
 import { html, nothing, type CSSResultGroup } from "lit";
 import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { formatNumber, isUnavailable, sinceText } from "../../core/format";
@@ -47,6 +48,10 @@ export interface MeterConfig extends GraphiteCardConfig {
   change_attribute?: string;
   scale?: number;
   change_decimals?: number;
+  // percent (default) or absolute (difference in the unit, scale in the unit as well)
+  change_mode?: "percent" | "absolute";
+  // more is bad (consumption, prices to pay): green and red swap
+  invert?: boolean;
 }
 
 const meterTileStyles = [tileStyles, meterStyles, meterChangeStyles];
@@ -54,7 +59,11 @@ const referenceRefreshMilliseconds = 5 * 60 * 1000;
 
 interface ChangeModel {
   percent?: number;
+  // value minus reference, in the unit of the sensor
+  difference?: number;
+  // reference top right: long on wide tiles ("Kauf 0.1697"), short on narrow ones ("Kauf")
   caption: string;
+  captionShort: string;
 }
 
 interface ColorStop {
@@ -180,6 +189,7 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
     const reference = config.reference;
     let percent: number | undefined;
     let caption = "";
+    let captionShort = "";
     if (config.change_attribute && stateObj) {
       const attributeValue = Number(stateObj.attributes?.[config.change_attribute]);
       if (Number.isFinite(attributeValue)) percent = attributeValue;
@@ -190,32 +200,40 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
       let base: number | undefined;
       if (hours !== undefined) {
         caption = this.periodText(hours);
+        captionShort = caption;
         if (percent === undefined) base = this.valueAgo(hours);
       } else if (typeof reference === "string" && text.includes(".") && this.hass?.states[text]) {
         base = parseFloat(this.hass.states[text].state);
-        if (Number.isFinite(base)) caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, decimals) });
+        if (Number.isFinite(base)) {
+          caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, decimals) });
+          captionShort = this.localize("meter.purchaseShort");
+        }
       } else {
         base = Number(text);
         // the purchase price keeps all of its own decimals (0.07282, not 0.0728)
         const ownDecimals = text.includes(".") ? text.split(".")[1].length : 0;
         if (Number.isFinite(base)) {
           caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, Math.max(decimals, ownDecimals)) });
+          captionShort = this.localize("meter.purchaseShort");
         }
       }
       if (percent === undefined && hasValue && base !== undefined && Number.isFinite(base) && base !== 0) {
         percent = ((value - base) / Math.abs(base)) * 100;
       }
     }
-    return { percent, caption: config.reference_name ?? caption };
+    // the difference follows from the percent (also when the percent comes from an attribute)
+    let difference: number | undefined;
+    if (percent !== undefined && hasValue && percent !== -100) difference = value - value / (1 + percent / 100);
+    return { percent, difference, caption: config.reference_name ?? caption, captionShort: config.reference_name ?? captionShort };
   }
 
-  // "+11.6 %" / "−8.0 %"
-  private percentText(percent: number): string {
-    const decimals = this.config!.change_decimals ?? 1;
-    const rounded = Number(percent.toFixed(decimals));
+  // "+11.6 %" / "−8.0 %", absolute "+2.0 °C"
+  private changeText(amount: number, unit: string, decimals: number): string {
+    const rounded = Number(amount.toFixed(decimals));
     const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
-    return `${sign}${formatNumber(this.hass, Math.abs(rounded), decimals)} %`;
+    return `${sign}${formatNumber(this.hass, Math.abs(rounded), decimals)}${unit ? ` ${unit}` : ""}`;
   }
+
 
   // value, band color and scale shared by both layouts
   private model() {
@@ -257,18 +275,24 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
     let change: ChangeModel | undefined;
     let changeVariables = "";
     let direction = "";
+    let tone = "";
     let beyond = false;
+    let changeAmount: number | undefined;
+    const absolute = config.change_mode === "absolute";
     if (style === "change") {
       change = this.changeModel(stateObj, value, hasValue, decimals);
       const scale = Number(config.scale) > 0 ? Number(config.scale) : 20;
-      if (change.percent !== undefined) {
-        direction = change.percent > 0 ? "up" : change.percent < 0 ? "down" : "";
-        beyond = Math.abs(change.percent) > scale;
-        changeVariables = ` --change-share: ${Math.min(50, (Math.abs(change.percent) / scale) * 50)}%;`;
+      changeAmount = absolute ? change.difference : change.percent;
+      if (changeAmount !== undefined) {
+        direction = changeAmount > 0 ? "up" : changeAmount < 0 ? "down" : "";
+        // gain is green, loss red; inverted (consumption) the other way round
+        if (direction) tone = (direction === "up") !== !!config.invert ? "gain" : "loss";
+        beyond = Math.abs(changeAmount) > scale;
+        changeVariables = ` --change-share: ${Math.min(50, (Math.abs(changeAmount) / scale) * 50)}%;`;
       }
     }
     return { style, stateObj, hasValue, unit, name, variables: variables + changeVariables, hasLow, empty, low, interactive,
-      valueText, change, direction, beyond };
+      valueText, change, direction, tone, beyond, changeAmount, absolute, decimals };
   }
 
   // status of a consumable ("OK", "bald leer", "leer"); empty without "low"
@@ -300,21 +324,29 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
       : nothing}</div></div>`;
   }
 
-  // change in percent, colored by direction (sign and color are enough, no arrow)
+  // change in percent or in the unit, colored by gain or loss (sign and color are enough, no arrow)
   private renderChange(model: ReturnType<GraphiteMeter["model"]>) {
-    const percent = model.change?.percent;
-    return html`<span class="delta">${percent === undefined ? "–" : this.percentText(percent)}</span>`;
+    const amount = model.changeAmount;
+    if (amount === undefined) return html`<span class="delta">–</span>`;
+    const config = this.config!;
+    const text = model.absolute
+      ? this.changeText(amount, model.unit, config.change_decimals ?? model.decimals)
+      : this.changeText(amount, "%", config.change_decimals ?? 1);
+    return html`<span class="delta">${text}</span>`;
   }
 
-  // change tile: name and reference on top, value and change, bar with the needle in the middle;
-  // on narrow tiles the change takes the place of the reference (container query)
+  // change tile: name and reference on top, value and change, bar with the needle in the middle.
+  // Narrow tiles keep this order: the reference gets shorter ("Kauf"), very narrow ones drop the unit
+  // (container queries), so bought and watched prices stay apart
   private renderChangeTile(model: ReturnType<GraphiteMeter["model"]>, baseClasses: string) {
     const caption = model.change?.caption ?? "";
-    const classes = [baseClasses, model.direction, model.beyond ? "beyond" : "", caption ? "captioned" : ""].filter(Boolean).join(" ");
+    const classes = [baseClasses, model.direction, model.tone, model.beyond ? "beyond" : "", caption ? "captioned" : ""]
+      .filter(Boolean).join(" ");
     return html`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : nothing}
       tabindex=${model.interactive ? "0" : nothing} aria-label=${model.name}>${model.interactive
       ? html`<ha-ripple></ha-ripple>` : nothing}<div class="name">${model.name}</div>${caption
-      ? html`<div class="reference">${caption}</div>` : nothing}<div class="topDelta">${this.renderChange(model)}</div><div class="value-row"><div class="value">${model.valueText}${model.hasValue
+      ? html`<div class="reference"><span class="long">${caption}</span><span class="short">${model.change?.captionShort
+      || caption}</span></div>` : nothing}<div class="value-row"><div class="value">${model.valueText}${model.hasValue
       && model.unit ? html`<span class="unit">${model.unit}</span>` : nothing}</div><div class="secondary">${this.renderChange(model)}</div></div><div
       class="bar"><div class="fill"></div><div class="needle"></div></div></div>`;
   }
@@ -333,7 +365,7 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
         since: sinceText(new Date(model.stateObj.last_changed), this.language) });
     }
     const classes = ["row", model.style, model.hasValue ? "" : "novalue", offline ? "unavailable" : "", model.empty ? "empty" : "",
-      model.low ? "low" : "", model.interactive ? "interactive" : "", model.direction, model.beyond ? "beyond" : ""]
+      model.low ? "low" : "", model.interactive ? "interactive" : "", model.direction, model.tone, model.beyond ? "beyond" : ""]
       .filter(Boolean).join(" ");
     return html`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : nothing}
       tabindex=${model.interactive ? "0" : nothing} aria-label=${model.name}>${model.interactive

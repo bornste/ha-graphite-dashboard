@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.35.2";
+var version = "0.36.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -621,6 +621,7 @@ var de_default = {
   },
   meter: {
     purchase: "Kauf {value}",
+    purchaseShort: "Kauf",
     periodHours: "{count} h",
     periodDays: "{count} Tage",
     editor: {
@@ -647,8 +648,14 @@ var de_default = {
       reference: "Referenz (Kaufpreis, Entit\xE4t oder Zeitraum wie 24h, 7d)",
       reference_name: "Text zur Referenz (Standard: Kauf \u2026 / 24 h)",
       change_attribute: "Attribut mit Ver\xE4nderung in % (z.B. 24h_change)",
-      scale: "Halber Balken entspricht (%)",
-      change_decimals: "Nachkommastellen der %"
+      scale: "Halber Balken entspricht (% bzw. Einheit)",
+      change_decimals: "Nachkommastellen der %",
+      change_mode: "Abweichung als",
+      changeModes: {
+        percent: "Prozent",
+        absolute: "Differenz in der Einheit"
+      },
+      invert: "Mehr ist schlecht (Farben tauschen)"
     }
   },
   effect: {
@@ -1177,6 +1184,7 @@ var en_default = {
   },
   meter: {
     purchase: "bought {value}",
+    purchaseShort: "bought",
     periodHours: "{count} h",
     periodDays: "{count} days",
     editor: {
@@ -1203,8 +1211,14 @@ var en_default = {
       reference: "Reference (purchase price, entity or period like 24h, 7d)",
       reference_name: "Reference text (default: bought \u2026 / 24 h)",
       change_attribute: "Attribute with the change in % (e.g. 24h_change)",
-      scale: "Half the bar equals (%)",
-      change_decimals: "Decimals of the %"
+      scale: "Half the bar equals (% or unit)",
+      change_decimals: "Decimals of the %",
+      change_mode: "Change as",
+      changeModes: {
+        percent: "Percent",
+        absolute: "Difference in the unit"
+      },
+      invert: "More is bad (swap colors)"
     }
   },
   effect: {
@@ -3189,7 +3203,9 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
           { name: "scale", selector: { number: { mode: "box", min: 1, max: 1e3 } } },
           { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
           { name: "change_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "unit", selector: { text: {} } }
+          { name: "unit", selector: { text: {} } },
+          { name: "change_mode", selector: { select: { mode: "dropdown", options: ["percent", "absolute"].map((value) => ({ value, label: this.optionLabel(`changeModes.${value}`) })) } } },
+          { name: "invert", selector: { boolean: {} } }
         ]
       }] : [
         {
@@ -3510,23 +3526,29 @@ var meterChangeStyles = i`
     background: color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   :is(.tile, .row).change .fill {
+    --change-color: var(--graphite-text-secondary);
     left: 50%;
     right: auto;
     width: var(--change-share, 0%);
     border-radius: 0 2px 2px 0;
-    background: var(--graphite-success);
+    background: var(--change-color);
   }
   :is(.tile, .row).change.down .fill {
     left: auto;
     right: 50%;
     border-radius: 2px 0 0 2px;
-    background: var(--graphite-danger);
+  }
+  :is(.tile, .row).change.gain .fill {
+    --change-color: var(--graphite-success);
+  }
+  :is(.tile, .row).change.loss .fill {
+    --change-color: var(--graphite-danger);
   }
   :is(.tile, .row).change.up.beyond .fill {
-    background: linear-gradient(to right, var(--graphite-success) 75%, color-mix(in srgb, var(--graphite-success) 30%, transparent));
+    background: linear-gradient(to right, var(--change-color) 75%, color-mix(in srgb, var(--change-color) 30%, transparent));
   }
   :is(.tile, .row).change.down.beyond .fill {
-    background: linear-gradient(to left, var(--graphite-danger) 75%, color-mix(in srgb, var(--graphite-danger) 30%, transparent));
+    background: linear-gradient(to left, var(--change-color) 75%, color-mix(in srgb, var(--change-color) 30%, transparent));
   }
   :is(.tile, .row).change .needle {
     left: 50%;
@@ -3536,10 +3558,10 @@ var meterChangeStyles = i`
     font-variant-numeric: tabular-nums;
     color: var(--graphite-text-secondary);
   }
-  .up .delta {
+  .gain .delta {
     color: var(--graphite-success);
   }
-  .down .delta {
+  .loss .delta {
     color: var(--graphite-danger);
   }
   /* reference on the right of the name ("Kauf 2.80", "24 h") */
@@ -3558,29 +3580,28 @@ var meterChangeStyles = i`
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* narrow tiles: the change moves up to the name row, the reference is left out */
+  /* narrow tiles keep the order: the reference gets shorter, very narrow ones drop the unit */
   .tile.change {
     container-type: inline-size;
   }
-  .topDelta {
+  .reference .short {
     display: none;
-    position: absolute;
-    right: var(--graphite-padding-tile, 12px);
-    top: 10px;
-    font-size: var(--graphite-font-label-size, 13px);
-    line-height: 1.6;
   }
   @container (max-width: 200px) {
-    .tile.change .reference,
-    .tile.change .value-row .secondary {
+    .reference .long {
       display: none;
     }
-    .tile.change .topDelta {
-      display: block;
+    .reference .short {
+      display: inline;
     }
-    .tile.change .name {
-      right: 50%;
+  }
+  @container (max-width: 150px) {
+    .tile.change .unit {
+      display: none;
     }
+  }
+  .tile.change .secondary {
+    flex: none;
   }
   .row .caption {
     margin-left: 4px;
@@ -3682,6 +3703,7 @@ var GraphiteMeter = class extends GraphiteCard {
     const reference = config.reference;
     let percent;
     let caption = "";
+    let captionShort = "";
     if (config.change_attribute && stateObj) {
       const attributeValue = Number(stateObj.attributes?.[config.change_attribute]);
       if (Number.isFinite(attributeValue)) percent = attributeValue;
@@ -3692,29 +3714,35 @@ var GraphiteMeter = class extends GraphiteCard {
       let base;
       if (hours !== void 0) {
         caption = this.periodText(hours);
+        captionShort = caption;
         if (percent === void 0) base = this.valueAgo(hours);
       } else if (typeof reference === "string" && text.includes(".") && this.hass?.states[text]) {
         base = parseFloat(this.hass.states[text].state);
-        if (Number.isFinite(base)) caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, decimals) });
+        if (Number.isFinite(base)) {
+          caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, decimals) });
+          captionShort = this.localize("meter.purchaseShort");
+        }
       } else {
         base = Number(text);
         const ownDecimals = text.includes(".") ? text.split(".")[1].length : 0;
         if (Number.isFinite(base)) {
           caption = this.localize("meter.purchase", { value: formatNumber(this.hass, base, Math.max(decimals, ownDecimals)) });
+          captionShort = this.localize("meter.purchaseShort");
         }
       }
       if (percent === void 0 && hasValue && base !== void 0 && Number.isFinite(base) && base !== 0) {
         percent = (value - base) / Math.abs(base) * 100;
       }
     }
-    return { percent, caption: config.reference_name ?? caption };
+    let difference;
+    if (percent !== void 0 && hasValue && percent !== -100) difference = value - value / (1 + percent / 100);
+    return { percent, difference, caption: config.reference_name ?? caption, captionShort: config.reference_name ?? captionShort };
   }
-  // "+11.6 %" / "−8.0 %"
-  percentText(percent) {
-    const decimals = this.config.change_decimals ?? 1;
-    const rounded = Number(percent.toFixed(decimals));
+  // "+11.6 %" / "−8.0 %", absolute "+2.0 °C"
+  changeText(amount, unit, decimals) {
+    const rounded = Number(amount.toFixed(decimals));
     const sign = rounded > 0 ? "+" : rounded < 0 ? "\u2212" : "";
-    return `${sign}${formatNumber(this.hass, Math.abs(rounded), decimals)} %`;
+    return `${sign}${formatNumber(this.hass, Math.abs(rounded), decimals)}${unit ? ` ${unit}` : ""}`;
   }
   // value, band color and scale shared by both layouts
   model() {
@@ -3746,14 +3774,19 @@ var GraphiteMeter = class extends GraphiteCard {
     let change;
     let changeVariables = "";
     let direction = "";
+    let tone = "";
     let beyond = false;
+    let changeAmount;
+    const absolute = config.change_mode === "absolute";
     if (style === "change") {
       change = this.changeModel(stateObj, value, hasValue, decimals);
       const scale2 = Number(config.scale) > 0 ? Number(config.scale) : 20;
-      if (change.percent !== void 0) {
-        direction = change.percent > 0 ? "up" : change.percent < 0 ? "down" : "";
-        beyond = Math.abs(change.percent) > scale2;
-        changeVariables = ` --change-share: ${Math.min(50, Math.abs(change.percent) / scale2 * 50)}%;`;
+      changeAmount = absolute ? change.difference : change.percent;
+      if (changeAmount !== void 0) {
+        direction = changeAmount > 0 ? "up" : changeAmount < 0 ? "down" : "";
+        if (direction) tone = direction === "up" !== !!config.invert ? "gain" : "loss";
+        beyond = Math.abs(changeAmount) > scale2;
+        changeVariables = ` --change-share: ${Math.min(50, Math.abs(changeAmount) / scale2 * 50)}%;`;
       }
     }
     return {
@@ -3770,7 +3803,11 @@ var GraphiteMeter = class extends GraphiteCard {
       valueText,
       change,
       direction,
-      beyond
+      tone,
+      beyond,
+      changeAmount,
+      absolute,
+      decimals
     };
   }
   // status of a consumable ("OK", "bald leer", "leer"); empty without "low"
@@ -3799,18 +3836,22 @@ var GraphiteMeter = class extends GraphiteCard {
       tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(model.stateObj)}<div class="name">${model.name}</div><div
       class="value-row"><div class="value">${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}</div>${secondary ? b2`<div class=${status ? "secondary status" : "secondary"}>${!status && config.secondary_icon ? b2`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : A}${secondary}</div>` : A}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" ? b2`<div class="needle"></div>` : A}</div></div>`;
   }
-  // change in percent, colored by direction (sign and color are enough, no arrow)
+  // change in percent or in the unit, colored by gain or loss (sign and color are enough, no arrow)
   renderChange(model) {
-    const percent = model.change?.percent;
-    return b2`<span class="delta">${percent === void 0 ? "\u2013" : this.percentText(percent)}</span>`;
+    const amount = model.changeAmount;
+    if (amount === void 0) return b2`<span class="delta">–</span>`;
+    const config = this.config;
+    const text = model.absolute ? this.changeText(amount, model.unit, config.change_decimals ?? model.decimals) : this.changeText(amount, "%", config.change_decimals ?? 1);
+    return b2`<span class="delta">${text}</span>`;
   }
-  // change tile: name and reference on top, value and change, bar with the needle in the middle;
-  // on narrow tiles the change takes the place of the reference (container query)
+  // change tile: name and reference on top, value and change, bar with the needle in the middle.
+  // Narrow tiles keep this order: the reference gets shorter ("Kauf"), very narrow ones drop the unit
+  // (container queries), so bought and watched prices stay apart
   renderChangeTile(model, baseClasses) {
     const caption = model.change?.caption ?? "";
-    const classes = [baseClasses, model.direction, model.beyond ? "beyond" : "", caption ? "captioned" : ""].filter(Boolean).join(" ");
+    const classes = [baseClasses, model.direction, model.tone, model.beyond ? "beyond" : "", caption ? "captioned" : ""].filter(Boolean).join(" ");
     return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}
-      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="name">${model.name}</div>${caption ? b2`<div class="reference">${caption}</div>` : A}<div class="topDelta">${this.renderChange(model)}</div><div class="value-row"><div class="value">${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}</div><div class="secondary">${this.renderChange(model)}</div></div><div
+      tabindex=${model.interactive ? "0" : A} aria-label=${model.name}>${model.interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="name">${model.name}</div>${caption ? b2`<div class="reference"><span class="long">${caption}</span><span class="short">${model.change?.captionShort || caption}</span></div>` : A}<div class="value-row"><div class="value">${model.valueText}${model.hasValue && model.unit ? b2`<span class="unit">${model.unit}</span>` : A}</div><div class="secondary">${this.renderChange(model)}</div></div><div
       class="bar"><div class="fill"></div><div class="needle"></div></div></div>`;
   }
   // row: name and status line on the left, the value on the right, the bar along the bottom
@@ -3837,6 +3878,7 @@ var GraphiteMeter = class extends GraphiteCard {
       model.low ? "low" : "",
       model.interactive ? "interactive" : "",
       model.direction,
+      model.tone,
       model.beyond ? "beyond" : ""
     ].filter(Boolean).join(" ");
     return b2`<div class=${classes} style=${model.variables} role=${model.interactive ? "button" : A}

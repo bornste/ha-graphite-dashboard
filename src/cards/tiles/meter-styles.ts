@@ -266,29 +266,36 @@ export const meterRowStyles = css`
 `;
 
 // Style "change" (tile and row): the needle in the middle marks the reference, the bar runs from there
-// to the right (gain, success) or to the left (loss, danger); beyond the scale its end fades out.
+// to the right (more) or to the left (less); gain is green, loss red (inverted: the other way round);
+// beyond the scale its end fades out.
 export const meterChangeStyles = css`
   :is(.tile, .row).change .bar {
     background: color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   :is(.tile, .row).change .fill {
+    --change-color: var(--graphite-text-secondary);
     left: 50%;
     right: auto;
     width: var(--change-share, 0%);
     border-radius: 0 2px 2px 0;
-    background: var(--graphite-success);
+    background: var(--change-color);
   }
   :is(.tile, .row).change.down .fill {
     left: auto;
     right: 50%;
     border-radius: 2px 0 0 2px;
-    background: var(--graphite-danger);
+  }
+  :is(.tile, .row).change.gain .fill {
+    --change-color: var(--graphite-success);
+  }
+  :is(.tile, .row).change.loss .fill {
+    --change-color: var(--graphite-danger);
   }
   :is(.tile, .row).change.up.beyond .fill {
-    background: linear-gradient(to right, var(--graphite-success) 75%, color-mix(in srgb, var(--graphite-success) 30%, transparent));
+    background: linear-gradient(to right, var(--change-color) 75%, color-mix(in srgb, var(--change-color) 30%, transparent));
   }
   :is(.tile, .row).change.down.beyond .fill {
-    background: linear-gradient(to left, var(--graphite-danger) 75%, color-mix(in srgb, var(--graphite-danger) 30%, transparent));
+    background: linear-gradient(to left, var(--change-color) 75%, color-mix(in srgb, var(--change-color) 30%, transparent));
   }
   :is(.tile, .row).change .needle {
     left: 50%;
@@ -298,10 +305,10 @@ export const meterChangeStyles = css`
     font-variant-numeric: tabular-nums;
     color: var(--graphite-text-secondary);
   }
-  .up .delta {
+  .gain .delta {
     color: var(--graphite-success);
   }
-  .down .delta {
+  .loss .delta {
     color: var(--graphite-danger);
   }
   /* reference on the right of the name ("Kauf 2.80", "24 h") */
@@ -320,29 +327,28 @@ export const meterChangeStyles = css`
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* narrow tiles: the change moves up to the name row, the reference is left out */
+  /* narrow tiles keep the order: the reference gets shorter, very narrow ones drop the unit */
   .tile.change {
     container-type: inline-size;
   }
-  .topDelta {
+  .reference .short {
     display: none;
-    position: absolute;
-    right: var(--graphite-padding-tile, 12px);
-    top: 10px;
-    font-size: var(--graphite-font-label-size, 13px);
-    line-height: 1.6;
   }
   @container (max-width: 200px) {
-    .tile.change .reference,
-    .tile.change .value-row .secondary {
+    .reference .long {
       display: none;
     }
-    .tile.change .topDelta {
-      display: block;
+    .reference .short {
+      display: inline;
     }
-    .tile.change .name {
-      right: 50%;
+  }
+  @container (max-width: 150px) {
+    .tile.change .unit {
+      display: none;
     }
+  }
+  .tile.change .secondary {
+    flex: none;
   }
   .row .caption {
     margin-left: 4px;

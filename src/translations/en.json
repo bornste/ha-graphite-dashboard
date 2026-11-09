@@ -67,6 +67,7 @@
   },
   "meter": {
     "purchase": "bought {value}",
+    "purchaseShort": "bought",
     "periodHours": "{count} h",
     "periodDays": "{count} days",
     "editor": {
@@ -93,8 +94,14 @@
       "reference": "Reference (purchase price, entity or period like 24h, 7d)",
       "reference_name": "Reference text (default: bought … / 24 h)",
       "change_attribute": "Attribute with the change in % (e.g. 24h_change)",
-      "scale": "Half the bar equals (%)",
-      "change_decimals": "Decimals of the %"
+      "scale": "Half the bar equals (% or unit)",
+      "change_decimals": "Decimals of the %",
+      "change_mode": "Change as",
+      "changeModes": {
+        "percent": "Percent",
+        "absolute": "Difference in the unit"
+      },
+      "invert": "More is bad (swap colors)"
     }
   },
   "effect": {

@@ -67,6 +67,7 @@
   },
   "meter": {
     "purchase": "Kauf {value}",
+    "purchaseShort": "Kauf",
     "periodHours": "{count} h",
     "periodDays": "{count} Tage",
     "editor": {
@@ -93,8 +94,14 @@
       "reference": "Referenz (Kaufpreis, Entität oder Zeitraum wie 24h, 7d)",
       "reference_name": "Text zur Referenz (Standard: Kauf … / 24 h)",
       "change_attribute": "Attribut mit Veränderung in % (z.B. 24h_change)",
-      "scale": "Halber Balken entspricht (%)",
-      "change_decimals": "Nachkommastellen der %"
+      "scale": "Halber Balken entspricht (% bzw. Einheit)",
+      "change_decimals": "Nachkommastellen der %",
+      "change_mode": "Abweichung als",
+      "changeModes": {
+        "percent": "Prozent",
+        "absolute": "Differenz in der Einheit"
+      },
+      "invert": "Mehr ist schlecht (Farben tauschen)"
     }
   },
   "effect": {

@@ -40,7 +40,7 @@ low: 20
 |---|---|---|
 | `gradient` | The whole color scale is visible, dimmed beyond the value; a needle marks the value. | Values with a comfort range (temperature, CPU load). |
 | `level` (default) | The bar is filled up to the value in the color of its band, the track is a muted step of that color. | Percentages (memory, disk, battery, ink). |
-| `change` | A needle in the middle marks a reference; the bar runs to the right (gain, green) or to the left (loss, red), the change in percent (green or red, with its sign) stands next to the value. | Share and crypto prices. |
+| `change` | A needle in the middle marks a reference; the bar runs to the right (more) or to the left (less), the change (green for a gain, red for a loss, with its sign) stands next to the value. | Share and crypto prices, any value against a reference. |
 
 ### Prices (`style: change`)
 
@@ -68,7 +68,26 @@ decimals: 4
   history (Home Assistant keeps 10 days by default). With `change_attribute` the percent comes from
   that attribute instead (e.g. Cryptoinfo: `24h_change`, `7d_change`, `30d_change`).
 - **Bar:** half the bar is `scale` percent (default 20). Beyond it the bar stays full and its end fades out.
-- **Narrow tiles** (below 200px): the change moves up next to the name and the reference is left out.
+- **Not only prices:** any numeric sensor against a fixed value, an entity or itself some time ago.
+  Set `reference_name` (e.g. "Ziel", "Start"), otherwise a fixed reference is called "Kauf".
+- **`change_mode: absolute`:** the change as a difference in the unit of the sensor ("+2.0 °C"
+  instead of "+10 %"); `scale` is then in that unit as well.
+- **`invert: true`:** for values where more is bad (consumption, prices to pay): an increase is red,
+  a decrease green. The bar still runs right for more.
+
+```yaml
+# electricity today against yesterday: more is bad, difference in kWh
+type: custom:graphite-meter
+entity: sensor.energy_today
+style: change
+reference: 24h
+change_mode: absolute
+scale: 5
+invert: true
+```
+- **Narrow tiles** keep the same order: below 200px the reference gets shorter ("Kauf" instead of
+  "Kauf 128.40"), below 150px the unit is left out. Value and change always stay in place, and bought
+  and watched prices stay apart.
 
 ## Options
 
@@ -86,8 +105,10 @@ decimals: 4
 | `reference` | number \| entity \| period | – | `style: change`: purchase price, an entity holding it, or a period like `24h`, `7d`. |
 | `reference_name` | string | "Kauf …" / "24 h" | `style: change`: text for the reference top right. |
 | `change_attribute` | string | – | `style: change`: attribute with the change in percent; takes precedence over the computed change. |
-| `scale` | number | `20` | `style: change`: percent that fill half the bar. |
-| `change_decimals` | number | `1` | `style: change`: decimals of the percent. |
+| `scale` | number | `20` | `style: change`: percent (or, with `change_mode: absolute`, units) that fill half the bar. |
+| `change_mode` | `percent` \| `absolute` | `percent` | `style: change`: change in percent or as a difference in the unit of the sensor. |
+| `invert` | boolean | `false` | `style: change`: more is bad – an increase is red, a decrease green. |
+| `change_decimals` | number | `1` (absolute: `decimals`) | `style: change`: decimals of the change. |
 | `unit` | string | entity unit | Unit after the value; `""` hides it. |
 | `secondary_entity` | entity id | – | Second value: on the right of the value row (tile) or as status line (row). |
 | `secondary_decimals` | number | `0` | Decimals of the second value. |

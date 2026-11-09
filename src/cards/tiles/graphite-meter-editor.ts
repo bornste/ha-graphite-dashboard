@@ -37,6 +37,9 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
           { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
           { name: "change_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
           { name: "unit", selector: { text: {} } },
+          { name: "change_mode", selector: { select: { mode: "dropdown", options: ["percent", "absolute"]
+            .map((value) => ({ value, label: this.optionLabel(`changeModes.${value}`) })) } } },
+          { name: "invert", selector: { boolean: {} } },
         ],
       }] : [{
         type: "grid",

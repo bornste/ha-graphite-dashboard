@@ -109,6 +109,8 @@ export const sampleStates: Record<string, any> = {
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
   "sensor.acme_share": entity("sensor.acme_share", "142.8", { unit_of_measurement: "CHF", friendly_name: "ACME" }),
   "sensor.northwind_share": entity("sensor.northwind_share", "61.2", { unit_of_measurement: "CHF", friendly_name: "Northwind" }),
+  "sensor.energy_today": entity("sensor.energy_today", "9.4", { unit_of_measurement: "kWh", friendly_name: "Electricity today" }),
+  "sensor.energy_yesterday": entity("sensor.energy_yesterday", "11.2", { unit_of_measurement: "kWh", friendly_name: "Electricity yesterday" }),
   "sensor.sample_coin": entity("sensor.sample_coin", "0.1777", { unit_of_measurement: "$", friendly_name: "Sample Coin", "24h_change": -3.24, "7d_change": 5.8 }),
 };
 
@@ -359,7 +361,7 @@ export function examples(language: string): ShowcaseSection[] {
         },
         {
           title: "Watchlist (narrow tiles)",
-          note: "Prices you only watch: compared with 24 hours / 7 days ago (here from an attribute with the change in percent). On narrow tiles the change moves up next to the name.",
+          note: "Prices you only watch: compared with 24 hours / 7 days ago (here from an attribute with the change in percent). On narrow tiles the reference gets shorter («Kauf»), very narrow ones drop the unit.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Beobachtet" : "Watchlist",
@@ -368,6 +370,20 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-meter", entity: "sensor.sample_coin", style: "change", reference: "24h", change_attribute: "24h_change", decimals: 4 },
               { type: "custom:graphite-meter", entity: "sensor.sample_coin", style: "change", reference: "7d", change_attribute: "7d_change", decimals: 4 },
               { type: "custom:graphite-meter", entity: "sensor.acme_share", style: "change", reference: 128 },
+            ],
+          },
+        },
+        {
+          title: "Any value (absolute, inverted)",
+          note: "change_mode: absolute shows the difference in the unit; invert: true makes an increase red – here the electricity of today against yesterday.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Verbrauch" : "Consumption",
+            layout: "grid",
+            columns: 2,
+            cards: [
+              { type: "custom:graphite-meter", entity: "sensor.energy_today", name: german ? "Strom heute" : "Electricity today", style: "change", reference: "sensor.energy_yesterday", reference_name: german ? "gestern" : "yesterday", change_mode: "absolute", scale: 5, invert: true },
+              { type: "custom:graphite-meter", entity: "sensor.living_room_temperature", name: german ? "Wohnen" : "Living", style: "change", reference: 21, reference_name: german ? "Ziel" : "Target", change_mode: "absolute", scale: 3, decimals: 1 },
             ],
           },
         },
