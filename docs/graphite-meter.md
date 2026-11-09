@@ -98,7 +98,3 @@ With `low` set, the meter shows a status:
 ## Editor
 
 Layout first; icon and watermark are only shown with `layout: tile`.
-
-## Former names
-
-`graphite-meter-tile` still works as an alias and will be removed in a later version.

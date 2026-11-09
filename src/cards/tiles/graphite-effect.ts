@@ -131,7 +131,6 @@ export class GraphiteEffect extends GraphiteCard<EffectConfig> {
 
 registerElement("graphite-effect-editor", GraphiteEffectEditor);
 registerCard("graphite-effect", GraphiteEffect, {
-  aliases: ["graphite-effect-tile"],
   name: "Graphite Effect",
   description: "Light effect or scene as a tile with its color gradient and color dots.",
 });

@@ -224,7 +224,6 @@ export class GraphiteImage extends GraphiteCard<ImageConfig> {
 
 registerElement("graphite-image-editor", GraphiteImageEditor);
 registerCard("graphite-image", GraphiteImage, {
-  aliases: ["graphite-image-tile"],
   name: "Graphite Image",
   description: "Action tile with a picture (blurred backdrop and thumbnail) or a label; optional busy spinner.",
 });

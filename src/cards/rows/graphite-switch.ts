@@ -72,5 +72,4 @@ registerElement("graphite-row-editor", GraphiteRowEditor);
 registerCard("graphite-switch", GraphiteSwitch, {
   name: "Graphite Switch",
   description: "Switch as a row (toggle on the right) or a tile (toggle, name, watermark icon); tapping switches.",
-  aliases: [{ tag: "graphite-switch-row", defaults: { layout: "row" } }, { tag: "graphite-switch-tile", defaults: { layout: "tile" } }],
 });

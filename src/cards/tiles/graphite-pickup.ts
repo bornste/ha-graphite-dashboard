@@ -138,7 +138,6 @@ export class GraphitePickup extends GraphiteCard<PickupConfig> {
 
 registerElement("graphite-pickup-editor", GraphitePickupEditor);
 registerCard("graphite-pickup", GraphitePickup, {
-  aliases: ["graphite-pickup-tile"],
   name: "Graphite Pickup",
   description: "Next waste collection of a calendar entity; today and tomorrow are highlighted.",
 });

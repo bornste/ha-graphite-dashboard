@@ -47,5 +47,4 @@ registerElement("graphite-row-editor", GraphiteRowEditor);
 registerCard("graphite-status", GraphiteStatus, {
   name: "Graphite Status",
   description: "Row with icon, name, \"since\" line and the state on the right.",
-  aliases: ["graphite-status-row"],
 });

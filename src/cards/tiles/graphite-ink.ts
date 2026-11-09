@@ -209,7 +209,6 @@ export class GraphiteInk extends GraphiteCard<InkConfig> {
 
 registerElement("graphite-ink-editor", GraphiteInkEditor);
 registerCard("graphite-ink", GraphiteInk, {
-  aliases: ["graphite-ink-tile"],
   name: "Graphite Ink",
   description: "Printer with one small tank per cartridge; empty and soon empty cartridges are highlighted.",
 });

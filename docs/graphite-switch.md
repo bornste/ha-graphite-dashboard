@@ -88,8 +88,3 @@ The row uses the same variables as [graphite-status](graphite-status.md); the to
 ## Editor
 
 Layout first; the row-only fields (since line, attribute, details) are only shown with `layout: row`.
-
-## Former names
-
-`graphite-switch-row` and `graphite-switch-tile` still work as aliases (the latter sets
-`layout: tile`) and will be removed in a later version.

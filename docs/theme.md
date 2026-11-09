@@ -78,6 +78,5 @@ The theme maps Home Assistant variables (`primary-background-color`, `card-backg
 
 ## 5. Legacy aliases
 
-During the migration from the Bubble module the old names `--sbo-*` point to the new tokens.
-They will be removed once nothing uses them. The theme is also published as **SBO Graphite**
-with the same values until no view uses that name.
+The old names `--sbo-*` point to the new tokens. Only the Bubble pop-up module still reads them;
+they will be removed together with it.

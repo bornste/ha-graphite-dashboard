@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.30.0";
+var version = "0.31.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -2878,8 +2878,7 @@ var GraphiteStatus = class extends GraphiteRow {
 registerElement("graphite-row-editor", GraphiteRowEditor);
 registerCard("graphite-status", GraphiteStatus, {
   name: "Graphite Status",
-  description: 'Row with icon, name, "since" line and the state on the right.',
-  aliases: ["graphite-status-row"]
+  description: 'Row with icon, name, "since" line and the state on the right.'
 });
 
 // src/cards/tiles/tile-styles.ts
@@ -3077,8 +3076,7 @@ GraphiteSwitch.styles = [];
 registerElement("graphite-row-editor", GraphiteRowEditor);
 registerCard("graphite-switch", GraphiteSwitch, {
   name: "Graphite Switch",
-  description: "Switch as a row (toggle on the right) or a tile (toggle, name, watermark icon); tapping switches.",
-  aliases: [{ tag: "graphite-switch-row", defaults: { layout: "row" } }, { tag: "graphite-switch-tile", defaults: { layout: "tile" } }]
+  description: "Switch as a row (toggle on the right) or a tile (toggle, name, watermark icon); tapping switches."
 });
 
 // src/cards/tiles/graphite-meter-editor.ts
@@ -3555,7 +3553,6 @@ var GraphiteMeter = class extends GraphiteCard {
 GraphiteMeter.styles = [];
 registerElement("graphite-meter-editor", GraphiteMeterEditor);
 registerCard("graphite-meter", GraphiteMeter, {
-  aliases: [{ tag: "graphite-meter-tile", defaults: { layout: "tile" } }],
   name: "Graphite Meter",
   description: "Sensor value with a color scale (gradient with needle) or a level bar, optional secondary value."
 });
@@ -3681,7 +3678,6 @@ var GraphiteEffect = class extends GraphiteCard {
 GraphiteEffect.styles = [tileStyles, effectStyles];
 registerElement("graphite-effect-editor", GraphiteEffectEditor);
 registerCard("graphite-effect", GraphiteEffect, {
-  aliases: ["graphite-effect-tile"],
   name: "Graphite Effect",
   description: "Light effect or scene as a tile with its color gradient and color dots."
 });
@@ -3886,7 +3882,6 @@ GraphiteImage.properties = {
 };
 registerElement("graphite-image-editor", GraphiteImageEditor);
 registerCard("graphite-image", GraphiteImage, {
-  aliases: ["graphite-image-tile"],
   name: "Graphite Image",
   description: "Action tile with a picture (blurred backdrop and thumbnail) or a label; optional busy spinner."
 });
@@ -4160,7 +4155,6 @@ var GraphiteStopwatch = class extends GraphiteCard {
 GraphiteStopwatch.styles = [tileStyles, meterStyles, labelStyles, stopwatchStyles];
 registerElement("graphite-stopwatch-editor", GraphiteStopwatchEditor);
 registerCard("graphite-stopwatch", GraphiteStopwatch, {
-  aliases: ["graphite-stopwatch-tile"],
   name: "Graphite Stopwatch",
   description: "Elapsed time of a Stopwatch Plus sensor, optional daily limit, picture or icon on the left."
 });
@@ -4307,7 +4301,6 @@ GraphiteTodo.properties = {
 };
 registerElement("graphite-todo-editor", GraphiteTodoEditor);
 registerCard("graphite-todo", GraphiteTodo, {
-  aliases: ["graphite-todo-tile"],
   name: "Graphite Todo",
   description: "Open items of a todo list (e.g. shopping), optionally with the first item names."
 });
@@ -4499,7 +4492,6 @@ var GraphiteInk = class extends GraphiteCard {
 GraphiteInk.styles = [tileStyles, meterStyles, labelStyles, inkStyles];
 registerElement("graphite-ink-editor", GraphiteInkEditor);
 registerCard("graphite-ink", GraphiteInk, {
-  aliases: ["graphite-ink-tile"],
   name: "Graphite Ink",
   description: "Printer with one small tank per cartridge; empty and soon empty cartridges are highlighted."
 });
@@ -4685,7 +4677,6 @@ var GraphitePickup = class extends GraphiteCard {
 GraphitePickup.styles = [tileStyles, meterStyles, labelStyles, pickupStyles];
 registerElement("graphite-pickup-editor", GraphitePickupEditor);
 registerCard("graphite-pickup", GraphitePickup, {
-  aliases: ["graphite-pickup-tile"],
   name: "Graphite Pickup",
   description: "Next waste collection of a calendar entity; today and tomorrow are highlighted."
 });

@@ -162,7 +162,6 @@ export class GraphiteTodo extends GraphiteCard<TodoConfig> {
 
 registerElement("graphite-todo-editor", GraphiteTodoEditor);
 registerCard("graphite-todo", GraphiteTodo, {
-  aliases: ["graphite-todo-tile"],
   name: "Graphite Todo",
   description: "Open items of a todo list (e.g. shopping), optionally with the first item names.",
 });

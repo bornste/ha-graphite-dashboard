@@ -251,7 +251,6 @@ export class GraphiteStopwatch extends GraphiteCard<StopwatchConfig> {
 
 registerElement("graphite-stopwatch-editor", GraphiteStopwatchEditor);
 registerCard("graphite-stopwatch", GraphiteStopwatch, {
-  aliases: ["graphite-stopwatch-tile"],
   name: "Graphite Stopwatch",
   description: "Elapsed time of a Stopwatch Plus sensor, optional daily limit, picture or icon on the left.",
 });

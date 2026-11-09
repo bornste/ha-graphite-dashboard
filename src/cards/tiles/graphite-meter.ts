@@ -217,7 +217,6 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
 
 registerElement("graphite-meter-editor", GraphiteMeterEditor);
 registerCard("graphite-meter", GraphiteMeter, {
-  aliases: [{ tag: "graphite-meter-tile", defaults: { layout: "tile" } }],
   name: "Graphite Meter",
   description: "Sensor value with a color scale (gradient with needle) or a level bar, optional secondary value.",
 });

@@ -31,9 +31,7 @@ the special cases – also for cards with a visual editor.
 | graphite-vacuum | tile, panel | [graphite-vacuum.md](graphite-vacuum.md) | ready |
 
 Cards with more than one look have a `layout` option (`row` or `tile`), so you can switch between
-them without changing the card type. The editor only shows it where there is a choice. The former
-names (`graphite-status-row`, `graphite-switch-row`, `graphite-switch-tile`, `graphite-meter-tile`,
-`graphite-effect-tile`, …) still work as aliases and will be removed in a later version.
+them without changing the card type. The editor only shows it where there is a choice.
 
 ## Common behaviour
 
