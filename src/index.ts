@@ -21,6 +21,7 @@ import "./cards/lists/graphite-battery";
 import "./cards/lists/graphite-legend";
 import "./cards/controls/graphite-slider";
 import "./cards/controls/graphite-light";
+import "./overlays/graphite-toast";
 
 window.graphiteCards = { version };
 
