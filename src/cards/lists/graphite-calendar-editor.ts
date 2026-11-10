@@ -6,8 +6,11 @@ export class GraphiteCalendarEditor extends GraphiteFormEditor {
     return "calendar.editor";
   }
 
-  protected skipValue(key: string, value: unknown): boolean {
-    return (key === "layout" && value === "list") || (key === "week" && value === "current");
+  // fields show the defaults of the card (also the switch "show past events", which is on by default);
+  // a value equal to its default is not stored
+  protected defaults(): Record<string, unknown> {
+    return { layout: "list", range: "this_and_next_week", week: "current", secondary: "calendar_location", highlight_days: 7,
+      show_past_today: true };
   }
 
   protected schemaKey(): string {

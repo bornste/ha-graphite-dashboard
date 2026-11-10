@@ -7,12 +7,8 @@ export class GraphiteVacuumEditor extends GraphiteFormEditor {
     return "vacuum.editor";
   }
 
-  protected skipValue(key: string, value: unknown): boolean {
-    return key === "layout" && value === "tile";
-  }
-
   protected defaults(): Record<string, unknown> {
-    return { boost: true, maintenance_threshold: 10 };
+    return { layout: "tile", boost: true, maintenance_threshold: 10 };
   }
 
   protected schemaKey(): string {

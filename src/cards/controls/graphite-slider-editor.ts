@@ -11,8 +11,9 @@ export class GraphiteSliderEditor extends GraphiteFormEditor {
     return String(this.config.entity ?? "").startsWith("light.");
   }
 
-  protected skipValue(key: string, value: unknown): boolean {
-    return key === "layout" && value === "inline";
+  // the layout radio shows the default as selected; a value equal to it is not stored
+  protected defaults(): Record<string, unknown> {
+    return { layout: "inline", attribute: "brightness" };
   }
 
   protected schemaKey(): string {

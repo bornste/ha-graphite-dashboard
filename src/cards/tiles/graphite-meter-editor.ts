@@ -84,9 +84,13 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
     ];
   }
 
+  // selects and radios show their default as selected; a value equal to it is not stored
+  protected defaults(): Record<string, unknown> {
+    return { layout: "tile", style: "level" };
+  }
+
   protected skipValue(key: string, value: unknown): boolean {
     if (key === "show_icon") return value !== true;
-    if (key === "layout") return value === "tile";
     if (key === "colors") return typeof value !== "object" || Object.keys(value as object).length === 0;
     return false;
   }

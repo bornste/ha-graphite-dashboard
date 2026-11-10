@@ -50,9 +50,13 @@ export class GraphiteValueEditor extends GraphiteFormEditor {
     ];
   }
 
+  // the layout radio shows the default as selected; a value equal to it is not stored
+  protected defaults(): Record<string, unknown> {
+    return { layout: "tile" };
+  }
+
   protected skipValue(key: string, value: unknown): boolean {
     if (key === "show_icon") return value !== true;
-    if (key === "layout") return value === "tile";
     return false;
   }
 }

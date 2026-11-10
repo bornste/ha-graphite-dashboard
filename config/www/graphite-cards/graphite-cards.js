@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.39.0";
+var version = "0.39.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3006,12 +3006,11 @@ var GraphiteRowEditor = class extends GraphiteFormEditor {
   // (entities with a unit); a value equal to this default is not stored
   defaults() {
     const stateObj = this.config.entity ? this.hassObject?.states[this.config.entity] : void 0;
-    return { since_line: !stateObj?.attributes?.unit_of_measurement };
+    return { layout: "row", since_line: !stateObj?.attributes?.unit_of_measurement };
   }
   skipValue(key, value) {
     if (key === "detail_entities") return !Array.isArray(value) || value.length === 0;
     if (key === "wall_switch") return value !== true;
-    if (key === "layout") return value === "row";
     return false;
   }
 };
@@ -3328,9 +3327,12 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
       { name: "double_tap_action", selector: { ui_action: {} } }
     ];
   }
+  // selects and radios show their default as selected; a value equal to it is not stored
+  defaults() {
+    return { layout: "tile", style: "level" };
+  }
   skipValue(key, value) {
     if (key === "show_icon") return value !== true;
-    if (key === "layout") return value === "tile";
     if (key === "colors") return typeof value !== "object" || Object.keys(value).length === 0;
     return false;
   }
@@ -4035,9 +4037,12 @@ var GraphiteValueEditor = class extends GraphiteFormEditor {
       { name: "double_tap_action", selector: { ui_action: {} } }
     ];
   }
+  // the layout radio shows the default as selected; a value equal to it is not stored
+  defaults() {
+    return { layout: "tile" };
+  }
   skipValue(key, value) {
     if (key === "show_icon") return value !== true;
-    if (key === "layout") return value === "tile";
     return false;
   }
 };
@@ -5825,11 +5830,8 @@ var GraphiteVacuumEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "vacuum.editor";
   }
-  skipValue(key, value) {
-    return key === "layout" && value === "tile";
-  }
   defaults() {
-    return { boost: true, maintenance_threshold: 10 };
+    return { layout: "tile", boost: true, maintenance_threshold: 10 };
   }
   schemaKey() {
     return this.config.layout === "panel" ? "panel" : "tile";
@@ -7579,8 +7581,17 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "calendar.editor";
   }
-  skipValue(key, value) {
-    return key === "layout" && value === "list" || key === "week" && value === "current";
+  // fields show the defaults of the card (also the switch "show past events", which is on by default);
+  // a value equal to its default is not stored
+  defaults() {
+    return {
+      layout: "list",
+      range: "this_and_next_week",
+      week: "current",
+      secondary: "calendar_location",
+      highlight_days: 7,
+      show_past_today: true
+    };
   }
   schemaKey() {
     return `${this.config.layout ?? "list"}|${this.config.range ?? "this_and_next_week"}`;
@@ -10500,8 +10511,9 @@ var GraphiteSliderEditor = class extends GraphiteFormEditor {
   isLight() {
     return String(this.config.entity ?? "").startsWith("light.");
   }
-  skipValue(key, value) {
-    return key === "layout" && value === "inline";
+  // the layout radio shows the default as selected; a value equal to it is not stored
+  defaults() {
+    return { layout: "inline", attribute: "brightness" };
   }
   schemaKey() {
     return `${this.isLight()}|${this.config.attribute ?? "brightness"}`;
