@@ -114,7 +114,7 @@ export const timelineStyles = css`
     position: absolute;
     top: 0;
     bottom: 0;
-    border-left: 1px dotted color-mix(in srgb, var(--graphite-text-primary) 28%, transparent);
+    border-left: 1px dotted color-mix(in srgb, var(--graphite-text-primary) 12%, transparent);
   }
   .track {
     z-index: 1;

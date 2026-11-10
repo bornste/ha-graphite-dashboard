@@ -50,6 +50,18 @@ cards:
   default, enough for `7d`.
 - **Axis:** whole hours (1, 2, 3 or 6 hours apart) up to 24 hours, weekdays beyond.
 
+- **Grid:** fine dotted lines at the axis labels run behind the bars across all rows, with a short
+  tick above each label.
+- **Colors per game or app:** `state_colors` per row, e.g. the main color of the game, lightened
+  so the dark label stays readable:
+
+```yaml
+- entity: sensor.player_two_game
+  state_colors:
+    Block World: "#8cc06a"
+    Racing Game: "#e47aa6"
+```
+
 ## Styling
 
 The picker buttons are 36px high like the panel buttons (`--graphite-radius-tile`, active

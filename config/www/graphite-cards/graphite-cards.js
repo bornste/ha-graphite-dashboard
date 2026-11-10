@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.37.3";
+var version = "0.37.4";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -9642,7 +9642,7 @@ var timelineStyles = i`
     position: absolute;
     top: 0;
     bottom: 0;
-    border-left: 1px dotted color-mix(in srgb, var(--graphite-text-primary) 28%, transparent);
+    border-left: 1px dotted color-mix(in srgb, var(--graphite-text-primary) 12%, transparent);
   }
   .track {
     z-index: 1;

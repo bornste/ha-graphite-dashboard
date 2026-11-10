@@ -23,7 +23,7 @@ the special cases – also for cards with a visual editor.
 | graphite-battery | – | [graphite-battery.md](graphite-battery.md) | ready |
 | graphite-weather | – | [graphite-weather.md](graphite-weather.md) | ready |
 | graphite-legend | – | [graphite-legend.md](graphite-legend.md) | ready |
-| graphite-timeline | – | [graphite-timeline.md](graphite-timeline.md) | in test |
+| graphite-timeline | – | [graphite-timeline.md](graphite-timeline.md) | ready |
 | graphite-toast | overlay | [graphite-toast.md](graphite-toast.md) | ready |
 | graphite-slider | inline, row | [graphite-slider.md](graphite-slider.md) | ready |
 | graphite-light | tile | [graphite-light.md](graphite-light.md) | ready |
