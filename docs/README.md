@@ -35,6 +35,10 @@ the special cases – also for cards with a visual editor.
 Cards with more than one look have a `layout` option (`row` or `tile`), so you can switch between
 them without changing the card type. The editor only shows it where there is a choice.
 
+The visual editors share one pattern: the main fields first, the rest grouped in expansion panels
+(tap, hold and double tap always in *Actions*), hints as helper texts below the fields, and lists
+with a dialog per entry instead of YAML wherever the entries are flat.
+
 ## Common behaviour
 
 - **Theme:** all cards use the `--graphite-*` variables of the Graphite theme (colors, type scale,

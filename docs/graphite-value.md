@@ -59,5 +59,5 @@ at the bottom, unit and second value `--graphite-font-label-size`, watermark `--
 
 ## Editor
 
-Layout first; the watermark switch only with `layout: tile`. Actions use Home Assistant's action
-selector.
+Layout first; the watermark switch only with `layout: tile`. Sections: *Value*, *Second value* and
+*Actions*.

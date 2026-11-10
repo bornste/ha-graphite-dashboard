@@ -1,5 +1,5 @@
-// Visual editor of graphite-battery: thresholds, exclusions and the start state of "in order";
-// display names are a map and edited as YAML.
+// Visual editor of graphite-battery: thresholds, exclusions, the start state of "in order" and
+// the display names (a map in the YAML, edited as a list).
 import { GraphiteFormEditor } from "../../core/form-editor";
 
 export class GraphiteBatteryEditor extends GraphiteFormEditor {
@@ -12,19 +12,21 @@ export class GraphiteBatteryEditor extends GraphiteFormEditor {
   }
 
   protected schema(): unknown[] {
+    const battery = { domain: "sensor", device_class: "battery" };
     return [
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "critical", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
-          { name: "low", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
-        ],
-      },
-      { name: "exclude_label", selector: { label: {} } },
-      { name: "exclude", selector: { entity: { multiple: true, filter: { domain: "sensor", device_class: "battery" } } } },
+      this.grid(
+        { name: "critical", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
+        { name: "low", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
+      ),
       { name: "collapsed", selector: { boolean: {} } },
-      { name: "names", selector: { object: {} } },
+      this.section("excluded", [
+        { name: "exclude_label", selector: { label: {} } },
+        { name: "exclude", selector: { entity: { multiple: true, filter: battery } } },
+      ]),
+      this.listSection("names", [
+        { name: "entity", required: true, selector: { entity: { filter: battery } } },
+        { name: "name", required: true, selector: { text: {} } },
+      ], { labelField: "name", descriptionField: "entity", map: { key: "entity", value: "name" } }),
     ];
   }
 }

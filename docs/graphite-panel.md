@@ -144,10 +144,13 @@ Bubble module and cards that are not moved yet.
 
 ## Editor
 
-The visual editor edits the panel options in a form (conditions and chips as YAML
-fields) and the child cards with Home Assistant's own stack editor (tabs, card picker, card
-editors). Empty optional values are not stored; `frame` is only stored when `false`.
-The labels are translated (see *Language* in the [overview](README.md)).
+The visual editor groups the panel options in two expansion panels, *Header* and *Layout*; hints
+are shown as helper texts below the fields. `info_alert` has its own fields (entity, above,
+below, state), `chips` and `buttons` are edited as lists with a dialog per entry, including the chip
+`alert` and the button `active`; no option needs YAML. `columns` and `min_column_width` are only
+shown for the grid layout. The child cards are edited with Home Assistant's own stack editor
+(tabs, card picker, card editors). Empty optional values are not stored; `frame` is only stored
+when `false`. The labels are translated (see *Language* in the [overview](README.md)).
 
 ## Grid size
 

@@ -112,7 +112,7 @@ today or tomorrow).
 | `title` | string | – | Header of the card with a date range on the right. With `range: week` the header is automatic ("Diese Woche", "Nächste Woche"; after the rollover "Ab Montag", "In zwei Wochen"); `title` replaces the text. |
 | `max_items` | number | – | Shows at most this many events; the rest appears as "+ n weitere bis …". |
 | `show_past_today` | boolean | `true` | Keeps today's events that are over until midnight (dimmed, struck through, "vorbei"). With `false` they disappear as soon as they end. Earlier days of a `range: week` always stay (dimmed). |
-| `rules` | list | – | Keyword rules `{starts_with, contains, contains_any, contains_all, color, icon, highlight}`. `contains_any` and `contains_all` take a list of words (the title contains at least one / all of them). A rule matches when every criterion it sets matches (case-insensitive, no regular expressions); the first matching rule overrides color, icon and highlight of the calendar. |
+| `rules` | list | – | Keyword rules `{name, starts_with, contains, contains_any, contains_all, color, icon, highlight}`. `name` is only a label for the list in the editor. `contains_any` and `contains_all` take a list of words (the title contains at least one / all of them). A rule matches when every criterion it sets matches (case-insensitive, no regular expressions); the first matching rule overrides color, icon and highlight of the calendar. |
 | `highlight_days` | number | `7` | Highlighted events get the tint only up to this many days ahead. |
 | `secondary` | `calendar_location` \| `calendar` \| `location` \| `description` \| `none` | `calendar_location` | Content of the second line. Multi-day events add "bis Fr 13. Nov." unless `none`. |
 | `empty_text` | string | "Keine Einträge bis …" | Text without events. |
@@ -172,7 +172,7 @@ header uses `--graphite-title-size`, `--graphite-gap-header` and `--graphite-sep
 
 ## Editor
 
-Layout, range, number of days (only with `range: days`), week and rollover (only with `range: week`),
-title, max. events, second line and highlight days (list layout), weekdays (compact layout), past
-events, empty text and actions as fields; `calendars` and `rules` are lists of objects and edited as
-YAML.
+`calendars` and `rules` are lists with a dialog per entry. Layout and range first, with the number of
+days (only `range: days`) and week and rollover (only `range: week`); the tile options in the section
+*Tiles* (tiles layout), title, max. events, second line, highlight days, weekdays, past events and
+empty text in *Display*, the actions in *Actions*.

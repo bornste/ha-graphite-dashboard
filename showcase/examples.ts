@@ -879,7 +879,7 @@ export function examples(language: string): ShowcaseSection[] {
             items: [
               { entity: "sensor.open_windows", alert: { above: 0 }, alert_text: "[{value} windows] are open", alert_text_one: "[1 window] is open", navigation_path: "#windows" },
               { entity: "sensor.living_room_co2", levels: [{ above: 1499, text: "[open a window], CO₂ is at {value}" }, { above: 999, text: "time to [air out]" }] },
-              { pickup: ["calendar.paper_collection", "calendar.cardboard_collection"] },
+              { pickup: { calendars: ["calendar.paper_collection", "calendar.cardboard_collection"] } },
               { entity: "sensor.living_room_lights_on", show: { above: 0 }, text: "[{value} lights] are on", text_one: "[1 light] is on", navigation_path: "#lights" },
               { entity: "input_boolean.guest_mode", alert: { state: "on" }, alert_text: "[{icon} guest mode] on", color: "success", line: 2 },
             ],

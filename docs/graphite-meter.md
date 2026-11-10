@@ -154,5 +154,7 @@ With `low` set, the meter shows a status:
 
 ## Editor
 
-Layout first; icon and watermark are only shown with `layout: tile`. With `style: change` the
-reference fields replace min, max, colors and the second value.
+Layout first; icon and watermark are only shown with `layout: tile`. Sections: *Value and range*,
+*Colors* (single color and the color stops as a list with a dialog per entry), *Second value* and
+*Actions*. With `style: change` the section *Reference and change* replaces colors and the second
+value.

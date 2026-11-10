@@ -55,3 +55,8 @@ An item of a group is a name (`Butter`) or an object:
 
 The list column scrolls on its own above 600px height (theme variable
 `--graphite-shopping-list-height`).
+
+## Editor
+
+Entity, panels and the texts as fields; the quick pick groups are a list with a dialog per entry,
+the products of a group a list in a second dialog.

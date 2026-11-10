@@ -22,47 +22,34 @@ export class GraphiteSliderEditor extends GraphiteFormEditor {
 
   protected schema(): unknown[] {
     const attribute = this.config.attribute ?? "brightness";
+    const numberBox = { number: { mode: "box", step: "any" } };
     const lightFields = [
-      { name: "attribute", selector: { select: { mode: "dropdown", options: ["brightness", "color_temp", "hue", "saturation"]
-        .map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
+      this.selectField("attribute", "attributes", ["brightness", "color_temp", "hue", "saturation"]),
       ...(attribute === "brightness" ? [{ name: "allow_off", selector: { boolean: {} } }] : []),
     ];
-    const numberFields = [
-      { name: "value_format", selector: { select: { mode: "dropdown", options: ["percent", "state"]
-        .map((value) => ({ value, label: this.optionLabel(`valueFormat.${value}`) })) } } },
-    ];
+    const numberFields = [this.selectField("value_format", "valueFormat", ["percent", "state"])];
     return [
       { name: "entity", required: true, selector: { entity: { domain: ["number", "input_number", "light"] } } },
-      { name: "layout", selector: { select: { mode: "list", options: ["inline", "row"]
-        .map((value) => ({ value, label: this.optionLabel(`layouts.${value}`) })) } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-        ],
-      },
+      this.selectField("layout", "layouts", ["inline", "row"], "list"),
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+      ),
       ...(this.isLight() ? lightFields : numberFields),
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "min", selector: { number: { mode: "box", step: "any" } } },
-          { name: "max", selector: { number: { mode: "box", step: "any" } } },
-          { name: "step", selector: { number: { mode: "box", step: "any" } } },
-        ],
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "ticks", selector: { select: { mode: "dropdown", options: ["auto", "steps", "quarters", "none"]
-            .map((value) => ({ value, label: this.optionLabel(`tickModes.${value}`) })) } } },
-          { name: "tick_every", selector: { number: { mode: "box", step: "any" } } },
-          { name: "major_every", selector: { number: { mode: "box", step: "any" } } },
-        ],
-      },
+      this.section("range", [
+        this.grid(
+          { name: "min", selector: numberBox },
+          { name: "max", selector: numberBox },
+          { name: "step", selector: numberBox },
+        ),
+      ]),
+      this.section("tick_marks", [
+        this.selectField("ticks", "tickModes", ["auto", "steps", "quarters", "none"]),
+        this.grid(
+          { name: "tick_every", selector: numberBox },
+          { name: "major_every", selector: numberBox },
+        ),
+      ]),
     ];
   }
 }

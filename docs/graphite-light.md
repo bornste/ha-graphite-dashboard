@@ -52,5 +52,5 @@ between them, toggle and wall switch icon 14px from the right edge: 112px with o
 
 ## Editor
 
-Entity, name, icon, show sliders, which sliders and their behaviour while unavailable, off at 0,
-wall switch, "since" line and the actions.
+Entity, name and icon first; the sections *Sliders* (show sliders, which sliders, behaviour while
+unavailable, off at 0), *Display* ("since" line, wall switch) and *Actions*.

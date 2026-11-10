@@ -12,9 +12,7 @@ export class GraphiteImageEditor extends GraphiteFormEditor {
       { name: "name", selector: { text: {} } },
       { name: "image", selector: { text: {} } },
       { name: "busy", selector: { boolean: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+      this.actionsSection(),
     ];
   }
 

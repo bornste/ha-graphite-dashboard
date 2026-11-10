@@ -1,4 +1,4 @@
-// Visual editor of graphite-scene; colors and the active condition are edited as YAML.
+// Visual editor of graphite-scene.
 import { GraphiteFormEditor } from "../../core/form-editor";
 
 export class GraphiteSceneEditor extends GraphiteFormEditor {
@@ -9,19 +9,13 @@ export class GraphiteSceneEditor extends GraphiteFormEditor {
   protected schema(): unknown[] {
     return [
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-        ],
-      },
-      { name: "colors", selector: { object: {} } },
-      { name: "active", selector: { object: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+      ),
+      { name: "colors", selector: { text: { multiple: true } } },
+      this.conditionSection("active"),
+      this.actionsSection(),
     ];
   }
 }

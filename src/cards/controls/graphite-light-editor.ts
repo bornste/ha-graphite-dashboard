@@ -17,33 +17,24 @@ export class GraphiteLightEditor extends GraphiteFormEditor {
   protected schema(): unknown[] {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "light" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-        ],
-      },
-      { name: "show_sliders", selector: { boolean: {} } },
-      ...(this.config.show_sliders === false ? [] : [
-        { name: "sliders", selector: { select: { multiple: true, mode: "list", options: ["brightness", "color_temp", "hue", "saturation"]
-          .map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
-        { name: "unavailable_sliders", selector: { select: { mode: "dropdown", options: ["show", "hide"]
-          .map((value) => ({ value, label: this.optionLabel(`unavailableSliders.${value}`) })) } } },
-      ]),
-      {
-        type: "grid",
-        name: "",
-        schema: [
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+      ),
+      this.section("slider_options", [
+        { name: "show_sliders", selector: { boolean: {} } },
+        ...(this.config.show_sliders === false ? [] : [
+          { name: "sliders", selector: { select: { multiple: true, mode: "list", options: ["brightness", "color_temp", "hue", "saturation"]
+            .map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
+          this.selectField("unavailable_sliders", "unavailableSliders", ["show", "hide"]),
           { name: "allow_off", selector: { boolean: {} } },
-          { name: "wall_switch", selector: { boolean: {} } },
-        ],
-      },
-      { name: "since_line", selector: { boolean: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+        ]),
+      ]),
+      this.section("display", [
+        { name: "since_line", selector: { boolean: {} } },
+        { name: "wall_switch", selector: { boolean: {} } },
+      ]),
+      this.actionsSection(),
     ];
   }
 }

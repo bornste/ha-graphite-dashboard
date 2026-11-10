@@ -43,3 +43,8 @@ items:
 | `min`, `max` | number | first / last stop | Ends of the bar. |
 | `ticks` | list | the stop values | Values shown below the bar; the outermost labels stay inside the bar. |
 | `opacity` | number | `1` | Opacity of the whole bar (e.g. to match a chart fill). |
+
+## Editor
+
+Scales and items are lists with a dialog per entry; the stops of a scale are a list in a second
+dialog.

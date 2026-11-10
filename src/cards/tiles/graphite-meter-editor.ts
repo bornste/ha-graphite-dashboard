@@ -1,6 +1,6 @@
 // Visual editor of graphite-meter.
 import { GraphiteFormEditor } from "../../core/form-editor";
-import { layoutField, layoutOf } from "../../core/layout";
+import { layoutOf } from "../../core/layout";
 
 export class GraphiteMeterEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
@@ -15,72 +15,68 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
     // the icon is a watermark of the tile; the row has none
     const isTile = layoutOf(this.config, "tile") === "tile";
     const isChange = this.config.style === "change";
+    const decimals = { number: { mode: "box", min: 0, max: 4 } };
     return [
-      layoutField(),
+      this.layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level", "change"] } } },
-        ],
-      },
-      ...(isChange ? [{
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "reference", selector: { text: {} } },
-          { name: "reference_name", selector: { text: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        this.selectField("style", "styles", ["gradient", "level", "change"]),
+      ),
+      ...(isTile ? [this.grid(
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+        { name: "show_icon", selector: { boolean: {} } },
+      )] : []),
+      ...(isChange ? [
+        this.section("reference_change", [
+          this.grid(
+            { name: "reference", selector: { text: {} } },
+            { name: "reference_name", selector: { text: {} } },
+          ),
           { name: "change_attribute", selector: { text: {} } },
-          { name: "scale", selector: { number: { mode: "box", min: 1, max: 1000 } } },
-          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "change_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "unit", selector: { text: {} } },
-          { name: "change_mode", selector: { select: { mode: "dropdown", options: ["percent", "absolute"]
-            .map((value) => ({ value, label: this.optionLabel(`changeModes.${value}`) })) } } },
+          this.grid(
+            this.selectField("change_mode", "changeModes", ["percent", "absolute"]),
+            { name: "scale", selector: { number: { mode: "box", min: 1, max: 1000 } } },
+          ),
           { name: "invert", selector: { boolean: {} } },
-        ],
-      }] : [{
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "min", selector: { number: { mode: "box" } } },
-          { name: "max", selector: { number: { mode: "box" } } },
-          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "unit", selector: { text: {} } },
-        ],
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "color", selector: { text: {} } },
+        ], { expanded: true }),
+        this.section("value_display", [
+          this.grid(
+            { name: "decimals", selector: decimals },
+            { name: "change_decimals", selector: decimals },
+            { name: "unit", selector: { text: {} } },
+          ),
+        ]),
+      ] : [
+        this.section("value_display", [
+          this.grid(
+            { name: "min", selector: { number: { mode: "box" } } },
+            { name: "max", selector: { number: { mode: "box" } } },
+          ),
+          this.grid(
+            { name: "decimals", selector: decimals },
+            { name: "unit", selector: { text: {} } },
+          ),
           { name: "low", selector: { number: { mode: "box" } } },
-        ],
-      },
-      { name: "colors", selector: { object: {} } }]),
-      ...(isTile ? [{
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-          { name: "show_icon", selector: { boolean: {} } },
-        ],
-      }] : []),
-      ...(isChange ? [] : [{ name: "secondary_entity", selector: { entity: {} } },
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+        ]),
+        this.section("bar_colors", [
+          { name: "color", selector: { text: {} } },
+          // a map "value: color" in the YAML
+          this.listField("colors", [
+            { name: "value", required: true, selector: { number: { mode: "box", step: "any" } } },
+            { name: "color", required: true, selector: { text: {} } },
+          ], { labelField: "value", descriptionField: "color", map: { key: "value", value: "color", numericKey: true } }),
+        ]),
+        this.section("secondary", [
+          { name: "secondary_entity", selector: { entity: {} } },
+          this.grid(
+            { name: "secondary_decimals", selector: decimals },
             { name: "secondary_unit", selector: { text: {} } },
             { name: "secondary_icon", selector: { icon: {} } },
-          ],
-        }]),
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+          ),
+        ]),
+      ]),
+      this.actionsSection(),
     ];
   }
 
@@ -91,7 +87,7 @@ export class GraphiteMeterEditor extends GraphiteFormEditor {
 
   protected skipValue(key: string, value: unknown): boolean {
     if (key === "show_icon") return value !== true;
-    if (key === "colors") return typeof value !== "object" || Object.keys(value as object).length === 0;
+    if (key === "colors") return !value || typeof value !== "object" || Object.keys(value as object).length === 0;
     return false;
   }
 }

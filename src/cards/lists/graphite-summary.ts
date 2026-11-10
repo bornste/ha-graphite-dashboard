@@ -5,7 +5,7 @@ import { css, html, nothing, type PropertyValues, type TemplateResult } from "li
 import { attachActionHandler, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { matchesCondition, type ValueCondition } from "../../core/conditions";
 import { GraphiteCard } from "../../core/graphite-card";
-import { nextPickup } from "../../core/pickup";
+import { nextPickup, pickupOf, type SummaryPickup } from "../../core/pickup";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
 import { GraphiteSummaryEditor } from "./graphite-summary-editor";
@@ -16,6 +16,8 @@ export interface SummaryLevel extends ValueCondition {
 }
 
 export interface SummaryItem {
+  // only a label for the list in the editor, not used by the card
+  name?: string;
   entity?: string;
   // shown while the condition is met (default: always, unless the item has an alert)
   show?: ValueCondition | true;
@@ -27,8 +29,8 @@ export interface SummaryItem {
   alert_text_one?: string;
   // first matching level wins (e.g. above 1500 before above 1000)
   levels?: SummaryLevel[];
-  // waste collection: calendar entities, phrase while a collection is due within "days"
-  pickup?: string[];
+  pickup?: SummaryPickup | string[];
+  // older form of the pickup options (with pickup as a list of calendars)
   days?: number;
   drop_after?: string;
   names?: Record<string, string>;
@@ -184,7 +186,7 @@ export class GraphiteSummary extends GraphiteCard<SummaryConfig> {
   }
 
   protected watchedEntities(): string[] {
-    return (this.config?.items ?? []).flatMap((item) => [...(item.entity ? [item.entity] : []), ...(item.pickup ?? [])]);
+    return (this.config?.items ?? []).flatMap((item) => [...(item.entity ? [item.entity] : []), ...(pickupOf(item)?.calendars ?? [])]);
   }
 
   connectedCallback(): void {
@@ -232,20 +234,20 @@ export class GraphiteSummary extends GraphiteCard<SummaryConfig> {
   // ---------- phrases ----------
 
   // "[Karton] wird morgen abgeholt" / "[Karton] und [Papier] werden heute abgeholt"
-  private pickupPhrases(item: SummaryItem, index: number): Phrase[] {
-    const maxDays = Number(item.days ?? 1);
+  private pickupPhrases(item: SummaryItem, pickup: SummaryPickup, index: number): Phrase[] {
+    const maxDays = Number(pickup.days ?? 1);
     const byDay = new Map<number, string[]>();
-    for (const entityId of item.pickup ?? []) {
-      const next = nextPickup(this.hass!, entityId, 14, item.drop_after, () => this.requestUpdate());
+    for (const entityId of pickup.calendars) {
+      const next = nextPickup(this.hass!, entityId, 14, pickup.drop_after, () => this.requestUpdate());
       if (!next || next.days > maxDays) continue;
       const attributes = this.hass!.states[entityId]?.attributes ?? {};
-      const name = item.names?.[entityId] || attributes.message || attributes.friendly_name || entityId;
+      const name = pickup.names?.[entityId] || attributes.message || attributes.friendly_name || entityId;
       byDay.set(next.days, [...(byDay.get(next.days) ?? []), name]);
     }
     return [...byDay.keys()].sort((first, second) => first - second).map((days) => {
       const names = byDay.get(days)!.map((name) => `[${name}]`);
       const template = names.length === 1 ? (item.text_one || this.t("pickupOne")) : (item.text || this.t("pickupMany"));
-      const when = item.when?.[days] ?? (days <= 2 ? this.t(`when.${days}`) : this.t("inDays", { days }));
+      const when = pickup.when?.[days] ?? (days <= 2 ? this.t(`when.${days}`) : this.t("inDays", { days }));
       return { index, alert: item.alert !== false, text: template.split("{names}").join(this.join(names)).split("{when}").join(when) };
     });
   }
@@ -259,7 +261,8 @@ export class GraphiteSummary extends GraphiteCard<SummaryConfig> {
   private phrases(): Phrase[] {
     const states = this.hass!.states;
     return this.config!.items.flatMap((item, index): Phrase[] => {
-      if (Array.isArray(item.pickup)) return this.pickupPhrases(item, index);
+      const pickup = pickupOf(item);
+      if (pickup) return this.pickupPhrases(item, pickup, index);
       const state = item.entity ? states[item.entity]?.state : undefined;
       if (state === undefined || unavailable.includes(state)) return [];
       const number = Number(state);

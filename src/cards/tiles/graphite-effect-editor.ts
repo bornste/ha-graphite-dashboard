@@ -11,9 +11,7 @@ export class GraphiteEffectEditor extends GraphiteFormEditor {
       { name: "name", selector: { text: {} } },
       { name: "colors", required: true, selector: { text: { multiple: true } } },
       { name: "entity", selector: { entity: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+      this.actionsSection(),
     ];
   }
 

@@ -27,6 +27,8 @@ export interface CalendarSource {
 }
 
 export interface CalendarRule {
+  // only a label for the list in the editor, not used by the card
+  name?: string;
   starts_with?: string;
   contains?: string;
   // the title contains at least one of these words / all of them

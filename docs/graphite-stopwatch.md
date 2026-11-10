@@ -52,3 +52,10 @@ hold_action:
 | `--graphite-tint-active` | `18%` | Tint while running. |
 | `--graphite-tint-alert` | `28%` | Tint while running over the limit. |
 | `--graphite-watermark-size` | `34px` | Watermark icon. |
+
+## Editor
+
+Entity, name and icon first; the sections *Appearance*, *Daily limit* and *Actions*. The limit is
+edited as one field for all days plus a field per day (*Per day*: weekdays, weekend, Monday to
+Sunday), each with minutes or an entity. Only "all days" is stored as a plain value; with single
+days the limit is stored as a map, the value for all days as `weekday` and `weekend`.

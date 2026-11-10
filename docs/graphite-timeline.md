@@ -71,5 +71,6 @@ half the tile radius, names and the info line use `--graphite-font-caption-size`
 
 ## Editor
 
-Start period, bridge time and the switches as fields; `entities`, `intervals` and `ignore_states` are
-lists and edited as YAML.
+`entities` is a list with a dialog per entry; `state_colors` is a list in a second dialog. The
+sections *Period* (periods of the picker, start period, picker) and *Bars* (bridge time, ignored
+states, total).

@@ -53,3 +53,9 @@ presets:
 
 Texts follow the language (`--graphite-language`, otherwise the Home Assistant language);
 own `name` values in the lists win over the translations.
+
+## Editor
+
+Entity, layout, name and prefix first. Panel layout: rooms, presets, modes, suction (Max+ and the
+suction levels), station actions as lists with a dialog per entry, and the headings. Both layouts:
+*Maintenance* (threshold and items) and *Entities* (overrides).

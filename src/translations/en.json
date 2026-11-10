@@ -14,20 +14,73 @@
   },
   "panel": {
     "editor": {
+      "header": "Header",
       "title": "Title",
-      "info": "Status after the title (text or Jinja template)",
-      "info_alert": "Status in accent color when (YAML: entity, above, below, state)",
-      "chips": "Values on the right as chips (YAML list: entity, label, unit, decimals, muted, alert, tap_action)",
-      "layout": "Layout",
+      "info": "Status",
+      "info_alert": "Highlight status",
+      "chipsSection": "Chips",
+      "buttonsSection": "Buttons",
+      "layoutSection": "Layout",
+      "layout": "Arrangement",
       "layoutVertical": "Vertical",
       "layoutHorizontal": "Horizontal",
       "layoutGrid": "Grid",
-      "columns": "Columns (grid only)",
-      "gap": "Gap between cards (e.g. 8px)",
-      "padding": "Padding (e.g. 16px)",
-      "min_column_width": "Minimum column width (grid only, e.g. 380px – wraps on narrow screens)",
-      "frame": "Show panel surface (off = layout container only)",
-      "buttons": "Buttons on the right of the header (list: icon, entity, name, active, tap_action)"
+      "columns": "Columns",
+      "min_column_width": "Minimum column width",
+      "gap": "Gap",
+      "padding": "Padding",
+      "frame": "Show panel surface",
+      "condition": {
+        "entity": "Entity",
+        "above": "Above",
+        "below": "Below",
+        "state": "State"
+      },
+      "item": {
+        "entity": "Entity",
+        "label": "Label",
+        "unit": "Unit",
+        "decimals": "Decimal places",
+        "muted": "Muted",
+        "tap_action": "Tap action",
+        "name": "Name",
+        "icon": "Icon",
+        "alert_above": "Highlight above",
+        "alert_below": "Highlight below",
+        "alert_state": "Highlight on state",
+        "active_entity": "Active: entity",
+        "active_above": "Active above",
+        "active_below": "Active below",
+        "active_state": "Active on state"
+      },
+      "helper": {
+        "info": "Shown after the title. Text or Jinja template.",
+        "info_alert": "Shows the status in the accent color while all given conditions are met.",
+        "chipsSection": "Values on the right of the header, in list order.",
+        "buttonsSection": "Buttons at the far right of the header, e.g. \"lights off\" or settings.",
+        "columns": "Default: 2",
+        "min_column_width": "e.g. 380px. Wraps on narrow screens and replaces \"Columns\".",
+        "gap": "Between the cards, e.g. 8px.",
+        "padding": "e.g. 16px.",
+        "frame": "Off: layout container only, without surface, padding and radius.",
+        "condition": {
+          "entity": "Entity whose state is checked.",
+          "state": "One of the states. Type a value and confirm with Enter."
+        },
+        "item": {
+          "label": "Muted text before the value, e.g. CO₂.",
+          "unit": "Default: unit of the entity.",
+          "decimals": "Default: display precision of the entity.",
+          "muted": "Value in the secondary text color.",
+          "tap_action": "Default: more-info. Buttons with a scene: activate the scene.",
+          "name": "Tooltip and label for screen readers. Default: entity name.",
+          "icon": "Default: entity icon.",
+          "alert_above": "Accent color while all given conditions are met.",
+          "alert_state": "One of the states. Type a value and confirm with Enter.",
+          "active_entity": "Highlights the button while all given conditions of this entity are met.",
+          "active_state": "One of the states. Type a value and confirm with Enter."
+        }
+      }
     }
   },
   "rows": {
@@ -40,29 +93,35 @@
     "since": "{state} {since}",
     "editor": {
       "entity": "Entity",
-      "name": "Name (default: entity name)",
-      "icon": "Icon (default: entity icon)",
+      "name": "Name",
+      "icon": "Icon",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action",
-      "since_line": "Show the \"since …\" line below the name",
-      "since_attribute": "Timestamp attribute instead of the last change (e.g. last_triggered)",
-      "since_attribute_label": "Word before the time (default: triggered)",
-      "detail_entities": "Values instead of the \"since …\" line while on (YAML list: entity, label)",
-      "online_entity": "Online entity (icon pulses until the device is reachable)",
-      "wall_switch": "Wall switch lamp (unavailable = off)",
-      "layout": "Layout"
-    }
-  },
-  "tiles": {
-    "editor": {
-      "entity": "Entity",
-      "name": "Name (default: entity name)",
-      "icon": "Icon (default: entity icon)",
-      "online_entity": "Online entity (icon pulses until the device is reachable)",
-      "tap_action": "Tap action",
-      "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "since_line": "Show the \"since …\" line",
+      "since_attribute": "Timestamp attribute",
+      "since_attribute_label": "Word before the time",
+      "detail_entities": "Values instead of \"since …\"",
+      "online_entity": "Online entity",
+      "wall_switch": "Lamp on a wall switch",
+      "layout": "Layout",
+      "sections": {
+        "since": "Second line",
+        "availability": "Availability"
+      },
+      "helper": {
+        "name": "Default: entity name.",
+        "icon": "Default: entity icon.",
+        "since_line": "Below the name, e.g. \"open for 12 min\". Off by default for measured values.",
+        "since_attribute": "Instead of the last change, e.g. last_triggered.",
+        "since_attribute_label": "Default: triggered.",
+        "detail_entities": "While the entity is on, the line shows these values, joined by \" · \".",
+        "detail_entities_item": {
+          "label": "Text before the value, e.g. CPU."
+        },
+        "online_entity": "The icon pulses until the device is reachable.",
+        "wall_switch": "Unavailable counts as off."
+      }
     }
   },
   "meter": {
@@ -71,58 +130,104 @@
     "periodHours": "{count} h",
     "periodDays": "{count} days",
     "editor": {
-      "entity": "Entity (measurement)",
-      "name": "Name (default: entity name)",
-      "style": "Style (gradient = color scale with needle, level = fill bar, change = change against the reference)",
+      "entity": "Entity",
+      "name": "Name",
+      "style": "Style",
       "min": "Minimum",
       "max": "Maximum",
-      "decimals": "Decimals (default: display precision of the entity, otherwise 1)",
-      "unit": "Unit (default: entity unit)",
-      "colors": "Color stops (YAML: value: color, e.g. 24: \"#6fbf5a\")",
-      "icon": "Icon top right",
+      "decimals": "Decimals",
+      "unit": "Unit",
+      "colors": "Color stops",
+      "icon": "Icon",
       "show_icon": "Show the entity icon",
-      "secondary_entity": "Second value on the right (e.g. humidity)",
-      "secondary_decimals": "Decimals of the second value",
-      "secondary_unit": "Unit of the second value",
-      "secondary_icon": "Icon before the second value",
+      "secondary_entity": "Entity",
+      "secondary_decimals": "Decimals",
+      "secondary_unit": "Unit",
+      "secondary_icon": "Icon",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action",
-      "color": "Single color (instead of color stops)",
-      "low": "Low below (consumables, shows the status)",
+      "color": "Single color",
+      "low": "Low below",
       "layout": "Layout",
-      "reference": "Reference (purchase price, entity or period like 24h, 7d)",
-      "reference_name": "Reference text (default: bought … / 24 h)",
-      "change_attribute": "Attribute with the change in % (e.g. 24h_change)",
-      "scale": "Half the bar equals (% or unit)",
-      "change_decimals": "Decimals of the %",
+      "reference": "Reference",
+      "reference_name": "Reference text",
+      "change_attribute": "Attribute with the change in %",
+      "scale": "Half the bar equals",
+      "change_decimals": "Decimals of the change",
       "change_mode": "Change as",
       "changeModes": {
         "percent": "Percent",
         "absolute": "Difference in the unit"
       },
-      "invert": "More is bad (swap colors)"
+      "invert": "More is bad",
+      "styles": {
+        "gradient": "Color scale with needle",
+        "level": "Fill bar",
+        "change": "Change against the reference"
+      },
+      "colors_item": {
+        "value": "From value",
+        "color": "Color"
+      },
+      "sections": {
+        "reference_change": "Reference and change",
+        "value_display": "Value and range",
+        "bar_colors": "Colors",
+        "secondary": "Second value"
+      },
+      "helper": {
+        "entity": "Numeric sensor.",
+        "name": "Default: entity name.",
+        "decimals": "Default: display precision of the entity, otherwise 1.",
+        "unit": "Default: unit of the entity.",
+        "colors_item": {
+          "value": "The color applies from this value.",
+          "color": "e.g. #6fbf5a."
+        },
+        "icon": "Watermark top right.",
+        "show_icon": "When no icon is set.",
+        "secondary_entity": "Tile: on the right of the value, e.g. humidity. Row: as status line.",
+        "color": "One color for the whole bar. Ignored when color stops are set.",
+        "low": "For consumables: shows \"low\" or \"empty\".",
+        "reference": "Purchase price, entity or period like 24h, 7d.",
+        "reference_name": "Default: \"bought …\" or \"24 h\".",
+        "change_attribute": "e.g. 24h_change. Takes precedence over the computed change.",
+        "scale": "In % or in the unit. Default: 20.",
+        "invert": "Swaps the colors: an increase is red, a decrease green."
+      }
     }
   },
   "effect": {
     "editor": {
       "name": "Name",
-      "colors": "Gradient colors (e.g. #ff7a3d)",
-      "entity": "Entity (for hold: more-info, e.g. the lamp)",
-      "tap_action": "Tap action (e.g. set the effect)",
+      "colors": "Gradient colors",
+      "entity": "Entity",
+      "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "helper": {
+        "colors": "e.g. #ff7a3d.",
+        "entity": "For more-info on hold, e.g. the lamp.",
+        "tap_action": "e.g. set the effect."
+      }
     }
   },
   "image": {
     "editor": {
-      "entity": "Entity (e.g. the script that is started)",
-      "name": "Name (label without an image, else only for screen readers)",
-      "image": "Image (/local/... or media-source://...)",
-      "busy": "Busy indicator (tint and spinner while the entity is on)",
+      "entity": "Entity",
+      "name": "Name",
+      "image": "Image",
+      "busy": "Running indicator",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "helper": {
+        "entity": "e.g. the script that is started.",
+        "name": "Label without an image, otherwise only for screen readers.",
+        "image": "/local/... or media-source://...",
+        "busy": "Tint and spinner while the entity is on."
+      }
     }
   },
   "stopwatch": {
@@ -132,18 +237,49 @@
     "minutes": "{minutes} min",
     "hours": "{hours}:{minutes} h",
     "editor": {
-      "entity": "Stopwatch sensor (Stopwatch Plus)",
-      "name": "Name (default: entity name)",
-      "icon": "Icon (default: entity icon)",
-      "icon_position": "Icon position (watermark = top right, left = on the left like the rows)",
-      "color": "Color of the stripe on top (no stripe without a color)",
-      "picture_entity": "Picture entity (e.g. a gamer picture, round on the left)",
-      "limit": "Daily limit (minutes or an entity; YAML per day: weekday, weekend, mon … sun)",
-      "warn_before": "Hint this many minutes before the limit (default 10)",
-      "day_start": "Start of the day (default 03:00)",
+      "entity": "Stopwatch sensor",
+      "name": "Name",
+      "icon": "Icon",
+      "icon_position": "Icon position",
+      "color": "Stripe color",
+      "picture_entity": "Picture entity",
+      "warn_before": "Hint before the limit",
+      "day_start": "Start of the day",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "iconPositions": {
+        "watermark": "Watermark top right",
+        "left": "On the left like the rows"
+      },
+      "sections": {
+        "appearance": "Appearance",
+        "daily_limit": "Daily limit",
+        "limit_days": "Per day"
+      },
+      "helper": {
+        "entity": "Sensor of the Stopwatch Plus integration.",
+        "name": "Default: entity name.",
+        "icon": "Default: entity icon.",
+        "color": "On top. No stripe without a color.",
+        "picture_entity": "e.g. a gamer picture, round on the left.",
+        "warn_before": "In minutes. Default: 10.",
+        "day_start": "HH:MM. Default: 03:00.",
+        "limit_all": "Minutes or an entity, e.g. 90 or input_number.limit.",
+        "sections": {
+          "limit_days": "Overrides \"All days\". A single day wins over weekdays and weekend."
+        }
+      },
+      "limit_all": "All days",
+      "limit_weekday": "Weekdays",
+      "limit_weekend": "Weekend",
+      "limit_mon": "Monday",
+      "limit_tue": "Tuesday",
+      "limit_wed": "Wednesday",
+      "limit_thu": "Thursday",
+      "limit_fri": "Friday",
+      "limit_sat": "Saturday",
+      "limit_sun": "Sunday"
     }
   },
   "todo": {
@@ -152,16 +288,28 @@
     "unitOne": "item",
     "editor": {
       "entity": "Todo list",
-      "name": "Name (default: list name)",
-      "icon": "Icon top right",
-      "unit": "Unit (default: items)",
-      "unit_one": "Unit for 1 (default: item)",
-      "empty_text": "Value of an empty list (default: Empty)",
-      "color": "Color of the stripe on top (no stripe without a color)",
+      "name": "Name",
+      "icon": "Icon",
+      "unit": "Unit",
+      "unit_one": "Unit for 1",
+      "empty_text": "Value for an empty list",
+      "color": "Stripe color",
       "preview": "Show the first open items on the right",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "sections": {
+        "texts": "Texts",
+        "appearance": "Appearance"
+      },
+      "helper": {
+        "name": "Default: name of the list.",
+        "icon": "Watermark top right.",
+        "unit": "Default: items.",
+        "unit_one": "Default: same as unit.",
+        "empty_text": "Default: Empty.",
+        "color": "On top. No stripe without a color."
+      }
     }
   },
   "ink": {
@@ -174,13 +322,19 @@
     "processing": "Printing",
     "stopped": "Stopped",
     "editor": {
-      "entity": "Printer entity (status, offline)",
-      "name": "Name (default: entity name or Printer)",
-      "cartridges": "Cartridge level sensors (%)",
-      "low_level": "Soon empty below (%, default 20)",
+      "entity": "Printer entity",
+      "name": "Name",
+      "cartridges": "Level sensors of the cartridges",
+      "low_level": "Low below",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "helper": {
+        "entity": "For status and offline.",
+        "name": "Default: entity name or \"Printer\".",
+        "cartridges": "Sensors in %.",
+        "low_level": "Default: 20 %."
+      }
     }
   },
   "pickup": {
@@ -192,14 +346,24 @@
     "inDays": "in {days} days",
     "editor": {
       "entity": "Collection calendar",
-      "name": "Name (default: event or calendar name)",
-      "icon": "Icon top right",
-      "color": "Color of the stripe on top",
-      "drop_after": "Today's collection counts as done after (HH:MM, default 12:00)",
-      "lookahead_days": "Days to look ahead (default 40)",
+      "name": "Name",
+      "icon": "Icon",
+      "color": "Stripe color",
+      "drop_after": "Done today from",
+      "lookahead_days": "Days to look ahead",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "sections": {
+        "dates": "Dates"
+      },
+      "helper": {
+        "name": "Default: event or name of the calendar.",
+        "icon": "Watermark top right.",
+        "color": "Stripe on top.",
+        "drop_after": "Today's collection counts as done from this time. HH:MM, default 12:00.",
+        "lookahead_days": "Default: 40."
+      }
     }
   },
   "level": {
@@ -232,7 +396,7 @@
     "noneValue": "none",
     "daysShort": "{days} days",
     "editor": {
-      "calendars": "Calendars (list: entity, name, color, icon, highlight)",
+      "calendars": "Calendars",
       "layout": "Layout",
       "layouts": {
         "list": "List",
@@ -253,12 +417,12 @@
         "current": "Current week",
         "next": "Next week"
       },
-      "week_rollover": "Week rollover (e.g. sat 00:00)",
+      "week_rollover": "Week rollover",
       "weekdays": "Always show Mon–Fri",
-      "title": "Title (week: automatic)",
+      "title": "Title",
       "icon": "Icon",
       "highlight_name": "Name of the highlight tile",
-      "day_switch": "Next day from (e.g. 15:00)",
+      "day_switch": "Next day from",
       "max_items": "Max. events",
       "secondary": "Second line",
       "secondaries": {
@@ -268,28 +432,67 @@
         "description": "Description",
         "none": "None"
       },
-      "highlight_days": "Highlight up to (days ahead)",
+      "highlight_days": "Highlight up to",
       "show_past_today": "Show today's past events",
-      "rules": "Keyword rules (list: starts_with/contains, color, icon, highlight)",
+      "rules": "Keyword rules",
       "empty_text": "Text without events",
       "hide_empty": "Hide without events",
-      "tap_action": "Tap action (more-info = details)",
-      "hold_action": "Hold action (on the calendar)"
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "calendars_item": {
+        "highlight": "Highlight"
+      },
+      "rules_item": {
+        "starts_with": "Title starts with",
+        "contains": "Title contains",
+        "contains_any": "Contains one of",
+        "contains_all": "Contains all",
+        "highlight": "Highlight",
+        "name": "Name"
+      },
+      "sections": {
+        "tiles": "Tiles",
+        "display": "Display"
+      },
+      "helper": {
+        "calendars_item": {
+          "name": "For the second line. Default: entity name.",
+          "color": "Stripe and icon. Default: accent color.",
+          "icon": "Default: entity icon.",
+          "highlight": "Events get the tint and \"in n days\"."
+        },
+        "week_rollover": "From then on the next week counts as the current one, e.g. sat 00:00. Without it: Monday 00:00.",
+        "weekdays": "Empty days with \"–\", the weekend only with events.",
+        "title": "Automatic with the range \"Week\".",
+        "icon": "Watermark of the day tile.",
+        "highlight_name": "Default: Prüfung.",
+        "day_switch": "From this time the day tile shows the next day, e.g. 15:00.",
+        "max_items": "The rest appears as \"+ n more until …\".",
+        "highlight_days": "Days ahead. Default: 7.",
+        "rules": "The first matching rule overrides color, icon and highlight of the calendar. Every criterion that is set must match.",
+        "rules_item": {
+          "contains_any": "The title contains at least one of the words.",
+          "contains_all": "The title contains all words.",
+          "name": "Only for the list in the editor."
+        },
+        "tap_action": "More-info opens the details of the event.",
+        "hold_action": "Runs on the calendar of the event."
+      }
     }
   },
   "slider": {
     "editor": {
-      "entity": "Entity (number, input_number or light)",
-      "name": "Label (default: entity name or what is controlled)",
+      "entity": "Entity",
+      "name": "Label",
       "min": "Minimum",
       "max": "Maximum",
-      "step": "Step (values are multiples of it)",
+      "step": "Step",
       "value_format": "Value display",
       "valueFormat": {
         "percent": "Percent of the range",
         "state": "Entity value"
       },
-      "attribute": "Controls (lights only)",
+      "attribute": "Controls",
       "allow_off": "Leftmost turns the light off",
       "attributes": {
         "brightness": "Brightness",
@@ -298,20 +501,34 @@
         "saturation": "Saturation"
       },
       "layout": "Layout",
-      "icon": "Icon on the left (row: default entity icon)",
+      "icon": "Icon",
       "layouts": {
-        "inline": "Inline (no surface, label above the slider)",
-        "row": "Row (own surface like the status rows)"
+        "inline": "Inline",
+        "row": "Row"
       },
       "ticks": "Ticks below the track",
-      "major_every": "Long ticks every (default: round value)",
+      "major_every": "Long ticks every",
       "tickModes": {
-        "auto": "Automatic (steps, else quarters)",
+        "auto": "Automatic",
         "steps": "Every step",
         "quarters": "Quarters",
         "none": "None"
       },
-      "tick_every": "Ticks every (instead of each step)"
+      "tick_every": "Ticks every",
+      "sections": {
+        "range": "Range",
+        "tick_marks": "Ticks"
+      },
+      "helper": {
+        "entity": "number, input_number or light.",
+        "name": "Default: entity name or what is controlled.",
+        "step": "Values are multiples of it.",
+        "icon": "On the left. Row: default entity icon.",
+        "layout": "Inline: no surface, label above the slider. Row: own surface like the status rows.",
+        "ticks": "Automatic: every step, the quarters when the steps are narrow.",
+        "tick_every": "Instead of each step.",
+        "major_every": "Default: round value."
+      }
     },
     "brightness": "Brightness",
     "color_temp": "White",
@@ -321,11 +538,11 @@
   "light": {
     "editor": {
       "entity": "Lamp",
-      "name": "Name (default: entity name)",
+      "name": "Name",
       "icon": "Icon",
-      "sliders": "Which sliders (empty: brightness, white temperature if supported)",
+      "sliders": "Sliders",
       "allow_off": "Brightness leftmost turns off",
-      "wall_switch": "Wall switch (instead of the toggle)",
+      "wall_switch": "Lamp on a wall switch",
       "since_line": "Show the «since» line",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
@@ -336,24 +553,43 @@
         "hue": "Color",
         "saturation": "Saturation"
       },
-      "unavailable_sliders": "Sliders while unreachable or off at the wall",
+      "unavailable_sliders": "Sliders while unreachable",
       "unavailableSliders": {
-        "show": "Show locked (layout stays)",
-        "hide": "Hide (head only)"
+        "show": "Show locked",
+        "hide": "Hide"
       },
-      "show_sliders": "Show sliders"
+      "show_sliders": "Show sliders",
+      "sections": {
+        "slider_options": "Sliders",
+        "display": "Display"
+      },
+      "helper": {
+        "name": "Default: entity name.",
+        "icon": "Default: entity icon.",
+        "sliders": "Empty: brightness and, if supported, white temperature.",
+        "wall_switch": "Wall switch icon instead of the toggle; unavailable counts as off.",
+        "unavailable_sliders": "Also when off at the wall. Locked: the layout stays. Hide: head only."
+      }
     }
   },
   "scene": {
     "editor": {
-      "entity": "Scene (or another entity)",
+      "entity": "Scene",
       "name": "Name",
-      "icon": "Icon (watermark)",
-      "colors": "Gradient colors (list, e.g. [\"#f5c48a\", \"#e89a5c\"])",
-      "active": "Active when (e.g. {entity: input_select.living_room_scenes, state: Relax})",
-      "tap_action": "Tap action (default: activate the scene)",
+      "icon": "Icon",
+      "colors": "Colors",
+      "active": "Active when",
+      "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "helper": {
+        "entity": "Or another entity.",
+        "name": "Default: entity name.",
+        "icon": "Watermark bottom right. Default: entity icon.",
+        "colors": "Stripe and gradient, e.g. #f5c48a.",
+        "active": "Fills the tile while all given conditions are met. Without an entity the scene's own state is checked.",
+        "tap_action": "Default: activate the scene."
+      }
     }
   },
   "nowPlaying": {
@@ -363,7 +599,49 @@
     "paused": "paused",
     "remaining": "{minutes} min left",
     "editor": {
-      "sources": "Sources in order of priority (list: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
+      "sources": "Sources",
+      "backdrop": "Cover as backdrop",
+      "sources_item": {
+        "name": "Label",
+        "states": "States \"running\"",
+        "requires": "Must run too",
+        "title_entity": "Title entity",
+        "image_entity": "Image entity",
+        "subtitle": "Second line",
+        "fallback_title": "Fallback title",
+        "fallback_subtitle": "Fallback for the second line",
+        "ignore_titles": "Ignore titles",
+        "titles": "Readable titles",
+        "images": "Images"
+      },
+      "helper": {
+        "sources": "In order of priority: the first running source is shown.",
+        "backdrop": "Blurred and dimmed over the whole card.",
+        "sources_item": {
+          "name": "Above the title, e.g. XBOX. Default: entity name.",
+          "icon": "Watermark top right.",
+          "states": "Default: on, playing, paused, buffering.",
+          "requires": "e.g. the console next to a profile sensor.",
+          "title_entity": "Its state is the title. Otherwise media_title, then app_name.",
+          "image_entity": "image.* or a helper with an image path.",
+          "subtitle": "From attributes of the title entity, e.g. \"{progress} completed\".",
+          "fallback_title": "When the source runs without a usable title. Without it the source is skipped.",
+          "ignore_titles": "Default: off, standby, home, screensaver, unknown, unavailable.",
+          "titles": "Readable names for raw titles or app names, e.g. Home → Home screen.",
+          "images": "Image per title or app name."
+        },
+        "images_item": {
+          "image": "e.g. /local/apps/netflix.png."
+        }
+      },
+      "titles_item": {
+        "title": "Raw title",
+        "shown": "Shown title"
+      },
+      "images_item": {
+        "title": "Title or app",
+        "image": "Image"
+      }
     }
   },
   "vacuum": {
@@ -467,12 +745,82 @@
         "panel": "Panel"
       },
       "name": "Name",
-      "prefix": "Entity prefix (optional)",
+      "prefix": "Entity prefix",
       "navigation_path": "Tap target",
-      "rooms": "Rooms (YAML)",
-      "presets": "Quick picks (YAML)",
+      "rooms": "Rooms",
+      "presets": "Presets",
       "maintenance_threshold": "Maintenance due at",
-      "boost": "Show Max+"
+      "boost": "Show Max+",
+      "rooms_item": {
+        "id": "Segment id"
+      },
+      "presets_item": {
+        "rooms": "Rooms",
+        "mode": "Mode",
+        "suction": "Suction level"
+      },
+      "helper": {
+        "name": "Default: from the entity id.",
+        "prefix": "Prefix of the integration's entities. Default: object id of the entity.",
+        "navigation_path": "e.g. #robot.",
+        "rooms": "The ids are the segment ids of the map.",
+        "presets_item": {
+          "rooms": "Names or segment ids."
+        },
+        "maintenance_threshold": "Remaining life.",
+        "panels": "Off: without background.",
+        "modes": "Default: sweeping, mopping after sweeping, sweeping and mopping.",
+        "modes_item": {
+          "value": "Value of the mode entity."
+        },
+        "suction_levels_item": {
+          "value": "Value of the suction entity."
+        },
+        "boost": "Only when the switch exists.",
+        "boost_name": "Default: Max+.",
+        "maintenance_item": {
+          "key": "Matches the attributes <key>_left and <key>_time_left, e.g. main_brush.",
+          "due": "Hint when the item is due."
+        },
+        "actions": "Buttons of the station. Default: wash mop, dry, clean station, empty bin.",
+        "sections": {
+          "entities": "Only needed when an entity has another name than derived from the prefix.",
+          "wear": "Default: main brush, side brush, filter, sensors."
+        }
+      },
+      "panels": "Columns as panels",
+      "modes": "Modes",
+      "modes_item": {
+        "value": "Value"
+      },
+      "suction_levels": "Suction levels",
+      "suction_levels_item": {
+        "value": "Value"
+      },
+      "boost_name": "Label of Max+",
+      "maintenance": "Maintenance items",
+      "maintenance_item": {
+        "key": "Key",
+        "due": "Text when due",
+        "reset": "Reset button"
+      },
+      "actions": "Station actions",
+      "cleaning_title": "Cleaning title",
+      "presets_title": "Presets title",
+      "station_title": "Station title",
+      "mode_entity": "Mode",
+      "suction_entity": "Suction level",
+      "boost_entity": "Max+",
+      "history_entity": "History",
+      "error_entity": "Error",
+      "drying_left_entity": "Drying time left",
+      "sections": {
+        "actions": "Station actions",
+        "suction": "Suction",
+        "titles": "Headings",
+        "wear": "Maintenance",
+        "entities": "Entities"
+      }
     }
   },
   "summary": {
@@ -495,10 +843,95 @@
     "editor": {
       "clock": "Show clock",
       "greeting": "Show greeting",
-      "calm_text": "Text without messages (default: All quiet.)",
+      "calm_text": "Text without alerts",
       "and_word": "Word for “and”",
-      "items": "Items (YAML)",
-      "hold_action": "Hold action"
+      "items": "Items",
+      "hold_action": "Hold action",
+      "helper": {
+        "calm_text": "Default: \"All quiet.\"",
+        "and_word": "Before the last phrase. Default: and.",
+        "items": "Every item adds a phrase while its condition is met.",
+        "hold_action": "e.g. to toggle a kiosk mode.",
+        "items_item": {
+          "name": "Only for the list in the editor.",
+          "entity": "Its state decides and fills {value}.",
+          "text": "Parts in [brackets] are highlighted; {icon} inserts the icon. Pickup: {names} and {when}.",
+          "show": "Without it always, unless the item has an alert.",
+          "alert": "Alerts form the first sentence in the accent color.",
+          "alert_text": "Default: the text.",
+          "levels": "The first matching level wins.",
+          "pickup": "Gives \"[Paper] is collected tomorrow\".",
+          "line": "From 2 on the item starts on its own line.",
+          "color": "accent, success, danger or a CSS color."
+        },
+        "levels_item": {
+          "alert": "Off: the level is a normal phrase."
+        },
+        "show_item": {
+          "always": "Also without a condition."
+        },
+        "alert_item": {
+          "mode": "Always and Never replace the condition."
+        },
+        "pickup_item": {
+          "days": "Default: 1 (today and tomorrow).",
+          "drop_after": "HH:MM, default 12:00.",
+          "names": "Default: message of the event.",
+          "when": "e.g. 0 = today, 1 = tomorrow."
+        }
+      },
+      "alertModes": {
+        "condition": "By condition",
+        "always": "Always",
+        "never": "Never"
+      },
+      "items_item": {
+        "show": "Show when",
+        "alert": "Alert when",
+        "pickup": "Pickup",
+        "text": "Text",
+        "text_one": "Text for 1",
+        "alert_text": "Alert text",
+        "alert_text_one": "Alert text for 1",
+        "levels": "Levels",
+        "line": "Line",
+        "navigation_path": "Target on tap",
+        "more_info": "More-info on tap",
+        "tap_action": "Tap action"
+      },
+      "levels_item": {
+        "above": "Above",
+        "below": "Below",
+        "state": "State",
+        "text": "Text",
+        "alert": "As alert"
+      },
+      "names_item": {
+        "entity": "Calendar"
+      },
+      "when_item": {
+        "days": "Days ahead",
+        "word": "Word"
+      },
+      "show_item": {
+        "always": "Always show",
+        "above": "Above",
+        "below": "Below",
+        "state": "State"
+      },
+      "alert_item": {
+        "mode": "Alert",
+        "above": "Above",
+        "below": "Below",
+        "state": "State"
+      },
+      "pickup_item": {
+        "calendars": "Pickup calendars",
+        "days": "Days ahead",
+        "drop_after": "Done today from",
+        "names": "Names",
+        "when": "Words per day"
+      }
     }
   },
   "shopping": {
@@ -520,13 +953,36 @@
     "synced": "synced",
     "error": "Error",
     "editor": {
-      "entity": "Shopping list (todo)",
+      "entity": "Shopping list",
       "list_title": "Title of the list",
       "quick_title": "Title of the quick picks",
       "placeholder": "Input placeholder",
       "empty_text": "Text of an empty list",
       "panels": "Columns as panels",
-      "groups": "Quick pick groups (YAML)"
+      "groups": "Quick pick groups",
+      "sections": {
+        "texts": "Texts"
+      },
+      "helper": {
+        "entity": "Todo entity.",
+        "groups": "Groups of the quick picks.",
+        "panels": "Off: without background.",
+        "groups_item": {
+          "wide": "Otherwise two groups share a row on wide screens."
+        },
+        "items_item": {
+          "variants": "Choice of kind or amount after adding, e.g. 6, 10, 12.",
+          "description": "Makes it a product of its own; excludes variants."
+        }
+      },
+      "groups_item": {
+        "wide": "Full width",
+        "items": "Products"
+      },
+      "items_item": {
+        "variants": "Variants",
+        "description": "Fixed description"
+      }
     }
   },
   "battery": {
@@ -549,44 +1005,161 @@
       "exclude_label": "Label to exclude",
       "exclude": "Further sensors to exclude",
       "collapsed": "“In order” collapsed",
-      "names": "Display names (YAML)"
+      "names": "Display names",
+      "names_item": {
+        "entity": "Sensor"
+      },
+      "sections": {
+        "excluded": "Exclude"
+      },
+      "helper": {
+        "names": "Default: device name.",
+        "exclude_label": "Sensors with this label are left out."
+      }
     }
   },
   "legend": {
     "editor": {
-      "scales": "Color scales (YAML)",
-      "items": "Items (YAML)"
+      "scales": "Color scales",
+      "items": "Items",
+      "items_item": {
+        "opacity": "Opacity"
+      },
+      "helper": {
+        "scales": "Side by side on wide panels, otherwise stacked.",
+        "items_item": {
+          "color": "Default: accent color.",
+          "opacity": "0 to 1."
+        },
+        "scales_item": {
+          "unit": "Muted after the name.",
+          "stops": "The same values as the chart's color_thresholds.",
+          "min": "Default: first stop.",
+          "max": "Default: last stop.",
+          "ticks": "Values below the bar. Default: the stop values.",
+          "opacity": "0 to 1, for the whole bar."
+        }
+      },
+      "scales_item": {
+        "unit": "Unit",
+        "stops": "Color stops",
+        "min": "Minimum",
+        "max": "Maximum",
+        "ticks": "Labels",
+        "opacity": "Opacity"
+      },
+      "stops_item": {
+        "value": "Value",
+        "color": "Color"
+      }
     }
   },
   "timeline": {
     "period": "Period {span} · tap a bar for details",
     "loading": "Loading history …",
     "editor": {
-      "entities": "Entities (list: entity, name, color, state_colors, ignore_states)",
-      "default_interval": "Period at start (e.g. 4h)",
-      "bridge": "Bridge interruptions up to (e.g. 5m)",
-      "intervals": "Periods of the picker (list, e.g. 4h, 24h, 7d)",
-      "ignore_states": "Further states without a bar (list)",
+      "entities": "Entities",
+      "default_interval": "Period at the start",
+      "bridge": "Bridge interruptions up to",
+      "intervals": "Periods of the picker",
+      "ignore_states": "Further states without a bar",
       "show_picker": "Show the period picker",
-      "show_total": "Show the total per row"
+      "show_total": "Show the total per row",
+      "entities_item": {
+        "ignore_states": "States without a bar",
+        "state_colors": "Colors of single states"
+      },
+      "sections": {
+        "period": "Period",
+        "bars": "Bars"
+      },
+      "helper": {
+        "entities_item": {
+          "name": "Default: entity name.",
+          "color": "Color of the bars. Default: accent color.",
+          "ignore_states": "In addition, for this row.",
+          "state_colors": "Color per state, e.g. Plex."
+        },
+        "default_interval": "e.g. 4h. Default: the first period.",
+        "bridge": "e.g. 30s, 5m, 1h; 0m turns it off.",
+        "intervals": "e.g. 4h, 24h, 7d.",
+        "ignore_states": "On top of unknown, unavailable, off, none, idle, standby.",
+        "state_colors_item": {
+          "color": "e.g. #e5a00d."
+        }
+      },
+      "state_colors_item": {
+        "state": "State",
+        "color": "Color"
+      }
     }
   },
   "value": {
     "editor": {
       "entity": "Entity",
-      "name": "Name (default: entity name)",
-      "decimals": "Decimals (default: display precision of the entity)",
-      "unit": "Unit (default: unit of the entity)",
-      "icon": "Icon top right",
+      "name": "Name",
+      "decimals": "Decimals",
+      "unit": "Unit",
+      "icon": "Icon",
       "show_icon": "Show the entity icon",
-      "secondary_entity": "Second value on the right",
-      "secondary_decimals": "Decimals of the second value",
-      "secondary_unit": "Unit of the second value",
-      "secondary_icon": "Icon before the second value",
+      "secondary_entity": "Entity",
+      "secondary_decimals": "Decimals",
+      "secondary_unit": "Unit",
+      "secondary_icon": "Icon",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action",
-      "layout": "Layout"
+      "layout": "Layout",
+      "sections": {
+        "value_display": "Value",
+        "secondary": "Second value"
+      },
+      "helper": {
+        "name": "Default: entity name.",
+        "decimals": "Default: display precision of the entity.",
+        "unit": "Default: unit of the entity.",
+        "icon": "Tile: watermark top right. Row: on the left, default entity icon.",
+        "show_icon": "When no icon is set.",
+        "secondary_entity": "Tile: on the right of the value. Row: small line below the name."
+      }
+    }
+  },
+  "editor": {
+    "sections": {
+      "actions": "Actions"
+    },
+    "tap_action": "Tap action",
+    "hold_action": "Hold action",
+    "double_tap_action": "Double tap action",
+    "condition": {
+      "entity": "Entity",
+      "above": "Above",
+      "below": "Below",
+      "state": "State"
+    },
+    "item": {
+      "entity": "Entity",
+      "name": "Name",
+      "icon": "Icon",
+      "color": "Color",
+      "label": "Label"
+    },
+    "helper": {
+      "condition": {
+        "entity": "Entity whose state is checked.",
+        "state": "One of the states. Type a value and confirm with Enter."
+      }
+    },
+    "conditionLabel": {
+      "above": "above {value}",
+      "below": "below {value}",
+      "state": "state {value}",
+      "always": "always",
+      "never": "never"
+    },
+    "layouts": {
+      "row": "Row",
+      "tile": "Tile"
     }
   }
 }

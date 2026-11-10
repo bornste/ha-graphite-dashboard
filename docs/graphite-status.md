@@ -50,6 +50,7 @@ centered between edge and text.
 
 ## Editor
 
-All options in one form; actions use Home Assistant's action selector, `detail_entities` is a
-YAML field. Empty values are not stored; `wall_switch` only when on. The `since_line` switch shows
-what the row does without the option (on, off for measured values) and is only stored when changed.
+Entity, name and icon first; the sections *Second line* ("since" options), the list of detail
+values (a dialog per entry), *Availability* (online entity, wall switch) and *Actions*. Empty values
+are not stored; `wall_switch` only when on. The `since_line` switch shows what the row does without
+the option (on, off for measured values) and is only stored when changed.

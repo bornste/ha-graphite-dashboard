@@ -55,4 +55,5 @@ sources:
 
 ## Editor
 
-The sources are a list of objects and edited as YAML.
+The sources are a list with a dialog per entry; the maps `titles` and `images` are lists in a
+second dialog.

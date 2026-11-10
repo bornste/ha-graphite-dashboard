@@ -1,7 +1,7 @@
 // Visual editor of graphite-status and graphite-switch (one form: wall_switch only for the status,
 // the layout choice only for the switch; the "since" options only in the row layout).
 import { GraphiteFormEditor } from "../../core/form-editor";
-import { layoutField, layoutOf } from "../../core/layout";
+import { layoutOf } from "../../core/layout";
 
 export class GraphiteRowEditor extends GraphiteFormEditor {
   rowKind: "status" | "switch" = "status";
@@ -17,33 +17,30 @@ export class GraphiteRowEditor extends GraphiteFormEditor {
   protected schema(): unknown[] {
     const isRow = this.rowKind === "status" || layoutOf(this.config, "row") === "row";
     return [
-      ...(this.rowKind === "switch" ? [layoutField()] : []),
+      ...(this.rowKind === "switch" ? [this.layoutField()] : []),
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-        ],
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+      ),
       ...(isRow ? [
-        { name: "since_line", selector: { boolean: {} } },
-        {
-          type: "grid",
-          name: "",
-          schema: [
+        this.section("since", [
+          { name: "since_line", selector: { boolean: {} } },
+          this.grid(
             { name: "since_attribute", selector: { text: {} } },
             { name: "since_attribute_label", selector: { text: {} } },
-          ],
-        },
-        { name: "detail_entities", selector: { object: {} } },
+          ),
+        ]),
+        this.listSection("detail_entities", [
+          { name: "entity", required: true, selector: { entity: {} } },
+          { name: "label", selector: { text: {} } },
+        ], { labelField: "entity", descriptionField: "label", stringField: "entity" }),
       ] : []),
-      { name: "online_entity", selector: { entity: {} } },
-      ...(this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []),
+      this.section("availability", [
+        { name: "online_entity", selector: { entity: {} } },
+        ...(this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []),
+      ]),
+      this.actionsSection(),
     ];
   }
 

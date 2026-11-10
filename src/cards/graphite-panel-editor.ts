@@ -1,17 +1,124 @@
-// Visual editor of graphite-panel: panel options in an ha-form, child cards in Home Assistant's
+// Visual editor of graphite-panel: panel options in an ha-form (sections "header" and "layout"
+// as expansion panels, hints as helper texts below the fields), child cards in Home Assistant's
 // own stack editor (tabs, card picker, card editors).
 import type { HomeAssistant } from "../core/types";
 import { languageOf, translate } from "../core/i18n";
 
-// schema with translated labels of the layout options
-function editorSchema(language: string) {
-  const text = (key: string) => translate(language, `panel.editor.${key}`);
+const prefix = "panel.editor";
+
+// name of the nested section that holds the condition {entity, above, below, state}
+const conditionName = "info_alert";
+
+// sections that only group fields; their data stays on the top level of the config
+const chipsSection = "chipsSection";
+const buttonsSection = "buttonsSection";
+
+// translated text or undefined when the key has no translation (e.g. a field without helper)
+function optionalText(language: string, key: string): string | undefined {
+  const fullKey = `${prefix}.${key}`;
+  const text = translate(language, fullKey);
+  return text === fullKey ? undefined : text;
+}
+
+// schema with translated labels; the grid options are only shown for the grid layout
+function editorSchema(language: string, layout: string) {
+  const text = (key: string) => translate(language, `${prefix}.${key}`);
+  // field of a list entry (chip, button): label and helper come from "item" / "helper.item"
+  const itemField = (name: string, selector: unknown, required = false) => [name, {
+    selector,
+    required,
+    label: text(`item.${name}`),
+    description: optionalText(language, `helper.item.${name}`),
+  }];
+  const numberBox = { number: { mode: "box", step: "any" } };
+  // free texts as a list: a condition matches one of several states
+  const stateList = { select: { multiple: true, custom_value: true, options: [] } };
+
   return [
-    { name: "title", selector: { text: {} } },
-    { name: "info", selector: { text: {} } },
     {
-      type: "grid",
-      name: "",
+      type: "expandable",
+      name: "header",
+      icon: "mdi:page-layout-header",
+      flatten: true,
+      expanded: true,
+      schema: [
+        { name: "title", selector: { text: {} } },
+        { name: "info", selector: { text: {} } },
+        {
+          // not flattened: the fields are stored below "info_alert"
+          type: "expandable",
+          name: conditionName,
+          schema: [
+            { name: "entity", selector: { entity: {} } },
+            {
+              type: "grid",
+              name: "",
+              schema: [
+                { name: "above", selector: numberBox },
+                { name: "below", selector: numberBox },
+              ],
+            },
+            { name: "state", selector: stateList },
+          ],
+        },
+        {
+          type: "expandable",
+          name: chipsSection,
+          flatten: true,
+          schema: [{
+            name: "chips",
+            selector: {
+              object: {
+                multiple: true,
+                label_field: "entity",
+                description_field: "label",
+                fields: Object.fromEntries([
+                  itemField("entity", { entity: {} }, true),
+                  itemField("label", { text: {} }),
+                  itemField("unit", { text: {} }),
+                  itemField("decimals", { number: { min: 0, max: 4, mode: "box" } }),
+                  itemField("muted", { boolean: {} }),
+                  itemField("tap_action", { ui_action: {} }),
+                  itemField("alert_above", numberBox),
+                  itemField("alert_below", numberBox),
+                  itemField("alert_state", stateList),
+                ]),
+              },
+            },
+          }],
+        },
+        {
+          type: "expandable",
+          name: buttonsSection,
+          flatten: true,
+          schema: [{
+            name: "buttons",
+            selector: {
+              object: {
+                multiple: true,
+                label_field: "name",
+                description_field: "entity",
+                fields: Object.fromEntries([
+                  itemField("name", { text: {} }),
+                  itemField("icon", { icon: {} }),
+                  itemField("entity", { entity: {} }),
+                  itemField("tap_action", { ui_action: {} }),
+                  itemField("active_entity", { entity: {} }),
+                  itemField("active_above", numberBox),
+                  itemField("active_below", numberBox),
+                  itemField("active_state", stateList),
+                ]),
+              },
+            },
+          }],
+        },
+      ],
+    },
+    {
+      type: "expandable",
+      name: "layoutSection",
+      icon: "mdi:view-dashboard-outline",
+      flatten: true,
       schema: [
         {
           name: "layout",
@@ -26,22 +133,87 @@ function editorSchema(language: string) {
             },
           },
         },
-        { name: "columns", selector: { number: { min: 1, max: 6, mode: "box" } } },
-        { name: "gap", selector: { text: {} } },
-        { name: "padding", selector: { text: {} } },
-        { name: "min_column_width", selector: { text: {} } },
+        ...(layout === "grid" ? [{
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "columns", selector: { number: { min: 1, max: 6, mode: "box" } } },
+            { name: "min_column_width", selector: { text: {} } },
+          ],
+        }] : []),
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "gap", selector: { text: {} } },
+            { name: "padding", selector: { text: {} } },
+          ],
+        },
         { name: "frame", selector: { boolean: {} } },
       ],
     },
-    // the object selector renders a YAML editor
-    { name: "info_alert", selector: { object: {} } },
-    { name: "chips", selector: { object: {} } },
-    { name: "buttons", selector: { object: {} } },
   ];
 }
 
-// optional keys that are not stored when empty, so the YAML stays clean
-const objectKeys = ["info_alert"];
+function isEmpty(value: unknown): boolean {
+  return value === "" || value === undefined || value === null || (Array.isArray(value) && value.length === 0);
+}
+
+// condition as shown in the form: "state" always as a list of texts (multi select)
+function conditionData(condition: unknown): Record<string, unknown> {
+  if (!condition || typeof condition !== "object") return {};
+  const data: Record<string, unknown> = { ...condition };
+  if (!isEmpty(data.state)) data.state = ([] as unknown[]).concat(data.state).map(String);
+  return data;
+}
+
+// condition as stored: no empty parts, a single state as plain value
+function storedCondition(condition: unknown): Record<string, unknown> | undefined {
+  if (!condition || typeof condition !== "object") return undefined;
+  const entries = Object.entries(condition)
+    .filter(([, value]) => !isEmpty(value))
+    .map(([key, value]) => [key, key === "state" && Array.isArray(value) && value.length === 1 ? value[0] : value]);
+  return entries.length ? Object.fromEntries(entries) : undefined;
+}
+
+// The dialog of a list entry is a flat form, so the condition of an entry (chip "alert", button
+// "active") is shown as fields "<key>_<part>" (e.g. alert_above) and stored as an object again.
+const conditionParts = ["entity", "above", "below", "state"];
+
+// list entries as shown in the form
+function itemsData(items: unknown, conditionKey: string): unknown {
+  if (!Array.isArray(items)) return items;
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const { [conditionKey]: condition, ...data } = item as Record<string, unknown>;
+    for (const [part, value] of Object.entries(conditionData(condition))) {
+      if (conditionParts.includes(part)) data[`${conditionKey}_${part}`] = value;
+    }
+    // the short form tap_action: none as an action object (action selector)
+    if (data.tap_action === "none") data.tap_action = { action: "none" };
+    return data;
+  });
+}
+
+// list entries as stored: unset fields and switched off flags are left out
+function storedItems(items: unknown, conditionKey: string): unknown[] | undefined {
+  if (!Array.isArray(items) || items.length === 0) return undefined;
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const data: Record<string, unknown> = {};
+    const condition: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(item)) {
+      const part = key.startsWith(`${conditionKey}_`) ? key.slice(conditionKey.length + 1) : "";
+      if (conditionParts.includes(part)) condition[part] = value;
+      else if (value !== undefined && value !== null && !(key === "muted" && value === false)) data[key] = value;
+    }
+    // an entry that was not opened in the form still has its condition object
+    const stored = storedCondition({ ...(data[conditionKey] as object | undefined), ...condition });
+    if (stored) data[conditionKey] = stored;
+    else delete data[conditionKey];
+    return data;
+  });
+}
 
 export class GraphitePanelEditor extends HTMLElement {
   private config: Record<string, any> = {};
@@ -49,7 +221,7 @@ export class GraphitePanelEditor extends HTMLElement {
   private lovelaceObject?: unknown;
   private form?: any;
   private stackEditor?: any;
-  private formLanguage?: string;
+  private formSchemaKey?: string;
 
   setConfig(config: Record<string, any>): void {
     this.config = config;
@@ -90,15 +262,21 @@ export class GraphitePanelEditor extends HTMLElement {
       this.replaceChildren(wrapper);
     }
     const language = languageOf(this.isConnected ? this : undefined, this.hassObject);
-    if (this.formLanguage !== language) {
-      this.formLanguage = language;
-      this.form.schema = editorSchema(language);
-      this.form.computeLabel = (schema: { name: string }) => {
-        if (!schema.name) return "";
-        const key = `panel.editor.${schema.name}`;
-        const label = translate(language, key);
-        return label === key ? schema.name : label;
+    const layout = this.config.layout || "vertical";
+    const schemaKey = `${language}|${layout}`;
+    if (this.formSchemaKey !== schemaKey) {
+      this.formSchemaKey = schemaKey;
+      this.form.schema = editorSchema(language, layout);
+      // fields inside the condition section have their own texts ("condition.entity", ...)
+      const textKey = (schema: { name: string }, options?: { path?: string[] }) =>
+        (options?.path?.includes(conditionName) ? `condition.${schema.name}` : schema.name);
+      this.form.computeLabel = (schema: { name: string }, _data: unknown, options?: { path?: string[] }) => {
+        // the list sections already show the name in their header
+        if (!schema.name || schema.name === "chips" || schema.name === "buttons") return "";
+        return optionalText(language, textKey(schema, options)) ?? schema.name;
       };
+      this.form.computeHelper = (schema: { name: string }, options?: { path?: string[] }) =>
+        (schema.name ? optionalText(language, `helper.${textKey(schema, options)}`) : undefined);
     }
     if (this.hassObject) {
       this.form.hass = this.hassObject;
@@ -106,9 +284,10 @@ export class GraphitePanelEditor extends HTMLElement {
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
 
-    const { title, info, info_alert, chips, layout, columns, gap, padding, min_column_width, frame } = this.config;
+    const { title, info, info_alert, chips, buttons, columns, gap, padding, min_column_width, frame } = this.config;
     this.form.data = {
-      title, info, info_alert, chips, layout: layout || "vertical", columns, gap, padding, min_column_width,
+      title, info, info_alert: conditionData(info_alert), chips: itemsData(chips, "alert"), buttons: itemsData(buttons, "active"),
+      layout, columns, gap, padding, min_column_width,
       frame: frame !== false,
     };
     this.stackEditor.setConfig({ type: "vertical-stack", cards: this.config.cards || [] });
@@ -125,12 +304,17 @@ export class GraphitePanelEditor extends HTMLElement {
     }
   }
 
+  // empty optional values are not stored, so the YAML stays clean
   private fireConfig(config: Record<string, any>): void {
+    const storedConfig: Record<string, any> = {
+      ...config,
+      info_alert: storedCondition(config.info_alert),
+      chips: storedItems(config.chips, "alert"),
+      buttons: storedItems(config.buttons, "active"),
+    };
     const cleanConfig = Object.fromEntries(
-      Object.entries(config).filter(([key, value]) => {
+      Object.entries(storedConfig).filter(([key, value]) => {
         if (value === "" || value === undefined || value === null) return false;
-        if (objectKeys.includes(key) && (typeof value !== "object" || Object.keys(value).length === 0)) return false;
-        if (key === "chips" && (!Array.isArray(value) || value.length === 0)) return false;
         // frame defaults to true, only "false" is stored
         if (key === "frame" && value !== false) return false;
         return true;

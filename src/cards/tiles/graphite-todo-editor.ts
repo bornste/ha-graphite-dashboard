@@ -9,28 +9,22 @@ export class GraphiteTodoEditor extends GraphiteFormEditor {
   protected schema(): unknown[] {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "todo" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-        ],
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+      ),
+      this.section("texts", [
+        this.grid(
           { name: "unit", selector: { text: {} } },
           { name: "unit_one", selector: { text: {} } },
-          { name: "empty_text", selector: { text: {} } },
-          { name: "color", selector: { text: {} } },
-        ],
-      },
-      { name: "preview", selector: { boolean: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+        ),
+        { name: "empty_text", selector: { text: {} } },
+      ]),
+      this.section("appearance", [
+        { name: "color", selector: { text: {} } },
+        { name: "preview", selector: { boolean: {} } },
+      ]),
+      this.actionsSection(),
     ];
   }
 

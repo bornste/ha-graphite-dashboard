@@ -22,7 +22,8 @@ items:
     levels:
       - { above: 1499, text: "[open a window], CO₂ is at {value}" }
       - { above: 999, text: "time to [air out]" }
-  - pickup: [calendar.paper_collection, calendar.cardboard_collection]
+  - pickup:
+      calendars: [calendar.paper_collection, calendar.cardboard_collection]
   - entity: sensor.lights_on
     show: { above: 0 }
     text: "[{value} lights] are on"
@@ -51,17 +52,14 @@ items:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
+| `name` | string | – | Only a label for the list in the editor, not used by the card. |
 | `entity` | entity id | – | Entity whose state decides and fills `{value}` (numbers rounded). |
 | `show` | condition | always | Shown while `{above, below, state}` matches. |
 | `alert` | condition | – | Alert while it matches: first sentence, highlighted in the accent (or `color`). An item with `alert` and without `show` is only shown as alert. |
 | `text`, `text_one` | string | – | Phrase; `text_one` when the value is 1. |
 | `alert_text`, `alert_text_one` | string | `text` | Phrase while alerting. |
 | `levels` | list | – | `{above, below, state, text, alert}`; the first matching level wins (alert unless `alert: false`). |
-| `pickup` | list | – | Calendar entities of waste collections: "[Paper] is collected tomorrow". |
-| `days` | number | `1` | Pickup: days ahead that count (1 = today and tomorrow). |
-| `drop_after` | `HH:MM` | `12:00` | Pickup: a collection of today counts as done after this time. |
-| `names` | map | message of the event | Pickup: names per calendar. |
-| `when` | map | translated | Pickup: words per day, e.g. `{ 0: today, 1: tomorrow }`. |
+| `pickup` | object | – | Waste collections: "[Paper] is collected tomorrow", see *Pickup options*. |
 | `line` | number | `1` | Items with `line: 2`, `3`, … start on their own line. |
 | `color` | `accent`, `success`, `danger` or CSS | – | Color of the highlights. |
 | `icon` | icon | entity icon | Icon for `{icon}`; `{icon:mdi:name}` inserts any icon. |
@@ -69,5 +67,25 @@ items:
 | `tap_action` | action | – | Any action on tapping a highlight. |
 | `more_info` | boolean | `false` | Tapping a highlight opens more-info of the entity. |
 
+## Pickup options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `calendars` | list | required | Calendar entities of the waste collections. |
+| `days` | number | `1` | Days ahead that count (1 = today and tomorrow). |
+| `drop_after` | `HH:MM` | `12:00` | A collection of today counts as done after this time. |
+| `names` | map | message of the event | Names per calendar. |
+| `when` | map | translated | Words per day, e.g. `{ 0: today, 1: tomorrow }`. |
+
+The older form still works: `pickup` as a list of calendars with `days`, `drop_after`, `names`
+and `when` on the item itself. The editor stores the form above.
+
 Texts of the card (calm text, "and", pickup, greeting) follow the language
 (`--graphite-language`, otherwise the Home Assistant language).
+
+## Editor
+
+Clock, greeting and texts as fields; the items are a list with a dialog per entry. To keep that
+dialog short, `show`, `alert` and `pickup` open a second dialog each ("always show" stands for
+`show: true`, the alert mode *always* / *never* for `alert: true` / `false`), and so do the `levels`;
+`names` and `when` of a pickup open a third one. `name` is only a label for the list in the editor.

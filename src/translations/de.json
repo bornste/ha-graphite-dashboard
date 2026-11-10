@@ -14,20 +14,73 @@
   },
   "panel": {
     "editor": {
+      "header": "Kopf",
       "title": "Titel",
-      "info": "Status nach dem Titel (Text oder Jinja-Template)",
-      "info_alert": "Status in Akzentfarbe, wenn (YAML: entity, above, below, state)",
-      "chips": "Werte rechts als Chips (YAML-Liste: entity, label, unit, decimals, muted, alert, tap_action)",
+      "info": "Status",
+      "info_alert": "Status hervorheben",
+      "chipsSection": "Chips",
+      "buttonsSection": "Knöpfe",
+      "layoutSection": "Layout",
       "layout": "Anordnung",
       "layoutVertical": "Vertikal",
       "layoutHorizontal": "Horizontal",
       "layoutGrid": "Raster",
-      "columns": "Spalten (nur Raster)",
-      "gap": "Abstand zwischen Karten (z.B. 8px)",
-      "padding": "Innenabstand (z.B. 16px)",
-      "min_column_width": "Mindestbreite pro Spalte (nur Raster, z.B. 380px – bricht auf schmalen Bildschirmen um)",
-      "frame": "Panel-Fläche anzeigen (aus = nur Layout-Container)",
-      "buttons": "Knöpfe rechts im Kopf (Liste: icon, entity, name, active, tap_action)"
+      "columns": "Spalten",
+      "min_column_width": "Mindestbreite pro Spalte",
+      "gap": "Abstand",
+      "padding": "Innenabstand",
+      "frame": "Panel-Fläche anzeigen",
+      "condition": {
+        "entity": "Entität",
+        "above": "Über",
+        "below": "Unter",
+        "state": "Zustand"
+      },
+      "item": {
+        "entity": "Entität",
+        "label": "Bezeichnung",
+        "unit": "Einheit",
+        "decimals": "Nachkommastellen",
+        "muted": "Gedämpft",
+        "tap_action": "Aktion beim Tippen",
+        "name": "Name",
+        "icon": "Icon",
+        "alert_above": "Hervorheben über",
+        "alert_below": "Hervorheben unter",
+        "alert_state": "Hervorheben bei Zustand",
+        "active_entity": "Aktiv: Entität",
+        "active_above": "Aktiv über",
+        "active_below": "Aktiv unter",
+        "active_state": "Aktiv bei Zustand"
+      },
+      "helper": {
+        "info": "Steht nach dem Titel. Text oder Jinja-Template.",
+        "info_alert": "Zeigt den Status in Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
+        "chipsSection": "Werte rechts im Kopf, in der Reihenfolge der Liste.",
+        "buttonsSection": "Knöpfe ganz rechts im Kopf, z.B. «Licht aus» oder Einstellungen.",
+        "columns": "Standard: 2",
+        "min_column_width": "z.B. 380px. Bricht auf schmalen Bildschirmen um und ersetzt «Spalten».",
+        "gap": "Zwischen den Karten, z.B. 8px.",
+        "padding": "z.B. 16px.",
+        "frame": "Aus: nur Layout-Container ohne Fläche, Innenabstand und Radius.",
+        "condition": {
+          "entity": "Entität, deren Zustand geprüft wird.",
+          "state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
+        },
+        "item": {
+          "label": "Gedämpfter Text vor dem Wert, z.B. CO₂.",
+          "unit": "Standard: Einheit der Entität.",
+          "decimals": "Standard: Anzeigegenauigkeit der Entität.",
+          "muted": "Wert in der sekundären Textfarbe.",
+          "tap_action": "Standard: More-Info. Bei Knöpfen mit Szene: Szene aktivieren.",
+          "name": "Tooltip und Text für Screenreader. Standard: Name der Entität.",
+          "icon": "Standard: Icon der Entität.",
+          "alert_above": "Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
+          "alert_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen.",
+          "active_entity": "Hebt den Knopf hervor, solange alle gesetzten Bedingungen dieser Entität zutreffen.",
+          "active_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
+        }
+      }
     }
   },
   "rows": {
@@ -40,29 +93,35 @@
     "since": "{state} {since}",
     "editor": {
       "entity": "Entität",
-      "name": "Name (Standard: Name der Entität)",
-      "icon": "Icon (Standard: Icon der Entität)",
+      "name": "Name",
+      "icon": "Icon",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen",
-      "since_line": "Zeile «seit …» unter dem Namen anzeigen",
-      "since_attribute": "Zeitstempel-Attribut statt letzter Änderung (z.B. last_triggered)",
-      "since_attribute_label": "Wort vor der Zeit (Standard: ausgelöst)",
-      "detail_entities": "Werte statt der Zeile «seit …», solange eingeschaltet (YAML-Liste: entity, label)",
-      "online_entity": "Online-Entität (Icon pulsiert, bis das Gerät erreichbar ist)",
-      "wall_switch": "Wandschalter-Lampe (nicht erreichbar = aus)",
-      "layout": "Darstellung"
-    }
-  },
-  "tiles": {
-    "editor": {
-      "entity": "Entität",
-      "name": "Name (Standard: Name der Entität)",
-      "icon": "Icon (Standard: Icon der Entität)",
-      "online_entity": "Online-Entität (Icon pulsiert, bis das Gerät erreichbar ist)",
-      "tap_action": "Aktion beim Tippen",
-      "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "since_line": "Zeile «seit …» anzeigen",
+      "since_attribute": "Zeitstempel-Attribut",
+      "since_attribute_label": "Wort vor der Zeit",
+      "detail_entities": "Werte statt «seit …»",
+      "online_entity": "Online-Entität",
+      "wall_switch": "Lampe am Wandschalter",
+      "layout": "Darstellung",
+      "sections": {
+        "since": "Zweite Zeile",
+        "availability": "Erreichbarkeit"
+      },
+      "helper": {
+        "name": "Standard: Name der Entität.",
+        "icon": "Standard: Icon der Entität.",
+        "since_line": "Unter dem Namen, z.B. «offen seit 12 Min.». Bei Messwerten standardmässig aus.",
+        "since_attribute": "Statt der letzten Änderung, z.B. last_triggered.",
+        "since_attribute_label": "Standard: ausgelöst.",
+        "detail_entities": "Solange die Entität eingeschaltet ist, zeigt die Zeile diese Werte, getrennt durch « · ».",
+        "detail_entities_item": {
+          "label": "Text vor dem Wert, z.B. CPU."
+        },
+        "online_entity": "Das Icon pulsiert, bis das Gerät erreichbar ist.",
+        "wall_switch": "Nicht erreichbar zählt als aus."
+      }
     }
   },
   "meter": {
@@ -71,58 +130,104 @@
     "periodHours": "{count} h",
     "periodDays": "{count} Tage",
     "editor": {
-      "entity": "Entität (Messwert)",
-      "name": "Name (Standard: Name der Entität)",
-      "style": "Darstellung (gradient = Farbskala mit Nadel, level = Füllbalken, change = Veränderung zur Referenz)",
+      "entity": "Entität",
+      "name": "Name",
+      "style": "Darstellung",
       "min": "Minimum",
       "max": "Maximum",
-      "decimals": "Nachkommastellen (Standard: Anzeigegenauigkeit der Entität, sonst 1)",
-      "unit": "Einheit (Standard: Einheit der Entität)",
-      "colors": "Farbstufen (YAML: Wert: Farbe, z.B. 24: \"#6fbf5a\")",
-      "icon": "Icon oben rechts",
+      "decimals": "Nachkommastellen",
+      "unit": "Einheit",
+      "colors": "Farbstufen",
+      "icon": "Icon",
       "show_icon": "Icon der Entität anzeigen",
-      "secondary_entity": "Zweiter Wert rechts (z.B. Luftfeuchtigkeit)",
-      "secondary_decimals": "Nachkommastellen zweiter Wert",
-      "secondary_unit": "Einheit zweiter Wert",
-      "secondary_icon": "Icon vor dem zweiten Wert",
+      "secondary_entity": "Entität",
+      "secondary_decimals": "Nachkommastellen",
+      "secondary_unit": "Einheit",
+      "secondary_icon": "Icon",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen",
-      "color": "Feste Farbe (statt Farbstufen)",
-      "low": "Bald leer unter (für Verbrauchsmaterial, zeigt den Zustand)",
+      "color": "Feste Farbe",
+      "low": "Bald leer unter",
       "layout": "Darstellung",
-      "reference": "Referenz (Kaufpreis, Entität oder Zeitraum wie 24h, 7d)",
-      "reference_name": "Text zur Referenz (Standard: Kauf … / 24 h)",
-      "change_attribute": "Attribut mit Veränderung in % (z.B. 24h_change)",
-      "scale": "Halber Balken entspricht (% bzw. Einheit)",
-      "change_decimals": "Nachkommastellen der %",
+      "reference": "Referenz",
+      "reference_name": "Text zur Referenz",
+      "change_attribute": "Attribut mit Veränderung in %",
+      "scale": "Halber Balken entspricht",
+      "change_decimals": "Nachkommastellen der Veränderung",
       "change_mode": "Abweichung als",
       "changeModes": {
         "percent": "Prozent",
         "absolute": "Differenz in der Einheit"
       },
-      "invert": "Mehr ist schlecht (Farben tauschen)"
+      "invert": "Mehr ist schlecht",
+      "styles": {
+        "gradient": "Farbskala mit Nadel",
+        "level": "Füllbalken",
+        "change": "Veränderung zur Referenz"
+      },
+      "colors_item": {
+        "value": "Ab Wert",
+        "color": "Farbe"
+      },
+      "sections": {
+        "reference_change": "Referenz und Veränderung",
+        "value_display": "Wert und Bereich",
+        "bar_colors": "Farben",
+        "secondary": "Zweiter Wert"
+      },
+      "helper": {
+        "entity": "Numerischer Sensor.",
+        "name": "Standard: Name der Entität.",
+        "decimals": "Standard: Anzeigegenauigkeit der Entität, sonst 1.",
+        "unit": "Standard: Einheit der Entität.",
+        "colors_item": {
+          "value": "Die Farbe gilt ab diesem Wert.",
+          "color": "z.B. #6fbf5a."
+        },
+        "icon": "Wasserzeichen oben rechts.",
+        "show_icon": "Wenn kein Icon gesetzt ist.",
+        "secondary_entity": "Kachel: rechts vom Wert, z.B. Luftfeuchtigkeit. Zeile: als Statuszeile.",
+        "color": "Eine Farbe für den ganzen Balken. Wird ignoriert, wenn Farbstufen gesetzt sind.",
+        "low": "Für Verbrauchsmaterial: zeigt «bald leer» bzw. «leer».",
+        "reference": "Kaufpreis, Entität oder Zeitraum wie 24h, 7d.",
+        "reference_name": "Standard: «Kauf …» bzw. «24 h».",
+        "change_attribute": "z.B. 24h_change. Hat Vorrang vor der berechneten Veränderung.",
+        "scale": "In % bzw. in der Einheit. Standard: 20.",
+        "invert": "Tauscht die Farben: Zunahme rot, Abnahme grün."
+      }
     }
   },
   "effect": {
     "editor": {
       "name": "Name",
-      "colors": "Farben des Verlaufs (z.B. #ff7a3d)",
-      "entity": "Entität (für das Halten: More-Info, z.B. die Lampe)",
-      "tap_action": "Aktion beim Tippen (z.B. Effekt setzen)",
+      "colors": "Farben des Verlaufs",
+      "entity": "Entität",
+      "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "helper": {
+        "colors": "z.B. #ff7a3d.",
+        "entity": "Für More-Info beim Halten, z.B. die Lampe.",
+        "tap_action": "z.B. den Effekt setzen."
+      }
     }
   },
   "image": {
     "editor": {
-      "entity": "Entität (z.B. das Skript, das gestartet wird)",
-      "name": "Name (Beschriftung ohne Bild, sonst nur für Screenreader)",
-      "image": "Bild (/local/... oder media-source://...)",
-      "busy": "Läuft-Anzeige (Tönung und Kreisel, solange die Entität an ist)",
+      "entity": "Entität",
+      "name": "Name",
+      "image": "Bild",
+      "busy": "Läuft-Anzeige",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "helper": {
+        "entity": "z.B. das Skript, das gestartet wird.",
+        "name": "Beschriftung ohne Bild, sonst nur für Screenreader.",
+        "image": "/local/... oder media-source://...",
+        "busy": "Tönung und Kreisel, solange die Entität an ist."
+      }
     }
   },
   "stopwatch": {
@@ -132,18 +237,49 @@
     "minutes": "{minutes} Min.",
     "hours": "{hours}:{minutes} h",
     "editor": {
-      "entity": "Stoppuhr-Sensor (Stopwatch Plus)",
-      "name": "Name (Standard: Name der Entität)",
-      "icon": "Icon (Standard: Icon der Entität)",
-      "icon_position": "Icon-Position (watermark = oben rechts, left = links wie bei den Zeilen)",
-      "color": "Farbe des Streifens oben (ohne Farbe kein Streifen)",
-      "picture_entity": "Bild-Entität (z.B. Gamerpic, rund links)",
-      "limit": "Tageslimit (Minuten oder Entität; YAML pro Tag: weekday, weekend, mon … sun)",
-      "warn_before": "Hinweis so viele Minuten vor dem Limit (Standard 10)",
-      "day_start": "Tagesbeginn (Standard 03:00)",
+      "entity": "Stoppuhr-Sensor",
+      "name": "Name",
+      "icon": "Icon",
+      "icon_position": "Icon-Position",
+      "color": "Farbe des Streifens",
+      "picture_entity": "Bild-Entität",
+      "warn_before": "Hinweis vor dem Limit",
+      "day_start": "Tagesbeginn",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "iconPositions": {
+        "watermark": "Wasserzeichen oben rechts",
+        "left": "Links wie bei den Zeilen"
+      },
+      "sections": {
+        "appearance": "Darstellung",
+        "daily_limit": "Tageslimit",
+        "limit_days": "Pro Tag"
+      },
+      "helper": {
+        "entity": "Sensor der Integration Stopwatch Plus.",
+        "name": "Standard: Name der Entität.",
+        "icon": "Standard: Icon der Entität.",
+        "color": "Oben. Ohne Farbe kein Streifen.",
+        "picture_entity": "z.B. Gamerpic, rund links.",
+        "warn_before": "In Minuten. Standard: 10.",
+        "day_start": "HH:MM. Standard: 03:00.",
+        "limit_all": "Minuten oder eine Entität, z.B. 90 oder input_number.limit.",
+        "sections": {
+          "limit_days": "Überschreibt «Alle Tage». Ein einzelner Tag hat Vorrang vor Werktage und Wochenende."
+        }
+      },
+      "limit_all": "Alle Tage",
+      "limit_weekday": "Werktage",
+      "limit_weekend": "Wochenende",
+      "limit_mon": "Montag",
+      "limit_tue": "Dienstag",
+      "limit_wed": "Mittwoch",
+      "limit_thu": "Donnerstag",
+      "limit_fri": "Freitag",
+      "limit_sat": "Samstag",
+      "limit_sun": "Sonntag"
     }
   },
   "todo": {
@@ -152,16 +288,28 @@
     "unitOne": "Artikel",
     "editor": {
       "entity": "Todo-Liste",
-      "name": "Name (Standard: Name der Liste)",
-      "icon": "Icon oben rechts",
-      "unit": "Einheit (Standard: Artikel)",
-      "unit_one": "Einheit bei 1 (Standard: wie Einheit)",
-      "empty_text": "Wert bei leerer Liste (Standard: Leer)",
-      "color": "Farbe des Streifens oben (ohne Farbe kein Streifen)",
+      "name": "Name",
+      "icon": "Icon",
+      "unit": "Einheit",
+      "unit_one": "Einheit bei 1",
+      "empty_text": "Wert bei leerer Liste",
+      "color": "Farbe des Streifens",
       "preview": "Erste offene Einträge rechts anzeigen",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "sections": {
+        "texts": "Texte",
+        "appearance": "Darstellung"
+      },
+      "helper": {
+        "name": "Standard: Name der Liste.",
+        "icon": "Wasserzeichen oben rechts.",
+        "unit": "Standard: Artikel.",
+        "unit_one": "Standard: wie Einheit.",
+        "empty_text": "Standard: Leer.",
+        "color": "Oben. Ohne Farbe kein Streifen."
+      }
     }
   },
   "ink": {
@@ -174,13 +322,19 @@
     "processing": "Druckt",
     "stopped": "Gestoppt",
     "editor": {
-      "entity": "Drucker-Entität (Status, offline)",
-      "name": "Name (Standard: Name der Entität oder Drucker)",
-      "cartridges": "Füllstand-Sensoren der Patronen (%)",
-      "low_level": "Bald leer unter (%, Standard 20)",
+      "entity": "Drucker-Entität",
+      "name": "Name",
+      "cartridges": "Füllstand-Sensoren der Patronen",
+      "low_level": "Bald leer unter",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "helper": {
+        "entity": "Für Status und offline.",
+        "name": "Standard: Name der Entität oder «Drucker».",
+        "cartridges": "Sensoren in %.",
+        "low_level": "Standard: 20 %."
+      }
     }
   },
   "pickup": {
@@ -192,14 +346,24 @@
     "inDays": "in {days} Tagen",
     "editor": {
       "entity": "Abfuhr-Kalender",
-      "name": "Name (Standard: Termin oder Name des Kalenders)",
-      "icon": "Icon oben rechts",
-      "color": "Farbe des Streifens oben",
-      "drop_after": "Abfuhr von heute gilt erledigt ab (HH:MM, Standard 12:00)",
-      "lookahead_days": "Tage vorausschauen (Standard 40)",
+      "name": "Name",
+      "icon": "Icon",
+      "color": "Farbe des Streifens",
+      "drop_after": "Heute erledigt ab",
+      "lookahead_days": "Tage vorausschauen",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "sections": {
+        "dates": "Termine"
+      },
+      "helper": {
+        "name": "Standard: Termin oder Name des Kalenders.",
+        "icon": "Wasserzeichen oben rechts.",
+        "color": "Streifen oben.",
+        "drop_after": "Die Abfuhr von heute gilt ab dieser Zeit als erledigt. HH:MM, Standard 12:00.",
+        "lookahead_days": "Standard: 40."
+      }
     }
   },
   "level": {
@@ -232,7 +396,7 @@
     "noneValue": "keine",
     "daysShort": "{days} Tage",
     "editor": {
-      "calendars": "Kalender (Liste: entity, name, color, icon, highlight)",
+      "calendars": "Kalender",
       "layout": "Layout",
       "layouts": {
         "list": "Liste",
@@ -253,12 +417,12 @@
         "current": "Aktuelle Woche",
         "next": "Nächste Woche"
       },
-      "week_rollover": "Wochenwechsel (z. B. sat 00:00)",
+      "week_rollover": "Wochenwechsel",
       "weekdays": "Mo–Fr immer anzeigen",
-      "title": "Titel (Woche: automatisch)",
+      "title": "Titel",
       "icon": "Symbol",
       "highlight_name": "Name der Hervorhebungs-Kachel",
-      "day_switch": "Nächster Tag ab (z. B. 15:00)",
+      "day_switch": "Nächster Tag ab",
       "max_items": "Max. Einträge",
       "secondary": "Zweite Zeile",
       "secondaries": {
@@ -268,28 +432,67 @@
         "description": "Beschreibung",
         "none": "Keine"
       },
-      "highlight_days": "Hervorheben bis (Tage voraus)",
+      "highlight_days": "Hervorheben bis",
       "show_past_today": "Heutige vergangene Einträge anzeigen",
-      "rules": "Stichwort-Regeln (Liste: starts_with/contains, color, icon, highlight)",
+      "rules": "Stichwort-Regeln",
       "empty_text": "Text ohne Einträge",
       "hide_empty": "Ohne Einträge ausblenden",
-      "tap_action": "Aktion beim Tippen (More-Info = Details)",
-      "hold_action": "Aktion beim Halten (auf den Kalender)"
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "calendars_item": {
+        "highlight": "Hervorheben"
+      },
+      "rules_item": {
+        "starts_with": "Titel beginnt mit",
+        "contains": "Titel enthält",
+        "contains_any": "Enthält eines von",
+        "contains_all": "Enthält alle",
+        "highlight": "Hervorheben",
+        "name": "Name"
+      },
+      "sections": {
+        "tiles": "Kacheln",
+        "display": "Darstellung"
+      },
+      "helper": {
+        "calendars_item": {
+          "name": "Für die zweite Zeile. Standard: Name der Entität.",
+          "color": "Streifen und Icon. Standard: Akzentfarbe.",
+          "icon": "Standard: Icon der Entität.",
+          "highlight": "Einträge bekommen die Tönung und «in n Tagen»."
+        },
+        "week_rollover": "Ab dann gilt die nächste Woche als aktuelle, z.B. sat 00:00. Ohne Angabe: Montag 00:00.",
+        "weekdays": "Leere Tage mit «–», das Wochenende nur mit Einträgen.",
+        "title": "Bei Zeitraum «Woche» automatisch.",
+        "icon": "Wasserzeichen der Tages-Kachel.",
+        "highlight_name": "Standard: Prüfung.",
+        "day_switch": "Ab dieser Zeit zeigt die Tages-Kachel den nächsten Tag, z.B. 15:00.",
+        "max_items": "Der Rest erscheint als «+ n weitere bis …».",
+        "highlight_days": "Tage voraus. Standard: 7.",
+        "rules": "Die erste passende Regel überschreibt Farbe, Icon und Hervorhebung des Kalenders. Alle gesetzten Kriterien müssen zutreffen.",
+        "rules_item": {
+          "contains_any": "Der Titel enthält mindestens eines der Wörter.",
+          "contains_all": "Der Titel enthält alle Wörter.",
+          "name": "Nur für die Liste im Editor."
+        },
+        "tap_action": "More-Info öffnet die Details des Eintrags.",
+        "hold_action": "Wird auf dem Kalender des Eintrags ausgeführt."
+      }
     }
   },
   "slider": {
     "editor": {
-      "entity": "Entität (number, input_number oder Licht)",
-      "name": "Bezeichnung (Standard: Name der Entität bzw. was gesteuert wird)",
+      "entity": "Entität",
+      "name": "Bezeichnung",
       "min": "Minimum",
       "max": "Maximum",
-      "step": "Schritt (Werte sind Vielfache davon)",
+      "step": "Schritt",
       "value_format": "Wertanzeige",
       "valueFormat": {
         "percent": "Prozent des Bereichs",
         "state": "Wert der Entität"
       },
-      "attribute": "Steuert (nur Licht)",
+      "attribute": "Steuert",
       "allow_off": "Ganz links schaltet das Licht aus",
       "attributes": {
         "brightness": "Helligkeit",
@@ -298,20 +501,34 @@
         "saturation": "Sättigung"
       },
       "layout": "Darstellung",
-      "icon": "Icon links (Zeile: Standard Icon der Entität)",
+      "icon": "Icon",
       "layouts": {
-        "inline": "Eingebettet (ohne Fläche, Bezeichnung über dem Regler)",
-        "row": "Zeile (eigene Fläche wie die Status-Zeilen)"
+        "inline": "Eingebettet",
+        "row": "Zeile"
       },
       "ticks": "Ticks unter der Linie",
-      "major_every": "Lange Ticks alle (Standard: runder Wert)",
+      "major_every": "Lange Ticks alle",
       "tickModes": {
-        "auto": "Automatisch (Schritte, sonst Viertel)",
+        "auto": "Automatisch",
         "steps": "Jeder Schritt",
         "quarters": "Viertel",
         "none": "Keine"
       },
-      "tick_every": "Ticks alle (statt bei jedem Schritt)"
+      "tick_every": "Ticks alle",
+      "sections": {
+        "range": "Bereich",
+        "tick_marks": "Ticks"
+      },
+      "helper": {
+        "entity": "number, input_number oder Licht.",
+        "name": "Standard: Name der Entität bzw. was gesteuert wird.",
+        "step": "Werte sind Vielfache davon.",
+        "icon": "Links. In der Zeile Standard: Icon der Entität.",
+        "layout": "Eingebettet: ohne Fläche, Bezeichnung über dem Regler. Zeile: eigene Fläche wie die Status-Zeilen.",
+        "ticks": "Automatisch: jeder Schritt, bei engen Schritten die Viertel.",
+        "tick_every": "Statt bei jedem Schritt.",
+        "major_every": "Standard: runder Wert."
+      }
     },
     "brightness": "Helligkeit",
     "color_temp": "Weisston",
@@ -321,11 +538,11 @@
   "light": {
     "editor": {
       "entity": "Lampe",
-      "name": "Name (Standard: Name der Entität)",
+      "name": "Name",
       "icon": "Icon",
-      "sliders": "Welche Regler (leer: Helligkeit, Weisston falls möglich)",
+      "sliders": "Regler",
       "allow_off": "Helligkeit ganz links schaltet aus",
-      "wall_switch": "Wandschalter (statt Schalter)",
+      "wall_switch": "Lampe am Wandschalter",
       "since_line": "«seit»-Zeile anzeigen",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
@@ -336,24 +553,43 @@
         "hue": "Farbe",
         "saturation": "Sättigung"
       },
-      "unavailable_sliders": "Regler, wenn nicht erreichbar oder am Wandschalter aus",
+      "unavailable_sliders": "Regler, wenn nicht erreichbar",
       "unavailableSliders": {
-        "show": "Gesperrt anzeigen (Layout bleibt)",
-        "hide": "Ausblenden (nur der Kopf)"
+        "show": "Gesperrt anzeigen",
+        "hide": "Ausblenden"
       },
-      "show_sliders": "Regler anzeigen"
+      "show_sliders": "Regler anzeigen",
+      "sections": {
+        "slider_options": "Regler",
+        "display": "Anzeige"
+      },
+      "helper": {
+        "name": "Standard: Name der Entität.",
+        "icon": "Standard: Icon der Entität.",
+        "sliders": "Leer: Helligkeit und, falls möglich, Weisston.",
+        "wall_switch": "Wandschalter-Icon statt Schalter; nicht erreichbar zählt als aus.",
+        "unavailable_sliders": "Auch wenn am Wandschalter aus. Gesperrt: das Layout bleibt. Ausblenden: nur der Kopf."
+      }
     }
   },
   "scene": {
     "editor": {
-      "entity": "Szene (oder andere Entität)",
+      "entity": "Szene",
       "name": "Name",
-      "icon": "Icon (Wasserzeichen)",
-      "colors": "Farben des Verlaufs (Liste, z.B. [\"#f5c48a\", \"#e89a5c\"])",
-      "active": "Aktiv wenn (z.B. {entity: input_select.wohnzimmer_szenen, state: Relax})",
-      "tap_action": "Aktion beim Tippen (Standard: Szene aktivieren)",
+      "icon": "Icon",
+      "colors": "Farben",
+      "active": "Aktiv wenn",
+      "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "helper": {
+        "entity": "Oder eine andere Entität.",
+        "name": "Standard: Name der Entität.",
+        "icon": "Wasserzeichen unten rechts. Standard: Icon der Entität.",
+        "colors": "Streifen und Verlauf, z.B. #f5c48a.",
+        "active": "Füllt die Kachel, solange alle gesetzten Bedingungen zutreffen. Ohne Entität wird der Zustand der Szene selbst geprüft.",
+        "tap_action": "Standard: Szene aktivieren."
+      }
     }
   },
   "nowPlaying": {
@@ -363,7 +599,49 @@
     "paused": "pausiert",
     "remaining": "noch {minutes} Min.",
     "editor": {
-      "sources": "Quellen in Reihenfolge der Priorität (Liste: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
+      "sources": "Quellen",
+      "backdrop": "Cover als Hintergrund",
+      "sources_item": {
+        "name": "Bezeichnung",
+        "states": "Zustände «läuft»",
+        "requires": "Müssen auch laufen",
+        "title_entity": "Titel-Entität",
+        "image_entity": "Bild-Entität",
+        "subtitle": "Zweite Zeile",
+        "fallback_title": "Ersatz-Titel",
+        "fallback_subtitle": "Ersatz für die zweite Zeile",
+        "ignore_titles": "Titel ignorieren",
+        "titles": "Lesbare Titel",
+        "images": "Bilder"
+      },
+      "helper": {
+        "sources": "In der Reihenfolge der Priorität: die erste laufende Quelle wird angezeigt.",
+        "backdrop": "Unscharf und gedimmt über die ganze Karte.",
+        "sources_item": {
+          "name": "Über dem Titel, z.B. XBOX. Standard: Name der Entität.",
+          "icon": "Wasserzeichen oben rechts.",
+          "states": "Standard: on, playing, paused, buffering.",
+          "requires": "z.B. die Konsole neben einem Profil-Sensor.",
+          "title_entity": "Ihr Zustand ist der Titel. Sonst media_title, dann app_name.",
+          "image_entity": "image.* oder ein Helfer mit Bildpfad.",
+          "subtitle": "Aus Attributen der Titel-Entität, z.B. «{progress} abgeschlossen».",
+          "fallback_title": "Wenn die Quelle ohne brauchbaren Titel läuft. Ohne Angabe wird sie übersprungen.",
+          "ignore_titles": "Standard: off, standby, home, screensaver, unknown, unavailable.",
+          "titles": "Lesbare Namen für Rohtitel oder App-Namen, z.B. Home → Startbildschirm.",
+          "images": "Bild pro Titel oder App-Name."
+        },
+        "images_item": {
+          "image": "z.B. /local/apps/netflix.png."
+        }
+      },
+      "titles_item": {
+        "title": "Rohtitel",
+        "shown": "Anzeige"
+      },
+      "images_item": {
+        "title": "Titel oder App",
+        "image": "Bild"
+      }
     }
   },
   "vacuum": {
@@ -467,12 +745,82 @@
         "panel": "Panel"
       },
       "name": "Name",
-      "prefix": "Entitäts-Präfix (optional)",
+      "prefix": "Entitäts-Präfix",
       "navigation_path": "Ziel beim Antippen",
-      "rooms": "Räume (YAML)",
-      "presets": "Kurzwahl (YAML)",
+      "rooms": "Räume",
+      "presets": "Kurzwahl",
       "maintenance_threshold": "Wartung fällig ab",
-      "boost": "Max+ anzeigen"
+      "boost": "Max+ anzeigen",
+      "rooms_item": {
+        "id": "Segment-ID"
+      },
+      "presets_item": {
+        "rooms": "Räume",
+        "mode": "Modus",
+        "suction": "Saugstufe"
+      },
+      "helper": {
+        "name": "Standard: aus der Entitäts-ID.",
+        "prefix": "Präfix der Entitäten der Integration. Standard: Objekt-ID der Entität.",
+        "navigation_path": "z.B. #robot.",
+        "rooms": "Die IDs sind die Segment-IDs der Karte.",
+        "presets_item": {
+          "rooms": "Namen oder Segment-IDs."
+        },
+        "maintenance_threshold": "Verbleibende Lebensdauer.",
+        "panels": "Aus: ohne Hintergrund.",
+        "modes": "Standard: Saugen, Wischen nach dem Saugen, Saugen und Wischen.",
+        "modes_item": {
+          "value": "Wert der Modus-Entität."
+        },
+        "suction_levels_item": {
+          "value": "Wert der Saugstufen-Entität."
+        },
+        "boost": "Nur wenn der Schalter existiert.",
+        "boost_name": "Standard: Max+.",
+        "maintenance_item": {
+          "key": "Passt zu den Attributen <Schlüssel>_left und <Schlüssel>_time_left, z.B. main_brush.",
+          "due": "Hinweis, wenn das Teil fällig ist."
+        },
+        "actions": "Knöpfe der Station. Standard: Mopp waschen, trocknen, Station reinigen, Behälter leeren.",
+        "sections": {
+          "entities": "Nur nötig, wenn eine Entität anders heisst als vom Präfix abgeleitet.",
+          "wear": "Standard: Hauptbürste, Seitenbürste, Filter, Sensoren."
+        }
+      },
+      "panels": "Spalten als Panels",
+      "modes": "Modi",
+      "modes_item": {
+        "value": "Wert"
+      },
+      "suction_levels": "Saugstufen",
+      "suction_levels_item": {
+        "value": "Wert"
+      },
+      "boost_name": "Beschriftung Max+",
+      "maintenance": "Wartungsteile",
+      "maintenance_item": {
+        "key": "Schlüssel",
+        "due": "Text bei fällig",
+        "reset": "Zurücksetzen-Knopf"
+      },
+      "actions": "Stations-Aktionen",
+      "cleaning_title": "Titel Reinigung",
+      "presets_title": "Titel Kurzwahl",
+      "station_title": "Titel Station",
+      "mode_entity": "Modus",
+      "suction_entity": "Saugstufe",
+      "boost_entity": "Max+",
+      "history_entity": "Verlauf",
+      "error_entity": "Fehler",
+      "drying_left_entity": "Restzeit Trocknen",
+      "sections": {
+        "actions": "Stations-Aktionen",
+        "suction": "Saugstufe",
+        "titles": "Überschriften",
+        "wear": "Wartung",
+        "entities": "Entitäten"
+      }
     }
   },
   "summary": {
@@ -495,10 +843,95 @@
     "editor": {
       "clock": "Uhr anzeigen",
       "greeting": "Begrüssung anzeigen",
-      "calm_text": "Text ohne Meldungen (Standard: Alles ruhig.)",
+      "calm_text": "Text ohne Meldungen",
       "and_word": "Wort für «und»",
-      "items": "Einträge (YAML)",
-      "hold_action": "Aktion beim Halten"
+      "items": "Einträge",
+      "hold_action": "Aktion beim Halten",
+      "helper": {
+        "calm_text": "Standard: «Alles ruhig.»",
+        "and_word": "Vor dem letzten Satzteil. Standard: und.",
+        "items": "Jeder Eintrag ergibt einen Satzteil, solange seine Bedingung zutrifft.",
+        "hold_action": "z.B. um einen Kiosk-Modus umzuschalten.",
+        "items_item": {
+          "name": "Nur für die Liste im Editor.",
+          "entity": "Ihr Zustand entscheidet und füllt {value}.",
+          "text": "Teile in [Klammern] werden hervorgehoben; {icon} fügt das Icon ein. Bei Abfuhr: {names} und {when}.",
+          "show": "Ohne Angabe immer, ausser der Eintrag hat eine Meldung.",
+          "alert": "Meldungen bilden den ersten Satz in Akzentfarbe.",
+          "alert_text": "Standard: der Text.",
+          "levels": "Die erste passende Stufe gewinnt.",
+          "pickup": "Ergibt «[Papier] wird morgen abgeholt».",
+          "line": "Ab 2 beginnt der Eintrag auf einer eigenen Zeile.",
+          "color": "accent, success, danger oder eine CSS-Farbe."
+        },
+        "levels_item": {
+          "alert": "Aus: die Stufe ist ein normaler Satzteil."
+        },
+        "show_item": {
+          "always": "Auch ohne Bedingung."
+        },
+        "alert_item": {
+          "mode": "Immer und Nie ersetzen die Bedingung."
+        },
+        "pickup_item": {
+          "days": "Standard: 1 (heute und morgen).",
+          "drop_after": "HH:MM, Standard 12:00.",
+          "names": "Standard: Text des Termins.",
+          "when": "z.B. 0 = heute, 1 = morgen."
+        }
+      },
+      "alertModes": {
+        "condition": "Nach Bedingung",
+        "always": "Immer",
+        "never": "Nie"
+      },
+      "items_item": {
+        "show": "Anzeigen wenn",
+        "alert": "Meldung wenn",
+        "pickup": "Abfuhr",
+        "text": "Text",
+        "text_one": "Text bei 1",
+        "alert_text": "Text der Meldung",
+        "alert_text_one": "Text der Meldung bei 1",
+        "levels": "Stufen",
+        "line": "Zeile",
+        "navigation_path": "Ziel beim Antippen",
+        "more_info": "More-Info beim Antippen",
+        "tap_action": "Aktion beim Antippen"
+      },
+      "levels_item": {
+        "above": "Über",
+        "below": "Unter",
+        "state": "Zustand",
+        "text": "Text",
+        "alert": "Als Meldung"
+      },
+      "names_item": {
+        "entity": "Kalender"
+      },
+      "when_item": {
+        "days": "Tage voraus",
+        "word": "Wort"
+      },
+      "show_item": {
+        "always": "Immer anzeigen",
+        "above": "Über",
+        "below": "Unter",
+        "state": "Zustand"
+      },
+      "alert_item": {
+        "mode": "Meldung",
+        "above": "Über",
+        "below": "Unter",
+        "state": "Zustand"
+      },
+      "pickup_item": {
+        "calendars": "Abfuhr-Kalender",
+        "days": "Tage voraus",
+        "drop_after": "Heute erledigt ab",
+        "names": "Namen",
+        "when": "Wörter pro Tag"
+      }
     }
   },
   "shopping": {
@@ -520,13 +953,36 @@
     "synced": "synchronisiert",
     "error": "Fehler",
     "editor": {
-      "entity": "Einkaufsliste (Todo)",
+      "entity": "Einkaufsliste",
       "list_title": "Titel der Liste",
       "quick_title": "Titel der Schnellwahl",
       "placeholder": "Platzhalter der Eingabe",
       "empty_text": "Text bei leerer Liste",
       "panels": "Spalten als Panels",
-      "groups": "Schnellwahl-Gruppen (YAML)"
+      "groups": "Schnellwahl-Gruppen",
+      "sections": {
+        "texts": "Texte"
+      },
+      "helper": {
+        "entity": "Todo-Entität.",
+        "groups": "Gruppen der Schnellwahl.",
+        "panels": "Aus: ohne Hintergrund.",
+        "groups_item": {
+          "wide": "Sonst teilen sich zwei Gruppen auf breiten Bildschirmen eine Zeile."
+        },
+        "items_item": {
+          "variants": "Auswahl von Art oder Menge nach dem Hinzufügen, z.B. 6, 10, 12.",
+          "description": "Macht daraus ein eigenes Produkt; schliesst Varianten aus."
+        }
+      },
+      "groups_item": {
+        "wide": "Über die ganze Breite",
+        "items": "Produkte"
+      },
+      "items_item": {
+        "variants": "Varianten",
+        "description": "Feste Beschreibung"
+      }
     }
   },
   "battery": {
@@ -549,44 +1005,161 @@
       "exclude_label": "Label zum Ausschliessen",
       "exclude": "Weitere Sensoren ausschliessen",
       "collapsed": "«In Ordnung» zugeklappt",
-      "names": "Anzeigenamen (YAML)"
+      "names": "Anzeigenamen",
+      "names_item": {
+        "entity": "Sensor"
+      },
+      "sections": {
+        "excluded": "Ausschliessen"
+      },
+      "helper": {
+        "names": "Standard: Name des Geräts.",
+        "exclude_label": "Sensoren mit diesem Label werden ausgelassen."
+      }
     }
   },
   "legend": {
     "editor": {
-      "scales": "Farbskalen (YAML)",
-      "items": "Einträge (YAML)"
+      "scales": "Farbskalen",
+      "items": "Einträge",
+      "items_item": {
+        "opacity": "Deckkraft"
+      },
+      "helper": {
+        "scales": "Nebeneinander auf breiten Panels, sonst untereinander.",
+        "items_item": {
+          "color": "Standard: Akzentfarbe.",
+          "opacity": "0 bis 1."
+        },
+        "scales_item": {
+          "unit": "Gedämpft nach dem Namen.",
+          "stops": "Gleiche Werte wie die color_thresholds des Diagramms.",
+          "min": "Standard: erste Farbstufe.",
+          "max": "Standard: letzte Farbstufe.",
+          "ticks": "Werte unter dem Balken. Standard: die Werte der Farbstufen.",
+          "opacity": "0 bis 1, für den ganzen Balken."
+        }
+      },
+      "scales_item": {
+        "unit": "Einheit",
+        "stops": "Farbstufen",
+        "min": "Minimum",
+        "max": "Maximum",
+        "ticks": "Beschriftungen",
+        "opacity": "Deckkraft"
+      },
+      "stops_item": {
+        "value": "Wert",
+        "color": "Farbe"
+      }
     }
   },
   "timeline": {
     "period": "Zeitraum {span} · Balken antippen für Details",
     "loading": "Verlauf wird geladen …",
     "editor": {
-      "entities": "Entitäten (Liste: entity, name, color, state_colors, ignore_states)",
-      "default_interval": "Zeitraum zu Beginn (z.B. 4h)",
-      "bridge": "Unterbrüche überbrücken bis (z.B. 5m)",
-      "intervals": "Zeiträume der Auswahl (Liste, z.B. 4h, 24h, 7d)",
-      "ignore_states": "Weitere Zustände ohne Balken (Liste)",
+      "entities": "Entitäten",
+      "default_interval": "Zeitraum zu Beginn",
+      "bridge": "Unterbrüche überbrücken bis",
+      "intervals": "Zeiträume der Auswahl",
+      "ignore_states": "Weitere Zustände ohne Balken",
       "show_picker": "Zeitraum-Auswahl anzeigen",
-      "show_total": "Summe pro Zeile anzeigen"
+      "show_total": "Summe pro Zeile anzeigen",
+      "entities_item": {
+        "ignore_states": "Zustände ohne Balken",
+        "state_colors": "Farben einzelner Zustände"
+      },
+      "sections": {
+        "period": "Zeitraum",
+        "bars": "Balken"
+      },
+      "helper": {
+        "entities_item": {
+          "name": "Standard: Name der Entität.",
+          "color": "Farbe der Balken. Standard: Akzentfarbe.",
+          "ignore_states": "Zusätzlich für diese Zeile.",
+          "state_colors": "Farbe pro Zustand, z.B. Plex."
+        },
+        "default_interval": "z.B. 4h. Standard: der erste Zeitraum.",
+        "bridge": "z.B. 30s, 5m, 1h; 0m schaltet es aus.",
+        "intervals": "z.B. 4h, 24h, 7d.",
+        "ignore_states": "Zusätzlich zu unknown, unavailable, off, none, idle, standby.",
+        "state_colors_item": {
+          "color": "z.B. #e5a00d."
+        }
+      },
+      "state_colors_item": {
+        "state": "Zustand",
+        "color": "Farbe"
+      }
     }
   },
   "value": {
     "editor": {
       "entity": "Entität",
-      "name": "Name (Standard: Name der Entität)",
-      "decimals": "Nachkommastellen (Standard: Anzeigegenauigkeit der Entität)",
-      "unit": "Einheit (Standard: Einheit der Entität)",
-      "icon": "Icon oben rechts",
+      "name": "Name",
+      "decimals": "Nachkommastellen",
+      "unit": "Einheit",
+      "icon": "Icon",
       "show_icon": "Icon der Entität anzeigen",
-      "secondary_entity": "Zweiter Wert rechts",
-      "secondary_decimals": "Nachkommastellen zweiter Wert",
-      "secondary_unit": "Einheit zweiter Wert",
-      "secondary_icon": "Icon vor dem zweiten Wert",
+      "secondary_entity": "Entität",
+      "secondary_decimals": "Nachkommastellen",
+      "secondary_unit": "Einheit",
+      "secondary_icon": "Icon",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen",
-      "layout": "Darstellung"
+      "layout": "Darstellung",
+      "sections": {
+        "value_display": "Wert",
+        "secondary": "Zweiter Wert"
+      },
+      "helper": {
+        "name": "Standard: Name der Entität.",
+        "decimals": "Standard: Anzeigegenauigkeit der Entität.",
+        "unit": "Standard: Einheit der Entität.",
+        "icon": "Kachel: Wasserzeichen oben rechts. Zeile: links, Standard Icon der Entität.",
+        "show_icon": "Wenn kein Icon gesetzt ist.",
+        "secondary_entity": "Kachel: rechts vom Wert. Zeile: kleine Zeile unter dem Namen."
+      }
+    }
+  },
+  "editor": {
+    "sections": {
+      "actions": "Aktionen"
+    },
+    "tap_action": "Aktion beim Tippen",
+    "hold_action": "Aktion beim Halten",
+    "double_tap_action": "Aktion beim Doppeltippen",
+    "condition": {
+      "entity": "Entität",
+      "above": "Über",
+      "below": "Unter",
+      "state": "Zustand"
+    },
+    "item": {
+      "entity": "Entität",
+      "name": "Name",
+      "icon": "Icon",
+      "color": "Farbe",
+      "label": "Bezeichnung"
+    },
+    "helper": {
+      "condition": {
+        "entity": "Entität, deren Zustand geprüft wird.",
+        "state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
+      }
+    },
+    "conditionLabel": {
+      "above": "über {value}",
+      "below": "unter {value}",
+      "state": "Zustand {value}",
+      "always": "immer",
+      "never": "nie"
+    },
+    "layouts": {
+      "row": "Zeile",
+      "tile": "Kachel"
     }
   }
 }

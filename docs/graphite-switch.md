@@ -87,4 +87,4 @@ The row uses the same variables as [graphite-status](graphite-status.md); the to
 
 ## Editor
 
-Layout first; the row-only fields (since line, attribute, details) are only shown with `layout: row`.
+Layout first; the row-only sections (second line, detail values) are only shown with `layout: row`.

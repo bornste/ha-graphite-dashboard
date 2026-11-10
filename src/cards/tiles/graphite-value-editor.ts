@@ -1,6 +1,6 @@
 // Visual editor of graphite-value (layout first; the watermark switch only for the tile).
 import { GraphiteFormEditor } from "../../core/form-editor";
-import { layoutField, layoutOf } from "../../core/layout";
+import { layoutOf } from "../../core/layout";
 
 export class GraphiteValueEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
@@ -14,39 +14,30 @@ export class GraphiteValueEditor extends GraphiteFormEditor {
   protected schema(): unknown[] {
     // the watermark switch only applies to the tile; the row always shows an icon
     const isTile = layoutOf(this.config, "tile") === "tile";
+    const decimals = { number: { mode: "box", min: 0, max: 4 } };
     return [
-      layoutField(),
+      this.layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+      ),
+      ...(isTile ? [{ name: "show_icon", selector: { boolean: {} } }] : []),
+      this.section("value_display", [
+        this.grid(
+          { name: "decimals", selector: decimals },
           { name: "unit", selector: { text: {} } },
-        ],
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-          ...(isTile ? [{ name: "show_icon", selector: { boolean: {} } }] : []),
-        ],
-      },
-      { name: "secondary_entity", selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+        ),
+      ]),
+      this.section("secondary", [
+        { name: "secondary_entity", selector: { entity: {} } },
+        this.grid(
+          { name: "secondary_decimals", selector: decimals },
           { name: "secondary_unit", selector: { text: {} } },
           { name: "secondary_icon", selector: { icon: {} } },
-        ],
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+        ),
+      ]),
+      this.actionsSection(),
     ];
   }
 

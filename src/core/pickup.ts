@@ -81,3 +81,32 @@ export function nextPickup(hass: HomeAssistant, entityId: string, lookaheadDays:
   }
   return next;
 }
+
+// pickup of graphite-summary: calendar entities, phrase while a collection is due within "days"
+export interface SummaryPickup {
+  calendars: string[];
+  days?: number;
+  drop_after?: string;
+  names?: Record<string, string>;
+  when?: Record<number, string>;
+}
+
+// item of graphite-summary as far as the pickup is concerned
+export interface PickupItem {
+  pickup?: SummaryPickup | string[];
+  days?: number;
+  drop_after?: string;
+  names?: Record<string, string>;
+  when?: Record<number, string>;
+}
+
+// pickup options of an item: {calendars, days, ...} or the older form (a list of calendars with
+// days, drop_after, names and when on the item itself)
+export function pickupOf(item: PickupItem): SummaryPickup | undefined {
+  const pickup = item.pickup;
+  if (Array.isArray(pickup)) {
+    return { calendars: pickup, days: item.days, drop_after: item.drop_after, names: item.names, when: item.when };
+  }
+  if (pickup && typeof pickup === "object" && Array.isArray(pickup.calendars)) return pickup;
+  return undefined;
+}

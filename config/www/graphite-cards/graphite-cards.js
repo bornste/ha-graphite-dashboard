@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.39.1";
+var version = "0.45.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -568,20 +568,73 @@ var de_default = {
   },
   panel: {
     editor: {
+      header: "Kopf",
       title: "Titel",
-      info: "Status nach dem Titel (Text oder Jinja-Template)",
-      info_alert: "Status in Akzentfarbe, wenn (YAML: entity, above, below, state)",
-      chips: "Werte rechts als Chips (YAML-Liste: entity, label, unit, decimals, muted, alert, tap_action)",
+      info: "Status",
+      info_alert: "Status hervorheben",
+      chipsSection: "Chips",
+      buttonsSection: "Kn\xF6pfe",
+      layoutSection: "Layout",
       layout: "Anordnung",
       layoutVertical: "Vertikal",
       layoutHorizontal: "Horizontal",
       layoutGrid: "Raster",
-      columns: "Spalten (nur Raster)",
-      gap: "Abstand zwischen Karten (z.B. 8px)",
-      padding: "Innenabstand (z.B. 16px)",
-      min_column_width: "Mindestbreite pro Spalte (nur Raster, z.B. 380px \u2013 bricht auf schmalen Bildschirmen um)",
-      frame: "Panel-Fl\xE4che anzeigen (aus = nur Layout-Container)",
-      buttons: "Kn\xF6pfe rechts im Kopf (Liste: icon, entity, name, active, tap_action)"
+      columns: "Spalten",
+      min_column_width: "Mindestbreite pro Spalte",
+      gap: "Abstand",
+      padding: "Innenabstand",
+      frame: "Panel-Fl\xE4che anzeigen",
+      condition: {
+        entity: "Entit\xE4t",
+        above: "\xDCber",
+        below: "Unter",
+        state: "Zustand"
+      },
+      item: {
+        entity: "Entit\xE4t",
+        label: "Bezeichnung",
+        unit: "Einheit",
+        decimals: "Nachkommastellen",
+        muted: "Ged\xE4mpft",
+        tap_action: "Aktion beim Tippen",
+        name: "Name",
+        icon: "Icon",
+        alert_above: "Hervorheben \xFCber",
+        alert_below: "Hervorheben unter",
+        alert_state: "Hervorheben bei Zustand",
+        active_entity: "Aktiv: Entit\xE4t",
+        active_above: "Aktiv \xFCber",
+        active_below: "Aktiv unter",
+        active_state: "Aktiv bei Zustand"
+      },
+      helper: {
+        info: "Steht nach dem Titel. Text oder Jinja-Template.",
+        info_alert: "Zeigt den Status in Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
+        chipsSection: "Werte rechts im Kopf, in der Reihenfolge der Liste.",
+        buttonsSection: "Kn\xF6pfe ganz rechts im Kopf, z.B. \xABLicht aus\xBB oder Einstellungen.",
+        columns: "Standard: 2",
+        min_column_width: "z.B. 380px. Bricht auf schmalen Bildschirmen um und ersetzt \xABSpalten\xBB.",
+        gap: "Zwischen den Karten, z.B. 8px.",
+        padding: "z.B. 16px.",
+        frame: "Aus: nur Layout-Container ohne Fl\xE4che, Innenabstand und Radius.",
+        condition: {
+          entity: "Entit\xE4t, deren Zustand gepr\xFCft wird.",
+          state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
+        },
+        item: {
+          label: "Ged\xE4mpfter Text vor dem Wert, z.B. CO\u2082.",
+          unit: "Standard: Einheit der Entit\xE4t.",
+          decimals: "Standard: Anzeigegenauigkeit der Entit\xE4t.",
+          muted: "Wert in der sekund\xE4ren Textfarbe.",
+          tap_action: "Standard: More-Info. Bei Kn\xF6pfen mit Szene: Szene aktivieren.",
+          name: "Tooltip und Text f\xFCr Screenreader. Standard: Name der Entit\xE4t.",
+          icon: "Standard: Icon der Entit\xE4t.",
+          alert_above: "Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
+          alert_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen.",
+          active_entity: "Hebt den Knopf hervor, solange alle gesetzten Bedingungen dieser Entit\xE4t zutreffen.",
+          active_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
+        }
+      }
     }
   },
   rows: {
@@ -594,29 +647,35 @@ var de_default = {
     since: "{state} {since}",
     editor: {
       entity: "Entit\xE4t",
-      name: "Name (Standard: Name der Entit\xE4t)",
-      icon: "Icon (Standard: Icon der Entit\xE4t)",
+      name: "Name",
+      icon: "Icon",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen",
-      since_line: "Zeile \xABseit \u2026\xBB unter dem Namen anzeigen",
-      since_attribute: "Zeitstempel-Attribut statt letzter \xC4nderung (z.B. last_triggered)",
-      since_attribute_label: "Wort vor der Zeit (Standard: ausgel\xF6st)",
-      detail_entities: "Werte statt der Zeile \xABseit \u2026\xBB, solange eingeschaltet (YAML-Liste: entity, label)",
-      online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
-      wall_switch: "Wandschalter-Lampe (nicht erreichbar = aus)",
-      layout: "Darstellung"
-    }
-  },
-  tiles: {
-    editor: {
-      entity: "Entit\xE4t",
-      name: "Name (Standard: Name der Entit\xE4t)",
-      icon: "Icon (Standard: Icon der Entit\xE4t)",
-      online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
-      tap_action: "Aktion beim Tippen",
-      hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      since_line: "Zeile \xABseit \u2026\xBB anzeigen",
+      since_attribute: "Zeitstempel-Attribut",
+      since_attribute_label: "Wort vor der Zeit",
+      detail_entities: "Werte statt \xABseit \u2026\xBB",
+      online_entity: "Online-Entit\xE4t",
+      wall_switch: "Lampe am Wandschalter",
+      layout: "Darstellung",
+      sections: {
+        since: "Zweite Zeile",
+        availability: "Erreichbarkeit"
+      },
+      helper: {
+        name: "Standard: Name der Entit\xE4t.",
+        icon: "Standard: Icon der Entit\xE4t.",
+        since_line: "Unter dem Namen, z.B. \xABoffen seit 12 Min.\xBB. Bei Messwerten standardm\xE4ssig aus.",
+        since_attribute: "Statt der letzten \xC4nderung, z.B. last_triggered.",
+        since_attribute_label: "Standard: ausgel\xF6st.",
+        detail_entities: "Solange die Entit\xE4t eingeschaltet ist, zeigt die Zeile diese Werte, getrennt durch \xAB \xB7 \xBB.",
+        detail_entities_item: {
+          label: "Text vor dem Wert, z.B. CPU."
+        },
+        online_entity: "Das Icon pulsiert, bis das Ger\xE4t erreichbar ist.",
+        wall_switch: "Nicht erreichbar z\xE4hlt als aus."
+      }
     }
   },
   meter: {
@@ -625,58 +684,104 @@ var de_default = {
     periodHours: "{count} h",
     periodDays: "{count} Tage",
     editor: {
-      entity: "Entit\xE4t (Messwert)",
-      name: "Name (Standard: Name der Entit\xE4t)",
-      style: "Darstellung (gradient = Farbskala mit Nadel, level = F\xFCllbalken, change = Ver\xE4nderung zur Referenz)",
+      entity: "Entit\xE4t",
+      name: "Name",
+      style: "Darstellung",
       min: "Minimum",
       max: "Maximum",
-      decimals: "Nachkommastellen (Standard: Anzeigegenauigkeit der Entit\xE4t, sonst 1)",
-      unit: "Einheit (Standard: Einheit der Entit\xE4t)",
-      colors: 'Farbstufen (YAML: Wert: Farbe, z.B. 24: "#6fbf5a")',
-      icon: "Icon oben rechts",
+      decimals: "Nachkommastellen",
+      unit: "Einheit",
+      colors: "Farbstufen",
+      icon: "Icon",
       show_icon: "Icon der Entit\xE4t anzeigen",
-      secondary_entity: "Zweiter Wert rechts (z.B. Luftfeuchtigkeit)",
-      secondary_decimals: "Nachkommastellen zweiter Wert",
-      secondary_unit: "Einheit zweiter Wert",
-      secondary_icon: "Icon vor dem zweiten Wert",
+      secondary_entity: "Entit\xE4t",
+      secondary_decimals: "Nachkommastellen",
+      secondary_unit: "Einheit",
+      secondary_icon: "Icon",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen",
-      color: "Feste Farbe (statt Farbstufen)",
-      low: "Bald leer unter (f\xFCr Verbrauchsmaterial, zeigt den Zustand)",
+      color: "Feste Farbe",
+      low: "Bald leer unter",
       layout: "Darstellung",
-      reference: "Referenz (Kaufpreis, Entit\xE4t oder Zeitraum wie 24h, 7d)",
-      reference_name: "Text zur Referenz (Standard: Kauf \u2026 / 24 h)",
-      change_attribute: "Attribut mit Ver\xE4nderung in % (z.B. 24h_change)",
-      scale: "Halber Balken entspricht (% bzw. Einheit)",
-      change_decimals: "Nachkommastellen der %",
+      reference: "Referenz",
+      reference_name: "Text zur Referenz",
+      change_attribute: "Attribut mit Ver\xE4nderung in %",
+      scale: "Halber Balken entspricht",
+      change_decimals: "Nachkommastellen der Ver\xE4nderung",
       change_mode: "Abweichung als",
       changeModes: {
         percent: "Prozent",
         absolute: "Differenz in der Einheit"
       },
-      invert: "Mehr ist schlecht (Farben tauschen)"
+      invert: "Mehr ist schlecht",
+      styles: {
+        gradient: "Farbskala mit Nadel",
+        level: "F\xFCllbalken",
+        change: "Ver\xE4nderung zur Referenz"
+      },
+      colors_item: {
+        value: "Ab Wert",
+        color: "Farbe"
+      },
+      sections: {
+        reference_change: "Referenz und Ver\xE4nderung",
+        value_display: "Wert und Bereich",
+        bar_colors: "Farben",
+        secondary: "Zweiter Wert"
+      },
+      helper: {
+        entity: "Numerischer Sensor.",
+        name: "Standard: Name der Entit\xE4t.",
+        decimals: "Standard: Anzeigegenauigkeit der Entit\xE4t, sonst 1.",
+        unit: "Standard: Einheit der Entit\xE4t.",
+        colors_item: {
+          value: "Die Farbe gilt ab diesem Wert.",
+          color: "z.B. #6fbf5a."
+        },
+        icon: "Wasserzeichen oben rechts.",
+        show_icon: "Wenn kein Icon gesetzt ist.",
+        secondary_entity: "Kachel: rechts vom Wert, z.B. Luftfeuchtigkeit. Zeile: als Statuszeile.",
+        color: "Eine Farbe f\xFCr den ganzen Balken. Wird ignoriert, wenn Farbstufen gesetzt sind.",
+        low: "F\xFCr Verbrauchsmaterial: zeigt \xABbald leer\xBB bzw. \xABleer\xBB.",
+        reference: "Kaufpreis, Entit\xE4t oder Zeitraum wie 24h, 7d.",
+        reference_name: "Standard: \xABKauf \u2026\xBB bzw. \xAB24 h\xBB.",
+        change_attribute: "z.B. 24h_change. Hat Vorrang vor der berechneten Ver\xE4nderung.",
+        scale: "In % bzw. in der Einheit. Standard: 20.",
+        invert: "Tauscht die Farben: Zunahme rot, Abnahme gr\xFCn."
+      }
     }
   },
   effect: {
     editor: {
       name: "Name",
-      colors: "Farben des Verlaufs (z.B. #ff7a3d)",
-      entity: "Entit\xE4t (f\xFCr das Halten: More-Info, z.B. die Lampe)",
-      tap_action: "Aktion beim Tippen (z.B. Effekt setzen)",
+      colors: "Farben des Verlaufs",
+      entity: "Entit\xE4t",
+      tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      helper: {
+        colors: "z.B. #ff7a3d.",
+        entity: "F\xFCr More-Info beim Halten, z.B. die Lampe.",
+        tap_action: "z.B. den Effekt setzen."
+      }
     }
   },
   image: {
     editor: {
-      entity: "Entit\xE4t (z.B. das Skript, das gestartet wird)",
-      name: "Name (Beschriftung ohne Bild, sonst nur f\xFCr Screenreader)",
-      image: "Bild (/local/... oder media-source://...)",
-      busy: "L\xE4uft-Anzeige (T\xF6nung und Kreisel, solange die Entit\xE4t an ist)",
+      entity: "Entit\xE4t",
+      name: "Name",
+      image: "Bild",
+      busy: "L\xE4uft-Anzeige",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      helper: {
+        entity: "z.B. das Skript, das gestartet wird.",
+        name: "Beschriftung ohne Bild, sonst nur f\xFCr Screenreader.",
+        image: "/local/... oder media-source://...",
+        busy: "T\xF6nung und Kreisel, solange die Entit\xE4t an ist."
+      }
     }
   },
   stopwatch: {
@@ -686,18 +791,49 @@ var de_default = {
     minutes: "{minutes} Min.",
     hours: "{hours}:{minutes} h",
     editor: {
-      entity: "Stoppuhr-Sensor (Stopwatch Plus)",
-      name: "Name (Standard: Name der Entit\xE4t)",
-      icon: "Icon (Standard: Icon der Entit\xE4t)",
-      icon_position: "Icon-Position (watermark = oben rechts, left = links wie bei den Zeilen)",
-      color: "Farbe des Streifens oben (ohne Farbe kein Streifen)",
-      picture_entity: "Bild-Entit\xE4t (z.B. Gamerpic, rund links)",
-      limit: "Tageslimit (Minuten oder Entit\xE4t; YAML pro Tag: weekday, weekend, mon \u2026 sun)",
-      warn_before: "Hinweis so viele Minuten vor dem Limit (Standard 10)",
-      day_start: "Tagesbeginn (Standard 03:00)",
+      entity: "Stoppuhr-Sensor",
+      name: "Name",
+      icon: "Icon",
+      icon_position: "Icon-Position",
+      color: "Farbe des Streifens",
+      picture_entity: "Bild-Entit\xE4t",
+      warn_before: "Hinweis vor dem Limit",
+      day_start: "Tagesbeginn",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      iconPositions: {
+        watermark: "Wasserzeichen oben rechts",
+        left: "Links wie bei den Zeilen"
+      },
+      sections: {
+        appearance: "Darstellung",
+        daily_limit: "Tageslimit",
+        limit_days: "Pro Tag"
+      },
+      helper: {
+        entity: "Sensor der Integration Stopwatch Plus.",
+        name: "Standard: Name der Entit\xE4t.",
+        icon: "Standard: Icon der Entit\xE4t.",
+        color: "Oben. Ohne Farbe kein Streifen.",
+        picture_entity: "z.B. Gamerpic, rund links.",
+        warn_before: "In Minuten. Standard: 10.",
+        day_start: "HH:MM. Standard: 03:00.",
+        limit_all: "Minuten oder eine Entit\xE4t, z.B. 90 oder input_number.limit.",
+        sections: {
+          limit_days: "\xDCberschreibt \xABAlle Tage\xBB. Ein einzelner Tag hat Vorrang vor Werktage und Wochenende."
+        }
+      },
+      limit_all: "Alle Tage",
+      limit_weekday: "Werktage",
+      limit_weekend: "Wochenende",
+      limit_mon: "Montag",
+      limit_tue: "Dienstag",
+      limit_wed: "Mittwoch",
+      limit_thu: "Donnerstag",
+      limit_fri: "Freitag",
+      limit_sat: "Samstag",
+      limit_sun: "Sonntag"
     }
   },
   todo: {
@@ -706,16 +842,28 @@ var de_default = {
     unitOne: "Artikel",
     editor: {
       entity: "Todo-Liste",
-      name: "Name (Standard: Name der Liste)",
-      icon: "Icon oben rechts",
-      unit: "Einheit (Standard: Artikel)",
-      unit_one: "Einheit bei 1 (Standard: wie Einheit)",
-      empty_text: "Wert bei leerer Liste (Standard: Leer)",
-      color: "Farbe des Streifens oben (ohne Farbe kein Streifen)",
+      name: "Name",
+      icon: "Icon",
+      unit: "Einheit",
+      unit_one: "Einheit bei 1",
+      empty_text: "Wert bei leerer Liste",
+      color: "Farbe des Streifens",
       preview: "Erste offene Eintr\xE4ge rechts anzeigen",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      sections: {
+        texts: "Texte",
+        appearance: "Darstellung"
+      },
+      helper: {
+        name: "Standard: Name der Liste.",
+        icon: "Wasserzeichen oben rechts.",
+        unit: "Standard: Artikel.",
+        unit_one: "Standard: wie Einheit.",
+        empty_text: "Standard: Leer.",
+        color: "Oben. Ohne Farbe kein Streifen."
+      }
     }
   },
   ink: {
@@ -728,13 +876,19 @@ var de_default = {
     processing: "Druckt",
     stopped: "Gestoppt",
     editor: {
-      entity: "Drucker-Entit\xE4t (Status, offline)",
-      name: "Name (Standard: Name der Entit\xE4t oder Drucker)",
-      cartridges: "F\xFCllstand-Sensoren der Patronen (%)",
-      low_level: "Bald leer unter (%, Standard 20)",
+      entity: "Drucker-Entit\xE4t",
+      name: "Name",
+      cartridges: "F\xFCllstand-Sensoren der Patronen",
+      low_level: "Bald leer unter",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      helper: {
+        entity: "F\xFCr Status und offline.",
+        name: "Standard: Name der Entit\xE4t oder \xABDrucker\xBB.",
+        cartridges: "Sensoren in %.",
+        low_level: "Standard: 20 %."
+      }
     }
   },
   pickup: {
@@ -746,14 +900,24 @@ var de_default = {
     inDays: "in {days} Tagen",
     editor: {
       entity: "Abfuhr-Kalender",
-      name: "Name (Standard: Termin oder Name des Kalenders)",
-      icon: "Icon oben rechts",
-      color: "Farbe des Streifens oben",
-      drop_after: "Abfuhr von heute gilt erledigt ab (HH:MM, Standard 12:00)",
-      lookahead_days: "Tage vorausschauen (Standard 40)",
+      name: "Name",
+      icon: "Icon",
+      color: "Farbe des Streifens",
+      drop_after: "Heute erledigt ab",
+      lookahead_days: "Tage vorausschauen",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      sections: {
+        dates: "Termine"
+      },
+      helper: {
+        name: "Standard: Termin oder Name des Kalenders.",
+        icon: "Wasserzeichen oben rechts.",
+        color: "Streifen oben.",
+        drop_after: "Die Abfuhr von heute gilt ab dieser Zeit als erledigt. HH:MM, Standard 12:00.",
+        lookahead_days: "Standard: 40."
+      }
     }
   },
   level: {
@@ -786,7 +950,7 @@ var de_default = {
     noneValue: "keine",
     daysShort: "{days} Tage",
     editor: {
-      calendars: "Kalender (Liste: entity, name, color, icon, highlight)",
+      calendars: "Kalender",
       layout: "Layout",
       layouts: {
         list: "Liste",
@@ -807,12 +971,12 @@ var de_default = {
         current: "Aktuelle Woche",
         next: "N\xE4chste Woche"
       },
-      week_rollover: "Wochenwechsel (z. B. sat 00:00)",
+      week_rollover: "Wochenwechsel",
       weekdays: "Mo\u2013Fr immer anzeigen",
-      title: "Titel (Woche: automatisch)",
+      title: "Titel",
       icon: "Symbol",
       highlight_name: "Name der Hervorhebungs-Kachel",
-      day_switch: "N\xE4chster Tag ab (z. B. 15:00)",
+      day_switch: "N\xE4chster Tag ab",
       max_items: "Max. Eintr\xE4ge",
       secondary: "Zweite Zeile",
       secondaries: {
@@ -822,28 +986,67 @@ var de_default = {
         description: "Beschreibung",
         none: "Keine"
       },
-      highlight_days: "Hervorheben bis (Tage voraus)",
+      highlight_days: "Hervorheben bis",
       show_past_today: "Heutige vergangene Eintr\xE4ge anzeigen",
-      rules: "Stichwort-Regeln (Liste: starts_with/contains, color, icon, highlight)",
+      rules: "Stichwort-Regeln",
       empty_text: "Text ohne Eintr\xE4ge",
       hide_empty: "Ohne Eintr\xE4ge ausblenden",
-      tap_action: "Aktion beim Tippen (More-Info = Details)",
-      hold_action: "Aktion beim Halten (auf den Kalender)"
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      calendars_item: {
+        highlight: "Hervorheben"
+      },
+      rules_item: {
+        starts_with: "Titel beginnt mit",
+        contains: "Titel enth\xE4lt",
+        contains_any: "Enth\xE4lt eines von",
+        contains_all: "Enth\xE4lt alle",
+        highlight: "Hervorheben",
+        name: "Name"
+      },
+      sections: {
+        tiles: "Kacheln",
+        display: "Darstellung"
+      },
+      helper: {
+        calendars_item: {
+          name: "F\xFCr die zweite Zeile. Standard: Name der Entit\xE4t.",
+          color: "Streifen und Icon. Standard: Akzentfarbe.",
+          icon: "Standard: Icon der Entit\xE4t.",
+          highlight: "Eintr\xE4ge bekommen die T\xF6nung und \xABin n Tagen\xBB."
+        },
+        week_rollover: "Ab dann gilt die n\xE4chste Woche als aktuelle, z.B. sat 00:00. Ohne Angabe: Montag 00:00.",
+        weekdays: "Leere Tage mit \xAB\u2013\xBB, das Wochenende nur mit Eintr\xE4gen.",
+        title: "Bei Zeitraum \xABWoche\xBB automatisch.",
+        icon: "Wasserzeichen der Tages-Kachel.",
+        highlight_name: "Standard: Pr\xFCfung.",
+        day_switch: "Ab dieser Zeit zeigt die Tages-Kachel den n\xE4chsten Tag, z.B. 15:00.",
+        max_items: "Der Rest erscheint als \xAB+ n weitere bis \u2026\xBB.",
+        highlight_days: "Tage voraus. Standard: 7.",
+        rules: "Die erste passende Regel \xFCberschreibt Farbe, Icon und Hervorhebung des Kalenders. Alle gesetzten Kriterien m\xFCssen zutreffen.",
+        rules_item: {
+          contains_any: "Der Titel enth\xE4lt mindestens eines der W\xF6rter.",
+          contains_all: "Der Titel enth\xE4lt alle W\xF6rter.",
+          name: "Nur f\xFCr die Liste im Editor."
+        },
+        tap_action: "More-Info \xF6ffnet die Details des Eintrags.",
+        hold_action: "Wird auf dem Kalender des Eintrags ausgef\xFChrt."
+      }
     }
   },
   slider: {
     editor: {
-      entity: "Entit\xE4t (number, input_number oder Licht)",
-      name: "Bezeichnung (Standard: Name der Entit\xE4t bzw. was gesteuert wird)",
+      entity: "Entit\xE4t",
+      name: "Bezeichnung",
       min: "Minimum",
       max: "Maximum",
-      step: "Schritt (Werte sind Vielfache davon)",
+      step: "Schritt",
       value_format: "Wertanzeige",
       valueFormat: {
         percent: "Prozent des Bereichs",
         state: "Wert der Entit\xE4t"
       },
-      attribute: "Steuert (nur Licht)",
+      attribute: "Steuert",
       allow_off: "Ganz links schaltet das Licht aus",
       attributes: {
         brightness: "Helligkeit",
@@ -852,20 +1055,34 @@ var de_default = {
         saturation: "S\xE4ttigung"
       },
       layout: "Darstellung",
-      icon: "Icon links (Zeile: Standard Icon der Entit\xE4t)",
+      icon: "Icon",
       layouts: {
-        inline: "Eingebettet (ohne Fl\xE4che, Bezeichnung \xFCber dem Regler)",
-        row: "Zeile (eigene Fl\xE4che wie die Status-Zeilen)"
+        inline: "Eingebettet",
+        row: "Zeile"
       },
       ticks: "Ticks unter der Linie",
-      major_every: "Lange Ticks alle (Standard: runder Wert)",
+      major_every: "Lange Ticks alle",
       tickModes: {
-        auto: "Automatisch (Schritte, sonst Viertel)",
+        auto: "Automatisch",
         steps: "Jeder Schritt",
         quarters: "Viertel",
         none: "Keine"
       },
-      tick_every: "Ticks alle (statt bei jedem Schritt)"
+      tick_every: "Ticks alle",
+      sections: {
+        range: "Bereich",
+        tick_marks: "Ticks"
+      },
+      helper: {
+        entity: "number, input_number oder Licht.",
+        name: "Standard: Name der Entit\xE4t bzw. was gesteuert wird.",
+        step: "Werte sind Vielfache davon.",
+        icon: "Links. In der Zeile Standard: Icon der Entit\xE4t.",
+        layout: "Eingebettet: ohne Fl\xE4che, Bezeichnung \xFCber dem Regler. Zeile: eigene Fl\xE4che wie die Status-Zeilen.",
+        ticks: "Automatisch: jeder Schritt, bei engen Schritten die Viertel.",
+        tick_every: "Statt bei jedem Schritt.",
+        major_every: "Standard: runder Wert."
+      }
     },
     brightness: "Helligkeit",
     color_temp: "Weisston",
@@ -875,11 +1092,11 @@ var de_default = {
   light: {
     editor: {
       entity: "Lampe",
-      name: "Name (Standard: Name der Entit\xE4t)",
+      name: "Name",
       icon: "Icon",
-      sliders: "Welche Regler (leer: Helligkeit, Weisston falls m\xF6glich)",
+      sliders: "Regler",
       allow_off: "Helligkeit ganz links schaltet aus",
-      wall_switch: "Wandschalter (statt Schalter)",
+      wall_switch: "Lampe am Wandschalter",
       since_line: "\xABseit\xBB-Zeile anzeigen",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
@@ -890,24 +1107,43 @@ var de_default = {
         hue: "Farbe",
         saturation: "S\xE4ttigung"
       },
-      unavailable_sliders: "Regler, wenn nicht erreichbar oder am Wandschalter aus",
+      unavailable_sliders: "Regler, wenn nicht erreichbar",
       unavailableSliders: {
-        show: "Gesperrt anzeigen (Layout bleibt)",
-        hide: "Ausblenden (nur der Kopf)"
+        show: "Gesperrt anzeigen",
+        hide: "Ausblenden"
       },
-      show_sliders: "Regler anzeigen"
+      show_sliders: "Regler anzeigen",
+      sections: {
+        slider_options: "Regler",
+        display: "Anzeige"
+      },
+      helper: {
+        name: "Standard: Name der Entit\xE4t.",
+        icon: "Standard: Icon der Entit\xE4t.",
+        sliders: "Leer: Helligkeit und, falls m\xF6glich, Weisston.",
+        wall_switch: "Wandschalter-Icon statt Schalter; nicht erreichbar z\xE4hlt als aus.",
+        unavailable_sliders: "Auch wenn am Wandschalter aus. Gesperrt: das Layout bleibt. Ausblenden: nur der Kopf."
+      }
     }
   },
   scene: {
     editor: {
-      entity: "Szene (oder andere Entit\xE4t)",
+      entity: "Szene",
       name: "Name",
-      icon: "Icon (Wasserzeichen)",
-      colors: 'Farben des Verlaufs (Liste, z.B. ["#f5c48a", "#e89a5c"])',
-      active: "Aktiv wenn (z.B. {entity: input_select.wohnzimmer_szenen, state: Relax})",
-      tap_action: "Aktion beim Tippen (Standard: Szene aktivieren)",
+      icon: "Icon",
+      colors: "Farben",
+      active: "Aktiv wenn",
+      tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen"
+      double_tap_action: "Aktion beim Doppeltippen",
+      helper: {
+        entity: "Oder eine andere Entit\xE4t.",
+        name: "Standard: Name der Entit\xE4t.",
+        icon: "Wasserzeichen unten rechts. Standard: Icon der Entit\xE4t.",
+        colors: "Streifen und Verlauf, z.B. #f5c48a.",
+        active: "F\xFCllt die Kachel, solange alle gesetzten Bedingungen zutreffen. Ohne Entit\xE4t wird der Zustand der Szene selbst gepr\xFCft.",
+        tap_action: "Standard: Szene aktivieren."
+      }
     }
   },
   nowPlaying: {
@@ -917,7 +1153,49 @@ var de_default = {
     paused: "pausiert",
     remaining: "noch {minutes} Min.",
     editor: {
-      sources: "Quellen in Reihenfolge der Priorit\xE4t (Liste: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
+      sources: "Quellen",
+      backdrop: "Cover als Hintergrund",
+      sources_item: {
+        name: "Bezeichnung",
+        states: "Zust\xE4nde \xABl\xE4uft\xBB",
+        requires: "M\xFCssen auch laufen",
+        title_entity: "Titel-Entit\xE4t",
+        image_entity: "Bild-Entit\xE4t",
+        subtitle: "Zweite Zeile",
+        fallback_title: "Ersatz-Titel",
+        fallback_subtitle: "Ersatz f\xFCr die zweite Zeile",
+        ignore_titles: "Titel ignorieren",
+        titles: "Lesbare Titel",
+        images: "Bilder"
+      },
+      helper: {
+        sources: "In der Reihenfolge der Priorit\xE4t: die erste laufende Quelle wird angezeigt.",
+        backdrop: "Unscharf und gedimmt \xFCber die ganze Karte.",
+        sources_item: {
+          name: "\xDCber dem Titel, z.B. XBOX. Standard: Name der Entit\xE4t.",
+          icon: "Wasserzeichen oben rechts.",
+          states: "Standard: on, playing, paused, buffering.",
+          requires: "z.B. die Konsole neben einem Profil-Sensor.",
+          title_entity: "Ihr Zustand ist der Titel. Sonst media_title, dann app_name.",
+          image_entity: "image.* oder ein Helfer mit Bildpfad.",
+          subtitle: "Aus Attributen der Titel-Entit\xE4t, z.B. \xAB{progress} abgeschlossen\xBB.",
+          fallback_title: "Wenn die Quelle ohne brauchbaren Titel l\xE4uft. Ohne Angabe wird sie \xFCbersprungen.",
+          ignore_titles: "Standard: off, standby, home, screensaver, unknown, unavailable.",
+          titles: "Lesbare Namen f\xFCr Rohtitel oder App-Namen, z.B. Home \u2192 Startbildschirm.",
+          images: "Bild pro Titel oder App-Name."
+        },
+        images_item: {
+          image: "z.B. /local/apps/netflix.png."
+        }
+      },
+      titles_item: {
+        title: "Rohtitel",
+        shown: "Anzeige"
+      },
+      images_item: {
+        title: "Titel oder App",
+        image: "Bild"
+      }
     }
   },
   vacuum: {
@@ -1021,12 +1299,82 @@ var de_default = {
         panel: "Panel"
       },
       name: "Name",
-      prefix: "Entit\xE4ts-Pr\xE4fix (optional)",
+      prefix: "Entit\xE4ts-Pr\xE4fix",
       navigation_path: "Ziel beim Antippen",
-      rooms: "R\xE4ume (YAML)",
-      presets: "Kurzwahl (YAML)",
+      rooms: "R\xE4ume",
+      presets: "Kurzwahl",
       maintenance_threshold: "Wartung f\xE4llig ab",
-      boost: "Max+ anzeigen"
+      boost: "Max+ anzeigen",
+      rooms_item: {
+        id: "Segment-ID"
+      },
+      presets_item: {
+        rooms: "R\xE4ume",
+        mode: "Modus",
+        suction: "Saugstufe"
+      },
+      helper: {
+        name: "Standard: aus der Entit\xE4ts-ID.",
+        prefix: "Pr\xE4fix der Entit\xE4ten der Integration. Standard: Objekt-ID der Entit\xE4t.",
+        navigation_path: "z.B. #robot.",
+        rooms: "Die IDs sind die Segment-IDs der Karte.",
+        presets_item: {
+          rooms: "Namen oder Segment-IDs."
+        },
+        maintenance_threshold: "Verbleibende Lebensdauer.",
+        panels: "Aus: ohne Hintergrund.",
+        modes: "Standard: Saugen, Wischen nach dem Saugen, Saugen und Wischen.",
+        modes_item: {
+          value: "Wert der Modus-Entit\xE4t."
+        },
+        suction_levels_item: {
+          value: "Wert der Saugstufen-Entit\xE4t."
+        },
+        boost: "Nur wenn der Schalter existiert.",
+        boost_name: "Standard: Max+.",
+        maintenance_item: {
+          key: "Passt zu den Attributen <Schl\xFCssel>_left und <Schl\xFCssel>_time_left, z.B. main_brush.",
+          due: "Hinweis, wenn das Teil f\xE4llig ist."
+        },
+        actions: "Kn\xF6pfe der Station. Standard: Mopp waschen, trocknen, Station reinigen, Beh\xE4lter leeren.",
+        sections: {
+          entities: "Nur n\xF6tig, wenn eine Entit\xE4t anders heisst als vom Pr\xE4fix abgeleitet.",
+          wear: "Standard: Hauptb\xFCrste, Seitenb\xFCrste, Filter, Sensoren."
+        }
+      },
+      panels: "Spalten als Panels",
+      modes: "Modi",
+      modes_item: {
+        value: "Wert"
+      },
+      suction_levels: "Saugstufen",
+      suction_levels_item: {
+        value: "Wert"
+      },
+      boost_name: "Beschriftung Max+",
+      maintenance: "Wartungsteile",
+      maintenance_item: {
+        key: "Schl\xFCssel",
+        due: "Text bei f\xE4llig",
+        reset: "Zur\xFCcksetzen-Knopf"
+      },
+      actions: "Stations-Aktionen",
+      cleaning_title: "Titel Reinigung",
+      presets_title: "Titel Kurzwahl",
+      station_title: "Titel Station",
+      mode_entity: "Modus",
+      suction_entity: "Saugstufe",
+      boost_entity: "Max+",
+      history_entity: "Verlauf",
+      error_entity: "Fehler",
+      drying_left_entity: "Restzeit Trocknen",
+      sections: {
+        actions: "Stations-Aktionen",
+        suction: "Saugstufe",
+        titles: "\xDCberschriften",
+        wear: "Wartung",
+        entities: "Entit\xE4ten"
+      }
     }
   },
   summary: {
@@ -1049,10 +1397,95 @@ var de_default = {
     editor: {
       clock: "Uhr anzeigen",
       greeting: "Begr\xFCssung anzeigen",
-      calm_text: "Text ohne Meldungen (Standard: Alles ruhig.)",
+      calm_text: "Text ohne Meldungen",
       and_word: "Wort f\xFCr \xABund\xBB",
-      items: "Eintr\xE4ge (YAML)",
-      hold_action: "Aktion beim Halten"
+      items: "Eintr\xE4ge",
+      hold_action: "Aktion beim Halten",
+      helper: {
+        calm_text: "Standard: \xABAlles ruhig.\xBB",
+        and_word: "Vor dem letzten Satzteil. Standard: und.",
+        items: "Jeder Eintrag ergibt einen Satzteil, solange seine Bedingung zutrifft.",
+        hold_action: "z.B. um einen Kiosk-Modus umzuschalten.",
+        items_item: {
+          name: "Nur f\xFCr die Liste im Editor.",
+          entity: "Ihr Zustand entscheidet und f\xFCllt {value}.",
+          text: "Teile in [Klammern] werden hervorgehoben; {icon} f\xFCgt das Icon ein. Bei Abfuhr: {names} und {when}.",
+          show: "Ohne Angabe immer, ausser der Eintrag hat eine Meldung.",
+          alert: "Meldungen bilden den ersten Satz in Akzentfarbe.",
+          alert_text: "Standard: der Text.",
+          levels: "Die erste passende Stufe gewinnt.",
+          pickup: "Ergibt \xAB[Papier] wird morgen abgeholt\xBB.",
+          line: "Ab 2 beginnt der Eintrag auf einer eigenen Zeile.",
+          color: "accent, success, danger oder eine CSS-Farbe."
+        },
+        levels_item: {
+          alert: "Aus: die Stufe ist ein normaler Satzteil."
+        },
+        show_item: {
+          always: "Auch ohne Bedingung."
+        },
+        alert_item: {
+          mode: "Immer und Nie ersetzen die Bedingung."
+        },
+        pickup_item: {
+          days: "Standard: 1 (heute und morgen).",
+          drop_after: "HH:MM, Standard 12:00.",
+          names: "Standard: Text des Termins.",
+          when: "z.B. 0 = heute, 1 = morgen."
+        }
+      },
+      alertModes: {
+        condition: "Nach Bedingung",
+        always: "Immer",
+        never: "Nie"
+      },
+      items_item: {
+        show: "Anzeigen wenn",
+        alert: "Meldung wenn",
+        pickup: "Abfuhr",
+        text: "Text",
+        text_one: "Text bei 1",
+        alert_text: "Text der Meldung",
+        alert_text_one: "Text der Meldung bei 1",
+        levels: "Stufen",
+        line: "Zeile",
+        navigation_path: "Ziel beim Antippen",
+        more_info: "More-Info beim Antippen",
+        tap_action: "Aktion beim Antippen"
+      },
+      levels_item: {
+        above: "\xDCber",
+        below: "Unter",
+        state: "Zustand",
+        text: "Text",
+        alert: "Als Meldung"
+      },
+      names_item: {
+        entity: "Kalender"
+      },
+      when_item: {
+        days: "Tage voraus",
+        word: "Wort"
+      },
+      show_item: {
+        always: "Immer anzeigen",
+        above: "\xDCber",
+        below: "Unter",
+        state: "Zustand"
+      },
+      alert_item: {
+        mode: "Meldung",
+        above: "\xDCber",
+        below: "Unter",
+        state: "Zustand"
+      },
+      pickup_item: {
+        calendars: "Abfuhr-Kalender",
+        days: "Tage voraus",
+        drop_after: "Heute erledigt ab",
+        names: "Namen",
+        when: "W\xF6rter pro Tag"
+      }
     }
   },
   shopping: {
@@ -1074,13 +1507,36 @@ var de_default = {
     synced: "synchronisiert",
     error: "Fehler",
     editor: {
-      entity: "Einkaufsliste (Todo)",
+      entity: "Einkaufsliste",
       list_title: "Titel der Liste",
       quick_title: "Titel der Schnellwahl",
       placeholder: "Platzhalter der Eingabe",
       empty_text: "Text bei leerer Liste",
       panels: "Spalten als Panels",
-      groups: "Schnellwahl-Gruppen (YAML)"
+      groups: "Schnellwahl-Gruppen",
+      sections: {
+        texts: "Texte"
+      },
+      helper: {
+        entity: "Todo-Entit\xE4t.",
+        groups: "Gruppen der Schnellwahl.",
+        panels: "Aus: ohne Hintergrund.",
+        groups_item: {
+          wide: "Sonst teilen sich zwei Gruppen auf breiten Bildschirmen eine Zeile."
+        },
+        items_item: {
+          variants: "Auswahl von Art oder Menge nach dem Hinzuf\xFCgen, z.B. 6, 10, 12.",
+          description: "Macht daraus ein eigenes Produkt; schliesst Varianten aus."
+        }
+      },
+      groups_item: {
+        wide: "\xDCber die ganze Breite",
+        items: "Produkte"
+      },
+      items_item: {
+        variants: "Varianten",
+        description: "Feste Beschreibung"
+      }
     }
   },
   battery: {
@@ -1103,44 +1559,161 @@ var de_default = {
       exclude_label: "Label zum Ausschliessen",
       exclude: "Weitere Sensoren ausschliessen",
       collapsed: "\xABIn Ordnung\xBB zugeklappt",
-      names: "Anzeigenamen (YAML)"
+      names: "Anzeigenamen",
+      names_item: {
+        entity: "Sensor"
+      },
+      sections: {
+        excluded: "Ausschliessen"
+      },
+      helper: {
+        names: "Standard: Name des Ger\xE4ts.",
+        exclude_label: "Sensoren mit diesem Label werden ausgelassen."
+      }
     }
   },
   legend: {
     editor: {
-      scales: "Farbskalen (YAML)",
-      items: "Eintr\xE4ge (YAML)"
+      scales: "Farbskalen",
+      items: "Eintr\xE4ge",
+      items_item: {
+        opacity: "Deckkraft"
+      },
+      helper: {
+        scales: "Nebeneinander auf breiten Panels, sonst untereinander.",
+        items_item: {
+          color: "Standard: Akzentfarbe.",
+          opacity: "0 bis 1."
+        },
+        scales_item: {
+          unit: "Ged\xE4mpft nach dem Namen.",
+          stops: "Gleiche Werte wie die color_thresholds des Diagramms.",
+          min: "Standard: erste Farbstufe.",
+          max: "Standard: letzte Farbstufe.",
+          ticks: "Werte unter dem Balken. Standard: die Werte der Farbstufen.",
+          opacity: "0 bis 1, f\xFCr den ganzen Balken."
+        }
+      },
+      scales_item: {
+        unit: "Einheit",
+        stops: "Farbstufen",
+        min: "Minimum",
+        max: "Maximum",
+        ticks: "Beschriftungen",
+        opacity: "Deckkraft"
+      },
+      stops_item: {
+        value: "Wert",
+        color: "Farbe"
+      }
     }
   },
   timeline: {
     period: "Zeitraum {span} \xB7 Balken antippen f\xFCr Details",
     loading: "Verlauf wird geladen \u2026",
     editor: {
-      entities: "Entit\xE4ten (Liste: entity, name, color, state_colors, ignore_states)",
-      default_interval: "Zeitraum zu Beginn (z.B. 4h)",
-      bridge: "Unterbr\xFCche \xFCberbr\xFCcken bis (z.B. 5m)",
-      intervals: "Zeitr\xE4ume der Auswahl (Liste, z.B. 4h, 24h, 7d)",
-      ignore_states: "Weitere Zust\xE4nde ohne Balken (Liste)",
+      entities: "Entit\xE4ten",
+      default_interval: "Zeitraum zu Beginn",
+      bridge: "Unterbr\xFCche \xFCberbr\xFCcken bis",
+      intervals: "Zeitr\xE4ume der Auswahl",
+      ignore_states: "Weitere Zust\xE4nde ohne Balken",
       show_picker: "Zeitraum-Auswahl anzeigen",
-      show_total: "Summe pro Zeile anzeigen"
+      show_total: "Summe pro Zeile anzeigen",
+      entities_item: {
+        ignore_states: "Zust\xE4nde ohne Balken",
+        state_colors: "Farben einzelner Zust\xE4nde"
+      },
+      sections: {
+        period: "Zeitraum",
+        bars: "Balken"
+      },
+      helper: {
+        entities_item: {
+          name: "Standard: Name der Entit\xE4t.",
+          color: "Farbe der Balken. Standard: Akzentfarbe.",
+          ignore_states: "Zus\xE4tzlich f\xFCr diese Zeile.",
+          state_colors: "Farbe pro Zustand, z.B. Plex."
+        },
+        default_interval: "z.B. 4h. Standard: der erste Zeitraum.",
+        bridge: "z.B. 30s, 5m, 1h; 0m schaltet es aus.",
+        intervals: "z.B. 4h, 24h, 7d.",
+        ignore_states: "Zus\xE4tzlich zu unknown, unavailable, off, none, idle, standby.",
+        state_colors_item: {
+          color: "z.B. #e5a00d."
+        }
+      },
+      state_colors_item: {
+        state: "Zustand",
+        color: "Farbe"
+      }
     }
   },
   value: {
     editor: {
       entity: "Entit\xE4t",
-      name: "Name (Standard: Name der Entit\xE4t)",
-      decimals: "Nachkommastellen (Standard: Anzeigegenauigkeit der Entit\xE4t)",
-      unit: "Einheit (Standard: Einheit der Entit\xE4t)",
-      icon: "Icon oben rechts",
+      name: "Name",
+      decimals: "Nachkommastellen",
+      unit: "Einheit",
+      icon: "Icon",
       show_icon: "Icon der Entit\xE4t anzeigen",
-      secondary_entity: "Zweiter Wert rechts",
-      secondary_decimals: "Nachkommastellen zweiter Wert",
-      secondary_unit: "Einheit zweiter Wert",
-      secondary_icon: "Icon vor dem zweiten Wert",
+      secondary_entity: "Entit\xE4t",
+      secondary_decimals: "Nachkommastellen",
+      secondary_unit: "Einheit",
+      secondary_icon: "Icon",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen",
-      layout: "Darstellung"
+      layout: "Darstellung",
+      sections: {
+        value_display: "Wert",
+        secondary: "Zweiter Wert"
+      },
+      helper: {
+        name: "Standard: Name der Entit\xE4t.",
+        decimals: "Standard: Anzeigegenauigkeit der Entit\xE4t.",
+        unit: "Standard: Einheit der Entit\xE4t.",
+        icon: "Kachel: Wasserzeichen oben rechts. Zeile: links, Standard Icon der Entit\xE4t.",
+        show_icon: "Wenn kein Icon gesetzt ist.",
+        secondary_entity: "Kachel: rechts vom Wert. Zeile: kleine Zeile unter dem Namen."
+      }
+    }
+  },
+  editor: {
+    sections: {
+      actions: "Aktionen"
+    },
+    tap_action: "Aktion beim Tippen",
+    hold_action: "Aktion beim Halten",
+    double_tap_action: "Aktion beim Doppeltippen",
+    condition: {
+      entity: "Entit\xE4t",
+      above: "\xDCber",
+      below: "Unter",
+      state: "Zustand"
+    },
+    item: {
+      entity: "Entit\xE4t",
+      name: "Name",
+      icon: "Icon",
+      color: "Farbe",
+      label: "Bezeichnung"
+    },
+    helper: {
+      condition: {
+        entity: "Entit\xE4t, deren Zustand gepr\xFCft wird.",
+        state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
+      }
+    },
+    conditionLabel: {
+      above: "\xFCber {value}",
+      below: "unter {value}",
+      state: "Zustand {value}",
+      always: "immer",
+      never: "nie"
+    },
+    layouts: {
+      row: "Zeile",
+      tile: "Kachel"
     }
   }
 };
@@ -1162,20 +1735,73 @@ var en_default = {
   },
   panel: {
     editor: {
+      header: "Header",
       title: "Title",
-      info: "Status after the title (text or Jinja template)",
-      info_alert: "Status in accent color when (YAML: entity, above, below, state)",
-      chips: "Values on the right as chips (YAML list: entity, label, unit, decimals, muted, alert, tap_action)",
-      layout: "Layout",
+      info: "Status",
+      info_alert: "Highlight status",
+      chipsSection: "Chips",
+      buttonsSection: "Buttons",
+      layoutSection: "Layout",
+      layout: "Arrangement",
       layoutVertical: "Vertical",
       layoutHorizontal: "Horizontal",
       layoutGrid: "Grid",
-      columns: "Columns (grid only)",
-      gap: "Gap between cards (e.g. 8px)",
-      padding: "Padding (e.g. 16px)",
-      min_column_width: "Minimum column width (grid only, e.g. 380px \u2013 wraps on narrow screens)",
-      frame: "Show panel surface (off = layout container only)",
-      buttons: "Buttons on the right of the header (list: icon, entity, name, active, tap_action)"
+      columns: "Columns",
+      min_column_width: "Minimum column width",
+      gap: "Gap",
+      padding: "Padding",
+      frame: "Show panel surface",
+      condition: {
+        entity: "Entity",
+        above: "Above",
+        below: "Below",
+        state: "State"
+      },
+      item: {
+        entity: "Entity",
+        label: "Label",
+        unit: "Unit",
+        decimals: "Decimal places",
+        muted: "Muted",
+        tap_action: "Tap action",
+        name: "Name",
+        icon: "Icon",
+        alert_above: "Highlight above",
+        alert_below: "Highlight below",
+        alert_state: "Highlight on state",
+        active_entity: "Active: entity",
+        active_above: "Active above",
+        active_below: "Active below",
+        active_state: "Active on state"
+      },
+      helper: {
+        info: "Shown after the title. Text or Jinja template.",
+        info_alert: "Shows the status in the accent color while all given conditions are met.",
+        chipsSection: "Values on the right of the header, in list order.",
+        buttonsSection: 'Buttons at the far right of the header, e.g. "lights off" or settings.',
+        columns: "Default: 2",
+        min_column_width: 'e.g. 380px. Wraps on narrow screens and replaces "Columns".',
+        gap: "Between the cards, e.g. 8px.",
+        padding: "e.g. 16px.",
+        frame: "Off: layout container only, without surface, padding and radius.",
+        condition: {
+          entity: "Entity whose state is checked.",
+          state: "One of the states. Type a value and confirm with Enter."
+        },
+        item: {
+          label: "Muted text before the value, e.g. CO\u2082.",
+          unit: "Default: unit of the entity.",
+          decimals: "Default: display precision of the entity.",
+          muted: "Value in the secondary text color.",
+          tap_action: "Default: more-info. Buttons with a scene: activate the scene.",
+          name: "Tooltip and label for screen readers. Default: entity name.",
+          icon: "Default: entity icon.",
+          alert_above: "Accent color while all given conditions are met.",
+          alert_state: "One of the states. Type a value and confirm with Enter.",
+          active_entity: "Highlights the button while all given conditions of this entity are met.",
+          active_state: "One of the states. Type a value and confirm with Enter."
+        }
+      }
     }
   },
   rows: {
@@ -1188,29 +1814,35 @@ var en_default = {
     since: "{state} {since}",
     editor: {
       entity: "Entity",
-      name: "Name (default: entity name)",
-      icon: "Icon (default: entity icon)",
+      name: "Name",
+      icon: "Icon",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action",
-      since_line: 'Show the "since \u2026" line below the name',
-      since_attribute: "Timestamp attribute instead of the last change (e.g. last_triggered)",
-      since_attribute_label: "Word before the time (default: triggered)",
-      detail_entities: 'Values instead of the "since \u2026" line while on (YAML list: entity, label)',
-      online_entity: "Online entity (icon pulses until the device is reachable)",
-      wall_switch: "Wall switch lamp (unavailable = off)",
-      layout: "Layout"
-    }
-  },
-  tiles: {
-    editor: {
-      entity: "Entity",
-      name: "Name (default: entity name)",
-      icon: "Icon (default: entity icon)",
-      online_entity: "Online entity (icon pulses until the device is reachable)",
-      tap_action: "Tap action",
-      hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      since_line: 'Show the "since \u2026" line',
+      since_attribute: "Timestamp attribute",
+      since_attribute_label: "Word before the time",
+      detail_entities: 'Values instead of "since \u2026"',
+      online_entity: "Online entity",
+      wall_switch: "Lamp on a wall switch",
+      layout: "Layout",
+      sections: {
+        since: "Second line",
+        availability: "Availability"
+      },
+      helper: {
+        name: "Default: entity name.",
+        icon: "Default: entity icon.",
+        since_line: 'Below the name, e.g. "open for 12 min". Off by default for measured values.',
+        since_attribute: "Instead of the last change, e.g. last_triggered.",
+        since_attribute_label: "Default: triggered.",
+        detail_entities: 'While the entity is on, the line shows these values, joined by " \xB7 ".',
+        detail_entities_item: {
+          label: "Text before the value, e.g. CPU."
+        },
+        online_entity: "The icon pulses until the device is reachable.",
+        wall_switch: "Unavailable counts as off."
+      }
     }
   },
   meter: {
@@ -1219,58 +1851,104 @@ var en_default = {
     periodHours: "{count} h",
     periodDays: "{count} days",
     editor: {
-      entity: "Entity (measurement)",
-      name: "Name (default: entity name)",
-      style: "Style (gradient = color scale with needle, level = fill bar, change = change against the reference)",
+      entity: "Entity",
+      name: "Name",
+      style: "Style",
       min: "Minimum",
       max: "Maximum",
-      decimals: "Decimals (default: display precision of the entity, otherwise 1)",
-      unit: "Unit (default: entity unit)",
-      colors: 'Color stops (YAML: value: color, e.g. 24: "#6fbf5a")',
-      icon: "Icon top right",
+      decimals: "Decimals",
+      unit: "Unit",
+      colors: "Color stops",
+      icon: "Icon",
       show_icon: "Show the entity icon",
-      secondary_entity: "Second value on the right (e.g. humidity)",
-      secondary_decimals: "Decimals of the second value",
-      secondary_unit: "Unit of the second value",
-      secondary_icon: "Icon before the second value",
+      secondary_entity: "Entity",
+      secondary_decimals: "Decimals",
+      secondary_unit: "Unit",
+      secondary_icon: "Icon",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action",
-      color: "Single color (instead of color stops)",
-      low: "Low below (consumables, shows the status)",
+      color: "Single color",
+      low: "Low below",
       layout: "Layout",
-      reference: "Reference (purchase price, entity or period like 24h, 7d)",
-      reference_name: "Reference text (default: bought \u2026 / 24 h)",
-      change_attribute: "Attribute with the change in % (e.g. 24h_change)",
-      scale: "Half the bar equals (% or unit)",
-      change_decimals: "Decimals of the %",
+      reference: "Reference",
+      reference_name: "Reference text",
+      change_attribute: "Attribute with the change in %",
+      scale: "Half the bar equals",
+      change_decimals: "Decimals of the change",
       change_mode: "Change as",
       changeModes: {
         percent: "Percent",
         absolute: "Difference in the unit"
       },
-      invert: "More is bad (swap colors)"
+      invert: "More is bad",
+      styles: {
+        gradient: "Color scale with needle",
+        level: "Fill bar",
+        change: "Change against the reference"
+      },
+      colors_item: {
+        value: "From value",
+        color: "Color"
+      },
+      sections: {
+        reference_change: "Reference and change",
+        value_display: "Value and range",
+        bar_colors: "Colors",
+        secondary: "Second value"
+      },
+      helper: {
+        entity: "Numeric sensor.",
+        name: "Default: entity name.",
+        decimals: "Default: display precision of the entity, otherwise 1.",
+        unit: "Default: unit of the entity.",
+        colors_item: {
+          value: "The color applies from this value.",
+          color: "e.g. #6fbf5a."
+        },
+        icon: "Watermark top right.",
+        show_icon: "When no icon is set.",
+        secondary_entity: "Tile: on the right of the value, e.g. humidity. Row: as status line.",
+        color: "One color for the whole bar. Ignored when color stops are set.",
+        low: 'For consumables: shows "low" or "empty".',
+        reference: "Purchase price, entity or period like 24h, 7d.",
+        reference_name: 'Default: "bought \u2026" or "24 h".',
+        change_attribute: "e.g. 24h_change. Takes precedence over the computed change.",
+        scale: "In % or in the unit. Default: 20.",
+        invert: "Swaps the colors: an increase is red, a decrease green."
+      }
     }
   },
   effect: {
     editor: {
       name: "Name",
-      colors: "Gradient colors (e.g. #ff7a3d)",
-      entity: "Entity (for hold: more-info, e.g. the lamp)",
-      tap_action: "Tap action (e.g. set the effect)",
+      colors: "Gradient colors",
+      entity: "Entity",
+      tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      helper: {
+        colors: "e.g. #ff7a3d.",
+        entity: "For more-info on hold, e.g. the lamp.",
+        tap_action: "e.g. set the effect."
+      }
     }
   },
   image: {
     editor: {
-      entity: "Entity (e.g. the script that is started)",
-      name: "Name (label without an image, else only for screen readers)",
-      image: "Image (/local/... or media-source://...)",
-      busy: "Busy indicator (tint and spinner while the entity is on)",
+      entity: "Entity",
+      name: "Name",
+      image: "Image",
+      busy: "Running indicator",
       tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      helper: {
+        entity: "e.g. the script that is started.",
+        name: "Label without an image, otherwise only for screen readers.",
+        image: "/local/... or media-source://...",
+        busy: "Tint and spinner while the entity is on."
+      }
     }
   },
   stopwatch: {
@@ -1280,18 +1958,49 @@ var en_default = {
     minutes: "{minutes} min",
     hours: "{hours}:{minutes} h",
     editor: {
-      entity: "Stopwatch sensor (Stopwatch Plus)",
-      name: "Name (default: entity name)",
-      icon: "Icon (default: entity icon)",
-      icon_position: "Icon position (watermark = top right, left = on the left like the rows)",
-      color: "Color of the stripe on top (no stripe without a color)",
-      picture_entity: "Picture entity (e.g. a gamer picture, round on the left)",
-      limit: "Daily limit (minutes or an entity; YAML per day: weekday, weekend, mon \u2026 sun)",
-      warn_before: "Hint this many minutes before the limit (default 10)",
-      day_start: "Start of the day (default 03:00)",
+      entity: "Stopwatch sensor",
+      name: "Name",
+      icon: "Icon",
+      icon_position: "Icon position",
+      color: "Stripe color",
+      picture_entity: "Picture entity",
+      warn_before: "Hint before the limit",
+      day_start: "Start of the day",
       tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      iconPositions: {
+        watermark: "Watermark top right",
+        left: "On the left like the rows"
+      },
+      sections: {
+        appearance: "Appearance",
+        daily_limit: "Daily limit",
+        limit_days: "Per day"
+      },
+      helper: {
+        entity: "Sensor of the Stopwatch Plus integration.",
+        name: "Default: entity name.",
+        icon: "Default: entity icon.",
+        color: "On top. No stripe without a color.",
+        picture_entity: "e.g. a gamer picture, round on the left.",
+        warn_before: "In minutes. Default: 10.",
+        day_start: "HH:MM. Default: 03:00.",
+        limit_all: "Minutes or an entity, e.g. 90 or input_number.limit.",
+        sections: {
+          limit_days: 'Overrides "All days". A single day wins over weekdays and weekend.'
+        }
+      },
+      limit_all: "All days",
+      limit_weekday: "Weekdays",
+      limit_weekend: "Weekend",
+      limit_mon: "Monday",
+      limit_tue: "Tuesday",
+      limit_wed: "Wednesday",
+      limit_thu: "Thursday",
+      limit_fri: "Friday",
+      limit_sat: "Saturday",
+      limit_sun: "Sunday"
     }
   },
   todo: {
@@ -1300,16 +2009,28 @@ var en_default = {
     unitOne: "item",
     editor: {
       entity: "Todo list",
-      name: "Name (default: list name)",
-      icon: "Icon top right",
-      unit: "Unit (default: items)",
-      unit_one: "Unit for 1 (default: item)",
-      empty_text: "Value of an empty list (default: Empty)",
-      color: "Color of the stripe on top (no stripe without a color)",
+      name: "Name",
+      icon: "Icon",
+      unit: "Unit",
+      unit_one: "Unit for 1",
+      empty_text: "Value for an empty list",
+      color: "Stripe color",
       preview: "Show the first open items on the right",
       tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      sections: {
+        texts: "Texts",
+        appearance: "Appearance"
+      },
+      helper: {
+        name: "Default: name of the list.",
+        icon: "Watermark top right.",
+        unit: "Default: items.",
+        unit_one: "Default: same as unit.",
+        empty_text: "Default: Empty.",
+        color: "On top. No stripe without a color."
+      }
     }
   },
   ink: {
@@ -1322,13 +2043,19 @@ var en_default = {
     processing: "Printing",
     stopped: "Stopped",
     editor: {
-      entity: "Printer entity (status, offline)",
-      name: "Name (default: entity name or Printer)",
-      cartridges: "Cartridge level sensors (%)",
-      low_level: "Soon empty below (%, default 20)",
+      entity: "Printer entity",
+      name: "Name",
+      cartridges: "Level sensors of the cartridges",
+      low_level: "Low below",
       tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      helper: {
+        entity: "For status and offline.",
+        name: 'Default: entity name or "Printer".',
+        cartridges: "Sensors in %.",
+        low_level: "Default: 20 %."
+      }
     }
   },
   pickup: {
@@ -1340,14 +2067,24 @@ var en_default = {
     inDays: "in {days} days",
     editor: {
       entity: "Collection calendar",
-      name: "Name (default: event or calendar name)",
-      icon: "Icon top right",
-      color: "Color of the stripe on top",
-      drop_after: "Today's collection counts as done after (HH:MM, default 12:00)",
-      lookahead_days: "Days to look ahead (default 40)",
+      name: "Name",
+      icon: "Icon",
+      color: "Stripe color",
+      drop_after: "Done today from",
+      lookahead_days: "Days to look ahead",
       tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      sections: {
+        dates: "Dates"
+      },
+      helper: {
+        name: "Default: event or name of the calendar.",
+        icon: "Watermark top right.",
+        color: "Stripe on top.",
+        drop_after: "Today's collection counts as done from this time. HH:MM, default 12:00.",
+        lookahead_days: "Default: 40."
+      }
     }
   },
   level: {
@@ -1380,7 +2117,7 @@ var en_default = {
     noneValue: "none",
     daysShort: "{days} days",
     editor: {
-      calendars: "Calendars (list: entity, name, color, icon, highlight)",
+      calendars: "Calendars",
       layout: "Layout",
       layouts: {
         list: "List",
@@ -1401,12 +2138,12 @@ var en_default = {
         current: "Current week",
         next: "Next week"
       },
-      week_rollover: "Week rollover (e.g. sat 00:00)",
+      week_rollover: "Week rollover",
       weekdays: "Always show Mon\u2013Fri",
-      title: "Title (week: automatic)",
+      title: "Title",
       icon: "Icon",
       highlight_name: "Name of the highlight tile",
-      day_switch: "Next day from (e.g. 15:00)",
+      day_switch: "Next day from",
       max_items: "Max. events",
       secondary: "Second line",
       secondaries: {
@@ -1416,28 +2153,67 @@ var en_default = {
         description: "Description",
         none: "None"
       },
-      highlight_days: "Highlight up to (days ahead)",
+      highlight_days: "Highlight up to",
       show_past_today: "Show today's past events",
-      rules: "Keyword rules (list: starts_with/contains, color, icon, highlight)",
+      rules: "Keyword rules",
       empty_text: "Text without events",
       hide_empty: "Hide without events",
-      tap_action: "Tap action (more-info = details)",
-      hold_action: "Hold action (on the calendar)"
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      calendars_item: {
+        highlight: "Highlight"
+      },
+      rules_item: {
+        starts_with: "Title starts with",
+        contains: "Title contains",
+        contains_any: "Contains one of",
+        contains_all: "Contains all",
+        highlight: "Highlight",
+        name: "Name"
+      },
+      sections: {
+        tiles: "Tiles",
+        display: "Display"
+      },
+      helper: {
+        calendars_item: {
+          name: "For the second line. Default: entity name.",
+          color: "Stripe and icon. Default: accent color.",
+          icon: "Default: entity icon.",
+          highlight: 'Events get the tint and "in n days".'
+        },
+        week_rollover: "From then on the next week counts as the current one, e.g. sat 00:00. Without it: Monday 00:00.",
+        weekdays: 'Empty days with "\u2013", the weekend only with events.',
+        title: 'Automatic with the range "Week".',
+        icon: "Watermark of the day tile.",
+        highlight_name: "Default: Pr\xFCfung.",
+        day_switch: "From this time the day tile shows the next day, e.g. 15:00.",
+        max_items: 'The rest appears as "+ n more until \u2026".',
+        highlight_days: "Days ahead. Default: 7.",
+        rules: "The first matching rule overrides color, icon and highlight of the calendar. Every criterion that is set must match.",
+        rules_item: {
+          contains_any: "The title contains at least one of the words.",
+          contains_all: "The title contains all words.",
+          name: "Only for the list in the editor."
+        },
+        tap_action: "More-info opens the details of the event.",
+        hold_action: "Runs on the calendar of the event."
+      }
     }
   },
   slider: {
     editor: {
-      entity: "Entity (number, input_number or light)",
-      name: "Label (default: entity name or what is controlled)",
+      entity: "Entity",
+      name: "Label",
       min: "Minimum",
       max: "Maximum",
-      step: "Step (values are multiples of it)",
+      step: "Step",
       value_format: "Value display",
       valueFormat: {
         percent: "Percent of the range",
         state: "Entity value"
       },
-      attribute: "Controls (lights only)",
+      attribute: "Controls",
       allow_off: "Leftmost turns the light off",
       attributes: {
         brightness: "Brightness",
@@ -1446,20 +2222,34 @@ var en_default = {
         saturation: "Saturation"
       },
       layout: "Layout",
-      icon: "Icon on the left (row: default entity icon)",
+      icon: "Icon",
       layouts: {
-        inline: "Inline (no surface, label above the slider)",
-        row: "Row (own surface like the status rows)"
+        inline: "Inline",
+        row: "Row"
       },
       ticks: "Ticks below the track",
-      major_every: "Long ticks every (default: round value)",
+      major_every: "Long ticks every",
       tickModes: {
-        auto: "Automatic (steps, else quarters)",
+        auto: "Automatic",
         steps: "Every step",
         quarters: "Quarters",
         none: "None"
       },
-      tick_every: "Ticks every (instead of each step)"
+      tick_every: "Ticks every",
+      sections: {
+        range: "Range",
+        tick_marks: "Ticks"
+      },
+      helper: {
+        entity: "number, input_number or light.",
+        name: "Default: entity name or what is controlled.",
+        step: "Values are multiples of it.",
+        icon: "On the left. Row: default entity icon.",
+        layout: "Inline: no surface, label above the slider. Row: own surface like the status rows.",
+        ticks: "Automatic: every step, the quarters when the steps are narrow.",
+        tick_every: "Instead of each step.",
+        major_every: "Default: round value."
+      }
     },
     brightness: "Brightness",
     color_temp: "White",
@@ -1469,11 +2259,11 @@ var en_default = {
   light: {
     editor: {
       entity: "Lamp",
-      name: "Name (default: entity name)",
+      name: "Name",
       icon: "Icon",
-      sliders: "Which sliders (empty: brightness, white temperature if supported)",
+      sliders: "Sliders",
       allow_off: "Brightness leftmost turns off",
-      wall_switch: "Wall switch (instead of the toggle)",
+      wall_switch: "Lamp on a wall switch",
       since_line: "Show the \xABsince\xBB line",
       tap_action: "Tap action",
       hold_action: "Hold action",
@@ -1484,24 +2274,43 @@ var en_default = {
         hue: "Color",
         saturation: "Saturation"
       },
-      unavailable_sliders: "Sliders while unreachable or off at the wall",
+      unavailable_sliders: "Sliders while unreachable",
       unavailableSliders: {
-        show: "Show locked (layout stays)",
-        hide: "Hide (head only)"
+        show: "Show locked",
+        hide: "Hide"
       },
-      show_sliders: "Show sliders"
+      show_sliders: "Show sliders",
+      sections: {
+        slider_options: "Sliders",
+        display: "Display"
+      },
+      helper: {
+        name: "Default: entity name.",
+        icon: "Default: entity icon.",
+        sliders: "Empty: brightness and, if supported, white temperature.",
+        wall_switch: "Wall switch icon instead of the toggle; unavailable counts as off.",
+        unavailable_sliders: "Also when off at the wall. Locked: the layout stays. Hide: head only."
+      }
     }
   },
   scene: {
     editor: {
-      entity: "Scene (or another entity)",
+      entity: "Scene",
       name: "Name",
-      icon: "Icon (watermark)",
-      colors: 'Gradient colors (list, e.g. ["#f5c48a", "#e89a5c"])',
-      active: "Active when (e.g. {entity: input_select.living_room_scenes, state: Relax})",
-      tap_action: "Tap action (default: activate the scene)",
+      icon: "Icon",
+      colors: "Colors",
+      active: "Active when",
+      tap_action: "Tap action",
       hold_action: "Hold action",
-      double_tap_action: "Double tap action"
+      double_tap_action: "Double tap action",
+      helper: {
+        entity: "Or another entity.",
+        name: "Default: entity name.",
+        icon: "Watermark bottom right. Default: entity icon.",
+        colors: "Stripe and gradient, e.g. #f5c48a.",
+        active: "Fills the tile while all given conditions are met. Without an entity the scene's own state is checked.",
+        tap_action: "Default: activate the scene."
+      }
     }
   },
   nowPlaying: {
@@ -1511,7 +2320,49 @@ var en_default = {
     paused: "paused",
     remaining: "{minutes} min left",
     editor: {
-      sources: "Sources in order of priority (list: entity, name, icon, requires, title_entity, image_entity, subtitle, fallback_title, titles, images)"
+      sources: "Sources",
+      backdrop: "Cover as backdrop",
+      sources_item: {
+        name: "Label",
+        states: 'States "running"',
+        requires: "Must run too",
+        title_entity: "Title entity",
+        image_entity: "Image entity",
+        subtitle: "Second line",
+        fallback_title: "Fallback title",
+        fallback_subtitle: "Fallback for the second line",
+        ignore_titles: "Ignore titles",
+        titles: "Readable titles",
+        images: "Images"
+      },
+      helper: {
+        sources: "In order of priority: the first running source is shown.",
+        backdrop: "Blurred and dimmed over the whole card.",
+        sources_item: {
+          name: "Above the title, e.g. XBOX. Default: entity name.",
+          icon: "Watermark top right.",
+          states: "Default: on, playing, paused, buffering.",
+          requires: "e.g. the console next to a profile sensor.",
+          title_entity: "Its state is the title. Otherwise media_title, then app_name.",
+          image_entity: "image.* or a helper with an image path.",
+          subtitle: 'From attributes of the title entity, e.g. "{progress} completed".',
+          fallback_title: "When the source runs without a usable title. Without it the source is skipped.",
+          ignore_titles: "Default: off, standby, home, screensaver, unknown, unavailable.",
+          titles: "Readable names for raw titles or app names, e.g. Home \u2192 Home screen.",
+          images: "Image per title or app name."
+        },
+        images_item: {
+          image: "e.g. /local/apps/netflix.png."
+        }
+      },
+      titles_item: {
+        title: "Raw title",
+        shown: "Shown title"
+      },
+      images_item: {
+        title: "Title or app",
+        image: "Image"
+      }
     }
   },
   vacuum: {
@@ -1615,12 +2466,82 @@ var en_default = {
         panel: "Panel"
       },
       name: "Name",
-      prefix: "Entity prefix (optional)",
+      prefix: "Entity prefix",
       navigation_path: "Tap target",
-      rooms: "Rooms (YAML)",
-      presets: "Quick picks (YAML)",
+      rooms: "Rooms",
+      presets: "Presets",
       maintenance_threshold: "Maintenance due at",
-      boost: "Show Max+"
+      boost: "Show Max+",
+      rooms_item: {
+        id: "Segment id"
+      },
+      presets_item: {
+        rooms: "Rooms",
+        mode: "Mode",
+        suction: "Suction level"
+      },
+      helper: {
+        name: "Default: from the entity id.",
+        prefix: "Prefix of the integration's entities. Default: object id of the entity.",
+        navigation_path: "e.g. #robot.",
+        rooms: "The ids are the segment ids of the map.",
+        presets_item: {
+          rooms: "Names or segment ids."
+        },
+        maintenance_threshold: "Remaining life.",
+        panels: "Off: without background.",
+        modes: "Default: sweeping, mopping after sweeping, sweeping and mopping.",
+        modes_item: {
+          value: "Value of the mode entity."
+        },
+        suction_levels_item: {
+          value: "Value of the suction entity."
+        },
+        boost: "Only when the switch exists.",
+        boost_name: "Default: Max+.",
+        maintenance_item: {
+          key: "Matches the attributes <key>_left and <key>_time_left, e.g. main_brush.",
+          due: "Hint when the item is due."
+        },
+        actions: "Buttons of the station. Default: wash mop, dry, clean station, empty bin.",
+        sections: {
+          entities: "Only needed when an entity has another name than derived from the prefix.",
+          wear: "Default: main brush, side brush, filter, sensors."
+        }
+      },
+      panels: "Columns as panels",
+      modes: "Modes",
+      modes_item: {
+        value: "Value"
+      },
+      suction_levels: "Suction levels",
+      suction_levels_item: {
+        value: "Value"
+      },
+      boost_name: "Label of Max+",
+      maintenance: "Maintenance items",
+      maintenance_item: {
+        key: "Key",
+        due: "Text when due",
+        reset: "Reset button"
+      },
+      actions: "Station actions",
+      cleaning_title: "Cleaning title",
+      presets_title: "Presets title",
+      station_title: "Station title",
+      mode_entity: "Mode",
+      suction_entity: "Suction level",
+      boost_entity: "Max+",
+      history_entity: "History",
+      error_entity: "Error",
+      drying_left_entity: "Drying time left",
+      sections: {
+        actions: "Station actions",
+        suction: "Suction",
+        titles: "Headings",
+        wear: "Maintenance",
+        entities: "Entities"
+      }
     }
   },
   summary: {
@@ -1643,10 +2564,95 @@ var en_default = {
     editor: {
       clock: "Show clock",
       greeting: "Show greeting",
-      calm_text: "Text without messages (default: All quiet.)",
+      calm_text: "Text without alerts",
       and_word: "Word for \u201Cand\u201D",
-      items: "Items (YAML)",
-      hold_action: "Hold action"
+      items: "Items",
+      hold_action: "Hold action",
+      helper: {
+        calm_text: 'Default: "All quiet."',
+        and_word: "Before the last phrase. Default: and.",
+        items: "Every item adds a phrase while its condition is met.",
+        hold_action: "e.g. to toggle a kiosk mode.",
+        items_item: {
+          name: "Only for the list in the editor.",
+          entity: "Its state decides and fills {value}.",
+          text: "Parts in [brackets] are highlighted; {icon} inserts the icon. Pickup: {names} and {when}.",
+          show: "Without it always, unless the item has an alert.",
+          alert: "Alerts form the first sentence in the accent color.",
+          alert_text: "Default: the text.",
+          levels: "The first matching level wins.",
+          pickup: 'Gives "[Paper] is collected tomorrow".',
+          line: "From 2 on the item starts on its own line.",
+          color: "accent, success, danger or a CSS color."
+        },
+        levels_item: {
+          alert: "Off: the level is a normal phrase."
+        },
+        show_item: {
+          always: "Also without a condition."
+        },
+        alert_item: {
+          mode: "Always and Never replace the condition."
+        },
+        pickup_item: {
+          days: "Default: 1 (today and tomorrow).",
+          drop_after: "HH:MM, default 12:00.",
+          names: "Default: message of the event.",
+          when: "e.g. 0 = today, 1 = tomorrow."
+        }
+      },
+      alertModes: {
+        condition: "By condition",
+        always: "Always",
+        never: "Never"
+      },
+      items_item: {
+        show: "Show when",
+        alert: "Alert when",
+        pickup: "Pickup",
+        text: "Text",
+        text_one: "Text for 1",
+        alert_text: "Alert text",
+        alert_text_one: "Alert text for 1",
+        levels: "Levels",
+        line: "Line",
+        navigation_path: "Target on tap",
+        more_info: "More-info on tap",
+        tap_action: "Tap action"
+      },
+      levels_item: {
+        above: "Above",
+        below: "Below",
+        state: "State",
+        text: "Text",
+        alert: "As alert"
+      },
+      names_item: {
+        entity: "Calendar"
+      },
+      when_item: {
+        days: "Days ahead",
+        word: "Word"
+      },
+      show_item: {
+        always: "Always show",
+        above: "Above",
+        below: "Below",
+        state: "State"
+      },
+      alert_item: {
+        mode: "Alert",
+        above: "Above",
+        below: "Below",
+        state: "State"
+      },
+      pickup_item: {
+        calendars: "Pickup calendars",
+        days: "Days ahead",
+        drop_after: "Done today from",
+        names: "Names",
+        when: "Words per day"
+      }
     }
   },
   shopping: {
@@ -1668,13 +2674,36 @@ var en_default = {
     synced: "synced",
     error: "Error",
     editor: {
-      entity: "Shopping list (todo)",
+      entity: "Shopping list",
       list_title: "Title of the list",
       quick_title: "Title of the quick picks",
       placeholder: "Input placeholder",
       empty_text: "Text of an empty list",
       panels: "Columns as panels",
-      groups: "Quick pick groups (YAML)"
+      groups: "Quick pick groups",
+      sections: {
+        texts: "Texts"
+      },
+      helper: {
+        entity: "Todo entity.",
+        groups: "Groups of the quick picks.",
+        panels: "Off: without background.",
+        groups_item: {
+          wide: "Otherwise two groups share a row on wide screens."
+        },
+        items_item: {
+          variants: "Choice of kind or amount after adding, e.g. 6, 10, 12.",
+          description: "Makes it a product of its own; excludes variants."
+        }
+      },
+      groups_item: {
+        wide: "Full width",
+        items: "Products"
+      },
+      items_item: {
+        variants: "Variants",
+        description: "Fixed description"
+      }
     }
   },
   battery: {
@@ -1697,44 +2726,161 @@ var en_default = {
       exclude_label: "Label to exclude",
       exclude: "Further sensors to exclude",
       collapsed: "\u201CIn order\u201D collapsed",
-      names: "Display names (YAML)"
+      names: "Display names",
+      names_item: {
+        entity: "Sensor"
+      },
+      sections: {
+        excluded: "Exclude"
+      },
+      helper: {
+        names: "Default: device name.",
+        exclude_label: "Sensors with this label are left out."
+      }
     }
   },
   legend: {
     editor: {
-      scales: "Color scales (YAML)",
-      items: "Items (YAML)"
+      scales: "Color scales",
+      items: "Items",
+      items_item: {
+        opacity: "Opacity"
+      },
+      helper: {
+        scales: "Side by side on wide panels, otherwise stacked.",
+        items_item: {
+          color: "Default: accent color.",
+          opacity: "0 to 1."
+        },
+        scales_item: {
+          unit: "Muted after the name.",
+          stops: "The same values as the chart's color_thresholds.",
+          min: "Default: first stop.",
+          max: "Default: last stop.",
+          ticks: "Values below the bar. Default: the stop values.",
+          opacity: "0 to 1, for the whole bar."
+        }
+      },
+      scales_item: {
+        unit: "Unit",
+        stops: "Color stops",
+        min: "Minimum",
+        max: "Maximum",
+        ticks: "Labels",
+        opacity: "Opacity"
+      },
+      stops_item: {
+        value: "Value",
+        color: "Color"
+      }
     }
   },
   timeline: {
     period: "Period {span} \xB7 tap a bar for details",
     loading: "Loading history \u2026",
     editor: {
-      entities: "Entities (list: entity, name, color, state_colors, ignore_states)",
-      default_interval: "Period at start (e.g. 4h)",
-      bridge: "Bridge interruptions up to (e.g. 5m)",
-      intervals: "Periods of the picker (list, e.g. 4h, 24h, 7d)",
-      ignore_states: "Further states without a bar (list)",
+      entities: "Entities",
+      default_interval: "Period at the start",
+      bridge: "Bridge interruptions up to",
+      intervals: "Periods of the picker",
+      ignore_states: "Further states without a bar",
       show_picker: "Show the period picker",
-      show_total: "Show the total per row"
+      show_total: "Show the total per row",
+      entities_item: {
+        ignore_states: "States without a bar",
+        state_colors: "Colors of single states"
+      },
+      sections: {
+        period: "Period",
+        bars: "Bars"
+      },
+      helper: {
+        entities_item: {
+          name: "Default: entity name.",
+          color: "Color of the bars. Default: accent color.",
+          ignore_states: "In addition, for this row.",
+          state_colors: "Color per state, e.g. Plex."
+        },
+        default_interval: "e.g. 4h. Default: the first period.",
+        bridge: "e.g. 30s, 5m, 1h; 0m turns it off.",
+        intervals: "e.g. 4h, 24h, 7d.",
+        ignore_states: "On top of unknown, unavailable, off, none, idle, standby.",
+        state_colors_item: {
+          color: "e.g. #e5a00d."
+        }
+      },
+      state_colors_item: {
+        state: "State",
+        color: "Color"
+      }
     }
   },
   value: {
     editor: {
       entity: "Entity",
-      name: "Name (default: entity name)",
-      decimals: "Decimals (default: display precision of the entity)",
-      unit: "Unit (default: unit of the entity)",
-      icon: "Icon top right",
+      name: "Name",
+      decimals: "Decimals",
+      unit: "Unit",
+      icon: "Icon",
       show_icon: "Show the entity icon",
-      secondary_entity: "Second value on the right",
-      secondary_decimals: "Decimals of the second value",
-      secondary_unit: "Unit of the second value",
-      secondary_icon: "Icon before the second value",
+      secondary_entity: "Entity",
+      secondary_decimals: "Decimals",
+      secondary_unit: "Unit",
+      secondary_icon: "Icon",
       tap_action: "Tap action",
       hold_action: "Hold action",
       double_tap_action: "Double tap action",
-      layout: "Layout"
+      layout: "Layout",
+      sections: {
+        value_display: "Value",
+        secondary: "Second value"
+      },
+      helper: {
+        name: "Default: entity name.",
+        decimals: "Default: display precision of the entity.",
+        unit: "Default: unit of the entity.",
+        icon: "Tile: watermark top right. Row: on the left, default entity icon.",
+        show_icon: "When no icon is set.",
+        secondary_entity: "Tile: on the right of the value. Row: small line below the name."
+      }
+    }
+  },
+  editor: {
+    sections: {
+      actions: "Actions"
+    },
+    tap_action: "Tap action",
+    hold_action: "Hold action",
+    double_tap_action: "Double tap action",
+    condition: {
+      entity: "Entity",
+      above: "Above",
+      below: "Below",
+      state: "State"
+    },
+    item: {
+      entity: "Entity",
+      name: "Name",
+      icon: "Icon",
+      color: "Color",
+      label: "Label"
+    },
+    helper: {
+      condition: {
+        entity: "Entity whose state is checked.",
+        state: "One of the states. Type a value and confirm with Enter."
+      }
+    },
+    conditionLabel: {
+      above: "above {value}",
+      below: "below {value}",
+      state: "state {value}",
+      always: "always",
+      never: "never"
+    },
+    layouts: {
+      row: "Row",
+      tile: "Tile"
     }
   }
 };
@@ -2059,14 +3205,110 @@ function registerElement(tag, element) {
 }
 
 // src/cards/graphite-panel-editor.ts
-function editorSchema(language) {
-  const text = (key) => translate(language, `panel.editor.${key}`);
+var prefix = "panel.editor";
+var conditionName = "info_alert";
+var chipsSection = "chipsSection";
+var buttonsSection = "buttonsSection";
+function optionalText(language, key) {
+  const fullKey = `${prefix}.${key}`;
+  const text = translate(language, fullKey);
+  return text === fullKey ? void 0 : text;
+}
+function editorSchema(language, layout) {
+  const text = (key) => translate(language, `${prefix}.${key}`);
+  const itemField = (name, selector, required = false) => [name, {
+    selector,
+    required,
+    label: text(`item.${name}`),
+    description: optionalText(language, `helper.item.${name}`)
+  }];
+  const numberBox2 = { number: { mode: "box", step: "any" } };
+  const stateList = { select: { multiple: true, custom_value: true, options: [] } };
   return [
-    { name: "title", selector: { text: {} } },
-    { name: "info", selector: { text: {} } },
     {
-      type: "grid",
-      name: "",
+      type: "expandable",
+      name: "header",
+      icon: "mdi:page-layout-header",
+      flatten: true,
+      expanded: true,
+      schema: [
+        { name: "title", selector: { text: {} } },
+        { name: "info", selector: { text: {} } },
+        {
+          // not flattened: the fields are stored below "info_alert"
+          type: "expandable",
+          name: conditionName,
+          schema: [
+            { name: "entity", selector: { entity: {} } },
+            {
+              type: "grid",
+              name: "",
+              schema: [
+                { name: "above", selector: numberBox2 },
+                { name: "below", selector: numberBox2 }
+              ]
+            },
+            { name: "state", selector: stateList }
+          ]
+        },
+        {
+          type: "expandable",
+          name: chipsSection,
+          flatten: true,
+          schema: [{
+            name: "chips",
+            selector: {
+              object: {
+                multiple: true,
+                label_field: "entity",
+                description_field: "label",
+                fields: Object.fromEntries([
+                  itemField("entity", { entity: {} }, true),
+                  itemField("label", { text: {} }),
+                  itemField("unit", { text: {} }),
+                  itemField("decimals", { number: { min: 0, max: 4, mode: "box" } }),
+                  itemField("muted", { boolean: {} }),
+                  itemField("tap_action", { ui_action: {} }),
+                  itemField("alert_above", numberBox2),
+                  itemField("alert_below", numberBox2),
+                  itemField("alert_state", stateList)
+                ])
+              }
+            }
+          }]
+        },
+        {
+          type: "expandable",
+          name: buttonsSection,
+          flatten: true,
+          schema: [{
+            name: "buttons",
+            selector: {
+              object: {
+                multiple: true,
+                label_field: "name",
+                description_field: "entity",
+                fields: Object.fromEntries([
+                  itemField("name", { text: {} }),
+                  itemField("icon", { icon: {} }),
+                  itemField("entity", { entity: {} }),
+                  itemField("tap_action", { ui_action: {} }),
+                  itemField("active_entity", { entity: {} }),
+                  itemField("active_above", numberBox2),
+                  itemField("active_below", numberBox2),
+                  itemField("active_state", stateList)
+                ])
+              }
+            }
+          }]
+        }
+      ]
+    },
+    {
+      type: "expandable",
+      name: "layoutSection",
+      icon: "mdi:view-dashboard-outline",
+      flatten: true,
       schema: [
         {
           name: "layout",
@@ -2081,20 +3323,71 @@ function editorSchema(language) {
             }
           }
         },
-        { name: "columns", selector: { number: { min: 1, max: 6, mode: "box" } } },
-        { name: "gap", selector: { text: {} } },
-        { name: "padding", selector: { text: {} } },
-        { name: "min_column_width", selector: { text: {} } },
+        ...layout === "grid" ? [{
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "columns", selector: { number: { min: 1, max: 6, mode: "box" } } },
+            { name: "min_column_width", selector: { text: {} } }
+          ]
+        }] : [],
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "gap", selector: { text: {} } },
+            { name: "padding", selector: { text: {} } }
+          ]
+        },
         { name: "frame", selector: { boolean: {} } }
       ]
-    },
-    // the object selector renders a YAML editor
-    { name: "info_alert", selector: { object: {} } },
-    { name: "chips", selector: { object: {} } },
-    { name: "buttons", selector: { object: {} } }
+    }
   ];
 }
-var objectKeys = ["info_alert"];
+function isEmpty(value) {
+  return value === "" || value === void 0 || value === null || Array.isArray(value) && value.length === 0;
+}
+function conditionData(condition) {
+  if (!condition || typeof condition !== "object") return {};
+  const data = { ...condition };
+  if (!isEmpty(data.state)) data.state = [].concat(data.state).map(String);
+  return data;
+}
+function storedCondition(condition) {
+  if (!condition || typeof condition !== "object") return void 0;
+  const entries = Object.entries(condition).filter(([, value]) => !isEmpty(value)).map(([key, value]) => [key, key === "state" && Array.isArray(value) && value.length === 1 ? value[0] : value]);
+  return entries.length ? Object.fromEntries(entries) : void 0;
+}
+var conditionParts = ["entity", "above", "below", "state"];
+function itemsData(items, conditionKey) {
+  if (!Array.isArray(items)) return items;
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const { [conditionKey]: condition, ...data } = item;
+    for (const [part, value] of Object.entries(conditionData(condition))) {
+      if (conditionParts.includes(part)) data[`${conditionKey}_${part}`] = value;
+    }
+    if (data.tap_action === "none") data.tap_action = { action: "none" };
+    return data;
+  });
+}
+function storedItems(items, conditionKey) {
+  if (!Array.isArray(items) || items.length === 0) return void 0;
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const data = {};
+    const condition = {};
+    for (const [key, value] of Object.entries(item)) {
+      const part = key.startsWith(`${conditionKey}_`) ? key.slice(conditionKey.length + 1) : "";
+      if (conditionParts.includes(part)) condition[part] = value;
+      else if (value !== void 0 && value !== null && !(key === "muted" && value === false)) data[key] = value;
+    }
+    const stored = storedCondition({ ...data[conditionKey], ...condition });
+    if (stored) data[conditionKey] = stored;
+    else delete data[conditionKey];
+    return data;
+  });
+}
 var GraphitePanelEditor = class extends HTMLElement {
   constructor() {
     super(...arguments);
@@ -2133,28 +3426,31 @@ var GraphitePanelEditor = class extends HTMLElement {
       this.replaceChildren(wrapper);
     }
     const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
-    if (this.formLanguage !== language) {
-      this.formLanguage = language;
-      this.form.schema = editorSchema(language);
-      this.form.computeLabel = (schema) => {
-        if (!schema.name) return "";
-        const key = `panel.editor.${schema.name}`;
-        const label = translate(language, key);
-        return label === key ? schema.name : label;
+    const layout = this.config.layout || "vertical";
+    const schemaKey = `${language}|${layout}`;
+    if (this.formSchemaKey !== schemaKey) {
+      this.formSchemaKey = schemaKey;
+      this.form.schema = editorSchema(language, layout);
+      const textKey = (schema, options) => options?.path?.includes(conditionName) ? `condition.${schema.name}` : schema.name;
+      this.form.computeLabel = (schema, _data, options) => {
+        if (!schema.name || schema.name === "chips" || schema.name === "buttons") return "";
+        return optionalText(language, textKey(schema, options)) ?? schema.name;
       };
+      this.form.computeHelper = (schema, options) => schema.name ? optionalText(language, `helper.${textKey(schema, options)}`) : void 0;
     }
     if (this.hassObject) {
       this.form.hass = this.hassObject;
       this.stackEditor.hass = this.hassObject;
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
-    const { title, info, info_alert, chips, layout, columns, gap, padding, min_column_width, frame } = this.config;
+    const { title, info, info_alert, chips, buttons, columns, gap, padding, min_column_width, frame } = this.config;
     this.form.data = {
       title,
       info,
-      info_alert,
-      chips,
-      layout: layout || "vertical",
+      info_alert: conditionData(info_alert),
+      chips: itemsData(chips, "alert"),
+      buttons: itemsData(buttons, "active"),
+      layout,
       columns,
       gap,
       padding,
@@ -2173,12 +3469,17 @@ var GraphitePanelEditor = class extends HTMLElement {
       }
     }
   }
+  // empty optional values are not stored, so the YAML stays clean
   fireConfig(config) {
+    const storedConfig = {
+      ...config,
+      info_alert: storedCondition(config.info_alert),
+      chips: storedItems(config.chips, "alert"),
+      buttons: storedItems(config.buttons, "active")
+    };
     const cleanConfig = Object.fromEntries(
-      Object.entries(config).filter(([key, value]) => {
+      Object.entries(storedConfig).filter(([key, value]) => {
         if (value === "" || value === void 0 || value === null) return false;
-        if (objectKeys.includes(key) && (typeof value !== "object" || Object.keys(value).length === 0)) return false;
-        if (key === "chips" && (!Array.isArray(value) || value.length === 0)) return false;
         if (key === "frame" && value !== false) return false;
         return true;
       })
@@ -2877,10 +4178,77 @@ var GraphiteRow = class extends GraphiteCard {
 GraphiteRow.styles = rowStyles;
 
 // src/core/form-editor.ts
+var sectionSuffix = "_section";
+var sharedPrefix = "editor";
+function isEmpty2(value) {
+  return value === "" || value === void 0 || value === null || Array.isArray(value) && value.length === 0;
+}
+function conditionToForm(condition) {
+  if (!condition || typeof condition !== "object") return {};
+  const data = { ...condition };
+  if (!isEmpty2(data.state)) data.state = [].concat(data.state).map(String);
+  return data;
+}
+function conditionFromForm(condition) {
+  if (!condition || typeof condition !== "object") return void 0;
+  const entries = Object.entries(condition).filter(([, value]) => !isEmpty2(value)).map(([key, value]) => [key, key === "state" && Array.isArray(value) && value.length === 1 ? value[0] : value]);
+  return entries.length ? Object.fromEntries(entries) : void 0;
+}
+function listToForm(source, options) {
+  let value = source;
+  if (options.map && value && typeof value === "object" && !Array.isArray(value)) {
+    const { key, value: valueField, numericKey } = options.map;
+    value = Object.entries(value).map(([entryKey, entryValue]) => ({
+      [key]: numericKey && entryKey !== "" && !Number.isNaN(Number(entryKey)) ? Number(entryKey) : entryKey,
+      [valueField]: entryValue
+    }));
+  }
+  if (!Array.isArray(value)) return value;
+  return value.map((item) => {
+    if (!options.stringField && (!item || typeof item !== "object")) return item;
+    const source2 = item && typeof item === "object" ? { ...item } : { [options.stringField]: item };
+    const entry = options.itemToForm ? options.itemToForm(source2) : source2;
+    for (const field of options.listFields ?? []) if (!isEmpty2(entry[field])) entry[field] = [].concat(entry[field]);
+    for (const [field, childOptions] of Object.entries(options.children ?? {})) entry[field] = listToForm(entry[field], childOptions);
+    for (const [field, childOptions] of Object.entries(options.objects ?? {})) {
+      if (entry[field] && typeof entry[field] === "object") entry[field] = listToForm([entry[field]], childOptions)[0];
+    }
+    return entry;
+  });
+}
+function listFromForm(value, options) {
+  const items = value.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const entry = { ...item };
+    for (const [field, childOptions] of Object.entries(options.children ?? {})) {
+      if (Array.isArray(entry[field])) entry[field] = listFromForm(entry[field], childOptions);
+    }
+    for (const [field, childOptions] of Object.entries(options.objects ?? {})) {
+      if (!entry[field] || typeof entry[field] !== "object") continue;
+      const object = listFromForm([entry[field]], childOptions)[0];
+      entry[field] = Object.keys(object).length ? object : void 0;
+    }
+    const stored = options.itemFromForm ? options.itemFromForm(entry) : entry;
+    const entries = Object.entries(stored).filter(([key, fieldValue]) => !isEmpty2(fieldValue) && (fieldValue !== false || !!options.keepFalse?.includes(key)));
+    if (options.stringField && !options.map && entries.length === 1 && entries[0][0] === options.stringField) return entries[0][1];
+    return Object.fromEntries(entries);
+  });
+  if (options.map) {
+    const { key, value: valueField } = options.map;
+    const entries = items.filter((item) => item && typeof item === "object" && !isEmpty2(item[key]) && !isEmpty2(item[valueField])).map((item) => [String(item[key]), item[valueField]]);
+    return entries.length ? Object.fromEntries(entries) : void 0;
+  }
+  return items.length ? items : void 0;
+}
 var GraphiteFormEditor = class extends HTMLElement {
   constructor() {
     super(...arguments);
     this.config = {};
+    this.language = "en";
+    // filled while the schema is built
+    this.conditionNames = /* @__PURE__ */ new Set();
+    this.listOptions = /* @__PURE__ */ new Map();
+    this.sectionLists = /* @__PURE__ */ new Set();
   }
   // changes when the schema depends on the config (e.g. the fields of the chosen layout)
   schemaKey() {
@@ -2895,11 +4263,148 @@ var GraphiteFormEditor = class extends HTMLElement {
   defaults() {
     return {};
   }
+  // translated text of the card or of the shared editor texts; undefined without a translation
+  text(key) {
+    for (const prefix2 of [this.labelPrefix(), sharedPrefix]) {
+      const fullKey = `${prefix2}.${key}`;
+      const text = translate(this.language, fullKey);
+      if (text !== fullKey) return text;
+    }
+    return void 0;
+  }
+  // translated text of the card or the shared texts with {name} placeholders, for the editors
+  localText(key, params = {}) {
+    const text = this.text(key) ?? key;
+    return Object.entries(params).reduce((result, [name, value]) => result.split(`{${name}}`).join(String(value)), text);
+  }
+  // short text of a condition for the row of its dialog, e.g. "über 0, Zustand on"
+  conditionLabel(condition) {
+    return ["above", "below", "state"].filter((part) => !isEmpty2(condition[part])).map((part) => this.localText(`conditionLabel.${part}`, { value: [].concat(condition[part]).join(", ") })).join(", ");
+  }
   // translated label of a select option, e.g. optionLabel("range.days") -> "<prefix>.range.days"
+  // (fallback: the shared texts, e.g. "editor.layouts.row")
   optionLabel(key) {
-    const fullKey = `${this.labelPrefix()}.${key}`;
-    const label = translate(languageOf(this.isConnected ? this : void 0, this.hassObject), fullKey);
-    return label === fullKey ? key : label;
+    const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
+    for (const prefix2 of [this.labelPrefix(), sharedPrefix]) {
+      const fullKey = `${prefix2}.${key}`;
+      const label = translate(language, fullKey);
+      if (label !== fullKey) return label;
+    }
+    return key;
+  }
+  // radio for cards that exist as a row and as a tile (cards with a single layout do not show it)
+  layoutField() {
+    return this.selectField("layout", "layouts", ["row", "tile"], "list");
+  }
+  // dropdown (or radio list) with translated options: "<prefix>.<group>.<value>"
+  selectField(name, group, values, mode = "dropdown") {
+    return { name, selector: { select: { mode, options: values.map((value) => ({ value, label: this.optionLabel(`${group}.${value}`) })) } } };
+  }
+  // fields side by side
+  grid(...schema) {
+    return { type: "grid", name: "", schema };
+  }
+  // expansion panel that only groups fields; the values stay on the top level of the config
+  section(name, schema, options = {}) {
+    return { type: "expandable", name: `${name}${sectionSuffix}`, flatten: true, ...options, schema };
+  }
+  // section with the actions of the card
+  actionsSection(names = ["tap_action", "hold_action", "double_tap_action"]) {
+    return this.section("actions", names.map((name) => ({ name, selector: { ui_action: {} } })), { icon: "mdi:gesture-tap" });
+  }
+  // section with the fields of a condition, stored as {entity, above, below, state} below the name
+  conditionSection(name) {
+    this.conditionNames.add(name);
+    const numberBox2 = { number: { mode: "box", step: "any" } };
+    return {
+      type: "expandable",
+      name,
+      schema: [
+        { name: "entity", selector: { entity: {} } },
+        this.grid({ name: "above", selector: numberBox2 }, { name: "below", selector: numberBox2 }),
+        { name: "state", selector: { select: { multiple: true, custom_value: true, options: [] } } }
+      ]
+    };
+  }
+  // selector of a list of objects (or a map) with a dialog per entry; "name" is the translation
+  // group of the fields ("<name>_item.<field>")
+  listSelector(name, fields, options, multiple = true) {
+    return {
+      object: {
+        multiple,
+        label_field: options.labelField,
+        description_field: options.descriptionField,
+        fields: Object.fromEntries(fields.map((field) => {
+          if (field.list) (options.children ??= {})[field.name] = field.list.options;
+          if (field.object) (options.objects ??= {})[field.name] = field.object.options;
+          return [field.name, {
+            selector: field.list ? this.listSelector(field.name, field.list.fields, field.list.options) : field.object ? this.listSelector(field.name, field.object.fields, field.object.options, false) : field.selector,
+            required: field.required ?? false,
+            ...field.default === void 0 ? {} : { default: field.default },
+            label: this.text(`${name}_item.${field.name}`) ?? this.text(`item.${field.name}`) ?? field.name,
+            description: this.text(`helper.${name}_item.${field.name}`)
+          }];
+        }))
+      }
+    };
+  }
+  // list of objects (or a map) with a dialog per entry
+  listField(name, fields, options) {
+    this.listOptions.set(name, options);
+    return { name, selector: this.listSelector(name, fields, options) };
+  }
+  // a list in its own section; the section shows the label and the helper of the list
+  listSection(name, fields, options, sectionOptions = {}) {
+    this.sectionLists.add(name);
+    return this.section(name, [this.listField(name, fields, options)], sectionOptions);
+  }
+  labelOf(schema, path) {
+    const name = schema.name;
+    if (!name || this.sectionLists.has(name)) return "";
+    if (name.endsWith(sectionSuffix)) {
+      const base = name.slice(0, -sectionSuffix.length);
+      return this.text(`sections.${base}`) ?? this.text(base) ?? base;
+    }
+    if (path?.some((part) => this.conditionNames.has(part))) return this.text(`condition.${name}`) ?? name;
+    return this.text(name) ?? name;
+  }
+  helperOf(schema, path) {
+    const name = schema.name;
+    if (!name || this.sectionLists.has(name)) return void 0;
+    if (name.endsWith(sectionSuffix)) {
+      const base = name.slice(0, -sectionSuffix.length);
+      return this.text(`helper.sections.${base}`) ?? this.text(`helper.${base}`);
+    }
+    if (path?.some((part) => this.conditionNames.has(part))) return this.text(`helper.condition.${name}`);
+    return this.text(`helper.${name}`);
+  }
+  // values the editor adds to the form data or takes out again (e.g. one option shown as several
+  // fields, one list shown as two); toFormData gets the config with the defaults before lists and
+  // conditions are converted, fromFormData the converted values and returns the stored shape
+  toFormData(data) {
+    return data;
+  }
+  fromFormData(data) {
+    return data;
+  }
+  // config as shown in the form: conditions with a state list, maps as lists, plain texts as entries
+  toForm(config) {
+    const data = this.toFormData({ ...config });
+    for (const name of this.conditionNames) data[name] = conditionToForm(data[name]);
+    for (const [name, options] of this.listOptions) data[name] = listToForm(data[name], options);
+    return data;
+  }
+  // form data as stored: the reverse of toForm, entries without their empty fields
+  fromForm(data) {
+    const config = { ...data };
+    for (const name of this.conditionNames) config[name] = conditionFromForm(config[name]);
+    for (const [name, options] of this.listOptions) {
+      if (Array.isArray(config[name])) config[name] = listFromForm(config[name], options);
+    }
+    return this.fromFormData(config);
+  }
+  formData() {
+    return this.toForm({ ...this.defaults(), ...this.config });
   }
   setConfig(config) {
     this.config = config;
@@ -2911,7 +4416,7 @@ var GraphiteFormEditor = class extends HTMLElement {
       this.form.hass = hass;
       const defaults = JSON.stringify(this.defaults());
       if (defaults !== this.shownDefaults) {
-        this.form.data = { ...this.defaults(), ...this.config };
+        this.form.data = this.formData();
         this.shownDefaults = defaults;
       }
     } else this.render();
@@ -2921,24 +4426,21 @@ var GraphiteFormEditor = class extends HTMLElement {
       this.form = document.createElement("ha-form");
       this.form.addEventListener("value-changed", (event) => {
         event.stopPropagation();
-        this.fireConfig({ ...this.config, ...event.detail.value });
+        this.fireConfig(this.fromForm({ ...this.config, ...event.detail.value }));
       });
       this.replaceChildren(this.form);
     }
     const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
     if (this.formLanguage !== language || this.formSchemaKey !== this.schemaKey()) {
       this.formLanguage = language;
+      this.language = language;
       this.formSchemaKey = this.schemaKey();
       this.form.schema = this.schema();
-      this.form.computeLabel = (schema) => {
-        if (!schema.name) return "";
-        const key = `${this.labelPrefix()}.${schema.name}`;
-        const label = translate(language, key);
-        return label === key ? schema.name : label;
-      };
+      this.form.computeLabel = (schema, _data, options) => this.labelOf(schema, options?.path);
+      this.form.computeHelper = (schema, options) => this.helperOf(schema, options?.path);
     }
     if (this.hassObject) this.form.hass = this.hassObject;
-    this.form.data = { ...this.defaults(), ...this.config };
+    this.form.data = this.formData();
     this.shownDefaults = JSON.stringify(this.defaults());
   }
   fireConfig(config) {
@@ -2953,9 +4455,6 @@ var GraphiteFormEditor = class extends HTMLElement {
 // src/core/layout.ts
 function layoutOf(config, fallback) {
   return config?.layout === "row" || config?.layout === "tile" ? config.layout : fallback;
-}
-function layoutField() {
-  return { name: "layout", selector: { select: { mode: "list", options: ["row", "tile"] } } };
 }
 
 // src/cards/rows/graphite-row-editor.ts
@@ -2973,33 +4472,30 @@ var GraphiteRowEditor = class extends GraphiteFormEditor {
   schema() {
     const isRow = this.rowKind === "status" || layoutOf(this.config, "row") === "row";
     return [
-      ...this.rowKind === "switch" ? [layoutField()] : [],
+      ...this.rowKind === "switch" ? [this.layoutField()] : [],
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
       ...isRow ? [
-        { name: "since_line", selector: { boolean: {} } },
-        {
-          type: "grid",
-          name: "",
-          schema: [
+        this.section("since", [
+          { name: "since_line", selector: { boolean: {} } },
+          this.grid(
             { name: "since_attribute", selector: { text: {} } },
             { name: "since_attribute_label", selector: { text: {} } }
-          ]
-        },
-        { name: "detail_entities", selector: { object: {} } }
+          )
+        ]),
+        this.listSection("detail_entities", [
+          { name: "entity", required: true, selector: { entity: {} } },
+          { name: "label", selector: { text: {} } }
+        ], { labelField: "entity", descriptionField: "label", stringField: "entity" })
       ] : [],
-      { name: "online_entity", selector: { entity: {} } },
-      ...this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
+      this.section("availability", [
+        { name: "online_entity", selector: { entity: {} } },
+        ...this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
+      ]),
+      this.actionsSection()
     ];
   }
   // the "since" switch shows what the row does without the option: on, off for measured values
@@ -3256,75 +4752,68 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
   schema() {
     const isTile = layoutOf(this.config, "tile") === "tile";
     const isChange = this.config.style === "change";
+    const decimals = { number: { mode: "box", min: 0, max: 4 } };
     return [
-      layoutField(),
+      this.layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "style", selector: { select: { mode: "dropdown", options: ["gradient", "level", "change"] } } }
-        ]
-      },
-      ...isChange ? [{
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "reference", selector: { text: {} } },
-          { name: "reference_name", selector: { text: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        this.selectField("style", "styles", ["gradient", "level", "change"])
+      ),
+      ...isTile ? [this.grid(
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+        { name: "show_icon", selector: { boolean: {} } }
+      )] : [],
+      ...isChange ? [
+        this.section("reference_change", [
+          this.grid(
+            { name: "reference", selector: { text: {} } },
+            { name: "reference_name", selector: { text: {} } }
+          ),
           { name: "change_attribute", selector: { text: {} } },
-          { name: "scale", selector: { number: { mode: "box", min: 1, max: 1e3 } } },
-          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "change_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-          { name: "unit", selector: { text: {} } },
-          { name: "change_mode", selector: { select: { mode: "dropdown", options: ["percent", "absolute"].map((value) => ({ value, label: this.optionLabel(`changeModes.${value}`) })) } } },
+          this.grid(
+            this.selectField("change_mode", "changeModes", ["percent", "absolute"]),
+            { name: "scale", selector: { number: { mode: "box", min: 1, max: 1e3 } } }
+          ),
           { name: "invert", selector: { boolean: {} } }
-        ]
-      }] : [
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "min", selector: { number: { mode: "box" } } },
-            { name: "max", selector: { number: { mode: "box" } } },
-            { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+        ], { expanded: true }),
+        this.section("value_display", [
+          this.grid(
+            { name: "decimals", selector: decimals },
+            { name: "change_decimals", selector: decimals },
             { name: "unit", selector: { text: {} } }
-          ]
-        },
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "color", selector: { text: {} } },
-            { name: "low", selector: { number: { mode: "box" } } }
-          ]
-        },
-        { name: "colors", selector: { object: {} } }
-      ],
-      ...isTile ? [{
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-          { name: "show_icon", selector: { boolean: {} } }
-        ]
-      }] : [],
-      ...isChange ? [] : [
-        { name: "secondary_entity", selector: { entity: {} } },
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          )
+        ])
+      ] : [
+        this.section("value_display", [
+          this.grid(
+            { name: "min", selector: { number: { mode: "box" } } },
+            { name: "max", selector: { number: { mode: "box" } } }
+          ),
+          this.grid(
+            { name: "decimals", selector: decimals },
+            { name: "unit", selector: { text: {} } }
+          ),
+          { name: "low", selector: { number: { mode: "box" } } }
+        ]),
+        this.section("bar_colors", [
+          { name: "color", selector: { text: {} } },
+          // a map "value: color" in the YAML
+          this.listField("colors", [
+            { name: "value", required: true, selector: { number: { mode: "box", step: "any" } } },
+            { name: "color", required: true, selector: { text: {} } }
+          ], { labelField: "value", descriptionField: "color", map: { key: "value", value: "color", numericKey: true } })
+        ]),
+        this.section("secondary", [
+          { name: "secondary_entity", selector: { entity: {} } },
+          this.grid(
+            { name: "secondary_decimals", selector: decimals },
             { name: "secondary_unit", selector: { text: {} } },
             { name: "secondary_icon", selector: { icon: {} } }
-          ]
-        }
+          )
+        ])
       ],
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+      this.actionsSection()
     ];
   }
   // selects and radios show their default as selected; a value equal to it is not stored
@@ -3333,7 +4822,7 @@ var GraphiteMeterEditor = class extends GraphiteFormEditor {
   }
   skipValue(key, value) {
     if (key === "show_icon") return value !== true;
-    if (key === "colors") return typeof value !== "object" || Object.keys(value).length === 0;
+    if (key === "colors") return !value || typeof value !== "object" || Object.keys(value).length === 0;
     return false;
   }
 };
@@ -4002,39 +5491,30 @@ var GraphiteValueEditor = class extends GraphiteFormEditor {
   }
   schema() {
     const isTile = layoutOf(this.config, "tile") === "tile";
+    const decimals = { number: { mode: "box", min: 0, max: 4 } };
     return [
-      layoutField(),
+      this.layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      ...isTile ? [{ name: "show_icon", selector: { boolean: {} } }] : [],
+      this.section("value_display", [
+        this.grid(
+          { name: "decimals", selector: decimals },
           { name: "unit", selector: { text: {} } }
-        ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-          ...isTile ? [{ name: "show_icon", selector: { boolean: {} } }] : []
-        ]
-      },
-      { name: "secondary_entity", selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+        )
+      ]),
+      this.section("secondary", [
+        { name: "secondary_entity", selector: { entity: {} } },
+        this.grid(
+          { name: "secondary_decimals", selector: decimals },
           { name: "secondary_unit", selector: { text: {} } },
           { name: "secondary_icon", selector: { icon: {} } }
-        ]
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+        )
+      ]),
+      this.actionsSection()
     ];
   }
   // the layout radio shows the default as selected; a value equal to it is not stored
@@ -4268,9 +5748,7 @@ var GraphiteEffectEditor = class extends GraphiteFormEditor {
       { name: "name", selector: { text: {} } },
       { name: "colors", required: true, selector: { text: { multiple: true } } },
       { name: "entity", selector: { entity: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+      this.actionsSection()
     ];
   }
   skipValue(key, value) {
@@ -4394,9 +5872,7 @@ var GraphiteImageEditor = class extends GraphiteFormEditor {
       { name: "name", selector: { text: {} } },
       { name: "image", selector: { text: {} } },
       { name: "busy", selector: { boolean: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+      this.actionsSection()
     ];
   }
   skipValue(key, value) {
@@ -4588,48 +6064,77 @@ registerCard("graphite-image", GraphiteImage, {
 });
 
 // src/cards/tiles/graphite-stopwatch-editor.ts
+var limitKeys = ["weekday", "weekend", "mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+function limitValue(value) {
+  const text = String(value ?? "").trim();
+  if (text === "") return void 0;
+  return Number.isNaN(Number(text)) ? text : Number(text);
+}
 var GraphiteStopwatchEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "stopwatch.editor";
   }
+  // the select shows the default as selected; a value equal to it is not stored
+  defaults() {
+    return { icon_position: "watermark" };
+  }
   schema() {
+    const limitField = (key) => ({ name: `limit_${key}`, selector: { text: {} } });
     return [
       { name: "entity", required: true, selector: { entity: { domain: "sensor" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "icon_position", selector: { select: { mode: "dropdown", options: ["watermark", "left"] } } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      this.section("appearance", [
+        this.grid(
+          this.selectField("icon_position", "iconPositions", ["watermark", "left"]),
           { name: "color", selector: { text: {} } }
-        ]
-      },
-      { name: "picture_entity", selector: { entity: {} } },
-      { name: "limit", selector: { object: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
+        ),
+        { name: "picture_entity", selector: { entity: {} } }
+      ]),
+      this.section("daily_limit", [
+        limitField("all"),
+        this.section("limit_days", [
+          this.grid(limitField("weekday"), limitField("weekend")),
+          this.grid(...limitKeys.slice(2).map(limitField))
+        ]),
+        this.grid(
           { name: "warn_before", selector: { number: { mode: "box", min: 0 } } },
           { name: "day_start", selector: { text: {} } }
-        ]
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+        )
+      ]),
+      this.actionsSection()
     ];
   }
-  skipValue(key, value) {
-    if (key === "limit") return value === null || typeof value === "object" && Object.keys(value).length === 0;
-    if (key === "icon_position") return value === "watermark";
-    return false;
+  // limit -> limit_all and limit_<day>: a map whose weekday and weekend are equal counts as
+  // "all days" with single days on top
+  toFormData(data) {
+    const { limit, ...formData } = data;
+    if (limit !== null && typeof limit === "object") {
+      const sameForAll = limit.weekday !== void 0 && limit.weekday === limit.weekend;
+      if (sameForAll) formData.limit_all = String(limit.weekday);
+      for (const key of limitKeys) {
+        if (limit[key] !== void 0 && !(sameForAll && (key === "weekday" || key === "weekend"))) formData[`limit_${key}`] = String(limit[key]);
+      }
+    } else if (limit !== void 0 && limit !== null && limit !== "") formData.limit_all = String(limit);
+    return formData;
+  }
+  // the fields back to one option: only "all days" is stored as a plain value, otherwise a map
+  // (it has no key for all days, so that value is stored as weekday and weekend)
+  fromFormData(data) {
+    const config = { ...data };
+    const all = limitValue(config.limit_all);
+    delete config.limit_all;
+    const days = {};
+    for (const key of limitKeys) {
+      const value = limitValue(config[`limit_${key}`]);
+      if (value !== void 0) days[key] = value;
+      delete config[`limit_${key}`];
+    }
+    if (Object.keys(days).length === 0) config.limit = all;
+    else config.limit = all === void 0 ? days : { weekday: all, weekend: all, ...days };
+    return config;
   }
 };
 
@@ -4836,28 +6341,22 @@ var GraphiteTodoEditor = class extends GraphiteFormEditor {
   schema() {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "todo" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      this.section("texts", [
+        this.grid(
           { name: "unit", selector: { text: {} } },
-          { name: "unit_one", selector: { text: {} } },
-          { name: "empty_text", selector: { text: {} } },
-          { name: "color", selector: { text: {} } }
-        ]
-      },
-      { name: "preview", selector: { boolean: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+          { name: "unit_one", selector: { text: {} } }
+        ),
+        { name: "empty_text", selector: { text: {} } }
+      ]),
+      this.section("appearance", [
+        { name: "color", selector: { text: {} } },
+        { name: "preview", selector: { boolean: {} } }
+      ]),
+      this.actionsSection()
     ];
   }
   skipValue(key, value) {
@@ -4981,10 +6480,8 @@ var GraphiteInkEditor = class extends GraphiteFormEditor {
       { name: "entity", selector: { entity: {} } },
       { name: "name", selector: { text: {} } },
       { name: "cartridges", required: true, selector: { entity: { multiple: true, domain: "sensor" } } },
-      { name: "low_level", selector: { number: { mode: "box", min: 1, max: 50 } } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+      { name: "low_level", selector: { number: { mode: "box", min: 1, max: 50, unit_of_measurement: "%" } } },
+      this.actionsSection()
     ];
   }
   skipValue(key, value) {
@@ -5218,6 +6715,14 @@ function nextPickup(hass, entityId, lookaheadDays, dropAfter, onLoaded) {
   }
   return next;
 }
+function pickupOf(item) {
+  const pickup = item.pickup;
+  if (Array.isArray(pickup)) {
+    return { calendars: pickup, days: item.days, drop_after: item.drop_after, names: item.names, when: item.when };
+  }
+  if (pickup && typeof pickup === "object" && Array.isArray(pickup.calendars)) return pickup;
+  return void 0;
+}
 
 // src/cards/tiles/graphite-pickup-editor.ts
 var GraphitePickupEditor = class extends GraphiteFormEditor {
@@ -5227,26 +6732,18 @@ var GraphitePickupEditor = class extends GraphiteFormEditor {
   schema() {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "calendar" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "color", selector: { text: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      { name: "color", selector: { text: {} } },
+      this.section("dates", [
+        this.grid(
           { name: "drop_after", selector: { text: {} } },
           { name: "lookahead_days", selector: { number: { mode: "box", min: 7, max: 120 } } }
-        ]
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+        )
+      ]),
+      this.actionsSection()
     ];
   }
 };
@@ -5355,19 +6852,13 @@ var GraphiteSceneEditor = class extends GraphiteFormEditor {
   schema() {
     return [
       { name: "entity", required: true, selector: { entity: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
-      { name: "colors", selector: { object: {} } },
-      { name: "active", selector: { object: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      { name: "colors", selector: { text: { multiple: true } } },
+      this.conditionSection("active"),
+      this.actionsSection()
     ];
   }
 };
@@ -5476,8 +6967,41 @@ var GraphiteNowPlayingEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "nowPlaying.editor";
   }
+  defaults() {
+    return { backdrop: true };
+  }
   schema() {
-    return [{ name: "sources", required: true, selector: { object: {} } }];
+    return [
+      this.listSection("sources", [
+        { name: "entity", required: true, selector: { entity: {} } },
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} } },
+        { name: "states", selector: { text: { multiple: true } } },
+        { name: "requires", selector: { entity: { multiple: true } } },
+        { name: "title_entity", selector: { entity: {} } },
+        { name: "image_entity", selector: { entity: {} } },
+        { name: "subtitle", selector: { text: {} } },
+        { name: "fallback_title", selector: { text: {} } },
+        { name: "fallback_subtitle", selector: { text: {} } },
+        { name: "ignore_titles", selector: { text: { multiple: true } } },
+        // maps "raw title: shown title" and "title: image" in the YAML, edited in a second dialog
+        { name: "titles", list: {
+          fields: [
+            { name: "title", required: true, selector: { text: {} } },
+            { name: "shown", required: true, selector: { text: {} } }
+          ],
+          options: { labelField: "title", descriptionField: "shown", map: { key: "title", value: "shown" } }
+        } },
+        { name: "images", list: {
+          fields: [
+            { name: "title", required: true, selector: { text: {} } },
+            { name: "image", required: true, selector: { text: {} } }
+          ],
+          options: { labelField: "title", descriptionField: "image", map: { key: "title", value: "image" } }
+        } }
+      ], { labelField: "name", descriptionField: "entity", listFields: ["requires"] }, { expanded: true }),
+      { name: "backdrop", selector: { boolean: {} } }
+    ];
   }
 };
 
@@ -5826,45 +7350,83 @@ registerCard("graphite-now-playing", GraphiteNowPlaying, {
 });
 
 // src/cards/media/graphite-vacuum-editor.ts
+var entityOverrides = ["mode_entity", "suction_entity", "boost_entity", "history_entity", "error_entity", "drying_left_entity"];
 var GraphiteVacuumEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "vacuum.editor";
   }
   defaults() {
-    return { layout: "tile", boost: true, maintenance_threshold: 10 };
+    return { layout: "tile", boost: true, panels: true, maintenance_threshold: 10 };
   }
   schemaKey() {
     return this.config.layout === "panel" ? "panel" : "tile";
   }
   schema() {
     const panel = this.config.layout === "panel";
+    const text = { text: {} };
     const tileFields = [
       { name: "navigation_path", selector: { navigation: {} } }
     ];
     const panelFields = [
-      { name: "rooms", selector: { object: {} } },
-      { name: "presets", selector: { object: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "maintenance_threshold", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
-          { name: "boost", selector: { boolean: {} } }
-        ]
-      }
+      { name: "panels", selector: { boolean: {} } },
+      this.listSection("rooms", [
+        { name: "id", required: true, selector: { number: { mode: "box", min: 0 } } },
+        { name: "name", selector: text },
+        { name: "icon", selector: { icon: {} } }
+      ], { labelField: "name", descriptionField: "id", stringField: "id" }),
+      this.listSection("presets", [
+        { name: "name", required: true, selector: text },
+        { name: "icon", selector: { icon: {} } },
+        { name: "rooms", selector: { text: { multiple: true } } },
+        { name: "mode", selector: text },
+        { name: "suction", selector: text }
+      ], { labelField: "name", descriptionField: "mode" }),
+      this.listSection("modes", [
+        { name: "value", required: true, selector: text },
+        { name: "name", selector: text },
+        { name: "icon", selector: { icon: {} } }
+      ], { labelField: "value", descriptionField: "name", stringField: "value" }),
+      this.section("suction", [
+        this.grid(
+          { name: "boost", selector: { boolean: {} } },
+          { name: "boost_name", selector: text }
+        ),
+        this.listField("suction_levels", [
+          { name: "value", required: true, selector: text },
+          { name: "name", selector: text }
+        ], { labelField: "value", descriptionField: "name", stringField: "value" })
+      ]),
+      this.listSection("actions", [
+        { name: "entity", required: true, selector: { entity: {} } },
+        { name: "name", selector: text },
+        { name: "icon", selector: { icon: {} } }
+      ], { labelField: "name", descriptionField: "entity" }),
+      this.section("titles", [
+        this.grid(
+          { name: "cleaning_title", selector: text },
+          { name: "presets_title", selector: text },
+          { name: "station_title", selector: text }
+        )
+      ])
     ];
     return [
       { name: "entity", required: true, selector: { entity: { domain: "vacuum" } } },
-      { name: "layout", selector: { select: { mode: "list", options: ["tile", "panel"].map((value) => ({ value, label: this.optionLabel(`layouts.${value}`) })) } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "prefix", selector: { text: {} } }
-        ]
-      },
-      ...panel ? panelFields : tileFields
+      this.selectField("layout", "layouts", ["tile", "panel"], "list"),
+      this.grid(
+        { name: "name", selector: text },
+        { name: "prefix", selector: text }
+      ),
+      ...panel ? panelFields : tileFields,
+      this.section("wear", [
+        { name: "maintenance_threshold", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
+        this.listField("maintenance", [
+          { name: "key", required: true, selector: text },
+          { name: "name", selector: text },
+          { name: "due", selector: text },
+          { name: "reset", selector: { entity: {} } }
+        ], { labelField: "key", descriptionField: "name" })
+      ]),
+      this.section("entities", entityOverrides.map((name) => ({ name, selector: { entity: {} } })))
     ];
   }
 };
@@ -6293,28 +7855,28 @@ var GraphiteVacuum = class extends GraphiteCard {
   }
   normalizeConfig(config) {
     if (!config.entity) throw new Error("entity is required");
-    const prefix = config.prefix || config.entity.split(".")[1];
+    const prefix2 = config.prefix || config.entity.split(".")[1];
     this.entities = {
-      mode: config.mode_entity || `select.${prefix}_cleaning_mode`,
-      suction: config.suction_entity || `select.${prefix}_suction_level`,
-      boost: config.boost_entity || `switch.${prefix}_max_suction_power`,
-      history: config.history_entity || `sensor.${prefix}_cleaning_history`,
-      error: config.error_entity || `sensor.${prefix}_error`,
-      dryingLeft: config.drying_left_entity || `sensor.${prefix}_drying_left`
+      mode: config.mode_entity || `select.${prefix2}_cleaning_mode`,
+      suction: config.suction_entity || `select.${prefix2}_suction_level`,
+      boost: config.boost_entity || `switch.${prefix2}_max_suction_power`,
+      history: config.history_entity || `sensor.${prefix2}_cleaning_history`,
+      error: config.error_entity || `sensor.${prefix2}_error`,
+      dryingLeft: config.drying_left_entity || `sensor.${prefix2}_drying_left`
     };
     this.modes = (config.modes || defaultModes).map((mode) => typeof mode === "string" ? defaultModes.find((item) => item.value === mode) || { value: mode } : mode);
     this.suctionLevels = (config.suction_levels || defaultSuctionLevels).map((level) => typeof level === "string" ? defaultSuctionLevels.find((item) => item.value === level) || { value: level } : level);
     this.maintenance = config.maintenance || [
-      { key: "main_brush", reset: `button.${prefix}_reset_main_brush` },
-      { key: "side_brush", reset: `button.${prefix}_reset_side_brush` },
-      { key: "filter", reset: `button.${prefix}_reset_filter` },
-      { key: "sensor_dirty", reset: `button.${prefix}_reset_sensor` }
+      { key: "main_brush", reset: `button.${prefix2}_reset_main_brush` },
+      { key: "side_brush", reset: `button.${prefix2}_reset_side_brush` },
+      { key: "filter", reset: `button.${prefix2}_reset_filter` },
+      { key: "sensor_dirty", reset: `button.${prefix2}_reset_sensor` }
     ];
     this.stationActions = config.actions || [
-      { key: "self_clean", icon: "mdi:water-sync", entity: `button.${prefix}_self_clean` },
-      { key: "manual_drying", icon: "mdi:heat-wave", entity: `button.${prefix}_manual_drying` },
-      { key: "base_station_cleaning", icon: "mdi:spray-bottle", entity: `button.${prefix}_base_station_cleaning` },
-      { key: "start_auto_empty", icon: "mdi:delete-empty-outline", entity: `button.${prefix}_start_auto_empty` }
+      { key: "self_clean", icon: "mdi:water-sync", entity: `button.${prefix2}_self_clean` },
+      { key: "manual_drying", icon: "mdi:heat-wave", entity: `button.${prefix2}_manual_drying` },
+      { key: "base_station_cleaning", icon: "mdi:spray-bottle", entity: `button.${prefix2}_base_station_cleaning` },
+      { key: "start_auto_empty", icon: "mdi:delete-empty-outline", entity: `button.${prefix2}_start_auto_empty` }
     ];
     return config;
   }
@@ -7596,76 +9158,63 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
   schemaKey() {
     return `${this.config.layout ?? "list"}|${this.config.range ?? "this_and_next_week"}`;
   }
-  select(name, group, values) {
-    return { name, selector: { select: { mode: "dropdown", options: values.map((value) => ({ value, label: this.optionLabel(`${group}.${value}`) })) } } };
-  }
   schema() {
     const range = this.config.range ?? "this_and_next_week";
     const compact = this.config.layout === "compact";
     const tiles = this.config.layout === "tiles";
-    const isWeek = range === "week";
+    const highlightDays = { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } };
     return [
-      { name: "calendars", required: true, selector: { object: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          this.select("layout", "layouts", ["list", "compact", "tiles"]),
-          ...tiles ? [] : [this.select("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"])]
-        ]
-      },
-      ...tiles ? [{
-        type: "grid",
-        name: "",
-        schema: [
+      this.listSection("calendars", [
+        { name: "entity", required: true, selector: { entity: { domain: "calendar" } } },
+        { name: "name", selector: { text: {} } },
+        { name: "color", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} } },
+        { name: "highlight", selector: { boolean: {} } }
+      ], { labelField: "entity", descriptionField: "name", stringField: "entity" }, { expanded: true }),
+      this.grid(
+        this.selectField("layout", "layouts", ["list", "compact", "tiles"]),
+        ...tiles ? [] : [this.selectField("range", "ranges", ["today", "this_week", "this_and_next_week", "days", "week"])]
+      ),
+      ...range === "days" && !tiles ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : [],
+      ...range === "week" && !tiles ? [this.grid(
+        this.selectField("week", "weeks", ["current", "next"]),
+        { name: "week_rollover", selector: { text: {} } }
+      )] : [],
+      ...tiles ? [this.section("tiles", [
+        this.grid(
           { name: "icon", selector: { icon: {} } },
           { name: "highlight_name", selector: { text: {} } }
-        ]
-      }, {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } },
-          { name: "day_switch", selector: { text: {} } }
-        ]
-      }, { name: "weekdays", selector: { boolean: {} } }] : [],
-      ...range === "days" && !tiles ? [{ name: "days", selector: { number: { mode: "box", min: 1, max: 120 } } }] : [],
-      ...isWeek && !tiles ? [{
-        type: "grid",
-        name: "",
-        schema: [
-          this.select("week", "weeks", ["current", "next"]),
-          { name: "week_rollover", selector: { text: {} } }
-        ]
-      }] : [],
-      ...tiles ? [] : [{
-        type: "grid",
-        name: "",
-        schema: [
+        ),
+        this.grid(highlightDays, { name: "day_switch", selector: { text: {} } }),
+        { name: "weekdays", selector: { boolean: {} } }
+      ], { expanded: true })] : [],
+      this.section("display", [
+        ...tiles ? [] : [this.grid(
           { name: "title", selector: { text: {} } },
           { name: "max_items", selector: { number: { mode: "box", min: 1, max: 100 } } }
-        ]
-      }],
-      ...tiles ? [] : compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [{
-        type: "grid",
-        name: "",
-        schema: [
-          this.select("secondary", "secondaries", ["calendar_location", "calendar", "location", "description", "none"]),
-          { name: "highlight_days", selector: { number: { mode: "box", min: 0, max: 60 } } }
-        ]
-      }],
-      { name: "show_past_today", selector: { boolean: {} } },
-      { name: "rules", selector: { object: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
+        )],
+        ...tiles ? [] : compact ? [{ name: "weekdays", selector: { boolean: {} } }] : [this.grid(
+          this.selectField("secondary", "secondaries", ["calendar_location", "calendar", "location", "description", "none"]),
+          highlightDays
+        )],
+        { name: "show_past_today", selector: { boolean: {} } },
+        this.grid(
           { name: "empty_text", selector: { text: {} } },
           { name: "hide_empty", selector: { boolean: {} } }
-        ]
-      },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } }
+        )
+      ]),
+      // a rule's "highlight: false" overrides the highlight of its calendar
+      this.listSection("rules", [
+        { name: "name", selector: { text: {} } },
+        { name: "starts_with", selector: { text: {} } },
+        { name: "contains", selector: { text: {} } },
+        { name: "contains_any", selector: { text: { multiple: true } } },
+        { name: "contains_all", selector: { text: { multiple: true } } },
+        { name: "color", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} } },
+        { name: "highlight", selector: { boolean: {} } }
+      ], { labelField: "name", descriptionField: "starts_with", keepFalse: ["highlight"] }),
+      this.actionsSection(["tap_action", "hold_action"])
     ];
   }
 };
@@ -8094,12 +9643,12 @@ var GraphiteCalendar = class extends GraphiteCard {
     this.shown = (events ?? []).slice(0, limit);
     const hiddenCount = (events?.length ?? 0) - this.shown.length;
     const compact = config.layout === "compact";
-    const isEmpty = !!events && events.length === 0 && !(compact && config.weekdays) && !this.isTiles;
-    this.toggleAttribute("hidden-empty", isEmpty && !!config.hide_empty);
+    const isEmpty3 = !!events && events.length === 0 && !(compact && config.weekdays) && !this.isTiles;
+    this.toggleAttribute("hidden-empty", isEmpty3 && !!config.hide_empty);
     if (!events) return b2`${this.renderHeader(period, [])}`;
     if (this.isTiles) return b2`${this.renderTiles(now, today)}`;
     const header = this.renderHeader(period, events);
-    if (isEmpty) {
+    if (isEmpty3) {
       const text = config.empty_text ?? this.localize("calendar.empty", { date: lastRangeDay });
       return b2`${header}<div class="empty"><div class="icon"><ha-icon icon="mdi:check-circle"></ha-icon></div>${text}</div>`;
     }
@@ -8127,6 +9676,7 @@ registerCard("graphite-calendar", GraphiteCalendar, {
 });
 
 // src/cards/lists/graphite-summary-editor.ts
+var rowLabel = "row_label";
 var GraphiteSummaryEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "summary.editor";
@@ -8134,25 +9684,129 @@ var GraphiteSummaryEditor = class extends GraphiteFormEditor {
   defaults() {
     return { clock: true, greeting: false };
   }
+  // item as shown in the dialog: show and alert as objects (true / false become a switch and a
+  // mode), pickup always in the form {calendars, days, ...}
+  itemToForm(entry) {
+    const { days, drop_after: dropAfter, names, when, ...data } = entry;
+    const pickup = pickupOf(entry);
+    if (pickup) data.pickup = { ...pickup, [rowLabel]: pickup.calendars.join(", ") };
+    else Object.assign(data, { days, drop_after: dropAfter, names, when });
+    if (data.show === true) data.show = { always: true, [rowLabel]: this.localText("conditionLabel.always") };
+    else if (data.show && typeof data.show === "object") {
+      data.show = { ...conditionToForm(data.show), [rowLabel]: this.conditionLabel(data.show) };
+    }
+    if (typeof data.alert === "boolean") {
+      data.alert = { mode: data.alert ? "always" : "never", [rowLabel]: this.localText(`conditionLabel.${data.alert ? "always" : "never"}`) };
+    } else if (data.alert && typeof data.alert === "object") {
+      data.alert = { ...conditionToForm(data.alert), mode: "condition", [rowLabel]: this.conditionLabel(data.alert) };
+    }
+    return data;
+  }
+  itemFromForm(entry) {
+    const data = { ...entry };
+    if (data.show && typeof data.show === "object") {
+      const { always, [rowLabel]: _label, ...condition } = data.show;
+      data.show = always === true ? true : conditionFromForm(condition);
+    }
+    if (data.alert && typeof data.alert === "object") {
+      const { mode, [rowLabel]: _label, ...condition } = data.alert;
+      data.alert = mode === "always" ? true : mode === "never" ? false : conditionFromForm(condition);
+    }
+    if (data.pickup && typeof data.pickup === "object") {
+      const { [rowLabel]: _label, ...pickup } = data.pickup;
+      data.pickup = Array.isArray(pickup.calendars) && pickup.calendars.length ? pickup : void 0;
+    }
+    return data;
+  }
   schema() {
+    const text = { text: {} };
+    const numberBox2 = { number: { mode: "box", step: "any" } };
+    const stateList = { select: { multiple: true, custom_value: true, options: [] } };
+    const conditionFields = [
+      { name: "above", selector: numberBox2 },
+      { name: "below", selector: numberBox2 },
+      { name: "state", selector: stateList }
+    ];
+    const alertModes = ["condition", "always", "never"].map((value) => ({ value, label: this.optionLabel(`alertModes.${value}`) }));
     return [
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "clock", selector: { boolean: {} } },
-          { name: "greeting", selector: { boolean: {} } }
-        ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "calm_text", selector: { text: {} } },
-          { name: "and_word", selector: { text: {} } }
-        ]
-      },
-      { name: "items", required: true, selector: { object: {} } },
+      this.grid(
+        { name: "clock", selector: { boolean: {} } },
+        { name: "greeting", selector: { boolean: {} } }
+      ),
+      this.grid(
+        { name: "calm_text", selector: text },
+        { name: "and_word", selector: text }
+      ),
+      this.listSection("items", [
+        { name: "name", selector: text },
+        { name: "entity", selector: { entity: {} } },
+        { name: "text", selector: text },
+        { name: "text_one", selector: text },
+        { name: "show", object: {
+          fields: [{ name: "always", selector: { boolean: {} } }, ...conditionFields],
+          options: { labelField: rowLabel }
+        } },
+        { name: "alert", object: {
+          fields: [
+            { name: "mode", default: "condition", selector: { select: { mode: "dropdown", options: alertModes } } },
+            ...conditionFields
+          ],
+          options: { labelField: rowLabel }
+        } },
+        { name: "alert_text", selector: text },
+        { name: "alert_text_one", selector: text },
+        // a level is a condition with its own text; alert is on unless switched off
+        { name: "levels", list: {
+          fields: [
+            ...conditionFields,
+            { name: "text", required: true, selector: text },
+            { name: "alert", default: true, selector: { boolean: {} } }
+          ],
+          options: {
+            labelField: "text",
+            keepFalse: ["alert"],
+            itemToForm: (level) => ({ ...conditionToForm(level), alert: level.alert !== false }),
+            itemFromForm: (level) => {
+              const { alert, ...stored } = conditionFromForm(level) ?? {};
+              return alert === false ? { ...stored, alert } : stored;
+            }
+          }
+        } },
+        { name: "pickup", object: {
+          fields: [
+            { name: "calendars", required: true, selector: { entity: { multiple: true, domain: "calendar" } } },
+            { name: "days", selector: { number: { mode: "box", min: 0, max: 14 } } },
+            { name: "drop_after", selector: text },
+            { name: "names", list: {
+              fields: [
+                { name: "entity", required: true, selector: { entity: { domain: "calendar" } } },
+                { name: "name", required: true, selector: text }
+              ],
+              options: { labelField: "name", descriptionField: "entity", map: { key: "entity", value: "name" } }
+            } },
+            { name: "when", list: {
+              fields: [
+                { name: "days", required: true, selector: { number: { mode: "box", min: 0, max: 14 } } },
+                { name: "word", required: true, selector: text }
+              ],
+              options: { labelField: "word", descriptionField: "days", map: { key: "days", value: "word", numericKey: true } }
+            } }
+          ],
+          options: { labelField: rowLabel }
+        } },
+        { name: "icon", selector: { icon: {} } },
+        { name: "color", selector: text },
+        { name: "line", selector: { number: { mode: "box", min: 1, max: 9 } } },
+        { name: "navigation_path", selector: { navigation: {} } },
+        { name: "more_info", selector: { boolean: {} } },
+        { name: "tap_action", selector: { ui_action: {} } }
+      ], {
+        labelField: "name",
+        descriptionField: "entity",
+        keepFalse: ["alert"],
+        itemToForm: (entry) => this.itemToForm(entry),
+        itemFromForm: (entry) => this.itemFromForm(entry)
+      }, { expanded: true }),
       { name: "hold_action", selector: { ui_action: {} } }
     ];
   }
@@ -8267,7 +9921,7 @@ var GraphiteSummary = class extends GraphiteCard {
     return config;
   }
   watchedEntities() {
-    return (this.config?.items ?? []).flatMap((item) => [...item.entity ? [item.entity] : [], ...item.pickup ?? []]);
+    return (this.config?.items ?? []).flatMap((item) => [...item.entity ? [item.entity] : [], ...pickupOf(item)?.calendars ?? []]);
   }
   connectedCallback() {
     super.connectedCallback();
@@ -8305,20 +9959,20 @@ var GraphiteSummary = class extends GraphiteCard {
   }
   // ---------- phrases ----------
   // "[Karton] wird morgen abgeholt" / "[Karton] und [Papier] werden heute abgeholt"
-  pickupPhrases(item, index) {
-    const maxDays = Number(item.days ?? 1);
+  pickupPhrases(item, pickup, index) {
+    const maxDays = Number(pickup.days ?? 1);
     const byDay = /* @__PURE__ */ new Map();
-    for (const entityId of item.pickup ?? []) {
-      const next = nextPickup(this.hass, entityId, 14, item.drop_after, () => this.requestUpdate());
+    for (const entityId of pickup.calendars) {
+      const next = nextPickup(this.hass, entityId, 14, pickup.drop_after, () => this.requestUpdate());
       if (!next || next.days > maxDays) continue;
       const attributes = this.hass.states[entityId]?.attributes ?? {};
-      const name = item.names?.[entityId] || attributes.message || attributes.friendly_name || entityId;
+      const name = pickup.names?.[entityId] || attributes.message || attributes.friendly_name || entityId;
       byDay.set(next.days, [...byDay.get(next.days) ?? [], name]);
     }
     return [...byDay.keys()].sort((first, second) => first - second).map((days) => {
       const names = byDay.get(days).map((name) => `[${name}]`);
       const template = names.length === 1 ? item.text_one || this.t("pickupOne") : item.text || this.t("pickupMany");
-      const when = item.when?.[days] ?? (days <= 2 ? this.t(`when.${days}`) : this.t("inDays", { days }));
+      const when = pickup.when?.[days] ?? (days <= 2 ? this.t(`when.${days}`) : this.t("inDays", { days }));
       return { index, alert: item.alert !== false, text: template.split("{names}").join(this.join(names)).split("{when}").join(when) };
     });
   }
@@ -8330,7 +9984,8 @@ var GraphiteSummary = class extends GraphiteCard {
   phrases() {
     const states = this.hass.states;
     return this.config.items.flatMap((item, index) => {
-      if (Array.isArray(item.pickup)) return this.pickupPhrases(item, index);
+      const pickup = pickupOf(item);
+      if (pickup) return this.pickupPhrases(item, pickup, index);
       const state = item.entity ? states[item.entity]?.state : void 0;
       if (state === void 0 || unavailable.includes(state)) return [];
       const number = Number(state);
@@ -8527,18 +10182,34 @@ var GraphiteShoppingEditor = class extends GraphiteFormEditor {
   schema() {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "todo" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
+      { name: "panels", selector: { boolean: {} } },
+      this.listSection("groups", [
+        { name: "name", required: true, selector: { text: {} } },
+        { name: "wide", selector: { boolean: {} } },
+        // a product is a name or {name, variants, description} in the YAML
+        { name: "items", required: true, list: {
+          fields: [
+            { name: "name", required: true, selector: { text: {} } },
+            { name: "variants", selector: { text: { multiple: true } } },
+            { name: "description", selector: { text: {} } }
+          ],
+          options: {
+            labelField: "name",
+            descriptionField: "description",
+            stringField: "name",
+            // variants may be numbers in the YAML and are texts in the form
+            itemToForm: (entry) => Array.isArray(entry.variants) ? { ...entry, variants: entry.variants.map(String) } : entry
+          }
+        } }
+      ], { labelField: "name" }, { expanded: true }),
+      this.section("texts", [
+        this.grid(
           { name: "list_title", selector: { text: {} } },
           { name: "quick_title", selector: { text: {} } },
           { name: "placeholder", selector: { text: {} } },
           { name: "empty_text", selector: { text: {} } }
-        ]
-      },
-      { name: "panels", selector: { boolean: {} } },
-      { name: "groups", selector: { object: {} } }
+        )
+      ])
     ];
   }
 };
@@ -9443,19 +11114,21 @@ var GraphiteBatteryEditor = class extends GraphiteFormEditor {
     return { critical: 20, low: 40, exclude_label: "exclude", collapsed: true };
   }
   schema() {
+    const battery = { domain: "sensor", device_class: "battery" };
     return [
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "critical", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
-          { name: "low", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } }
-        ]
-      },
-      { name: "exclude_label", selector: { label: {} } },
-      { name: "exclude", selector: { entity: { multiple: true, filter: { domain: "sensor", device_class: "battery" } } } },
+      this.grid(
+        { name: "critical", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } },
+        { name: "low", selector: { number: { mode: "box", min: 0, max: 100, unit_of_measurement: "%" } } }
+      ),
       { name: "collapsed", selector: { boolean: {} } },
-      { name: "names", selector: { object: {} } }
+      this.section("excluded", [
+        { name: "exclude_label", selector: { label: {} } },
+        { name: "exclude", selector: { entity: { multiple: true, filter: battery } } }
+      ]),
+      this.listSection("names", [
+        { name: "entity", required: true, selector: { entity: { filter: battery } } },
+        { name: "name", required: true, selector: { text: {} } }
+      ], { labelField: "name", descriptionField: "entity", map: { key: "entity", value: "name" } })
     ];
   }
 };
@@ -9631,14 +11304,40 @@ registerCard("graphite-battery", GraphiteBattery, {
 });
 
 // src/cards/lists/graphite-legend-editor.ts
+var opacity = { number: { mode: "box", min: 0, max: 1, step: 0.05 } };
+var numberBox = { number: { mode: "box", step: "any" } };
 var GraphiteLegendEditor = class extends GraphiteFormEditor {
   labelPrefix() {
     return "legend.editor";
   }
   schema() {
     return [
-      { name: "scales", selector: { object: {} } },
-      { name: "items", selector: { object: {} } }
+      this.listSection("scales", [
+        { name: "name", selector: { text: {} } },
+        { name: "unit", selector: { text: {} } },
+        { name: "stops", required: true, list: {
+          fields: [
+            { name: "value", required: true, selector: numberBox },
+            { name: "color", required: true, selector: { text: {} } }
+          ],
+          options: { labelField: "value", descriptionField: "color" }
+        } },
+        { name: "min", selector: numberBox },
+        { name: "max", selector: numberBox },
+        { name: "ticks", selector: { text: { multiple: true } } },
+        { name: "opacity", selector: opacity }
+      ], {
+        labelField: "name",
+        descriptionField: "unit",
+        // ticks are numbers in the YAML and texts in the form
+        itemToForm: (entry) => Array.isArray(entry.ticks) ? { ...entry, ticks: entry.ticks.map(String) } : entry,
+        itemFromForm: (entry) => Array.isArray(entry.ticks) ? { ...entry, ticks: entry.ticks.map(Number).filter((tick) => !Number.isNaN(tick)) } : entry
+      }, { expanded: true }),
+      this.listSection("items", [
+        { name: "name", required: true, selector: { text: {} } },
+        { name: "color", selector: { text: {} } },
+        { name: "opacity", selector: opacity }
+      ], { labelField: "name", descriptionField: "color" }, { expanded: true })
     ];
   }
 };
@@ -9738,12 +11437,12 @@ var GraphiteLegend = class extends GraphiteCard {
     const range = max - min || 1;
     const percentOf = (value) => Math.min(100, Math.max(0, (value - min) / range * 100));
     const gradient = stops.map((stop) => `${stop.color} ${percentOf(stop.value).toFixed(2)}%`).join(", ");
-    const opacity = scale.opacity !== void 0 ? `; opacity: ${scale.opacity}` : "";
+    const opacity2 = scale.opacity !== void 0 ? `; opacity: ${scale.opacity}` : "";
     const ticks = scale.ticks ?? [...new Set(stops.map((stop) => stop.value))];
     return b2`
       <div class="scale">
         <div class="scaleHead"><span class="name">${scale.name ?? ""}</span><span class="unit">${scale.unit ?? ""}</span></div>
-        <div class="bar" style="background: linear-gradient(to right, ${gradient})${opacity}"></div>
+        <div class="bar" style="background: linear-gradient(to right, ${gradient})${opacity2}"></div>
         <div class="ticks">
           ${ticks.map((value) => {
       const percent = percentOf(value);
@@ -9804,25 +11503,30 @@ var GraphiteTimelineEditor = class extends GraphiteFormEditor {
   }
   schema() {
     return [
-      { name: "entities", required: true, selector: { object: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "default_interval", selector: { text: {} } },
-          { name: "bridge", selector: { text: {} } }
-        ]
-      },
-      { name: "intervals", selector: { object: {} } },
-      { name: "ignore_states", selector: { object: {} } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "show_picker", selector: { boolean: {} } },
-          { name: "show_total", selector: { boolean: {} } }
-        ]
-      }
+      this.listSection("entities", [
+        { name: "entity", required: true, selector: { entity: {} } },
+        { name: "name", selector: { text: {} } },
+        { name: "color", selector: { text: {} } },
+        { name: "ignore_states", selector: { text: { multiple: true } } },
+        // a map "state: color" in the YAML, edited in a second dialog
+        { name: "state_colors", list: {
+          fields: [
+            { name: "state", required: true, selector: { text: {} } },
+            { name: "color", required: true, selector: { text: {} } }
+          ],
+          options: { labelField: "state", descriptionField: "color", map: { key: "state", value: "color" } }
+        } }
+      ], { labelField: "entity", descriptionField: "name", stringField: "entity" }, { expanded: true }),
+      this.section("period", [
+        { name: "intervals", selector: { text: { multiple: true } } },
+        { name: "default_interval", selector: { text: {} } },
+        { name: "show_picker", selector: { boolean: {} } }
+      ]),
+      this.section("bars", [
+        { name: "bridge", selector: { text: {} } },
+        { name: "ignore_states", selector: { text: { multiple: true } } },
+        { name: "show_total", selector: { boolean: {} } }
+      ])
     ];
   }
 };
@@ -10520,43 +12224,34 @@ var GraphiteSliderEditor = class extends GraphiteFormEditor {
   }
   schema() {
     const attribute = this.config.attribute ?? "brightness";
+    const numberBox2 = { number: { mode: "box", step: "any" } };
     const lightFields = [
-      { name: "attribute", selector: { select: { mode: "dropdown", options: ["brightness", "color_temp", "hue", "saturation"].map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
+      this.selectField("attribute", "attributes", ["brightness", "color_temp", "hue", "saturation"]),
       ...attribute === "brightness" ? [{ name: "allow_off", selector: { boolean: {} } }] : []
     ];
-    const numberFields = [
-      { name: "value_format", selector: { select: { mode: "dropdown", options: ["percent", "state"].map((value) => ({ value, label: this.optionLabel(`valueFormat.${value}`) })) } } }
-    ];
+    const numberFields = [this.selectField("value_format", "valueFormat", ["percent", "state"])];
     return [
       { name: "entity", required: true, selector: { entity: { domain: ["number", "input_number", "light"] } } },
-      { name: "layout", selector: { select: { mode: "list", options: ["inline", "row"].map((value) => ({ value, label: this.optionLabel(`layouts.${value}`) })) } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
-        ]
-      },
+      this.selectField("layout", "layouts", ["inline", "row"], "list"),
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
       ...this.isLight() ? lightFields : numberFields,
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "min", selector: { number: { mode: "box", step: "any" } } },
-          { name: "max", selector: { number: { mode: "box", step: "any" } } },
-          { name: "step", selector: { number: { mode: "box", step: "any" } } }
-        ]
-      },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "ticks", selector: { select: { mode: "dropdown", options: ["auto", "steps", "quarters", "none"].map((value) => ({ value, label: this.optionLabel(`tickModes.${value}`) })) } } },
-          { name: "tick_every", selector: { number: { mode: "box", step: "any" } } },
-          { name: "major_every", selector: { number: { mode: "box", step: "any" } } }
-        ]
-      }
+      this.section("range", [
+        this.grid(
+          { name: "min", selector: numberBox2 },
+          { name: "max", selector: numberBox2 },
+          { name: "step", selector: numberBox2 }
+        )
+      ]),
+      this.section("tick_marks", [
+        this.selectField("ticks", "tickModes", ["auto", "steps", "quarters", "none"]),
+        this.grid(
+          { name: "tick_every", selector: numberBox2 },
+          { name: "major_every", selector: numberBox2 }
+        )
+      ])
     ];
   }
 };
@@ -10931,31 +12626,23 @@ var GraphiteLightEditor = class extends GraphiteFormEditor {
   schema() {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "light" } } },
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "name", selector: { text: {} } },
-          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      this.section("slider_options", [
+        { name: "show_sliders", selector: { boolean: {} } },
+        ...this.config.show_sliders === false ? [] : [
+          { name: "sliders", selector: { select: { multiple: true, mode: "list", options: ["brightness", "color_temp", "hue", "saturation"].map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
+          this.selectField("unavailable_sliders", "unavailableSliders", ["show", "hide"]),
+          { name: "allow_off", selector: { boolean: {} } }
         ]
-      },
-      { name: "show_sliders", selector: { boolean: {} } },
-      ...this.config.show_sliders === false ? [] : [
-        { name: "sliders", selector: { select: { multiple: true, mode: "list", options: ["brightness", "color_temp", "hue", "saturation"].map((value) => ({ value, label: this.optionLabel(`attributes.${value}`) })) } } },
-        { name: "unavailable_sliders", selector: { select: { mode: "dropdown", options: ["show", "hide"].map((value) => ({ value, label: this.optionLabel(`unavailableSliders.${value}`) })) } } }
-      ],
-      {
-        type: "grid",
-        name: "",
-        schema: [
-          { name: "allow_off", selector: { boolean: {} } },
-          { name: "wall_switch", selector: { boolean: {} } }
-        ]
-      },
-      { name: "since_line", selector: { boolean: {} } },
-      { name: "tap_action", selector: { ui_action: {} } },
-      { name: "hold_action", selector: { ui_action: {} } },
-      { name: "double_tap_action", selector: { ui_action: {} } }
+      ]),
+      this.section("display", [
+        { name: "since_line", selector: { boolean: {} } },
+        { name: "wall_switch", selector: { boolean: {} } }
+      ]),
+      this.actionsSection()
     ];
   }
 };

@@ -61,5 +61,5 @@ attribute: color_temp
 
 ## Editor
 
-Entity, layout, name and icon; lights get «Steuert» (brightness, white temperature, color, saturation)
-and «Ganz links schaltet aus», numbers the value display; range, step, ticks and long ticks for all.
+Entity, layout, name and icon; lights get "Controls" (brightness, white temperature, color, saturation)
+and "off at 0", numbers the value display; the sections *Range* (min, max, step) and *Ticks*.
