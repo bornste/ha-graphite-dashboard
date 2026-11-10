@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.45.2";
+var version = "0.46.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -565,6 +565,9 @@ var de_default = {
     yesterday: "gestern {time}",
     minutes: "{minutes} Min.",
     hoursMinutes: "{hours}:{minutes} h"
+  },
+  dialog: {
+    close: "Schliessen"
   },
   panel: {
     editor: {
@@ -1732,6 +1735,9 @@ var en_default = {
     yesterday: "yesterday {time}",
     minutes: "{minutes} min",
     hoursMinutes: "{hours}:{minutes} h"
+  },
+  dialog: {
+    close: "Close"
   },
   panel: {
     editor: {
@@ -3640,7 +3646,8 @@ var GraphitePanel = class extends GraphiteCard {
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : void 0;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
     const buttons = this.buttonConfigs();
-    const showHeader = !!(config.title || config.info || chips.length || buttons.length);
+    const hasActions = !!this.querySelector(":scope > [slot=actions]");
+    const showHeader = !!(config.title || config.info || chips.length || buttons.length || hasActions);
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;
     else if (config.columns) columns = `repeat(${Number(config.columns)}, minmax(0, 1fr))`;
@@ -3651,7 +3658,7 @@ var GraphitePanel = class extends GraphiteCard {
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
     return b2`<ha-card style=${cardStyle}>${showHeader ? b2`<div class="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
-        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}</span>` : A}</div>` : A}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
+        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}${hasActions ? b2`<slot name="actions"></slot>` : A}</span>` : A}</div>` : A}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
   }
   getCardSize() {
     return 1 + this.childCards.length;
@@ -3703,7 +3710,7 @@ GraphitePanel.styles = i`
       justify-content: flex-start;
       align-items: center;
       gap: var(--graphite-gap-header, 12px);
-      margin-bottom: var(--graphite-gap-header, 12px);
+      margin-bottom: var(--graphite-header-margin, var(--graphite-gap-header, 12px));
     }
     /* title and info share one baseline; with buttons the row is as high as the buttons */
     .heading {
@@ -3750,6 +3757,7 @@ GraphitePanel.styles = i`
       font-size: var(--graphite-title-size, 18px);
       font-weight: var(--graphite-title-weight, 400);
       line-height: 1.2;
+      padding-left: var(--graphite-title-inset, 0);
       color: var(--graphite-title-color, var(--primary-text-color));
     }
     .title:empty {
@@ -12785,6 +12793,156 @@ registerCard("graphite-light", GraphiteLight, {
   description: "Lamp as a tile: switch row head (toggle or wall switch) with brightness and white temperature sliders."
 });
 
+// src/cards/graphite-dialog.ts
+function normalizeHash(hash) {
+  const text = String(hash ?? "").trim();
+  if (!text) return "";
+  return text.startsWith("#") ? text : `#${text}`;
+}
+var GraphiteDialog = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!normalizeHash(config.hash)) throw new Error("graphite-dialog: 'hash' is required, e.g. '#lights'");
+    if (!Array.isArray(config.cards)) throw new Error("graphite-dialog: 'cards' must be a list of cards");
+    return { ...config, hash: normalizeHash(config.hash) };
+  }
+  setConfig(config) {
+    super.setConfig(config);
+    this.buildPanel();
+  }
+  hassChanged(hass) {
+    if (this.panel && hass) this.panel.hass = hass;
+  }
+  // the content is a frameless graphite-panel: same header, same layouts, child panels stay panels
+  buildPanel() {
+    const config = this.config;
+    if (!this.panel) this.panel = document.createElement("graphite-panel");
+    this.panel.setConfig({
+      type: "custom:graphite-panel",
+      title: config.title,
+      info: config.info,
+      info_alert: config.info_alert,
+      chips: config.chips,
+      buttons: config.buttons,
+      layout: config.layout ?? "vertical",
+      columns: config.columns,
+      min_column_width: config.min_column_width,
+      gap: config.gap ?? "16px",
+      frame: false,
+      cards: config.cards
+    });
+    if (this.hass) this.panel.hass = this.hass;
+  }
+  // called by the dialog layer: adds the close button to the header
+  enableClose() {
+    this.toggleAttribute("layered", true);
+    this.requestUpdate();
+    if (this.closeButton || !this.panel) return;
+    const button = document.createElement("button");
+    button.className = "close";
+    button.slot = "actions";
+    const label = this.localize("dialog.close");
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.append(document.createElement("ha-ripple"));
+    const icon = document.createElement("ha-icon");
+    icon.icon = "mdi:close";
+    button.append(icon);
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      this.dispatchEvent(new CustomEvent("graphite-dialog-close", { bubbles: true, composed: true }));
+    });
+    this.closeButton = button;
+    this.panel.append(button);
+    this.panel.requestUpdate?.();
+  }
+  focusDialog() {
+    this.renderRoot.querySelector(".dialog")?.focus({ preventScroll: true });
+  }
+  render() {
+    const config = this.config;
+    const layered = this.hasAttribute("layered");
+    const style = config.width ? `--dialogWidth: ${config.width}` : "";
+    return b2`${layered ? A : b2`<div class="hash">${config.hash}</div>`}<div class="dialog" style=${style}
+      role=${layered ? "dialog" : A} aria-modal=${layered ? "true" : A} aria-label=${config.title ?? A}
+      tabindex=${layered ? "-1" : A}>${this.panel}</div>`;
+  }
+  getCardSize() {
+    return 1 + (this.config?.cards?.length ?? 0);
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto", min_columns: 6 };
+  }
+  static getStubConfig() {
+    return { hash: "#dialog", title: "Dialog", cards: [] };
+  }
+};
+GraphiteDialog.styles = i`
+    :host {
+      display: block;
+    }
+    /* darker than the panels inside, so the levels read ground → panel → tile */
+    .dialog {
+      box-sizing: border-box;
+      padding: 16px;
+      border-radius: var(--graphite-radius-panel, 20px);
+      background: var(--graphite-overlay, rgba(10, 10, 11, 0.9));
+      color: var(--graphite-text-primary, var(--primary-text-color));
+      /* the first panel sits as far below the header buttons as they sit below the dialog edge */
+      --graphite-header-margin: 16px;
+      /* optical inset: the title alone looks too close to the dialog edge */
+      --graphite-title-inset: 4px;
+    }
+    /* inline in the dialogs view: a thin outline shows the dialog edge on the page ground */
+    :host(:not([layered])) .dialog {
+      box-shadow: 0 0 0 1px var(--graphite-separator, rgba(255, 255, 255, 0.12));
+    }
+    .hash {
+      margin: 0 0 6px 4px;
+      font-size: var(--graphite-font-caption-size, 12px);
+      line-height: 16px;
+      color: var(--graphite-text-muted, var(--secondary-text-color));
+    }
+    :host([layered]) .dialog {
+      width: min(var(--dialogWidth, 520px), 100%);
+      max-height: calc(100dvh - 32px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      outline: none;
+    }
+    /* close button: same as the header buttons of graphite-panel */
+    .close {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: var(--graphite-radius-tile, 12px);
+      background: var(--graphite-surface-tile);
+      color: var(--graphite-text-secondary);
+      cursor: pointer;
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+      --mdc-icon-size: 18px;
+    }
+    .close:focus-visible {
+      outline: 2px solid var(--graphite-accent);
+      outline-offset: 2px;
+    }
+    @media (max-width: 600px) {
+      :host([layered]) .dialog {
+        max-height: calc(100dvh - 16px);
+      }
+    }
+  `;
+registerCard("graphite-dialog", GraphiteDialog, {
+  name: "Graphite Dialog",
+  description: "Dialog that opens on a hash (e.g. #lights) from every view; header like graphite-panel."
+});
+
 // src/overlays/graphite-toast.ts
 var toastEntity = "input_text.dashboard_toast";
 var toastColors = { accent: "#f5c48a", success: "#a8d5a2", danger: "#e8908a" };
@@ -13045,6 +13203,224 @@ var GraphiteToastLayer = class {
 if (!window.graphiteToastLayer) {
   const start = () => {
     window.graphiteToastLayer = window.graphiteToastLayer ?? new GraphiteToastLayer();
+  };
+  if (document.body) start();
+  else window.addEventListener("DOMContentLoaded", start);
+}
+
+// src/overlays/graphite-dialog-layer.ts
+var layerStyles = `
+  :host {
+    position: fixed;
+    inset: 0;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    /* the dashboard stays visible behind, blurred and dimmed */
+    background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 40%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  :host(.show) {
+    opacity: 1;
+  }
+  graphite-dialog {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-height: 100%;
+    transform: translateY(8px) scale(0.98);
+    transition: transform 0.2s ease;
+  }
+  :host(.show) graphite-dialog {
+    transform: none;
+  }
+  @media (max-width: 600px) {
+    :host {
+      padding: 8px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    graphite-dialog {
+      transform: none;
+      transition: none;
+    }
+  }
+`;
+function findDeep(node, tagName, depth = 0) {
+  if (!node || depth > 12) return null;
+  const root = node.shadowRoot ?? node;
+  const direct = root.querySelector(tagName);
+  if (direct) return direct;
+  for (const child of root.querySelectorAll("*")) {
+    if (!child.shadowRoot) continue;
+    const found = findDeep(child, tagName, depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+function findDialog(node, hash, depth = 0) {
+  if (!node || typeof node !== "object" || depth > 20) return void 0;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = findDialog(item, hash, depth + 1);
+      if (found) return found;
+    }
+    return void 0;
+  }
+  const record = node;
+  if (record.type === "custom:graphite-dialog" && normalizeHash(record.hash) === hash) return record;
+  for (const key of ["views", "sections", "cards", "card"]) {
+    const found = findDialog(record[key], hash, depth + 1);
+    if (found) return found;
+  }
+  return void 0;
+}
+var GraphiteDialogLayer = class {
+  constructor() {
+    this.openHash = "";
+    this.openedByNavigation = false;
+    this.lastPath = window.location.pathname;
+    window.addEventListener("location-changed", () => this.sync(true));
+    window.addEventListener("popstate", () => this.sync(true));
+    window.addEventListener("hashchange", () => this.sync(true));
+    document.addEventListener("keydown", (event) => this.handleKey(event));
+    this.sync(false);
+  }
+  get homeAssistant() {
+    return document.querySelector("home-assistant");
+  }
+  get lovelaceRoot() {
+    return findDeep(this.homeAssistant, "hui-root");
+  }
+  // compares the URL with the open dialog: open, switch or close
+  sync(byNavigation, attempt = 0) {
+    window.clearTimeout(this.retryTimer);
+    const samePage = window.location.pathname === this.lastPath;
+    this.lastPath = window.location.pathname;
+    let hash = "";
+    try {
+      hash = normalizeHash(decodeURIComponent(window.location.hash));
+    } catch {
+      hash = normalizeHash(window.location.hash);
+    }
+    if (!hash || hash === "#") {
+      this.remove();
+      return;
+    }
+    if (hash === this.openHash) return;
+    const root = this.lovelaceRoot;
+    const config = root?.lovelace?.config ? findDialog(root.lovelace.config, hash) : void 0;
+    if (!config) {
+      if (!root?.lovelace?.config && attempt < 20) {
+        this.retryTimer = window.setTimeout(() => this.sync(byNavigation, attempt + 1), 300);
+      } else {
+        this.remove();
+      }
+      return;
+    }
+    this.show(config, hash, byNavigation && samePage);
+  }
+  show(config, hash, openedByNavigation) {
+    const root = this.lovelaceRoot;
+    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    if (!mount) return;
+    this.remove();
+    this.openHash = hash;
+    this.openedByNavigation = openedByNavigation;
+    const host = document.createElement("graphite-dialog-layer");
+    const shadow = host.attachShadow({ mode: "open" });
+    shadow.innerHTML = `<style>${layerStyles}</style>`;
+    this.copyTheme(host, mount);
+    const dialog = document.createElement("graphite-dialog");
+    dialog.setConfig(config);
+    dialog.hass = this.homeAssistant?.hass;
+    this.lastHass = this.homeAssistant?.hass;
+    dialog.enableClose();
+    dialog.addEventListener("graphite-dialog-close", () => this.close());
+    shadow.append(dialog);
+    host.addEventListener("click", (event) => {
+      const target = event.composedPath()[0];
+      if (target === host || target === dialog) this.close();
+    });
+    mount.append(host);
+    this.host = host;
+    this.dialog = dialog;
+    this.lockScroll();
+    this.followHass();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      host.classList.add("show");
+      dialog.updateComplete.then(() => dialog.focusDialog());
+    }));
+  }
+  // the layer is not inside the view: the theme variables of the view are copied onto it
+  copyTheme(host, mount) {
+    const sources = [];
+    if (mount instanceof HTMLElement) sources.push(mount);
+    const view = mount.querySelector?.("hui-view");
+    if (view) sources.push(view);
+    for (const source of sources) {
+      for (let index = 0; index < source.style.length; index++) {
+        const name = source.style.item(index);
+        if (name.startsWith("--")) host.style.setProperty(name, source.style.getPropertyValue(name));
+      }
+    }
+  }
+  // hass changes with every state change: passed on to the dialog while it is open
+  followHass() {
+    const step = () => {
+      const hass = this.homeAssistant?.hass;
+      if (this.dialog && hass && hass !== this.lastHass) {
+        this.lastHass = hass;
+        this.dialog.hass = hass;
+      }
+      this.hassFrame = requestAnimationFrame(step);
+    };
+    this.hassFrame = requestAnimationFrame(step);
+  }
+  lockScroll() {
+    this.scrollRestore = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+  }
+  // close button, backdrop, Escape: back in the history, or the hash is removed
+  close() {
+    if (!this.openHash) return;
+    if (this.openedByNavigation) {
+      this.openedByNavigation = false;
+      window.history.back();
+      return;
+    }
+    window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: true } }));
+    this.remove();
+  }
+  remove() {
+    if (this.hassFrame !== void 0) cancelAnimationFrame(this.hassFrame);
+    this.hassFrame = void 0;
+    if (this.host) {
+      this.host.remove();
+      document.documentElement.style.overflow = this.scrollRestore ?? "";
+    }
+    this.host = void 0;
+    this.dialog = void 0;
+    this.openHash = "";
+  }
+  // Escape closes the dialog, unless it was meant for a dialog above it (e.g. more-info)
+  handleKey(event) {
+    if (event.key !== "Escape" || !this.host) return;
+    const path = event.composedPath();
+    const target = path[0];
+    if (path.includes(this.host) || target === document.body || target === document.documentElement) this.close();
+  }
+};
+if (!window.graphiteDialogLayer) {
+  const start = () => {
+    window.graphiteDialogLayer = window.graphiteDialogLayer ?? new GraphiteDialogLayer();
   };
   if (document.body) start();
   else window.addEventListener("DOMContentLoaded", start);

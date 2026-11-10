@@ -23,7 +23,9 @@ import "./cards/lists/graphite-legend";
 import "./cards/lists/graphite-timeline";
 import "./cards/controls/graphite-slider";
 import "./cards/controls/graphite-light";
+import "./cards/graphite-dialog";
 import "./overlays/graphite-toast";
+import "./overlays/graphite-dialog-layer";
 
 window.graphiteCards = { version };
 

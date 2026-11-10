@@ -12,6 +12,9 @@
     "minutes": "{minutes} Min.",
     "hoursMinutes": "{hours}:{minutes} h"
   },
+  "dialog": {
+    "close": "Schliessen"
+  },
   "panel": {
     "editor": {
       "header": "Kopf",

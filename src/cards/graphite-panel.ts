@@ -78,7 +78,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       justify-content: flex-start;
       align-items: center;
       gap: var(--graphite-gap-header, 12px);
-      margin-bottom: var(--graphite-gap-header, 12px);
+      margin-bottom: var(--graphite-header-margin, var(--graphite-gap-header, 12px));
     }
     /* title and info share one baseline; with buttons the row is as high as the buttons */
     .heading {
@@ -125,6 +125,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       font-size: var(--graphite-title-size, 18px);
       font-weight: var(--graphite-title-weight, 400);
       line-height: 1.2;
+      padding-left: var(--graphite-title-inset, 0);
       color: var(--graphite-title-color, var(--primary-text-color));
     }
     .title:empty {
@@ -429,7 +430,9 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : undefined;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
     const buttons = this.buttonConfigs();
-    const showHeader = !!(config.title || config.info || chips.length || buttons.length);
+    // a container (e.g. graphite-dialog) can add its own header buttons through the "actions" slot
+    const hasActions = !!this.querySelector(":scope > [slot=actions]");
+    const showHeader = !!(config.title || config.info || chips.length || buttons.length || hasActions);
     // columns and min_column_width apply to this panel only (set on this panel only, not inherited)
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;
@@ -442,8 +445,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
     return html`<ha-card style=${cardStyle}>${showHeader
       ? html`<div class="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
-        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length ? html`<span class="buttons">${buttons
-        .map((button) => this.renderButton(button))}</span>` : nothing}</div>`
+        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? html`<span class="buttons">${buttons
+        .map((button) => this.renderButton(button))}${hasActions ? html`<slot name="actions"></slot>` : nothing}</span>` : nothing}</div>`
       : nothing}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
   }
 
