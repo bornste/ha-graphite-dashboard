@@ -1,13 +1,21 @@
-// Visual editor of graphite-value.
+// Visual editor of graphite-value (layout first; the watermark switch only for the tile).
 import { GraphiteFormEditor } from "../../core/form-editor";
+import { layoutField, layoutOf } from "../../core/layout";
 
 export class GraphiteValueEditor extends GraphiteFormEditor {
   protected labelPrefix(): string {
     return "value.editor";
   }
 
+  protected schemaKey(): string {
+    return layoutOf(this.config, "tile");
+  }
+
   protected schema(): unknown[] {
+    // the watermark switch only applies to the tile; the row always shows an icon
+    const isTile = layoutOf(this.config, "tile") === "tile";
     return [
+      layoutField(),
       { name: "entity", required: true, selector: { entity: {} } },
       {
         type: "grid",
@@ -16,7 +24,6 @@ export class GraphiteValueEditor extends GraphiteFormEditor {
           { name: "name", selector: { text: {} } },
           { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
           { name: "unit", selector: { text: {} } },
-          { name: "color", selector: { text: {} } },
         ],
       },
       {
@@ -24,7 +31,7 @@ export class GraphiteValueEditor extends GraphiteFormEditor {
         name: "",
         schema: [
           { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
-          { name: "show_icon", selector: { boolean: {} } },
+          ...(isTile ? [{ name: "show_icon", selector: { boolean: {} } }] : []),
         ],
       },
       { name: "secondary_entity", selector: { entity: {} } },
@@ -45,6 +52,7 @@ export class GraphiteValueEditor extends GraphiteFormEditor {
 
   protected skipValue(key: string, value: unknown): boolean {
     if (key === "show_icon") return value !== true;
+    if (key === "layout") return value === "tile";
     return false;
   }
 }

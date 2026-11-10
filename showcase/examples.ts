@@ -114,6 +114,7 @@ export const sampleStates: Record<string, any> = {
   "sensor.tv_app": entity("sensor.tv_app", "off", { friendly_name: "TV" }),
   "sensor.water_today": entity("sensor.water_today", "184.6", { unit_of_measurement: "L", friendly_name: "Water today" }),
   "sensor.water_yesterday": entity("sensor.water_yesterday", "212.3", { unit_of_measurement: "L", friendly_name: "Water yesterday" }),
+  "sensor.garden_sensor": entity("sensor.garden_sensor", "unavailable", { unit_of_measurement: "°C", friendly_name: "Garden" }),
   "sensor.washing_machine": entity("sensor.washing_machine", "Spülen", { friendly_name: "Washing machine" }),
   "sensor.energy_today": entity("sensor.energy_today", "9.4", { unit_of_measurement: "kWh", friendly_name: "Electricity today" }),
   "sensor.energy_yesterday": entity("sensor.energy_yesterday", "11.2", { unit_of_measurement: "kWh", friendly_name: "Electricity yesterday" }),
@@ -357,7 +358,7 @@ export function examples(language: string): ShowcaseSection[] {
     },
     {
       title: "graphite-value",
-      description: `One value as a tile: name on top, value with unit at the bottom, optional second value and watermark icon – the meter tile without its bar. The row counterpart is graphite-status.
+      description: `One value – number or word – as a tile or a row, where the value is the main thing. For states (windows, lamps) use graphite-status.
         <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-value.md">Documentation</a>`,
       examples: [
         {
@@ -372,6 +373,21 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-value", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "mdi:water-outline", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
               { type: "custom:graphite-value", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "mdi:washing-machine" },
               { type: "custom:graphite-value", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "mdi:finance" },
+              { type: "custom:graphite-value", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "mdi:thermometer" },
+            ],
+          },
+        },
+        {
+          title: "As rows (layout: row)",
+          note: "The same values as a list: the value on the right in the value type, the second value below the name, offline like the status rows.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Werte" : "Values",
+            cards: [
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "mdi:water-outline", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "mdi:washing-machine" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "mdi:finance" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "mdi:thermometer" },
             ],
           },
         },
@@ -452,7 +468,7 @@ export function examples(language: string): ShowcaseSection[] {
         },
         {
           title: "Room climate (gradient)",
-          note: "Temperature on a comfort scale, humidity as second value; the garden sensor has no value.",
+          note: "Temperature on a comfort scale, humidity as second value; the garden sensor is offline.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Raumklima" : "Climate",

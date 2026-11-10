@@ -25,8 +25,6 @@ name: Bedroom window
 | `since_attribute_label` | string | "ausgelöst" | Word before the time of `since_attribute`. |
 | `detail_entities` | list | – | While the entity is active (not `off`, not unavailable) the line shows these values instead, joined by " · ". Each entry is an entity id or `{entity, label}`, e.g. "CPU 0.4 % · RAM 1.2 %". Unavailable values are left out. |
 | `online_entity` | entity id | – | While the entity is `on`, the icon pulses until this entity reports `on`/`home`/`online`/`connected`, then it lights up in the accent color. |
-| `decimals` | number | – | Numeric values only: decimals of the value (number format of the Home Assistant user). Without it the value is shown as Home Assistant formats it. |
-| `unit` | string | entity unit | Numeric values only: unit after the value; `""` hides it. |
 | `wall_switch` | boolean | `false` | Lamp on a wall switch: unavailable counts as off. Instead of the offline badge the value says "Aus" and the line "aus am Wandschalter seit …". |
 
 ## Behaviour

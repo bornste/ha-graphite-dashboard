@@ -51,9 +51,7 @@
       "detail_entities": "Values instead of the \"since …\" line while on (YAML list: entity, label)",
       "online_entity": "Online entity (icon pulses until the device is reachable)",
       "wall_switch": "Wall switch lamp (unavailable = off)",
-      "layout": "Layout",
-      "decimals": "Decimals (numeric values only)",
-      "unit": "Unit (numeric values only)"
+      "layout": "Layout"
     }
   },
   "tiles": {
@@ -579,7 +577,6 @@
       "name": "Name (default: entity name)",
       "decimals": "Decimals (default: display precision of the entity)",
       "unit": "Unit (default: unit of the entity)",
-      "color": "Color stripe above the name (optional)",
       "icon": "Icon top right",
       "show_icon": "Show the entity icon",
       "secondary_entity": "Second value on the right",
@@ -588,7 +585,8 @@
       "secondary_icon": "Icon before the second value",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
-      "double_tap_action": "Double tap action"
+      "double_tap_action": "Double tap action",
+      "layout": "Layout"
     }
   }
 }

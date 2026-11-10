@@ -29,9 +29,6 @@ export interface TodoConfig extends GraphiteCardConfig {
 const previewCache: Record<string, { key: string; text: string; pending?: Promise<string> }> = {};
 
 const todoStyles = css`
-  .tile.open .name {
-    color: var(--graphite-text-primary);
-  }
   .secondary {
     max-width: 62%;
   }

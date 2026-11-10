@@ -51,9 +51,7 @@
       "detail_entities": "Werte statt der Zeile «seit …», solange eingeschaltet (YAML-Liste: entity, label)",
       "online_entity": "Online-Entität (Icon pulsiert, bis das Gerät erreichbar ist)",
       "wall_switch": "Wandschalter-Lampe (nicht erreichbar = aus)",
-      "layout": "Darstellung",
-      "decimals": "Nachkommastellen (nur Zahlenwerte)",
-      "unit": "Einheit (nur Zahlenwerte)"
+      "layout": "Darstellung"
     }
   },
   "tiles": {
@@ -579,7 +577,6 @@
       "name": "Name (Standard: Name der Entität)",
       "decimals": "Nachkommastellen (Standard: Anzeigegenauigkeit der Entität)",
       "unit": "Einheit (Standard: Einheit der Entität)",
-      "color": "Farbstreifen über dem Namen (optional)",
       "icon": "Icon oben rechts",
       "show_icon": "Icon der Entität anzeigen",
       "secondary_entity": "Zweiter Wert rechts",
@@ -588,7 +585,8 @@
       "secondary_icon": "Icon vor dem zweiten Wert",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen"
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "layout": "Darstellung"
     }
   }
 }

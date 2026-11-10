@@ -23,9 +23,6 @@ export interface RowConfig extends GraphiteCardConfig {
   detail_entities?: Array<string | DetailEntity>;
   online_entity?: string;
   wall_switch?: boolean;
-  // status row with a numeric value: decimals and unit (default: as Home Assistant formats it)
-  decimals?: number;
-  unit?: string;
   layout?: "row" | "tile";
 }
 

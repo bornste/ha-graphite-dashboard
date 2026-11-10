@@ -135,9 +135,11 @@ With `low` set, the meter shows a status:
 | soon empty (below `low`) | "bald leer" | "bald leer" on the right | value and status in accent |
 | empty (at `min`) | "leer" | "leer" on the right | accent tint, value and status in accent |
 
-- **No value** (unavailable, not numeric): the bar is empty (`level`) or the whole scale is dimmed
-  without a needle (`gradient`). The tile shows "–"; the row is dimmed like every offline row, shows
-  "offline" as value and "keine Meldung seit …" as status line.
+- **No value** (not numeric): the bar is empty (`level`) or the whole scale is dimmed without a
+  needle (`gradient`), the value shows "–".
+- **Offline** (unavailable, unknown): the tile fades like the switch and value tiles – name, value
+  and bar at 40 %, an "offline" badge top right instead of the watermark; the row is dimmed like every
+  offline row, shows "offline" as value and "keine Meldung seit …" as status line.
 - The tile has the same height as the switch tile (80px), so both can share a row.
 
 ## Styling

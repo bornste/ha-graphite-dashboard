@@ -43,17 +43,7 @@ export class GraphiteRowEditor extends GraphiteFormEditor {
         { name: "detail_entities", selector: { object: {} } },
       ] : []),
       { name: "online_entity", selector: { entity: {} } },
-      ...(this.rowKind === "status" ? [
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
-            { name: "unit", selector: { text: {} } },
-          ],
-        },
-        { name: "wall_switch", selector: { boolean: {} } },
-      ] : []),
+      ...(this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []),
     ];
   }
 

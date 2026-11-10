@@ -11,6 +11,7 @@ import { html, nothing, type CSSResultGroup } from "lit";
 import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { formatNumber, isUnavailable, sinceText } from "../../core/format";
 import { layoutOf } from "../../core/layout";
+import { offlineDot } from "../../core/offline-dot";
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
@@ -308,8 +309,9 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
   private renderTile() {
     const config = this.config!;
     const model = this.model();
-    const classes = ["tile", model.style, model.hasValue ? "" : "novalue", model.empty ? "empty" : "", model.low ? "low" : "",
-      model.interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const offline = isUnavailable(model.stateObj);
+    const classes = ["tile", model.style, model.hasValue ? "" : "novalue", offline ? "unavailable" : "", model.empty ? "empty" : "",
+      model.low ? "low" : "", model.interactive ? "interactive" : ""].filter(Boolean).join(" ");
     // a consumable that runs out says so on the right, otherwise the secondary value
     const status = model.empty || model.low ? this.statusText(model) : "";
     const secondary = status || this.secondaryText();
@@ -321,7 +323,7 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
       ? html`<span class="unit">${model.unit}</span>` : nothing}</div>${secondary ? html`<div class=${status ? "secondary status"
       : "secondary"}>${!status && config.secondary_icon ? html`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : nothing}${secondary}</div>`
       : nothing}</div><div class="bar"><div class="fill"></div>${model.style === "gradient" ? html`<div class="needle"></div>`
-      : nothing}</div></div>`;
+      : nothing}</div><div class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
 
   // change in percent or in the unit, colored by gain or loss (sign and color are enough, no arrow)
@@ -348,7 +350,8 @@ export class GraphiteMeter extends GraphiteCard<MeterConfig> {
       ? html`<div class="reference"><span class="long">${caption}</span><span class="short">${model.change?.captionShort
       || caption}</span></div>` : nothing}<div class="value-row"><div class="value">${model.valueText}${model.hasValue
       && model.unit ? html`<span class="unit">${model.unit}</span>` : nothing}</div><div class="secondary">${this.renderChange(model)}</div></div><div
-      class="bar"><div class="fill"></div><div class="needle"></div></div></div>`;
+      class="bar"><div class="fill"></div><div class="needle"></div></div><div class="offline">${offlineDot}<span>${this
+      .localize("rows.offline")}</span></div></div>`;
   }
 
   // row: name and status line on the left, the value on the right, the bar along the bottom

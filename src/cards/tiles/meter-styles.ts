@@ -3,6 +3,14 @@
 import { css } from "lit";
 
 export const meterStyles = css`
+  /* offline (like the switch tile): the surface fades (tile styles), value and bar at 40 %, the
+     watermark gives way to the badge */
+  .tile.unavailable :is(.value-row, .bar) {
+    opacity: 0.4;
+  }
+  .tile.unavailable .meter-icon {
+    display: none;
+  }
   /* name on top (overrides the name at the bottom of the switch tile) */
   .name {
     position: absolute;
