@@ -109,6 +109,9 @@ export const sampleStates: Record<string, any> = {
   "sensor.office_humidity": entity("sensor.office_humidity", "41", { unit_of_measurement: "%", friendly_name: "Humidity" }),
   "sensor.acme_share": entity("sensor.acme_share", "142.8", { unit_of_measurement: "CHF", friendly_name: "ACME" }),
   "sensor.northwind_share": entity("sensor.northwind_share", "61.2", { unit_of_measurement: "CHF", friendly_name: "Northwind" }),
+  "sensor.player_one_game": entity("sensor.player_one_game", "unknown", { friendly_name: "Player one" }),
+  "sensor.player_two_game": entity("sensor.player_two_game", "Block World", { friendly_name: "Player two" }),
+  "sensor.tv_app": entity("sensor.tv_app", "off", { friendly_name: "TV" }),
   "sensor.energy_today": entity("sensor.energy_today", "9.4", { unit_of_measurement: "kWh", friendly_name: "Electricity today" }),
   "sensor.energy_yesterday": entity("sensor.energy_yesterday", "11.2", { unit_of_measurement: "kWh", friendly_name: "Electricity yesterday" }),
   "sensor.sample_coin": entity("sensor.sample_coin", "0.1777", { unit_of_measurement: "$", friendly_name: "Sample Coin", "24h_change": -3.24, "7d_change": 5.8 }),
@@ -152,6 +155,15 @@ export const calendarDays: Record<string, number[]> = {
 };
 
 // canned results for todo/item/list (preview of the todo tile)
+// sample history of the timeline: [minutes ago, state], oldest first (bridging shows on the short gaps)
+export const timelineHistory: Record<string, Array<[number, string]>> = {
+  "sensor.player_one_game": [[600, "unknown"], [212, "Racing Game"], [170, "unavailable"], [169, "Racing Game"], [120, "unknown"],
+    [117, "Racing Game"], [64, "unknown"]],
+  "sensor.player_two_game": [[600, "unknown"], [228, "Block World"], [180, "unknown"], [176, "Block World"], [131, "unknown"],
+    [96, "Block World"], [38, "unavailable"], [37, "Block World"]],
+  "sensor.tv_app": [[600, "off"], [205, "Plex"], [181, "Screensaver"], [179, "Plex"], [140, "Home"], [139, "YouTube"], [75, "off"]],
+};
+
 export const todoItems: Record<string, Array<{ summary: string; status: string; description?: string }>> = {
   "todo.shopping": [
     { summary: "Eggs", status: "needs_action", description: "10" },
@@ -335,6 +347,32 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.speaker", icon: "mdi:speaker" },
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.printer", icon: "mdi:printer" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-timeline",
+      description: `What ran when: one row per entity over a chosen period, short interruptions bridged, the total on the right. Hover or tap a bar for its time and duration.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-timeline.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Who played what",
+          note: "Gaps up to 5 minutes (sensor drops, a screensaver between two Plex phases) do not split the bars.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Verlauf" : "History",
+            cards: [
+              {
+                type: "custom:graphite-timeline",
+                entities: [
+                  { entity: "sensor.player_one_game", name: german ? "Spieler 1" : "Player one" },
+                  { entity: "sensor.player_two_game", name: german ? "Spieler 2" : "Player two" },
+                  { entity: "sensor.tv_app", name: "TV", color: "var(--graphite-text-secondary)", ignore_states: ["Home", "Screensaver"] },
+                ],
+                default_interval: "4h",
+              },
             ],
           },
         },

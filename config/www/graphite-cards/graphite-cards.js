@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.36.0";
+var version = "0.37.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -1111,6 +1111,19 @@ var de_default = {
       scales: "Farbskalen (YAML)",
       items: "Eintr\xE4ge (YAML)"
     }
+  },
+  timeline: {
+    period: "Zeitraum {span} \xB7 Balken antippen f\xFCr Details",
+    loading: "Verlauf wird geladen \u2026",
+    editor: {
+      entities: "Entit\xE4ten (Liste: entity, name, color, state_colors, ignore_states)",
+      default_interval: "Zeitraum zu Beginn (z.B. 4h)",
+      bridge: "Unterbr\xFCche \xFCberbr\xFCcken bis (z.B. 5m)",
+      intervals: "Zeitr\xE4ume der Auswahl (Liste, z.B. 4h, 24h, 7d)",
+      ignore_states: "Weitere Zust\xE4nde ohne Balken (Liste)",
+      show_picker: "Zeitraum-Auswahl anzeigen",
+      show_total: "Summe pro Zeile anzeigen"
+    }
   }
 };
 
@@ -1673,6 +1686,19 @@ var en_default = {
     editor: {
       scales: "Color scales (YAML)",
       items: "Items (YAML)"
+    }
+  },
+  timeline: {
+    period: "Period {span} \xB7 tap a bar for details",
+    loading: "Loading history \u2026",
+    editor: {
+      entities: "Entities (list: entity, name, color, state_colors, ignore_states)",
+      default_interval: "Period at start (e.g. 4h)",
+      bridge: "Bridge interruptions up to (e.g. 5m)",
+      intervals: "Periods of the picker (list, e.g. 4h, 24h, 7d)",
+      ignore_states: "Further states without a bar (list)",
+      show_picker: "Show the period picker",
+      show_total: "Show the total per row"
     }
   }
 };
@@ -9468,6 +9494,456 @@ registerElement("graphite-legend-editor", GraphiteLegendEditor);
 registerCard("graphite-legend", GraphiteLegend, {
   name: "Graphite Legend",
   description: "Chart legend with color scales and swatch items in the Graphite look."
+});
+
+// src/cards/lists/graphite-timeline-editor.ts
+var GraphiteTimelineEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "timeline.editor";
+  }
+  defaults() {
+    return { bridge: "5m", show_picker: true, show_total: true };
+  }
+  schema() {
+    return [
+      { name: "entities", required: true, selector: { object: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "default_interval", selector: { text: {} } },
+          { name: "bridge", selector: { text: {} } }
+        ]
+      },
+      { name: "intervals", selector: { object: {} } },
+      { name: "ignore_states", selector: { object: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "show_picker", selector: { boolean: {} } },
+          { name: "show_total", selector: { boolean: {} } }
+        ]
+      }
+    ];
+  }
+};
+
+// src/cards/lists/timeline-styles.ts
+var timelineStyles = i`
+  :host {
+    display: block;
+  }
+  .picker {
+    display: flex;
+    gap: var(--graphite-gap-tile, 8px);
+    margin-bottom: var(--graphite-gap-tile, 8px);
+  }
+  .picker button {
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 0;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: var(--graphite-radius-tile, 12px);
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    color: var(--graphite-text-secondary);
+    font: inherit;
+    font-size: var(--graphite-font-caption-size, 12px);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .picker button.active {
+    background: var(--graphite-surface-tile-active);
+    color: var(--graphite-text-primary);
+  }
+  .picker button:focus-visible {
+    outline: 2px solid var(--graphite-accent);
+    outline-offset: 2px;
+  }
+  ha-ripple {
+    position: absolute;
+    inset: 0;
+  }
+  .chart {
+    padding: 12px 14px 10px;
+    border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
+    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+  }
+  .rows {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    align-items: center;
+    gap: var(--graphite-gap-tile, 8px) 0;
+  }
+  .rows.withTotal {
+    grid-template-columns: 90px minmax(0, 1fr) 64px;
+  }
+  .label {
+    padding-right: 8px;
+    font-size: var(--graphite-font-caption-size, 12px);
+    color: var(--graphite-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track {
+    position: relative;
+    height: 26px;
+    border-radius: calc(var(--graphite-radius-tile, 12px) / 2);
+    background: color-mix(in srgb, var(--graphite-ink) 4%, transparent);
+  }
+  .segment {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    min-width: 2px;
+    overflow: hidden;
+    border-radius: calc(var(--graphite-radius-tile, 12px) / 2);
+    background: var(--segment-color, var(--graphite-accent));
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+  .segment span {
+    padding: 0 8px;
+    font-size: 11px;
+    color: var(--graphite-ground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* the selected bar stands out a little, the others stay as they are */
+  .segment.selected {
+    filter: brightness(1.15);
+    box-shadow: 0 0 0 2px var(--graphite-text-primary);
+    z-index: 1;
+  }
+  .total {
+    text-align: right;
+    font-size: var(--graphite-font-label-size, 13px);
+    color: var(--graphite-text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .axis {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    margin-top: 6px;
+  }
+  .axis.withTotal {
+    grid-template-columns: 90px minmax(0, 1fr) 64px;
+  }
+  .ticks {
+    position: relative;
+    height: 14px;
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--graphite-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .ticks span {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .info {
+    margin-top: 8px;
+    min-height: 16px;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 16px;
+    color: var(--graphite-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .info.selected {
+    color: var(--graphite-text-secondary);
+  }
+  .info b {
+    font-weight: 500;
+    color: var(--graphite-text-primary);
+  }
+  .loading {
+    grid-column: 1 / -1;
+    height: 26px;
+    font-size: var(--graphite-font-caption-size, 12px);
+    line-height: 26px;
+    color: var(--graphite-text-muted);
+  }
+`;
+
+// src/cards/lists/graphite-timeline.ts
+var inactiveStates = ["unknown", "unavailable", "off", "none", "idle", "standby", ""];
+var defaultIntervals = ["4h", "8h", "12h", "24h", "3d", "7d"];
+var refetchMilliseconds = 5 * 60 * 1e3;
+var tickMilliseconds = 60 * 1e3;
+var selectionMilliseconds = 6e3;
+var minuteMs = 60 * 1e3;
+var hourMs = 60 * minuteMs;
+var dayMs3 = 24 * hourMs;
+function durationOf(text) {
+  const value = String(text ?? "").trim().toLowerCase();
+  const unit = value.slice(-1);
+  const count = Number(value.slice(0, -1));
+  if (!Number.isFinite(count) || count < 0) return void 0;
+  const factors = { s: 1e3, m: minuteMs, h: hourMs, d: dayMs3 };
+  return factors[unit] !== void 0 ? count * factors[unit] : void 0;
+}
+var GraphiteTimeline = class extends GraphiteCard {
+  normalizeConfig(config) {
+    const entities = config.entities ?? (config.entity ? [config.entity] : []);
+    if (!Array.isArray(entities) || entities.length === 0) throw new Error(`${this.localName}: 'entities' is required`);
+    const intervals = (config.intervals ?? defaultIntervals).filter((value) => durationOf(value) !== void 0);
+    if (!this.interval || !intervals.includes(this.interval)) {
+      this.interval = intervals.includes(String(config.default_interval)) ? String(config.default_interval) : intervals[0] ?? "4h";
+    }
+    return { show_picker: true, show_total: true, bridge: "5m", ...config, entities, intervals };
+  }
+  sources() {
+    return this.config.entities.map((source) => typeof source === "string" ? { entity: source } : source).filter((source) => !!source?.entity);
+  }
+  watchedEntities() {
+    return this.sources().map((source) => source.entity);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.tickTimer = window.setInterval(() => this.requestUpdate(), tickMilliseconds);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.clearInterval(this.tickTimer);
+    window.clearTimeout(this.selectionTimer);
+  }
+  periodMs() {
+    return durationOf(this.interval) ?? 4 * hourMs;
+  }
+  // history of all entities over the period, fetched again every 5 minutes or when an entity changed
+  loadHistory() {
+    const api = this.hass;
+    if (!api?.callApi) return;
+    const ids = this.sources().map((source) => source.entity);
+    const key = `${this.interval}|${ids.join(",")}`;
+    const changed = this.history && ids.some((id) => {
+      const lastChanged = Date.parse(this.hass?.states[id]?.last_changed ?? "");
+      return Number.isFinite(lastChanged) && lastChanged > this.history.fetchedAt;
+    });
+    const fresh = this.history?.key === key && Date.now() - this.history.fetchedAt < refetchMilliseconds && !changed;
+    if (fresh || this.pending === key) return;
+    this.pending = key;
+    const start = new Date(Date.now() - this.periodMs());
+    const path = `history/period/${encodeURIComponent(start.toISOString())}?filter_entity_id=${ids.join(",")}&end_time=${encodeURIComponent((/* @__PURE__ */ new Date()).toISOString())}&minimal_response&no_attributes`;
+    const fetchedAt = Date.now();
+    api.callApi("GET", path).then((result) => {
+      const data = {};
+      for (const list of Array.isArray(result) ? result : []) {
+        const entityId = list?.[0]?.entity_id;
+        if (entityId) data[entityId] = list;
+      }
+      this.history = { key, data, fetchedAt };
+    }).catch(() => {
+      this.history = { key, data: this.history?.data ?? {}, fetchedAt };
+    }).finally(() => {
+      this.pending = void 0;
+      this.requestUpdate();
+    });
+  }
+  isInactive(source, state) {
+    const extra = [...this.config.ignore_states ?? [], ...source.ignore_states ?? []];
+    return inactiveStates.includes(state.toLowerCase()) || extra.includes(state);
+  }
+  // bars of one entity: active states merged, short interruptions bridged, clipped to the window
+  segmentsOf(source, from, to) {
+    const entries = this.history?.data[source.entity] ?? [];
+    const changes = entries.map((entry) => ({
+      state: String(entry.state ?? entry.s ?? ""),
+      time: entry.last_changed ? Date.parse(entry.last_changed) : Number(entry.lc) * 1e3
+    })).filter((change) => Number.isFinite(change.time));
+    const current = this.hass?.states[source.entity];
+    if (current) {
+      const changedAt = Date.parse(current.last_changed);
+      const last = changes[changes.length - 1];
+      if (!last || Number.isFinite(changedAt) && changedAt > last.time) changes.push({ state: current.state, time: changedAt });
+    }
+    const raw = [];
+    changes.forEach((change, index) => {
+      const start = Math.max(change.time, from);
+      const end = Math.min(index + 1 < changes.length ? changes[index + 1].time : to, to);
+      if (end <= start || this.isInactive(source, change.state)) return;
+      const previous = raw[raw.length - 1];
+      if (previous && previous.state === change.state && previous.end === start) previous.end = end;
+      else raw.push({ state: change.state, start, end });
+    });
+    return this.bridge(raw);
+  }
+  // closes gaps up to the bridge time between two bars of the same state, and drops short foreign
+  // bars between them (e.g. a screensaver between two Plex phases)
+  bridge(segments) {
+    const bridgeMs = durationOf(this.config.bridge) ?? 5 * minuteMs;
+    if (bridgeMs <= 0) return segments;
+    const result = segments.map((segment) => ({ ...segment }));
+    for (let pass = 0; pass < segments.length + 1; pass++) {
+      let changed = false;
+      for (let index = 0; index + 1 < result.length; index++) {
+        const current = result[index];
+        const next = result[index + 1];
+        if (current.state === next.state && next.start - current.end <= bridgeMs) {
+          current.end = next.end;
+          result.splice(index + 1, 1);
+          changed = true;
+          break;
+        }
+        const after = result[index + 2];
+        if (after && after.state === current.state && next.end - next.start <= bridgeMs && after.start - current.end <= 2 * bridgeMs && next.start - current.end <= bridgeMs && after.start - next.end <= bridgeMs) {
+          current.end = after.end;
+          result.splice(index + 1, 2);
+          changed = true;
+          break;
+        }
+      }
+      if (!changed) break;
+    }
+    return result;
+  }
+  rows(from, to) {
+    return this.sources().map((source) => {
+      const segments = this.segmentsOf(source, from, to);
+      const stateObj = this.hass?.states[source.entity];
+      return {
+        source,
+        name: source.name ?? stateObj?.attributes?.friendly_name ?? source.entity,
+        segments,
+        total: segments.reduce((sum, segment) => sum + segment.end - segment.start, 0)
+      };
+    });
+  }
+  // "1:55 h"
+  durationText(milliseconds) {
+    const minutes = Math.round(milliseconds / minuteMs);
+    return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")} h`;
+  }
+  time(moment) {
+    return new Date(moment).toLocaleTimeString(this.language, { hour: "2-digit", minute: "2-digit" });
+  }
+  // "12:10–14:05", across days with the weekday
+  spanText(start, end) {
+    const sameDay = new Date(start).toDateString() === new Date(end).toDateString();
+    const today = (/* @__PURE__ */ new Date()).toDateString() === new Date(start).toDateString();
+    const weekday = (moment) => new Date(moment).toLocaleDateString(this.language, { weekday: "short" }).replace(".", "");
+    if (sameDay) return `${today ? "" : `${weekday(start)} `}${this.time(start)}\u2013${this.time(end)}`;
+    return `${weekday(start)} ${this.time(start)} \u2013 ${weekday(end)} ${this.time(end)}`;
+  }
+  colorOf(source, state) {
+    return source.state_colors?.[state] ?? source.color ?? "var(--graphite-accent)";
+  }
+  // axis ticks: whole hours (or days) that fit the period
+  ticks(from, to) {
+    const period = to - from;
+    const stepHours = period <= 4 * hourMs ? 1 : period <= 8 * hourMs ? 2 : period <= 12 * hourMs ? 3 : period <= 24 * hourMs ? 6 : 24;
+    const result = [];
+    const first = new Date(from);
+    if (stepHours === 24) {
+      first.setHours(24, 0, 0, 0);
+    } else {
+      first.setMinutes(0, 0, 0);
+      if (first.getTime() < from) first.setHours(first.getHours() + 1);
+      for (let guard = 0; guard < 24 && first.getHours() % stepHours !== 0; guard++) first.setHours(first.getHours() + 1);
+    }
+    for (let moment = first.getTime(), guard = 0; moment < to && guard < 20; guard++) {
+      const label = stepHours === 24 ? new Date(moment).toLocaleDateString(this.language, { weekday: "short" }).replace(".", "") : this.time(moment);
+      result.push({ position: (moment - from) / period * 100, label });
+      const next = new Date(moment);
+      if (stepHours === 24) next.setDate(next.getDate() + 1);
+      else next.setHours(next.getHours() + stepHours);
+      moment = next.getTime();
+    }
+    return result;
+  }
+  select(row, segment, event) {
+    event?.stopPropagation();
+    this.selected = { row, segment };
+    window.clearTimeout(this.selectionTimer);
+    this.selectionTimer = window.setTimeout(() => {
+      this.selected = void 0;
+    }, selectionMilliseconds);
+  }
+  unselect() {
+    window.clearTimeout(this.selectionTimer);
+    this.selected = void 0;
+  }
+  renderSegment(row, rowIndex, segment, segmentIndex, from, period) {
+    const left = (segment.start - from) / period * 100;
+    const width = Math.max(0.4, (segment.end - segment.start) / period * 100);
+    const active = this.selected?.row === rowIndex && this.selected?.segment === segmentIndex;
+    return b2`<div class=${active ? "segment selected" : "segment"} style=${`left: ${left}%; width: ${width}%; --segment-color: ${this.colorOf(row.source, segment.state)}`}
+      @mouseenter=${() => this.select(rowIndex, segmentIndex)} @click=${(event) => this.select(rowIndex, segmentIndex, event)}><span>${segment.state}</span></div>`;
+  }
+  renderPicker(intervals) {
+    if (!this.config.show_picker || intervals.length < 2) return A;
+    return b2`<div class="picker">${intervals.map((value) => b2`<button class=${value === this.interval ? "active" : ""}
+      @click=${() => {
+      this.interval = value;
+      this.unselect();
+    }}><ha-ripple></ha-ripple>${value.toUpperCase()}</button>`)}</div>`;
+  }
+  // info line: the selected bar, otherwise the period
+  renderInfo(rows, from, to) {
+    const selection = this.selected;
+    const row = selection ? rows[selection.row] : void 0;
+    const segment = row?.segments[selection.segment];
+    if (row && segment) {
+      return b2`<div class="info selected"><b>${row.name}</b> · ${segment.state} · ${this.spanText(segment.start, segment.end)} · ${this.durationText(segment.end - segment.start)}</div>`;
+    }
+    return b2`<div class="info">${this.localize("timeline.period", { span: this.spanText(from, to) })}</div>`;
+  }
+  render() {
+    if (!this.config) return A;
+    this.loadHistory();
+    const to = Date.now();
+    const period = this.periodMs();
+    const from = to - period;
+    const rows = this.history ? this.rows(from, to) : [];
+    const showTotal = this.config.show_total !== false;
+    return b2`${this.renderPicker(this.config.intervals ?? defaultIntervals)}<div class="chart" @mouseleave=${() => this.unselect()}
+      @click=${() => this.unselect()}><div class=${showTotal ? "rows withTotal" : "rows"}>${this.history ? rows.map((row, rowIndex) => b2`<div
+      class="label">${row.name}</div><div class="track">${row.segments.map((segment, segmentIndex) => this.renderSegment(
+      row,
+      rowIndex,
+      segment,
+      segmentIndex,
+      from,
+      period
+    ))}</div>${showTotal ? b2`<div class="total">${row.total ? this.durationText(row.total) : "\u2013"}</div>` : A}`) : b2`<div class="loading">${this.localize("timeline.loading")}</div>`}</div><div
+      class=${showTotal ? "axis withTotal" : "axis"}><span></span><div class="ticks">${this.ticks(from, to).map((tick) => b2`<span
+      style=${`left: ${tick.position}%`}>${tick.label}</span>`)}</div></div>${this.renderInfo(rows, from, to)}</div>`;
+  }
+  getCardSize() {
+    return 2 + this.sources().length;
+  }
+  getGridOptions() {
+    return { columns: 12, rows: "auto", min_columns: 6 };
+  }
+  static getStubConfig(hass) {
+    const entities = Object.keys(hass?.states ?? {}).filter((id) => id.startsWith("media_player.")).slice(0, 2);
+    return { entities };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-timeline-editor");
+  }
+};
+GraphiteTimeline.properties = {
+  ...GraphiteCard.properties,
+  interval: { state: true },
+  selected: { state: true }
+};
+GraphiteTimeline.styles = timelineStyles;
+registerElement("graphite-timeline-editor", GraphiteTimelineEditor);
+registerCard("graphite-timeline", GraphiteTimeline, {
+  name: "Graphite Timeline",
+  description: "What ran when: one bar row per entity over a chosen period, short interruptions bridged, totals per row."
 });
 
 // src/core/graphite-range.ts

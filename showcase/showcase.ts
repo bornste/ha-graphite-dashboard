@@ -1,7 +1,7 @@
 // Showcase: renders the graphite-cards with sample data outside of Home Assistant.
 // Provides a small stand-in for hass, ha-card and the card helpers; all entities are fictional.
 import { stringify } from "yaml";
-import { calendarDays, calendarEvents, examples, sampleStates, templateResults, todoItems, type ShowcaseSection } from "./examples";
+import { calendarDays, calendarEvents, examples, sampleStates, templateResults, timelineHistory, todoItems, type ShowcaseSection } from "./examples";
 
 type Config = Record<string, any>;
 
@@ -120,6 +120,15 @@ function createHass(language: string): any {
       return undefined;
     },
     async callApi(method: string, path: string) {
+      // history/period/<start>?filter_entity_id=a,b: the sample timeline, one list per entity
+      if (path.startsWith("history/period/")) {
+        const ids = (path.split("filter_entity_id=")[1] ?? "").split("&")[0].split(",");
+        return ids.filter((id) => timelineHistory[id]).map((id) => timelineHistory[id].map(([minutes, state], index) => ({
+          ...(index === 0 ? { entity_id: id } : {}),
+          state,
+          last_changed: new Date(Date.now() - minutes * 60000).toISOString(),
+        })));
+      }
       // calendars/<entity>?start=...: all-day events on the sample days
       const entityId = path.split("?")[0].replace("calendars/", "");
       const today = new Date();

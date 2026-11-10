@@ -557,5 +557,18 @@
       "scales": "Color scales (YAML)",
       "items": "Items (YAML)"
     }
+  },
+  "timeline": {
+    "period": "Period {span} · tap a bar for details",
+    "loading": "Loading history …",
+    "editor": {
+      "entities": "Entities (list: entity, name, color, state_colors, ignore_states)",
+      "default_interval": "Period at start (e.g. 4h)",
+      "bridge": "Bridge interruptions up to (e.g. 5m)",
+      "intervals": "Periods of the picker (list, e.g. 4h, 24h, 7d)",
+      "ignore_states": "Further states without a bar (list)",
+      "show_picker": "Show the period picker",
+      "show_total": "Show the total per row"
+    }
   }
 }

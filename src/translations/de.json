@@ -557,5 +557,18 @@
       "scales": "Farbskalen (YAML)",
       "items": "Einträge (YAML)"
     }
+  },
+  "timeline": {
+    "period": "Zeitraum {span} · Balken antippen für Details",
+    "loading": "Verlauf wird geladen …",
+    "editor": {
+      "entities": "Entitäten (Liste: entity, name, color, state_colors, ignore_states)",
+      "default_interval": "Zeitraum zu Beginn (z.B. 4h)",
+      "bridge": "Unterbrüche überbrücken bis (z.B. 5m)",
+      "intervals": "Zeiträume der Auswahl (Liste, z.B. 4h, 24h, 7d)",
+      "ignore_states": "Weitere Zustände ohne Balken (Liste)",
+      "show_picker": "Zeitraum-Auswahl anzeigen",
+      "show_total": "Summe pro Zeile anzeigen"
+    }
   }
 }

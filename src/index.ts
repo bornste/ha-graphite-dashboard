@@ -19,6 +19,7 @@ import "./cards/lists/graphite-summary";
 import "./cards/lists/graphite-shopping";
 import "./cards/lists/graphite-battery";
 import "./cards/lists/graphite-legend";
+import "./cards/lists/graphite-timeline";
 import "./cards/controls/graphite-slider";
 import "./cards/controls/graphite-light";
 import "./overlays/graphite-toast";
