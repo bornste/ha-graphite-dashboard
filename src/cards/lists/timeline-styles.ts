@@ -44,19 +44,20 @@ export const timelineStyles = css`
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
     background: var(--graphite-card-surface, var(--graphite-surface-tile));
   }
+  /* the name column is as wide as the longest name (at most 40% of the chart) */
   .rows {
     display: grid;
-    grid-template-columns: 90px minmax(0, 1fr);
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
     align-items: center;
     gap: var(--graphite-gap-tile, 8px) 0;
   }
   .rows.withTotal {
-    grid-template-columns: 90px minmax(0, 1fr) 64px;
+    grid-template-columns: fit-content(40%) minmax(0, 1fr) auto;
   }
   .label {
-    padding-right: 8px;
+    padding-right: 12px;
     font-size: var(--graphite-font-caption-size, 12px);
-    color: var(--graphite-text-secondary);
+    color: var(--graphite-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -95,32 +96,53 @@ export const timelineStyles = css`
     z-index: 1;
   }
   .total {
+    padding-left: 12px;
     text-align: right;
     font-size: var(--graphite-font-label-size, 13px);
     color: var(--graphite-text-primary);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
-  .axis {
-    display: grid;
-    grid-template-columns: 90px minmax(0, 1fr);
-    margin-top: 6px;
+  /* fine dotted grid lines at the axis labels, behind the bars (like the graphs) */
+  .gridLines {
+    grid-column: 2;
+    position: relative;
+    align-self: stretch;
+    pointer-events: none;
   }
-  .axis.withTotal {
-    grid-template-columns: 90px minmax(0, 1fr) 64px;
+  .gridLines i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dotted color-mix(in srgb, var(--graphite-text-primary) 28%, transparent);
+  }
+  .track {
+    z-index: 1;
   }
   .ticks {
     position: relative;
-    height: 14px;
+    height: 18px;
+    margin-top: -4px;
     font-size: 11px;
     line-height: 14px;
     color: var(--graphite-text-muted);
     font-variant-numeric: tabular-nums;
   }
+  /* label with a short tick above it */
   .ticks span {
     position: absolute;
+    top: 4px;
     transform: translateX(-50%);
     white-space: nowrap;
+  }
+  .ticks span::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -4px;
+    width: 1px;
+    height: 3px;
+    background: var(--graphite-text-muted);
   }
   .info {
     margin-top: 8px;

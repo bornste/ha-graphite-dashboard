@@ -332,13 +332,20 @@ export class GraphiteTimeline extends GraphiteCard<TimelineConfig> {
     const from = to - period;
     const rows = this.history ? this.rows(from, to) : [];
     const showTotal = this.config.show_total !== false;
+    const ticks = this.ticks(from, to);
+    // every cell has its place in the grid, so the grid lines can span all rows of the bar column
+    // (behind the bars, visible through the empty tracks) and the axis lines up with any name width
+    const rowCount = Math.max(1, rows.length);
+    const gridLines = html`<div class="gridLines" style=${`grid-row: 1 / ${rowCount + 1}`}>${ticks.map((tick) => html`<i
+      style=${`left: ${tick.position}%`}></i>`)}</div>`;
+    const place = (row: number, column: number) => `grid-row: ${row}; grid-column: ${column}`;
     return html`${this.renderPicker(this.config.intervals ?? defaultIntervals)}<div class="chart" @mouseleave=${() => this.unselect()}
-      @click=${() => this.unselect()}><div class=${showTotal ? "rows withTotal" : "rows"}>${this.history ? rows.map((row, rowIndex) => html`<div
-      class="label">${row.name}</div><div class="track">${row.segments.map((segment, segmentIndex) => this.renderSegment(row, rowIndex,
-      segment, segmentIndex, from, period))}</div>${showTotal ? html`<div class="total">${row.total ? this.durationText(row.total) : "–"}</div>`
-      : nothing}`) : html`<div class="loading">${this.localize("timeline.loading")}</div>`}</div><div
-      class=${showTotal ? "axis withTotal" : "axis"}><span></span><div class="ticks">${this.ticks(from, to).map((tick) => html`<span
-      style=${`left: ${tick.position}%`}>${tick.label}</span>`)}</div></div>${this.renderInfo(rows, from, to)}</div>`;
+      @click=${() => this.unselect()}><div class=${showTotal ? "rows withTotal" : "rows"}>${this.history ? html`${gridLines}${rows.map((row,
+      rowIndex) => html`<div class="label" style=${place(rowIndex + 1, 1)}>${row.name}</div><div class="track" style=${place(rowIndex + 1,
+      2)}>${row.segments.map((segment, segmentIndex) => this.renderSegment(row, rowIndex, segment, segmentIndex, from, period))}</div>${showTotal
+      ? html`<div class="total" style=${place(rowIndex + 1, 3)}>${row.total ? this.durationText(row.total) : "–"}</div>` : nothing}`)}`
+      : html`<div class="loading">${this.localize("timeline.loading")}</div>`}<div class="ticks" style=${place(rowCount + 1, 2)}>${ticks
+      .map((tick) => html`<span style=${`left: ${tick.position}%`}>${tick.label}</span>`)}</div></div>${this.renderInfo(rows, from, to)}</div>`;
   }
 
   getCardSize(): number {

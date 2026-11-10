@@ -367,7 +367,7 @@ export function examples(language: string): ShowcaseSection[] {
               {
                 type: "custom:graphite-timeline",
                 entities: [
-                  { entity: "sensor.player_one_game", name: german ? "Spieler 1" : "Player one" },
+                  { entity: "sensor.player_one_game", name: german ? "Spieler 1 (Wohnzimmer)" : "Player one (living room)" },
                   { entity: "sensor.player_two_game", name: german ? "Spieler 2" : "Player two" },
                   { entity: "sensor.tv_app", name: "TV", color: "var(--graphite-text-secondary)", ignore_states: ["Home", "Screensaver"] },
                 ],
