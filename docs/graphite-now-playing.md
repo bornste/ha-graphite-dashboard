@@ -35,7 +35,7 @@ sources:
 | `requires` | entity id or list | – | Entities that must run too (e.g. the console next to a profile sensor). |
 | `title_entity` | entity id | – | Entity whose state is the title (e.g. the game a profile plays); otherwise `media_title`, then `app_name`. |
 | `image_entity` | entity id | – | `image.*` entity, or a helper whose state is an image path. Used after the media player's own cover. |
-| `images` | map | – | Image per title or app name, e.g. `{ Netflix: /local/apps/netflix.png }`. |
+| `images` | map | – | Image per title or app name, e.g. `{ Netflix: /local/apps/netflix.png }`. Used when neither the media player nor `image_entity` has a cover. |
 | `subtitle` | text | – | Second line from attributes of the title entity, e.g. `"{progress} abgeschlossen ({gamerscore})"`; left out while a placeholder has no value. |
 | `titles` | map | – | Readable names for raw titles or app names, e.g. `{ Home: Startbildschirm }`. A title listed here is shown even if it is ignored otherwise. |
 | `ignore_titles` | list | `off`, `standby`, `home`, `screensaver`, `unknown`, `unavailable` | Titles that do not count. |
@@ -50,6 +50,8 @@ sources:
 - **Running time** from the history: short unavailable gaps (under 10 minutes, e.g. a console losing
   its online service) do not reset it.
 - **Technical names** such as `org.droidtv.playtv` are never shown as title or details.
+- Some apps report the audio stream itself as `entity_picture` (e.g. podcast players on Cast). Audio and
+  video URLs are not treated as a cover; the card falls back to `image_entity`, `images` or the monogram.
 - The card is 88px high (`--graphite-tile-height-media`), the cover 64px, the watermark sits like
   the meter and stopwatch icons (8px from the top, 9px from the right).
 

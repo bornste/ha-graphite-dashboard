@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.45.1";
+var version = "0.45.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -7014,6 +7014,11 @@ var imageLoadCache = /* @__PURE__ */ new Map();
 function isTechnicalName(text) {
   return text.includes(".") && !text.includes(" ");
 }
+var mediaFileEndings = [".m4a", ".mp3", ".mp4", ".aac", ".ogg", ".oga", ".opus", ".flac", ".wav", ".m3u8", ".mpd"];
+function isMediaFile(url) {
+  const path = url.split("?")[0].split("#")[0].toLowerCase();
+  return mediaFileEndings.some((ending) => path.endsWith(ending));
+}
 var GraphiteNowPlaying = class extends GraphiteCard {
   normalizeConfig(config) {
     if (!Array.isArray(config.sources) || config.sources.length === 0) {
@@ -7130,7 +7135,8 @@ var GraphiteNowPlaying = class extends GraphiteCard {
     const hass = this.hass;
     const resolve = (url) => hass?.hassUrl ? hass.hassUrl(url) : url;
     const candidates = [];
-    const picture = attributes.entity_picture_local || (String(attributes.entity_picture ?? "").startsWith("/api/") || String(attributes.entity_picture ?? "").startsWith("http") ? attributes.entity_picture : "");
+    const remote = String(attributes.entity_picture ?? "");
+    const picture = isMediaFile(remote) ? "" : attributes.entity_picture_local || (remote.startsWith("/api/") || remote.startsWith("http") ? remote : "");
     if (picture) candidates.push(resolve(picture));
     if (source.image_entity) {
       const imageState = this.hass.states[source.image_entity];

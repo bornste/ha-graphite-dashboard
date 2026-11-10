@@ -59,6 +59,13 @@ function isTechnicalName(text: string): boolean {
   return text.includes(".") && !text.includes(" ");
 }
 
+// audio and video files are never a cover; query and fragment do not count
+const mediaFileEndings = [".m4a", ".mp3", ".mp4", ".aac", ".ogg", ".oga", ".opus", ".flac", ".wav", ".m3u8", ".mpd"];
+function isMediaFile(url: string): boolean {
+  const path = url.split("?")[0].split("#")[0].toLowerCase();
+  return mediaFileEndings.some((ending) => path.endsWith(ending));
+}
+
 export class GraphiteNowPlaying extends GraphiteCard<NowPlayingConfig> {
   static styles = css`
     :host {
@@ -319,9 +326,11 @@ export class GraphiteNowPlaying extends GraphiteCard<NowPlayingConfig> {
     const hass: any = this.hass;
     const resolve = (url: string) => (hass?.hassUrl ? hass.hassUrl(url) : url);
     const candidates: string[] = [];
-    const picture = attributes.entity_picture_local
-      || (String(attributes.entity_picture ?? "").startsWith("/api/") || String(attributes.entity_picture ?? "").startsWith("http")
-        ? attributes.entity_picture : "");
+    // some apps (e.g. podcast players on Cast) report the audio stream itself as picture: no cover then,
+    // and the local proxy would download the whole file just to find out
+    const remote = String(attributes.entity_picture ?? "");
+    const picture = isMediaFile(remote) ? ""
+      : attributes.entity_picture_local || (remote.startsWith("/api/") || remote.startsWith("http") ? remote : "");
     if (picture) candidates.push(resolve(picture));
     if (source.image_entity) {
       const imageState = this.hass!.states[source.image_entity];
