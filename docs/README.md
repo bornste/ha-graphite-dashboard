@@ -11,6 +11,7 @@ the special cases – also for cards with a visual editor.
 | graphite-status | row | [graphite-status.md](graphite-status.md) | ready |
 | graphite-switch | row, tile | [graphite-switch.md](graphite-switch.md) | ready |
 | graphite-meter | tile, row | [graphite-meter.md](graphite-meter.md) | ready (row in test) |
+| graphite-value | tile (row: graphite-status) | [graphite-value.md](graphite-value.md) | ready |
 | graphite-effect | tile | [graphite-effect.md](graphite-effect.md) | ready |
 | graphite-image | tile | [graphite-image.md](graphite-image.md) | ready |
 | graphite-stopwatch | tile | [graphite-stopwatch.md](graphite-stopwatch.md) | ready |

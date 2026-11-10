@@ -112,6 +112,9 @@ export const sampleStates: Record<string, any> = {
   "sensor.player_one_game": entity("sensor.player_one_game", "unknown", { friendly_name: "Player one" }),
   "sensor.player_two_game": entity("sensor.player_two_game", "Block World", { friendly_name: "Player two" }),
   "sensor.tv_app": entity("sensor.tv_app", "off", { friendly_name: "TV" }),
+  "sensor.water_today": entity("sensor.water_today", "184.6", { unit_of_measurement: "L", friendly_name: "Water today" }),
+  "sensor.water_yesterday": entity("sensor.water_yesterday", "212.3", { unit_of_measurement: "L", friendly_name: "Water yesterday" }),
+  "sensor.washing_machine": entity("sensor.washing_machine", "Spülen", { friendly_name: "Washing machine" }),
   "sensor.energy_today": entity("sensor.energy_today", "9.4", { unit_of_measurement: "kWh", friendly_name: "Electricity today" }),
   "sensor.energy_yesterday": entity("sensor.energy_yesterday", "11.2", { unit_of_measurement: "kWh", friendly_name: "Electricity yesterday" }),
   "sensor.sample_coin": entity("sensor.sample_coin", "0.1777", { unit_of_measurement: "$", friendly_name: "Sample Coin", "24h_change": -3.24, "7d_change": 5.8 }),
@@ -347,6 +350,28 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.speaker", icon: "mdi:speaker" },
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.printer", icon: "mdi:printer" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-value",
+      description: `One value as a tile: name on top, value with unit at the bottom, optional second value and watermark icon – the meter tile without its bar. The row counterpart is graphite-status.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-value.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Values and words",
+          note: "Numbers with their own decimals, a second value on the right; a word as value is set a little smaller.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Haushalt" : "Household",
+            layout: "grid",
+            columns: 3,
+            cards: [
+              { type: "custom:graphite-value", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "mdi:water-outline", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
+              { type: "custom:graphite-value", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "mdi:washing-machine" },
+              { type: "custom:graphite-value", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "mdi:finance" },
             ],
           },
         },

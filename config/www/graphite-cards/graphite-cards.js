@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.37.4";
+var version = "0.38.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -605,7 +605,9 @@ var de_default = {
       detail_entities: "Werte statt der Zeile \xABseit \u2026\xBB, solange eingeschaltet (YAML-Liste: entity, label)",
       online_entity: "Online-Entit\xE4t (Icon pulsiert, bis das Ger\xE4t erreichbar ist)",
       wall_switch: "Wandschalter-Lampe (nicht erreichbar = aus)",
-      layout: "Darstellung"
+      layout: "Darstellung",
+      decimals: "Nachkommastellen (nur Zahlenwerte)",
+      unit: "Einheit (nur Zahlenwerte)"
     }
   },
   tiles: {
@@ -1124,6 +1126,24 @@ var de_default = {
       show_picker: "Zeitraum-Auswahl anzeigen",
       show_total: "Summe pro Zeile anzeigen"
     }
+  },
+  value: {
+    editor: {
+      entity: "Entit\xE4t",
+      name: "Name (Standard: Name der Entit\xE4t)",
+      decimals: "Nachkommastellen (Standard: Anzeigegenauigkeit der Entit\xE4t)",
+      unit: "Einheit (Standard: Einheit der Entit\xE4t)",
+      color: "Farbstreifen \xFCber dem Namen (optional)",
+      icon: "Icon oben rechts",
+      show_icon: "Icon der Entit\xE4t anzeigen",
+      secondary_entity: "Zweiter Wert rechts",
+      secondary_decimals: "Nachkommastellen zweiter Wert",
+      secondary_unit: "Einheit zweiter Wert",
+      secondary_icon: "Icon vor dem zweiten Wert",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen"
+    }
   }
 };
 
@@ -1181,7 +1201,9 @@ var en_default = {
       detail_entities: 'Values instead of the "since \u2026" line while on (YAML list: entity, label)',
       online_entity: "Online entity (icon pulses until the device is reachable)",
       wall_switch: "Wall switch lamp (unavailable = off)",
-      layout: "Layout"
+      layout: "Layout",
+      decimals: "Decimals (numeric values only)",
+      unit: "Unit (numeric values only)"
     }
   },
   tiles: {
@@ -1699,6 +1721,24 @@ var en_default = {
       ignore_states: "Further states without a bar (list)",
       show_picker: "Show the period picker",
       show_total: "Show the total per row"
+    }
+  },
+  value: {
+    editor: {
+      entity: "Entity",
+      name: "Name (default: entity name)",
+      decimals: "Decimals (default: display precision of the entity)",
+      unit: "Unit (default: unit of the entity)",
+      color: "Color stripe above the name (optional)",
+      icon: "Icon top right",
+      show_icon: "Show the entity icon",
+      secondary_entity: "Second value on the right",
+      secondary_decimals: "Decimals of the second value",
+      secondary_unit: "Unit of the second value",
+      secondary_icon: "Icon before the second value",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action"
     }
   }
 };
@@ -2871,8 +2911,14 @@ var GraphiteFormEditor = class extends HTMLElement {
   }
   set hass(hass) {
     this.hassObject = hass;
-    if (this.form) this.form.hass = hass;
-    else this.render();
+    if (this.form) {
+      this.form.hass = hass;
+      const defaults = JSON.stringify(this.defaults());
+      if (defaults !== this.shownDefaults) {
+        this.form.data = { ...this.defaults(), ...this.config };
+        this.shownDefaults = defaults;
+      }
+    } else this.render();
   }
   render() {
     if (!this.form) {
@@ -2897,6 +2943,7 @@ var GraphiteFormEditor = class extends HTMLElement {
     }
     if (this.hassObject) this.form.hass = this.hassObject;
     this.form.data = { ...this.defaults(), ...this.config };
+    this.shownDefaults = JSON.stringify(this.defaults());
   }
   fireConfig(config) {
     const cleanConfig = Object.fromEntries(
@@ -2956,8 +3003,24 @@ var GraphiteRowEditor = class extends GraphiteFormEditor {
         { name: "detail_entities", selector: { object: {} } }
       ] : [],
       { name: "online_entity", selector: { entity: {} } },
-      ...this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []
+      ...this.rowKind === "status" ? [
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+            { name: "unit", selector: { text: {} } }
+          ]
+        },
+        { name: "wall_switch", selector: { boolean: {} } }
+      ] : []
     ];
+  }
+  // the "since" switch shows what the row does without the option: on, off for measured values
+  // (entities with a unit); a value equal to this default is not stored
+  defaults() {
+    const stateObj = this.config.entity ? this.hassObject?.states[this.config.entity] : void 0;
+    return { since_line: !stateObj?.attributes?.unit_of_measurement };
   }
   skipValue(key, value) {
     if (key === "detail_entities") return !Array.isArray(value) || value.length === 0;
@@ -2981,6 +3044,13 @@ var GraphiteStatus = class extends GraphiteRow {
   renderEnd(stateObj) {
     if (!stateObj) return b2`<div class="value"></div>`;
     const shown = this.config.wall_switch && ["unavailable", "unknown"].includes(stateObj.state) ? { ...stateObj, state: "off" } : stateObj;
+    const config = this.config;
+    const number = Number(shown.state);
+    if ((config.decimals !== void 0 || config.unit !== void 0) && shown.state !== "" && Number.isFinite(number)) {
+      const digits = config.decimals ?? (shown.state.split(".")[1] ?? "").length;
+      const unit = config.unit ?? shown.attributes?.unit_of_measurement ?? "";
+      return b2`<div class="value">${formatNumber(this.hass, number, digits)}${unit ? ` ${unit}` : ""}</div>`;
+    }
     return b2`<div class="value">${formatState(this.hass, shown)}</div>`;
   }
   static getStubConfig(hass) {
@@ -3931,6 +4001,174 @@ registerCard("graphite-meter", GraphiteMeter, {
   description: "Sensor value with a color scale (gradient with needle), a level bar or the change against a reference (prices)."
 });
 
+// src/cards/tiles/graphite-value-editor.ts
+var GraphiteValueEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "value.editor";
+  }
+  schema() {
+    return [
+      { name: "entity", required: true, selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "unit", selector: { text: {} } },
+          { name: "color", selector: { text: {} } }
+        ]
+      },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+          { name: "show_icon", selector: { boolean: {} } }
+        ]
+      },
+      { name: "secondary_entity", selector: { entity: {} } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "secondary_decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+          { name: "secondary_unit", selector: { text: {} } },
+          { name: "secondary_icon", selector: { icon: {} } }
+        ]
+      },
+      { name: "tap_action", selector: { ui_action: {} } },
+      { name: "hold_action", selector: { ui_action: {} } },
+      { name: "double_tap_action", selector: { ui_action: {} } }
+    ];
+  }
+  skipValue(key, value) {
+    if (key === "show_icon") return value !== true;
+    return false;
+  }
+};
+
+// src/cards/tiles/label-styles.ts
+var labelStyles = i`
+  .tile.label {
+    height: var(--graphite-tile-height, 80px);
+  }
+  .tile.label.no-stripe {
+    height: var(--graphite-tile-height-compact, 72px);
+  }
+  .stripe {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    top: 10px;
+    width: 28px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--label-color, var(--graphite-accent));
+  }
+  .tile.label .name {
+    top: 20px;
+  }
+  .tile.label.no-stripe .name {
+    top: 10px;
+  }
+  .tile.label .value-row {
+    bottom: 9px;
+  }
+  /* words as value (e.g. "keine Artikel", "morgen") read larger than numbers: 20px */
+  .value.text {
+    font-size: var(--graphite-font-value-text-size, 20px);
+  }
+`;
+
+// src/cards/tiles/graphite-value.ts
+var GraphiteValue = class extends GraphiteCard {
+  normalizeConfig(config) {
+    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
+    return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    return config.secondary_entity ? [config.entity, config.secondary_entity] : [config.entity];
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  // display precision set for the entity in Home Assistant
+  precisionOf(entityId) {
+    const precision = Number(this.hass?.entities?.[entityId]?.display_precision);
+    return Number.isFinite(precision) ? precision : void 0;
+  }
+  // value and unit of an entity: numbers with the chosen decimals, everything else as Home Assistant formats it
+  textOf(stateObj, decimals, unitOption) {
+    if (!stateObj || isUnavailable(stateObj)) return { value: "\u2013", unit: "", isWord: false };
+    const number = Number(stateObj.state);
+    const unit = unitOption ?? stateObj.attributes?.unit_of_measurement ?? "";
+    if (stateObj.state !== "" && Number.isFinite(number)) {
+      const ownDecimals = (stateObj.state.split(".")[1] ?? "").length;
+      const digits = decimals ?? this.precisionOf(stateObj.entity_id) ?? ownDecimals;
+      return { value: formatNumber(this.hass, number, digits), unit, isWord: false };
+    }
+    return { value: formatState(this.hass, stateObj), unit: "", isWord: true };
+  }
+  renderIcon(stateObj) {
+    const config = this.config;
+    if (!config.icon && !config.show_icon) return A;
+    const icon = config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    return b2`<div class="meter-icon">${icon}</div>`;
+  }
+  secondaryText() {
+    const config = this.config;
+    if (!config.secondary_entity) return "";
+    const text = this.textOf(this.hass?.states[config.secondary_entity], config.secondary_decimals, config.secondary_unit);
+    return text.unit ? `${text.value} ${text.unit}` : text.value;
+  }
+  render() {
+    const config = this.config;
+    const stateObj = this.hass?.states[config.entity];
+    const text = this.textOf(stateObj, config.decimals, config.unit);
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const secondary = this.secondaryText();
+    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
+    const classes = ["tile", "label", config.color ? "" : "no-stripe", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    return b2`<div class=${classes} style=${config.color ? `--label-color: ${config.color}` : A}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}${this.renderIcon(stateObj)}${config.color ? b2`<div class="stripe"></div>` : A}<div
+      class="name">${name}</div><div class="value-row"><div class=${text.isWord ? "value text" : "value"}>${text.value}${text.unit ? b2`<span class="unit">${text.unit}</span>` : A}</div>${secondary ? b2`<div class="secondary">${config.secondary_icon ? b2`<ha-icon .icon=${config.secondary_icon}></ha-icon>` : A}${secondary}</div>` : A}</div></div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+  getGridOptions() {
+    return { columns: 6, rows: "auto", min_columns: 3 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("sensor.") && hass.states[id].attributes?.unit_of_measurement) ?? "";
+    return { entity };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-value-editor");
+  }
+};
+GraphiteValue.styles = [tileStyles, meterStyles, labelStyles];
+registerElement("graphite-value-editor", GraphiteValueEditor);
+registerCard("graphite-value", GraphiteValue, {
+  name: "Graphite Value",
+  description: "One value as a tile: name on top, value with unit, optional second value and watermark icon."
+});
+
 // src/cards/tiles/graphite-effect-editor.ts
 var GraphiteEffectEditor = class extends GraphiteFormEditor {
   labelPrefix() {
@@ -4305,38 +4543,6 @@ var GraphiteStopwatchEditor = class extends GraphiteFormEditor {
     return false;
   }
 };
-
-// src/cards/tiles/label-styles.ts
-var labelStyles = i`
-  .tile.label {
-    height: var(--graphite-tile-height, 80px);
-  }
-  .tile.label.no-stripe {
-    height: var(--graphite-tile-height-compact, 72px);
-  }
-  .stripe {
-    position: absolute;
-    left: var(--graphite-padding-tile, 12px);
-    top: 10px;
-    width: 28px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--label-color, var(--graphite-accent));
-  }
-  .tile.label .name {
-    top: 20px;
-  }
-  .tile.label.no-stripe .name {
-    top: 10px;
-  }
-  .tile.label .value-row {
-    bottom: 9px;
-  }
-  /* words as value (e.g. "keine Artikel", "morgen") read larger than numbers: 20px */
-  .value.text {
-    font-size: var(--graphite-font-value-text-size, 20px);
-  }
-`;
 
 // src/cards/tiles/graphite-stopwatch.ts
 var weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];

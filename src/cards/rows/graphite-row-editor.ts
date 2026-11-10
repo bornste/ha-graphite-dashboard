@@ -43,8 +43,25 @@ export class GraphiteRowEditor extends GraphiteFormEditor {
         { name: "detail_entities", selector: { object: {} } },
       ] : []),
       { name: "online_entity", selector: { entity: {} } },
-      ...(this.rowKind === "status" ? [{ name: "wall_switch", selector: { boolean: {} } }] : []),
+      ...(this.rowKind === "status" ? [
+        {
+          type: "grid",
+          name: "",
+          schema: [
+            { name: "decimals", selector: { number: { mode: "box", min: 0, max: 4 } } },
+            { name: "unit", selector: { text: {} } },
+          ],
+        },
+        { name: "wall_switch", selector: { boolean: {} } },
+      ] : []),
     ];
+  }
+
+  // the "since" switch shows what the row does without the option: on, off for measured values
+  // (entities with a unit); a value equal to this default is not stored
+  protected defaults(): Record<string, unknown> {
+    const stateObj = this.config.entity ? this.hassObject?.states[this.config.entity] : undefined;
+    return { since_line: !stateObj?.attributes?.unit_of_measurement };
   }
 
   protected skipValue(key: string, value: unknown): boolean {

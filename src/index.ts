@@ -4,6 +4,7 @@ import "./cards/graphite-panel";
 import "./cards/rows/graphite-status";
 import "./cards/rows/graphite-switch";
 import "./cards/tiles/graphite-meter";
+import "./cards/tiles/graphite-value";
 import "./cards/tiles/graphite-effect";
 import "./cards/tiles/graphite-image";
 import "./cards/tiles/graphite-stopwatch";

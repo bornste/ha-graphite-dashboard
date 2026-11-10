@@ -2,7 +2,7 @@
 // Only the row layout for now, so the editor shows no layout choice.
 import { html } from "lit";
 import { defaultHoldAction } from "../../core/actions";
-import { formatState } from "../../core/format";
+import { formatNumber, formatState } from "../../core/format";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, HassEntity } from "../../core/types";
 import { GraphiteRow, isActiveState } from "./graphite-row";
@@ -28,6 +28,14 @@ export class GraphiteStatus extends GraphiteRow {
     const shown = this.config!.wall_switch && ["unavailable", "unknown"].includes(stateObj.state)
       ? { ...stateObj, state: "off" }
       : stateObj;
+    // numeric value with own decimals or unit
+    const config = this.config!;
+    const number = Number(shown.state);
+    if ((config.decimals !== undefined || config.unit !== undefined) && shown.state !== "" && Number.isFinite(number)) {
+      const digits = config.decimals ?? (shown.state.split(".")[1] ?? "").length;
+      const unit = config.unit ?? shown.attributes?.unit_of_measurement ?? "";
+      return html`<div class="value">${formatNumber(this.hass, number, digits)}${unit ? ` ${unit}` : ""}</div>`;
+    }
     return html`<div class="value">${formatState(this.hass, shown)}</div>`;
   }
 

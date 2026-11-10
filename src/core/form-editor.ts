@@ -5,10 +5,11 @@ import type { HomeAssistant } from "./types";
 
 export abstract class GraphiteFormEditor extends HTMLElement {
   protected config: Record<string, any> = {};
-  private hassObject?: HomeAssistant;
+  protected hassObject?: HomeAssistant;
   private form?: any;
   private formLanguage?: string;
   private formSchemaKey?: string;
+  private shownDefaults?: string;
 
   // ha-form schema of the card
   protected abstract schema(): unknown[];
@@ -46,8 +47,16 @@ export abstract class GraphiteFormEditor extends HTMLElement {
 
   set hass(hass: HomeAssistant) {
     this.hassObject = hass;
-    if (this.form) this.form.hass = hass;
-    else this.render();
+    if (this.form) {
+      this.form.hass = hass;
+      // defaults can depend on the entity state (e.g. measured values): refresh the shown data only
+      // when they changed, so typing in a field is not disturbed by state updates
+      const defaults = JSON.stringify(this.defaults());
+      if (defaults !== this.shownDefaults) {
+        this.form.data = { ...this.defaults(), ...this.config };
+        this.shownDefaults = defaults;
+      }
+    } else this.render();
   }
 
   private render(): void {
@@ -73,6 +82,7 @@ export abstract class GraphiteFormEditor extends HTMLElement {
     }
     if (this.hassObject) this.form.hass = this.hassObject;
     this.form.data = { ...this.defaults(), ...this.config };
+    this.shownDefaults = JSON.stringify(this.defaults());
   }
 
   private fireConfig(config: Record<string, any>): void {
