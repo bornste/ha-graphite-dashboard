@@ -1,6 +1,6 @@
 // Styles of graphite-calendar: day headers, event rows (geometry of the status rows: 60px, icon box
 // 42px, text at 60px) with a short stripe in the calendar color, the header of the week range, the
-// compact layout (one block per day), the tiles layout and the details dialog.
+// compact layout (one block per day) and the tiles layout.
 import { css } from "lit";
 
 export const calendarStyles = css`
@@ -427,68 +427,5 @@ export const calendarStyles = css`
     font-size: var(--graphite-font-name-size, 15px);
     line-height: 18px;
     color: var(--graphite-text-muted);
-  }
-  /* details of an event: native dialog, so it sits above pop-ups and transformed parents */
-  dialog {
-    box-sizing: border-box;
-    width: min(420px, calc(100vw - 32px));
-    padding: 20px;
-    border: none;
-    border-radius: var(--graphite-radius-panel, 20px);
-    background: var(--graphite-surface-panel);
-    color: var(--graphite-text-primary);
-    font-family: inherit;
-    --event-color: var(--graphite-accent);
-  }
-  dialog::backdrop {
-    background: var(--graphite-overlay, rgba(0, 0, 0, 0.6));
-    backdrop-filter: blur(10px);
-  }
-  .dialog-head {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .dialog-head .icon {
-    margin: 0;
-    width: 24px;
-    height: 24px;
-  }
-  .dialog-title {
-    flex: 1;
-    font-size: var(--graphite-title-size, 18px);
-    line-height: 24px;
-  }
-  .close {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    margin: -6px -6px 0 0;
-    border: none;
-    border-radius: var(--graphite-radius-tile, 12px);
-    background: var(--graphite-surface-tile);
-    color: var(--graphite-text-primary);
-    cursor: pointer;
-    --mdc-icon-size: 20px;
-  }
-  .details {
-    display: grid;
-    grid-template-columns: 20px 1fr;
-    gap: 10px 12px;
-    margin-top: 16px;
-    font-size: 14px;
-    line-height: 20px;
-    color: var(--graphite-text-secondary);
-    --mdc-icon-size: 18px;
-  }
-  .details ha-icon {
-    color: var(--graphite-text-muted);
-  }
-  .details .description {
-    white-space: pre-line;
-    color: var(--graphite-text-primary);
   }
 `;

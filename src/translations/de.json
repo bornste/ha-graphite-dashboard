@@ -386,7 +386,6 @@
     "until": "bis {date}",
     "more": "+ {count} weitere bis {date}",
     "empty": "Keine Einträge bis {date}",
-    "close": "Schliessen",
     "thisWeek": "Diese Woche",
     "nextWeekTitle": "Nächste Woche",
     "fromMonday": "Ab Montag",

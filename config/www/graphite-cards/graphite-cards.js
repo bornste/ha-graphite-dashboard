@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.48.1";
+var version = "0.49.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -940,7 +940,6 @@ var de_default = {
     until: "bis {date}",
     more: "+ {count} weitere bis {date}",
     empty: "Keine Eintr\xE4ge bis {date}",
-    close: "Schliessen",
     thisWeek: "Diese Woche",
     nextWeekTitle: "N\xE4chste Woche",
     fromMonday: "Ab Montag",
@@ -2110,7 +2109,6 @@ var en_default = {
     until: "until {date}",
     more: "+ {count} more until {date}",
     empty: "No events until {date}",
-    close: "Close",
     thisWeek: "This week",
     nextWeekTitle: "Next week",
     fromMonday: "From Monday",
@@ -9116,69 +9114,6 @@ var calendarStyles = i`
     line-height: 18px;
     color: var(--graphite-text-muted);
   }
-  /* details of an event: native dialog, so it sits above pop-ups and transformed parents */
-  dialog {
-    box-sizing: border-box;
-    width: min(420px, calc(100vw - 32px));
-    padding: 20px;
-    border: none;
-    border-radius: var(--graphite-radius-panel, 20px);
-    background: var(--graphite-surface-panel);
-    color: var(--graphite-text-primary);
-    font-family: inherit;
-    --event-color: var(--graphite-accent);
-  }
-  dialog::backdrop {
-    background: var(--graphite-overlay, rgba(0, 0, 0, 0.6));
-    backdrop-filter: blur(10px);
-  }
-  .dialog-head {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .dialog-head .icon {
-    margin: 0;
-    width: 24px;
-    height: 24px;
-  }
-  .dialog-title {
-    flex: 1;
-    font-size: var(--graphite-title-size, 18px);
-    line-height: 24px;
-  }
-  .close {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    margin: -6px -6px 0 0;
-    border: none;
-    border-radius: var(--graphite-radius-tile, 12px);
-    background: var(--graphite-surface-tile);
-    color: var(--graphite-text-primary);
-    cursor: pointer;
-    --mdc-icon-size: 20px;
-  }
-  .details {
-    display: grid;
-    grid-template-columns: 20px 1fr;
-    gap: 10px 12px;
-    margin-top: 16px;
-    font-size: 14px;
-    line-height: 20px;
-    color: var(--graphite-text-secondary);
-    --mdc-icon-size: 18px;
-  }
-  .details ha-icon {
-    color: var(--graphite-text-muted);
-  }
-  .details .description {
-    white-space: pre-line;
-    color: var(--graphite-text-primary);
-  }
 `;
 
 // src/cards/lists/graphite-calendar-editor.ts
@@ -9262,6 +9197,58 @@ var GraphiteCalendarEditor = class extends GraphiteFormEditor {
   }
 };
 
+// src/cards/lists/graphite-calendar-event.ts
+var GraphiteCalendarEvent = class extends i4 {
+  setConfig(config) {
+    this.details = config?.details;
+  }
+  // the content does not depend on states
+  set hass(_hass) {
+  }
+  render() {
+    const details = this.details;
+    if (!details) return A;
+    return b2`<div class="panel" style=${`--event-color: ${details.color}`}><ha-icon icon="mdi:clock-outline"></ha-icon><div>${details.when}</div><ha-icon
+      class="event" .icon=${details.icon}></ha-icon><div>${details.calendar}</div>${details.location ? b2`<ha-icon icon="mdi:map-marker-outline"></ha-icon><div>${details.location}</div>` : A}${details.description ? b2`<ha-icon icon="mdi:text"></ha-icon><div class="description">${details.description}</div>` : A}</div>`;
+  }
+  getCardSize() {
+    return 2;
+  }
+};
+GraphiteCalendarEvent.properties = {
+  details: { state: true }
+};
+GraphiteCalendarEvent.styles = i`
+    :host {
+      display: block;
+    }
+    /* a panel inside the dialog, like the content of the other dialogs */
+    .panel {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 10px 12px;
+      padding: 16px;
+      border-radius: var(--graphite-radius-panel, 20px);
+      background: var(--graphite-surface-panel);
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--graphite-text-secondary);
+      --mdc-icon-size: 18px;
+    }
+    ha-icon {
+      color: var(--graphite-text-muted);
+    }
+    /* the calendar row carries the icon of the event in its color */
+    ha-icon.event {
+      color: var(--event-color, var(--graphite-accent));
+    }
+    .description {
+      white-space: pre-line;
+      color: var(--graphite-text-primary);
+    }
+  `;
+registerElement("graphite-calendar-event", GraphiteCalendarEvent);
+
 // src/cards/lists/graphite-calendar.ts
 var refreshInterval2 = 60 * 1e3;
 var defaultIcon = "mdi:calendar-blank-outline";
@@ -9340,16 +9327,27 @@ var GraphiteCalendar = class extends GraphiteCard {
   get isTiles() {
     return this.config?.layout === "tiles";
   }
+  // details in a graphite-dialog above everything (also above a dialog the calendar sits in)
   openDetails(event) {
-    this.selected = event;
-    this.requestUpdate();
-    this.updateComplete.then(() => {
-      const dialog = this.shadowRoot?.querySelector("dialog");
-      if (dialog && !dialog.open) dialog.showModal();
+    const lastDay = this.lastDay(event);
+    let when;
+    if (event.allDay) {
+      when = event.multiDay ? `${this.longDate(event.start)} \u2013 ${this.longDate(lastDay)}` : `${this.longDate(event.start)}, ${this.localize("calendar.allDay")}`;
+    } else if (event.multiDay) {
+      when = `${this.longDate(event.start)} ${this.time(event.start)} \u2013 ${this.longDate(event.end)} ${this.time(event.end)}`;
+    } else {
+      when = `${this.longDate(event.start)}, ${this.time(event.start)}\u2013${this.time(event.end)}`;
+    }
+    window.graphiteDialogLayer?.openDetached({
+      type: "custom:graphite-dialog",
+      hash: "#calendar-event",
+      title: event.summary,
+      width: "420px",
+      cards: [{
+        type: "custom:graphite-calendar-event",
+        details: { when, calendar: event.calendarName, icon: event.icon, color: event.color, location: event.location, description: event.description }
+      }]
     });
-  }
-  closeDetails() {
-    this.shadowRoot?.querySelector("dialog")?.close();
   }
   // end (exclusive) of the ranges that start today
   rangeEnd(today) {
@@ -9653,28 +9651,6 @@ var GraphiteCalendar = class extends GraphiteCard {
       class="tileSecondary">${highlightSecondary}</div></div>`
     )}</div>`;
   }
-  renderDetails() {
-    const event = this.selected;
-    if (!event) return b2`<dialog></dialog>`;
-    const lastDay = this.lastDay(event);
-    let when;
-    if (event.allDay) {
-      when = event.multiDay ? `${this.longDate(event.start)} \u2013 ${this.longDate(lastDay)}` : `${this.longDate(event.start)}, ${this.localize("calendar.allDay")}`;
-    } else if (event.multiDay) {
-      when = `${this.longDate(event.start)} ${this.time(event.start)} \u2013 ${this.longDate(event.end)} ${this.time(event.end)}`;
-    } else {
-      when = `${this.longDate(event.start)}, ${this.time(event.start)}\u2013${this.time(event.end)}`;
-    }
-    return b2`<dialog style=${`--event-color: ${event.color}`} @click=${(clickEvent) => {
-      if (clickEvent.target === clickEvent.currentTarget) this.closeDetails();
-    }} @close=${() => {
-      this.selected = void 0;
-      this.requestUpdate();
-    }}><div class="dialog-head"><div class="icon"><ha-icon
-      .icon=${event.icon}></ha-icon></div><div class="dialog-title">${event.summary}</div><button class="close"
-      aria-label=${this.localize("calendar.close")} @click=${() => this.closeDetails()}><ha-icon icon="mdi:close"></ha-icon></button></div><div
-      class="details"><ha-icon icon="mdi:clock-outline"></ha-icon><div>${when}</div><ha-icon icon="mdi:calendar-blank-outline"></ha-icon><div>${event.calendarName}</div>${event.location ? b2`<ha-icon icon="mdi:map-marker-outline"></ha-icon><div>${event.location}</div>` : A}${event.description ? b2`<ha-icon icon="mdi:text"></ha-icon><div class="description">${event.description}</div>` : A}</div></dialog>`;
-  }
   render() {
     const config = this.config;
     const now = /* @__PURE__ */ new Date();
@@ -9695,7 +9671,7 @@ var GraphiteCalendar = class extends GraphiteCard {
       const text = config.empty_text ?? this.localize("calendar.empty", { date: lastRangeDay });
       return b2`${header}<div class="empty"><div class="icon"><ha-icon icon="mdi:check-circle"></ha-icon></div>${text}</div>`;
     }
-    return b2`${header}${compact ? this.renderCompact(period, today) : this.renderList(today)}${hiddenCount > 0 ? b2`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>` : A}${this.renderDetails()}`;
+    return b2`${header}${compact ? this.renderCompact(period, today) : this.renderList(today)}${hiddenCount > 0 ? b2`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>` : A}`;
   }
   getCardSize() {
     return this.isTiles ? 2 : Math.max(2, this.shown.length + 1);
@@ -13357,6 +13333,7 @@ var GraphiteDialogLayer = class {
     this.openedByNavigation = false;
     this.lastPath = window.location.pathname;
     this.sheet = false;
+    this.scrollLocked = false;
     this.dragEndedAt = 0;
     window.addEventListener("location-changed", () => this.sync(true));
     window.addEventListener("popstate", () => this.sync(true));
@@ -13398,19 +13375,51 @@ var GraphiteDialogLayer = class {
     }
     this.show(config, hash, byNavigation && samePage);
   }
-  show(config, hash, openedByNavigation) {
+  get mountPoint() {
     const root = this.lovelaceRoot;
-    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    return root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot ?? null;
+  }
+  show(config, hash, openedByNavigation) {
+    const mount = this.mountPoint;
     if (!mount) return;
     this.remove(false);
     this.openHash = hash;
     this.openedByNavigation = openedByNavigation;
+    const layer = this.createLayer(config, mount, 8, () => this.close());
+    this.host = layer.host;
+    this.dialog = layer.dialog;
+    this.sheet = layer.sheet;
+    this.lockScroll();
+    this.followHass();
+    this.animateIn(layer);
+  }
+  // A dialog opened by a card itself (e.g. the details of a calendar event), not by a hash.
+  // It lies above an open hash dialog and closes with X, backdrop, Escape or a drag; the history
+  // and the URL stay as they are.
+  openDetached(config) {
+    const mount = this.mountPoint;
+    if (!mount) return;
+    this.closeDetached(false);
+    const layer = this.createLayer(config, mount, 9, () => this.closeDetached());
+    this.detached = layer;
+    if (!this.host) this.lockScroll();
+    this.animateIn(layer);
+  }
+  closeDetached(animated = true) {
+    const layer = this.detached;
+    if (!layer) return;
+    this.detached = void 0;
+    if (!this.host) this.unlockScroll();
+    this.animateOut(layer, animated);
+  }
+  // backdrop and dialog: centered, or a bottom sheet on small screens
+  createLayer(config, mount, zIndex, close) {
     const sheet = window.matchMedia(sheetQuery).matches;
     const host = document.createElement("graphite-dialog-layer");
     Object.assign(host.style, {
       position: "fixed",
       inset: "0",
-      zIndex: "8",
+      zIndex: String(zIndex),
       display: "flex",
       flexDirection: "row",
       alignItems: sheet ? "flex-end" : "center",
@@ -13430,20 +13439,18 @@ var GraphiteDialogLayer = class {
     dialog.hass = this.homeAssistant?.hass;
     this.lastHass = this.homeAssistant?.hass;
     dialog.enableClose(sheet);
-    dialog.addEventListener("graphite-dialog-close", () => this.close());
+    dialog.addEventListener("graphite-dialog-close", () => close());
     shadow.append(dialog);
     host.addEventListener("click", (event) => {
       const target = event.composedPath()[0];
       if (performance.now() - this.dragEndedAt < 300) return;
-      if (target === host || target === dialog) this.close();
+      if (target === host || target === dialog) close();
     });
-    if (sheet) this.attachDrag(host, dialog);
+    if (sheet) this.attachDrag(host, dialog, close);
     mount.append(host);
-    this.host = host;
-    this.dialog = dialog;
-    this.sheet = sheet;
-    this.lockScroll();
-    this.followHass();
+    return { host, dialog, sheet };
+  }
+  animateIn({ host, dialog, sheet }) {
     host.animate([{ opacity: 0 }, { opacity: 1 }], { duration: sheet ? 300 : 200, easing: "ease" });
     if (!reducedMotion()) dialog.animate(
       sheet ? [{ transform: "translateY(100%)" }, { transform: "none" }] : [{ transform: "scale(0.94)", opacity: 0 }, { transform: "none", opacity: 1 }],
@@ -13454,8 +13461,26 @@ var GraphiteDialogLayer = class {
       dialog.focusDialog();
     });
   }
+  // the dialog zooms out (or slides down as a sheet) before it is removed
+  animateOut({ host, dialog, sheet }, animated) {
+    if (!animated || !host.isConnected) {
+      host.remove();
+      return;
+    }
+    const from = dialog.style.transform || "none";
+    const duration = sheet ? 200 : 150;
+    host.style.pointerEvents = "none";
+    window.setTimeout(() => host.remove(), duration + 50);
+    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
+    if (!reducedMotion()) {
+      dialog.animate(
+        sheet ? [{ transform: from }, { transform: "translateY(100%)" }] : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],
+        { duration, easing: accelerate, fill: "forwards" }
+      );
+    }
+  }
   // bottom sheet: dragged down at the handle or header; a quarter of its height or a fling closes it
-  attachDrag(host, dialog) {
+  attachDrag(host, dialog, close) {
     let drag;
     dialog.addEventListener("pointerdown", (event) => {
       const path = event.composedPath();
@@ -13485,7 +13510,7 @@ var GraphiteDialogLayer = class {
       this.dragEndedAt = performance.now();
       const offset = Math.max(0, lastY - startY);
       if (offset > dialog.offsetHeight / 4 || speed > 0.6) {
-        this.close();
+        close();
         return;
       }
       host.style.opacity = "";
@@ -13524,15 +13549,22 @@ var GraphiteDialogLayer = class {
     this.hassFrame = requestAnimationFrame(step);
   }
   remount(host) {
-    const root = this.lovelaceRoot;
-    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    const mount = this.mountPoint;
     if (!mount) return;
     this.copyTheme(host, mount);
     mount.append(host);
   }
+  // the page behind does not scroll while any dialog is open (hash or detached, or both)
   lockScroll() {
+    if (this.scrollLocked) return;
+    this.scrollLocked = true;
     this.scrollRestore = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
+  }
+  unlockScroll() {
+    if (!this.scrollLocked) return;
+    this.scrollLocked = false;
+    document.documentElement.style.overflow = this.scrollRestore ?? "";
   }
   // close button, backdrop, Escape: back in the history, or the hash is removed
   close() {
@@ -13546,41 +13578,29 @@ var GraphiteDialogLayer = class {
     window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: true } }));
     this.remove();
   }
-  // animated: the dialog zooms out (or slides down as a sheet) before it is removed;
-  // not animated when another dialog takes its place
+  // animated unless another dialog takes its place; a detached dialog above it closes with it
   remove(animated = true) {
     if (this.hassFrame !== void 0) cancelAnimationFrame(this.hassFrame);
     this.hassFrame = void 0;
     const host = this.host;
     const dialog = this.dialog;
-    const sheet = this.sheet;
-    if (host) document.documentElement.style.overflow = this.scrollRestore ?? "";
     this.host = void 0;
     this.dialog = void 0;
     this.openHash = "";
+    this.closeDetached(animated);
     if (!host || !dialog) return;
-    if (!animated || !host.isConnected) {
-      host.remove();
-      return;
-    }
-    const from = dialog.style.transform || "none";
-    const duration = sheet ? 200 : 150;
-    host.style.pointerEvents = "none";
-    window.setTimeout(() => host.remove(), duration + 50);
-    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
-    if (!reducedMotion()) {
-      dialog.animate(
-        sheet ? [{ transform: from }, { transform: "translateY(100%)" }] : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],
-        { duration, easing: accelerate, fill: "forwards" }
-      );
-    }
+    this.unlockScroll();
+    this.animateOut({ host, dialog, sheet: this.sheet }, animated);
   }
-  // Escape closes the dialog, unless it was meant for a dialog above it (e.g. more-info)
+  // Escape closes the topmost dialog, unless it was meant for a dialog above it (e.g. more-info)
   handleKey(event) {
-    if (event.key !== "Escape" || !this.host) return;
+    const top = this.detached?.host ?? this.host;
+    if (event.key !== "Escape" || !top) return;
     const path = event.composedPath();
     const target = path[0];
-    if (path.includes(this.host) || target === document.body || target === document.documentElement) this.close();
+    if (!path.includes(top) && target !== document.body && target !== document.documentElement) return;
+    if (this.detached) this.closeDetached();
+    else this.close();
   }
 };
 if (!window.graphiteDialogLayer) {

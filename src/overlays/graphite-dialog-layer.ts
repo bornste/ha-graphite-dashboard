@@ -18,6 +18,12 @@ interface HomeAssistantElement extends HTMLElement {
   hass?: Record<string, unknown>;
 }
 
+interface OpenLayer {
+  host: HTMLElement;
+  dialog: GraphiteDialog;
+  sheet: boolean;
+}
+
 interface LovelaceRoot extends HTMLElement {
   lovelace?: { config?: Record<string, unknown> };
 }
@@ -93,6 +99,8 @@ class GraphiteDialogLayer {
   private retryTimer?: number;
   private scrollRestore?: string;
   private sheet = false;
+  private detached?: OpenLayer;
+  private scrollLocked = false;
   private dragEndedAt = 0;
 
   constructor() {
@@ -141,23 +149,58 @@ class GraphiteDialogLayer {
     this.show(config, hash, byNavigation && samePage);
   }
 
-  private show(config: DialogConfig, hash: string, openedByNavigation: boolean): void {
+  private get mountPoint(): ParentNode | null {
     const root = this.lovelaceRoot;
     // inside the view container, so card actions reach Home Assistant; hui-root as fallback
-    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    return root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot ?? null;
+  }
+
+  private show(config: DialogConfig, hash: string, openedByNavigation: boolean): void {
+    const mount = this.mountPoint;
     if (!mount) return;
     this.remove(false);
     this.openHash = hash;
     this.openedByNavigation = openedByNavigation;
-    const sheet = window.matchMedia(sheetQuery).matches;
+    const layer = this.createLayer(config, mount, 8, () => this.close());
+    this.host = layer.host;
+    this.dialog = layer.dialog;
+    this.sheet = layer.sheet;
+    this.lockScroll();
+    this.followHass();
+    this.animateIn(layer);
+  }
 
+  // A dialog opened by a card itself (e.g. the details of a calendar event), not by a hash.
+  // It lies above an open hash dialog and closes with X, backdrop, Escape or a drag; the history
+  // and the URL stay as they are.
+  openDetached(config: DialogConfig): void {
+    const mount = this.mountPoint;
+    if (!mount) return;
+    this.closeDetached(false);
+    const layer = this.createLayer(config, mount, 9, () => this.closeDetached());
+    this.detached = layer;
+    if (!this.host) this.lockScroll();
+    this.animateIn(layer);
+  }
+
+  closeDetached(animated = true): void {
+    const layer = this.detached;
+    if (!layer) return;
+    this.detached = undefined;
+    if (!this.host) this.unlockScroll();
+    this.animateOut(layer, animated);
+  }
+
+  // backdrop and dialog: centered, or a bottom sheet on small screens
+  private createLayer(config: DialogConfig, mount: ParentNode, zIndex: number, close: () => void): OpenLayer {
+    const sheet = window.matchMedia(sheetQuery).matches;
     const host = document.createElement("graphite-dialog-layer");
     // layout inline: the view container styles its children (e.g. flex-direction: column) and
-    // would override :host rules; centered dialog, or a bottom sheet on small screens
+    // would override :host rules
     Object.assign(host.style, {
       position: "fixed",
       inset: "0",
-      zIndex: "8",
+      zIndex: String(zIndex),
       display: "flex",
       flexDirection: "row",
       alignItems: sheet ? "flex-end" : "center",
@@ -178,23 +221,21 @@ class GraphiteDialogLayer {
     dialog.hass = this.homeAssistant?.hass as any;
     this.lastHass = this.homeAssistant?.hass;
     dialog.enableClose(sheet);
-    dialog.addEventListener("graphite-dialog-close", () => this.close());
+    dialog.addEventListener("graphite-dialog-close", () => close());
     shadow.append(dialog);
     // a click on the backdrop (outside the dialog box) closes it
     host.addEventListener("click", (event) => {
       const target = event.composedPath()[0];
       // the click that ends a drag of the sheet is not a click on the backdrop
       if (performance.now() - this.dragEndedAt < 300) return;
-      if (target === host || target === dialog) this.close();
+      if (target === host || target === dialog) close();
     });
-    if (sheet) this.attachDrag(host, dialog);
-
+    if (sheet) this.attachDrag(host, dialog, close);
     mount.append(host);
-    this.host = host;
-    this.dialog = dialog;
-    this.sheet = sheet;
-    this.lockScroll();
-    this.followHass();
+    return { host, dialog, sheet };
+  }
+
+  private animateIn({ host, dialog, sheet }: OpenLayer): void {
     host.animate([{ opacity: 0 }, { opacity: 1 }], { duration: sheet ? 300 : 200, easing: "ease" });
     if (!reducedMotion()) dialog.animate(sheet
       ? [{ transform: "translateY(100%)" }, { transform: "none" }]
@@ -206,8 +247,29 @@ class GraphiteDialogLayer {
     });
   }
 
+  // the dialog zooms out (or slides down as a sheet) before it is removed
+  private animateOut({ host, dialog, sheet }: OpenLayer, animated: boolean): void {
+    if (!animated || !host.isConnected) {
+      host.remove();
+      return;
+    }
+    const from = dialog.style.transform || "none";
+    const duration = sheet ? 200 : 150;
+    // a closing layer never catches taps; it is removed by a timer, because animations do not run
+    // on a hidden page (screen off, other tab) and would never finish there
+    host.style.pointerEvents = "none";
+    window.setTimeout(() => host.remove(), duration + 50);
+    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
+    if (!reducedMotion()) {
+      dialog.animate(sheet
+        ? [{ transform: from }, { transform: "translateY(100%)" }]
+        : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],
+      { duration, easing: accelerate, fill: "forwards" });
+    }
+  }
+
   // bottom sheet: dragged down at the handle or header; a quarter of its height or a fling closes it
-  private attachDrag(host: HTMLElement, dialog: GraphiteDialog): void {
+  private attachDrag(host: HTMLElement, dialog: GraphiteDialog, close: () => void): void {
     let drag: { pointerId: number; startY: number; lastY: number; lastTime: number; speed: number; active: boolean } | undefined;
     dialog.addEventListener("pointerdown", (event) => {
       // the content scrolls, the close button closes: neither starts a drag
@@ -238,7 +300,7 @@ class GraphiteDialogLayer {
       this.dragEndedAt = performance.now();
       const offset = Math.max(0, lastY - startY);
       if (offset > dialog.offsetHeight / 4 || speed > 0.6) {
-        this.close();
+        close();
         return;
       }
       host.style.opacity = "";
@@ -280,16 +342,24 @@ class GraphiteDialogLayer {
   }
 
   private remount(host: HTMLElement): void {
-    const root = this.lovelaceRoot;
-    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    const mount = this.mountPoint;
     if (!mount) return;
     this.copyTheme(host, mount);
     mount.append(host);
   }
 
+  // the page behind does not scroll while any dialog is open (hash or detached, or both)
   private lockScroll(): void {
+    if (this.scrollLocked) return;
+    this.scrollLocked = true;
     this.scrollRestore = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
+  }
+
+  private unlockScroll(): void {
+    if (!this.scrollLocked) return;
+    this.scrollLocked = false;
+    document.documentElement.style.overflow = this.scrollRestore ?? "";
   }
 
   // close button, backdrop, Escape: back in the history, or the hash is removed
@@ -305,44 +375,30 @@ class GraphiteDialogLayer {
     this.remove();
   }
 
-  // animated: the dialog zooms out (or slides down as a sheet) before it is removed;
-  // not animated when another dialog takes its place
+  // animated unless another dialog takes its place; a detached dialog above it closes with it
   private remove(animated = true): void {
     if (this.hassFrame !== undefined) cancelAnimationFrame(this.hassFrame);
     this.hassFrame = undefined;
     const host = this.host;
     const dialog = this.dialog;
-    const sheet = this.sheet;
-    if (host) document.documentElement.style.overflow = this.scrollRestore ?? "";
     this.host = undefined;
     this.dialog = undefined;
     this.openHash = "";
+    this.closeDetached(animated);
     if (!host || !dialog) return;
-    if (!animated || !host.isConnected) {
-      host.remove();
-      return;
-    }
-    const from = dialog.style.transform || "none";
-    const duration = sheet ? 200 : 150;
-    // a closing layer never catches taps; it is removed by a timer, because animations do not run
-    // on a hidden page (screen off, other tab) and would never finish there
-    host.style.pointerEvents = "none";
-    window.setTimeout(() => host.remove(), duration + 50);
-    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
-    if (!reducedMotion()) {
-      dialog.animate(sheet
-        ? [{ transform: from }, { transform: "translateY(100%)" }]
-        : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],
-      { duration, easing: accelerate, fill: "forwards" });
-    }
+    this.unlockScroll();
+    this.animateOut({ host, dialog, sheet: this.sheet }, animated);
   }
 
-  // Escape closes the dialog, unless it was meant for a dialog above it (e.g. more-info)
+  // Escape closes the topmost dialog, unless it was meant for a dialog above it (e.g. more-info)
   private handleKey(event: KeyboardEvent): void {
-    if (event.key !== "Escape" || !this.host) return;
+    const top = this.detached?.host ?? this.host;
+    if (event.key !== "Escape" || !top) return;
     const path = event.composedPath();
     const target = path[0];
-    if (path.includes(this.host) || target === document.body || target === document.documentElement) this.close();
+    if (!path.includes(top) && target !== document.body && target !== document.documentElement) return;
+    if (this.detached) this.closeDetached();
+    else this.close();
   }
 }
 

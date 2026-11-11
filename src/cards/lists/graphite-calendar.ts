@@ -17,6 +17,7 @@ import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
 import { calendarStyles } from "./calendar-styles";
 import { GraphiteCalendarEditor } from "./graphite-calendar-editor";
+import "./graphite-calendar-event";
 
 export interface CalendarSource {
   entity: string;
@@ -105,7 +106,6 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
   private pressedIndex = -1;
   private pointerUsed = false;
   private shown: ShownEvent[] = [];
-  private selected?: ShownEvent;
 
   protected normalizeConfig(config: CalendarConfig): CalendarConfig {
     const calendars = config.calendars ?? (config.entity ? [config.entity] : []);
@@ -178,17 +178,27 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     return this.config?.layout === "tiles";
   }
 
+  // details in a graphite-dialog above everything (also above a dialog the calendar sits in)
   private openDetails(event: ShownEvent): void {
-    this.selected = event;
-    this.requestUpdate();
-    this.updateComplete.then(() => {
-      const dialog = this.shadowRoot?.querySelector("dialog");
-      if (dialog && !dialog.open) dialog.showModal();
+    const lastDay = this.lastDay(event);
+    let when: string;
+    if (event.allDay) {
+      when = event.multiDay ? `${this.longDate(event.start)} – ${this.longDate(lastDay)}` : `${this.longDate(event.start)}, ${this.localize("calendar.allDay")}`;
+    } else if (event.multiDay) {
+      when = `${this.longDate(event.start)} ${this.time(event.start)} – ${this.longDate(event.end)} ${this.time(event.end)}`;
+    } else {
+      when = `${this.longDate(event.start)}, ${this.time(event.start)}–${this.time(event.end)}`;
+    }
+    window.graphiteDialogLayer?.openDetached({
+      type: "custom:graphite-dialog",
+      hash: "#calendar-event",
+      title: event.summary,
+      width: "420px",
+      cards: [{
+        type: "custom:graphite-calendar-event",
+        details: { when, calendar: event.calendarName, icon: event.icon, color: event.color, location: event.location, description: event.description },
+      }],
     });
-  }
-
-  private closeDetails(): void {
-    this.shadowRoot?.querySelector("dialog")?.close();
   }
 
   // end (exclusive) of the ranges that start today
@@ -538,29 +548,6 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
       class="tileSecondary">${highlightSecondary}</div></div>`)}</div>`;
   }
 
-  private renderDetails() {
-    const event = this.selected;
-    if (!event) return html`<dialog></dialog>`;
-    const lastDay = this.lastDay(event);
-    let when: string;
-    if (event.allDay) {
-      when = event.multiDay ? `${this.longDate(event.start)} – ${this.longDate(lastDay)}` : `${this.longDate(event.start)}, ${this.localize("calendar.allDay")}`;
-    } else if (event.multiDay) {
-      when = `${this.longDate(event.start)} ${this.time(event.start)} – ${this.longDate(event.end)} ${this.time(event.end)}`;
-    } else {
-      when = `${this.longDate(event.start)}, ${this.time(event.start)}–${this.time(event.end)}`;
-    }
-    return html`<dialog style=${`--event-color: ${event.color}`} @click=${(clickEvent: MouseEvent) => {
-      // a click on the backdrop closes the dialog
-      if (clickEvent.target === clickEvent.currentTarget) this.closeDetails();
-    }} @close=${() => { this.selected = undefined; this.requestUpdate(); }}><div class="dialog-head"><div class="icon"><ha-icon
-      .icon=${event.icon}></ha-icon></div><div class="dialog-title">${event.summary}</div><button class="close"
-      aria-label=${this.localize("calendar.close")} @click=${() => this.closeDetails()}><ha-icon icon="mdi:close"></ha-icon></button></div><div
-      class="details"><ha-icon icon="mdi:clock-outline"></ha-icon><div>${when}</div><ha-icon icon="mdi:calendar-blank-outline"></ha-icon><div>${event.calendarName}</div>${event.location
-      ? html`<ha-icon icon="mdi:map-marker-outline"></ha-icon><div>${event.location}</div>` : nothing}${event.description
-      ? html`<ha-icon icon="mdi:text"></ha-icon><div class="description">${event.description}</div>` : nothing}</div></dialog>`;
-  }
-
   protected render() {
     const config = this.config!;
     const now = new Date();
@@ -584,7 +571,7 @@ export class GraphiteCalendar extends GraphiteCard<CalendarConfig> {
     }
     return html`${header}${compact ? this.renderCompact(period, today) : this.renderList(today)}${hiddenCount > 0
       ? html`<div class="more">${this.localize("calendar.more", { count: hiddenCount, date: lastRangeDay })}</div>`
-      : nothing}${this.renderDetails()}`;
+      : nothing}`;
   }
 
   getCardSize(): number {

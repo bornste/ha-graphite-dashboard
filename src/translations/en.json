@@ -386,7 +386,6 @@
     "until": "until {date}",
     "more": "+ {count} more until {date}",
     "empty": "No events until {date}",
-    "close": "Close",
     "thisWeek": "This week",
     "nextWeekTitle": "Next week",
     "fromMonday": "From Monday",
