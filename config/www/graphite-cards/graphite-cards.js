@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.47.0";
+var version = "0.47.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13272,22 +13272,10 @@ if (!window.graphiteToastLayer) {
 // src/overlays/graphite-dialog-layer.ts
 var layerStyles = `
   :host {
-    position: fixed;
-    inset: 0;
-    z-index: 8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    box-sizing: border-box;
     /* the dashboard stays visible behind, blurred and dimmed */
     background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 40%, transparent);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-  }
-  :host(.sheet) {
-    align-items: flex-end;
-    padding: 0;
   }
   graphite-dialog {
     display: flex;
@@ -13388,7 +13376,21 @@ var GraphiteDialogLayer = class {
     this.openedByNavigation = openedByNavigation;
     const sheet = window.matchMedia(sheetQuery).matches;
     const host = document.createElement("graphite-dialog-layer");
-    host.classList.toggle("sheet", sheet);
+    Object.assign(host.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "8",
+      display: "flex",
+      flexDirection: "row",
+      alignItems: sheet ? "flex-end" : "center",
+      justifyContent: "center",
+      width: "auto",
+      height: "auto",
+      maxWidth: "none",
+      margin: "0",
+      padding: sheet ? "0" : "16px",
+      boxSizing: "border-box"
+    });
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `<style>${layerStyles}</style>`;
     this.copyTheme(host, mount);
