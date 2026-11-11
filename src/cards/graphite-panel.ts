@@ -4,6 +4,7 @@
 import { css, html, nothing, type PropertyValues } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
 import { fireAction } from "../core/actions";
+import { unavailableStates } from "../core/format";
 import { matchesCondition, type ValueCondition } from "../core/conditions";
 import { isTemplate, subscribeTemplate } from "../core/template";
 import { registerCard, registerElement } from "../core/register";
@@ -20,7 +21,9 @@ export interface PanelChipConfig {
   tap_action?: ActionConfig | "none";
 }
 
-// one part of the status line: shown while its condition is met (default: value above 0)
+// one part of the dynamic status: shown while its condition is met; without a condition a number
+// is shown above 0 and a text whenever the entity is available. The condition may check another
+// entity (show.entity), e.g. the app name while the TV is on.
 export interface PanelSummaryPart {
   entity: string;
   text?: string;
@@ -40,10 +43,11 @@ export interface PanelButtonConfig {
 
 export interface PanelConfig extends GraphiteCardConfig {
   title?: string;
+  // status after the title; while a summary part is shown, the parts replace it
   info?: string;
-  info_alert?: ValueCondition;
   summary?: PanelSummaryPart[];
-  summary_empty?: string;
+  // "first": only the first part whose condition is met ("if – else if – else" with info as else)
+  summary_mode?: "all" | "first";
   chips?: PanelChipConfig[];
   buttons?: PanelButtonConfig[];
   layout: "vertical" | "horizontal" | "grid";
@@ -187,12 +191,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     .info:empty {
       display: none;
     }
-    /* info_alert condition met: info in accent color */
-    .info.alert {
-      color: var(--graphite-accent, var(--accent-color));
-      font-weight: 500;
-    }
-    /* colored parts of the summary: same weight as the highlighted status */
+    /* colored parts of the dynamic status */
     .info b {
       font-weight: 500;
     }
@@ -318,8 +317,10 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       if (button.entity) entities.push(button.entity);
       if (button.active?.entity) entities.push(button.active.entity);
     }
-    if (this.config?.info_alert?.entity) entities.push(this.config.info_alert.entity);
-    for (const part of this.summaryParts()) entities.push(part.entity);
+    for (const part of this.summaryParts()) {
+      entities.push(part.entity);
+      if (part.show?.entity) entities.push(part.show.entity);
+    }
     return entities;
   }
 
@@ -363,19 +364,32 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     return Array.isArray(this.config?.summary) ? this.config!.summary.filter((part) => part?.entity) : [];
   }
 
-  // status from parts: "1 offline · 2 kritisch"; parts whose condition is not met are left out
+  // without a condition: numbers above 0, texts whenever the entity is available
+  private isPartShown(part: PanelSummaryPart, state: string | undefined): boolean {
+    if (part.show) {
+      const checked = part.show.entity ? this.hass?.states[part.show.entity]?.state : state;
+      return matchesCondition(part.show, checked);
+    }
+    if (state === undefined || state === "" || unavailableStates.includes(state)) return false;
+    const number = Number(state);
+    return Number.isFinite(number) ? number > 0 : true;
+  }
+
+  // dynamic status: "1 offline · 2 kritisch", or only the first part shown (summary_mode: first);
+  // undefined while no part is shown (then info is the status)
   private renderSummary() {
-    const shown = this.summaryParts().flatMap((part) => {
-      const state = this.hass?.states[part.entity]?.state;
-      if (!matchesCondition(part.show ?? { above: 0 }, state)) return [];
+    const shownParts = this.summaryParts().filter((part) => this.isPartShown(part, this.hass?.states[part.entity]?.state));
+    if (!shownParts.length) return undefined;
+    const parts = this.config?.summary_mode === "first" ? shownParts.slice(0, 1) : shownParts;
+    const shown = parts.map((part) => {
+      const state = this.hass?.states[part.entity]?.state ?? "";
       const number = Number(state);
       const value = state !== "" && Number.isFinite(number) ? String(Math.round(number)) : String(state);
       const template = number === 1 && part.text_one ? part.text_one : part.text ?? "{value}";
       const text = template.split("{value}").join(value);
       const color = part.color ? summaryColors[part.color] ?? part.color : "";
-      return [color ? html`<b style=${`color: ${color}`}>${text}</b>` : html`<span>${text}</span>`];
+      return color ? html`<b style=${`color: ${color}`}>${text}</b>` : html`<span>${text}</span>`;
     });
-    if (!shown.length) return this.config?.summary_empty ?? "";
     return shown.map((part, index) => (index ? html` · ${part}` : part));
   }
 
@@ -478,11 +492,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
   protected render() {
     const config = this.config!;
     const chips = this.chipConfigs();
-    // summary replaces info; an empty summary (no part shown, no summary_empty) hides the status
-    const info = this.summaryParts().length ? this.renderSummary()
-      : isTemplate(config.info) ? this.infoText : config.info || "";
-    const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : undefined;
-    const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
+    // shown summary parts replace info; without both the status and its line are hidden
+    const info = this.renderSummary() ?? (isTemplate(config.info) ? this.infoText : config.info || "");
     const buttons = this.buttonConfigs();
     // a container (e.g. graphite-dialog) can add its own header buttons through the "actions" slot
     const hasActions = !!this.querySelector(":scope > [slot=actions]");
@@ -498,7 +509,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
     return html`<ha-card part="card" style=${cardStyle}>${showHeader
-      ? html`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
+      ? html`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? html`<span class="buttons">${buttons
         .map((button) => this.renderButton(button))}${hasActions ? html`<slot name="actions"></slot>` : nothing}</span>` : nothing}</div>`
       : nothing}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;

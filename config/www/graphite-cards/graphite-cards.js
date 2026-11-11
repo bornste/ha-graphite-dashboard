@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.50.1";
+var version = "0.51.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -574,9 +574,8 @@ var de_default = {
       header: "Kopf",
       title: "Titel",
       info: "Status",
-      info_alert: "Status hervorheben",
-      summarySection: "Status aus Teilen",
-      summary_empty: "Text ohne Teile",
+      summarySection: "Dynamischer Status",
+      summary_first: "Nur den ersten passenden Teil zeigen",
       chipsSection: "Chips",
       buttonsSection: "Kn\xF6pfe",
       layoutSection: "Layout",
@@ -598,12 +597,6 @@ var de_default = {
         danger: "Gefahr (rot)",
         secondary: "Sekund\xE4r (grau)"
       },
-      condition: {
-        entity: "Entit\xE4t",
-        above: "\xDCber",
-        below: "Unter",
-        state: "Zustand"
-      },
       item: {
         entity: "Entit\xE4t",
         label: "Bezeichnung",
@@ -623,15 +616,15 @@ var de_default = {
         text: "Text",
         text_one: "Text bei 1",
         color: "Farbe",
+        show_entity: "Bedingung: Entit\xE4t",
         show_above: "Zeigen \xFCber",
         show_below: "Zeigen unter",
         show_state: "Zeigen bei Zustand"
       },
       helper: {
-        info: "Steht nach dem Titel. Text oder Jinja-Template.",
-        info_alert: "Zeigt den Status in Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
-        summarySection: "Status aus mehreren farbigen Teilen, z.B. \xAB1 offline \xB7 2 kritisch\xBB. Ersetzt \xABStatus\xBB.",
-        summary_empty: "Steht, solange kein Teil gezeigt wird, z.B. Alles in Ordnung. Leer: kein Status.",
+        info: "Steht nach dem Titel, solange kein Teil des dynamischen Status sichtbar ist. Text oder Jinja-Template.",
+        summarySection: "Teile aus Entit\xE4ten, z.B. \xAB1 offline \xB7 2 kritisch\xBB. Solange ein Teil sichtbar ist, ersetzt er \xABStatus\xBB.",
+        summary_first: "Statt alle passenden Teile aufzuz\xE4hlen, steht nur der erste \u2013 wie \xABwenn \u2013 sonst wenn\xBB, mit \xABStatus\xBB als \xABsonst\xBB.",
         chipsSection: "Werte rechts im Kopf, in der Reihenfolge der Liste.",
         buttonsSection: "Kn\xF6pfe ganz rechts im Kopf, z.B. \xABLicht aus\xBB oder Einstellungen.",
         columns: "Standard: 2",
@@ -641,10 +634,6 @@ var de_default = {
         frame: "Aus: nur Layout-Container ohne Fl\xE4che, Innenabstand und Radius.",
         hash: "\xD6ffnet den Dialog auf jeder Ansicht, z.B. #lichter. Links mit Navigation zu diesem Hash \xF6ffnen ihn.",
         width: "Auf grossen Bildschirmen, z.B. 520px (Standard). Auf kleinen Bildschirmen volle Breite, von unten eingeblendet.",
-        condition: {
-          entity: "Entit\xE4t, deren Zustand gepr\xFCft wird.",
-          state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
-        },
         item: {
           label: "Ged\xE4mpfter Text vor dem Wert, z.B. CO\u2082.",
           unit: "Standard: Einheit der Entit\xE4t.",
@@ -660,7 +649,8 @@ var de_default = {
           text: "{value} wird durch den Wert ersetzt, z.B. {value} offline.",
           text_one: "Bei genau 1, z.B. 1 Licht an.",
           color: "Ohne Farbe grau. Auch eine CSS-Farbe ist m\xF6glich.",
-          show_above: "Der Teil steht, solange alle gesetzten Bedingungen zutreffen. Standard: \xFCber 0.",
+          show_entity: "Entit\xE4t, deren Zustand gepr\xFCft wird. Standard: die Entit\xE4t des Teils.",
+          show_above: "Der Teil steht, solange alle gesetzten Bedingungen zutreffen. Ohne Bedingung: Zahlen \xFCber 0, Texte solange verf\xFCgbar.",
           show_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
         }
       }
@@ -1769,9 +1759,8 @@ var en_default = {
       header: "Header",
       title: "Title",
       info: "Status",
-      info_alert: "Highlight status",
-      summarySection: "Status from parts",
-      summary_empty: "Text without parts",
+      summarySection: "Dynamic status",
+      summary_first: "Show only the first matching part",
       chipsSection: "Chips",
       buttonsSection: "Buttons",
       layoutSection: "Layout",
@@ -1793,12 +1782,6 @@ var en_default = {
         danger: "Danger (red)",
         secondary: "Secondary (grey)"
       },
-      condition: {
-        entity: "Entity",
-        above: "Above",
-        below: "Below",
-        state: "State"
-      },
       item: {
         entity: "Entity",
         label: "Label",
@@ -1818,15 +1801,15 @@ var en_default = {
         text: "Text",
         text_one: "Text for 1",
         color: "Color",
+        show_entity: "Condition: entity",
         show_above: "Show above",
         show_below: "Show below",
         show_state: "Show on state"
       },
       helper: {
-        info: "Shown after the title. Text or Jinja template.",
-        info_alert: "Shows the status in the accent color while all given conditions are met.",
-        summarySection: 'Status from several colored parts, e.g. "1 offline \xB7 2 critical". Replaces "Status".',
-        summary_empty: "Shown while no part is shown, e.g. All fine. Empty: no status.",
+        info: "Shown after the title while no part of the dynamic status is shown. Text or Jinja template.",
+        summarySection: 'Parts from entities, e.g. "1 offline \xB7 2 critical". While a part is shown, it replaces "Status".',
+        summary_first: 'Instead of listing all matching parts, only the first is shown \u2013 like "if \u2013 else if", with "Status" as "else".',
         chipsSection: "Values on the right of the header, in list order.",
         buttonsSection: 'Buttons at the far right of the header, e.g. "lights off" or settings.',
         columns: "Default: 2",
@@ -1836,10 +1819,6 @@ var en_default = {
         frame: "Off: layout container only, without surface, padding and radius.",
         hash: "Opens the dialog on every view, e.g. #lights. Links navigating to this hash open it.",
         width: "On large screens, e.g. 520px (default). On small screens full width, sliding in from below.",
-        condition: {
-          entity: "Entity whose state is checked.",
-          state: "One of the states. Type a value and confirm with Enter."
-        },
         item: {
           label: "Muted text before the value, e.g. CO\u2082.",
           unit: "Default: unit of the entity.",
@@ -1855,7 +1834,8 @@ var en_default = {
           text: "{value} is replaced by the value, e.g. {value} offline.",
           text_one: "For exactly 1, e.g. 1 light on.",
           color: "Grey without a color. Any CSS color works too.",
-          show_above: "The part is shown while all given conditions are met. Default: above 0.",
+          show_entity: "Entity whose state is checked. Default: the entity of the part.",
+          show_above: "The part is shown while all given conditions are met. Without a condition: numbers above 0, texts while available.",
           show_state: "One of the states. Type a value and confirm with Enter."
         }
       }
@@ -3262,7 +3242,6 @@ function registerElement(tag, element) {
 
 // src/cards/graphite-panel-editor.ts
 var prefix = "panel.editor";
-var conditionName = "info_alert";
 var chipsSection = "chipsSection";
 var buttonsSection = "buttonsSection";
 var summarySection = "summarySection";
@@ -3318,23 +3297,6 @@ function editorSchema(language, layout, mode) {
         { name: "title", selector: { text: {} } },
         { name: "info", selector: { text: {} } },
         {
-          // not flattened: the fields are stored below "info_alert"
-          type: "expandable",
-          name: conditionName,
-          schema: [
-            { name: "entity", selector: { entity: {} } },
-            {
-              type: "grid",
-              name: "",
-              schema: [
-                { name: "above", selector: numberBox2 },
-                { name: "below", selector: numberBox2 }
-              ]
-            },
-            { name: "state", selector: stateList }
-          ]
-        },
-        {
           type: "expandable",
           name: summarySection,
           flatten: true,
@@ -3351,6 +3313,7 @@ function editorSchema(language, layout, mode) {
                     itemField("text", { text: {} }),
                     itemField("text_one", { text: {} }),
                     itemField("color", colorSelect),
+                    itemField("show_entity", { entity: {} }),
                     itemField("show_above", numberBox2),
                     itemField("show_below", numberBox2),
                     itemField("show_state", stateList)
@@ -3358,7 +3321,7 @@ function editorSchema(language, layout, mode) {
                 }
               }
             },
-            { name: "summary_empty", selector: { text: {} } }
+            { name: "summary_first", selector: { boolean: {} } }
           ]
         },
         {
@@ -3544,12 +3507,11 @@ var GraphitePanelEditor = class extends HTMLElement {
     if (this.formSchemaKey !== schemaKey) {
       this.formSchemaKey = schemaKey;
       this.form.schema = editorSchema(language, layout, this.mode);
-      const textKey = (schema, options) => options?.path?.includes(conditionName) ? `condition.${schema.name}` : schema.name;
-      this.form.computeLabel = (schema, _data, options) => {
+      this.form.computeLabel = (schema) => {
         if (!schema.name || listNames.includes(schema.name)) return "";
-        return optionalText(language, textKey(schema, options)) ?? schema.name;
+        return optionalText(language, schema.name) ?? schema.name;
       };
-      this.form.computeHelper = (schema, options) => schema.name ? optionalText(language, `helper.${textKey(schema, options)}`) : void 0;
+      this.form.computeHelper = (schema) => schema.name ? optionalText(language, `helper.${schema.name}`) : void 0;
     }
     if (this.hassObject) {
       this.form.hass = this.hassObject;
@@ -3559,9 +3521,8 @@ var GraphitePanelEditor = class extends HTMLElement {
     const {
       title,
       info,
-      info_alert,
       summary,
-      summary_empty,
+      summary_mode,
       chips,
       buttons,
       columns,
@@ -3575,9 +3536,8 @@ var GraphitePanelEditor = class extends HTMLElement {
     const data = {
       title,
       info,
-      info_alert: conditionData(info_alert),
       summary: itemsData(summary, "show"),
-      summary_empty,
+      summary_first: summary_mode === "first",
       chips: itemsData(chips, "alert"),
       buttons: itemsData(buttons, "active"),
       layout,
@@ -3602,10 +3562,11 @@ var GraphitePanelEditor = class extends HTMLElement {
   }
   // empty optional values are not stored, so the YAML stays clean
   fireConfig(config) {
+    const { summary_first: summaryFirst, ...rest } = config;
     const storedConfig = {
-      ...config,
-      info_alert: storedCondition(config.info_alert),
+      ...rest,
       summary: storedItems(config.summary, "show"),
+      summary_mode: summaryFirst === true || summaryFirst === void 0 && config.summary_mode === "first" ? "first" : void 0,
       chips: storedItems(config.chips, "alert"),
       buttons: storedItems(config.buttons, "active")
     };
@@ -3668,8 +3629,10 @@ var GraphitePanel = class extends GraphiteCard {
       if (button.entity) entities.push(button.entity);
       if (button.active?.entity) entities.push(button.active.entity);
     }
-    if (this.config?.info_alert?.entity) entities.push(this.config.info_alert.entity);
-    for (const part of this.summaryParts()) entities.push(part.entity);
+    for (const part of this.summaryParts()) {
+      entities.push(part.entity);
+      if (part.show?.entity) entities.push(part.show.entity);
+    }
     return entities;
   }
   connectedCallback() {
@@ -3701,19 +3664,31 @@ var GraphitePanel = class extends GraphiteCard {
   summaryParts() {
     return Array.isArray(this.config?.summary) ? this.config.summary.filter((part) => part?.entity) : [];
   }
-  // status from parts: "1 offline · 2 kritisch"; parts whose condition is not met are left out
+  // without a condition: numbers above 0, texts whenever the entity is available
+  isPartShown(part, state) {
+    if (part.show) {
+      const checked = part.show.entity ? this.hass?.states[part.show.entity]?.state : state;
+      return matchesCondition(part.show, checked);
+    }
+    if (state === void 0 || state === "" || unavailableStates.includes(state)) return false;
+    const number = Number(state);
+    return Number.isFinite(number) ? number > 0 : true;
+  }
+  // dynamic status: "1 offline · 2 kritisch", or only the first part shown (summary_mode: first);
+  // undefined while no part is shown (then info is the status)
   renderSummary() {
-    const shown = this.summaryParts().flatMap((part) => {
-      const state = this.hass?.states[part.entity]?.state;
-      if (!matchesCondition(part.show ?? { above: 0 }, state)) return [];
+    const shownParts = this.summaryParts().filter((part) => this.isPartShown(part, this.hass?.states[part.entity]?.state));
+    if (!shownParts.length) return void 0;
+    const parts = this.config?.summary_mode === "first" ? shownParts.slice(0, 1) : shownParts;
+    const shown = parts.map((part) => {
+      const state = this.hass?.states[part.entity]?.state ?? "";
       const number = Number(state);
       const value = state !== "" && Number.isFinite(number) ? String(Math.round(number)) : String(state);
       const template = number === 1 && part.text_one ? part.text_one : part.text ?? "{value}";
       const text = template.split("{value}").join(value);
       const color = part.color ? summaryColors[part.color] ?? part.color : "";
-      return [color ? b2`<b style=${`color: ${color}`}>${text}</b>` : b2`<span>${text}</span>`];
+      return color ? b2`<b style=${`color: ${color}`}>${text}</b>` : b2`<span>${text}</span>`;
     });
-    if (!shown.length) return this.config?.summary_empty ?? "";
     return shown.map((part, index) => index ? b2` · ${part}` : part);
   }
   chipConfigs() {
@@ -3801,9 +3776,7 @@ var GraphitePanel = class extends GraphiteCard {
   render() {
     const config = this.config;
     const chips = this.chipConfigs();
-    const info = this.summaryParts().length ? this.renderSummary() : isTemplate(config.info) ? this.infoText : config.info || "";
-    const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : void 0;
-    const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
+    const info = this.renderSummary() ?? (isTemplate(config.info) ? this.infoText : config.info || "");
     const buttons = this.buttonConfigs();
     const hasActions = !!this.querySelector(":scope > [slot=actions]");
     const showHeader = !!(config.title || config.info || this.summaryParts().length || chips.length || buttons.length || hasActions);
@@ -3816,7 +3789,7 @@ var GraphitePanel = class extends GraphiteCard {
     ].filter(Boolean).join("; ");
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
-    return b2`<ha-card part="card" style=${cardStyle}>${showHeader ? b2`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
+    return b2`<ha-card part="card" style=${cardStyle}>${showHeader ? b2`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}${hasActions ? b2`<slot name="actions"></slot>` : A}</span>` : A}</div>` : A}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;
   }
   getCardSize() {
@@ -3946,12 +3919,7 @@ GraphitePanel.styles = i`
     .info:empty {
       display: none;
     }
-    /* info_alert condition met: info in accent color */
-    .info.alert {
-      color: var(--graphite-accent, var(--accent-color));
-      font-weight: 500;
-    }
-    /* colored parts of the summary: same weight as the highlighted status */
+    /* colored parts of the dynamic status */
     .info b {
       font-weight: 500;
     }
@@ -12964,9 +12932,8 @@ var GraphiteDialog = class extends GraphiteCard {
       type: "custom:graphite-panel",
       title: config.title,
       info: config.info,
-      info_alert: config.info_alert,
       summary: config.summary,
-      summary_empty: config.summary_empty,
+      summary_mode: config.summary_mode,
       chips: config.chips,
       buttons: config.buttons,
       layout: config.layout ?? "vertical",

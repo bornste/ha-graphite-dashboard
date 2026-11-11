@@ -26,17 +26,17 @@ the header is as high as the buttons (36px); title and status stay centered on o
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `title` | string | – | Title on the left (theme title style). |
-| `info` | string | – | Status after the title, separated by a thin line. Plain text or a Jinja template (`{{ }}` / `{% %}`), rendered live in Home Assistant. An empty result hides the status and its line. |
-| `info_alert` | condition | – | Shows the status in the accent color while the condition is met (see *Conditions*). Needs `entity`. |
-| `summary` | list | – | Status built from parts, e.g. "1 offline · 2 critical", see below. Replaces `info`. |
-| `summary_empty` | string | – | Status while no `summary` part is shown, e.g. "All fine". Without it the status is hidden. |
+| `info` | string | – | Status after the title, separated by a thin line, while no `summary` part is shown. Plain text or a Jinja template (`{{ }}` / `{% %}`), rendered live in Home Assistant. Without a status the line is hidden too. |
+| `summary` | list | – | Dynamic status from parts, e.g. "1 offline · 2 critical", see below. While a part is shown, it replaces `info`. |
+| `summary_mode` | `all` / `first` | `all` | `first`: only the first part that is shown, like "if – else if" with `info` as "else". |
 | `chips` | list | – | Values as pills on the right, in list order (left to right), see below. |
 | `buttons` | list | – | Buttons at the far right (44 × 36px), e.g. "lights off" and settings of a room, see below. |
 
-### Summary
+### Dynamic status
 
 Each part shows the value of an entity in a short text; the shown parts are joined with " · ".
-No template is needed, so the status updates without a server subscription.
+No template is needed, so the status updates without a server subscription. While no part is
+shown, `info` is the status (e.g. "All fine"); without `info` the status is hidden.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
@@ -44,7 +44,7 @@ No template is needed, so the status updates without a server subscription.
 | `text` | string | `{value}` | Text of the part, e.g. `{value} offline`. |
 | `text_one` | string | – | Text while the value is exactly 1, e.g. `1 light on`. |
 | `color` | string | – | `accent`, `success`, `danger`, `secondary` or any CSS color. Colored parts are set in medium weight. |
-| `show` | condition | `{ above: 0 }` | The part is shown while this condition is met (see *Conditions*). |
+| `show` | condition | see text | The part is shown while this condition is met (see *Conditions*); `show.entity` checks another entity than the part's. Without `show`: a number is shown above 0, a text whenever the entity is available. |
 
 ```yaml
 summary:
@@ -56,7 +56,29 @@ summary:
     color: accent
   - entity: sensor.batteries_low
     text: "{value} soon"
-summary_empty: All fine
+info: All fine
+```
+
+Only the first matching part, with `info` as the fallback, and a part shown by another entity:
+
+```yaml
+summary_mode: first
+summary:
+  - entity: sensor.console_game
+    text: "plays {value}"
+    color: accent
+  - entity: binary_sensor.console_online
+    text: online
+    show: { state: "on" }
+info: offline
+```
+
+```yaml
+summary:
+  - entity: input_text.tv_current_app
+    text: "on · {value}"
+    show: { entity: binary_sensor.tv_on, state: "on" }
+info: "off"
 ```
 
 ### Chips
@@ -125,18 +147,18 @@ cards:
 
 ### Conditions
 
-Used by `info_alert`, the summary `show`, the chip `alert` and the button `active`. All given parts must match; an unavailable or
+Used by the summary `show`, the chip `alert` and the button `active`. All given parts must match; an unavailable or
 unknown state never matches.
 
 | Key | Description |
 |---|---|
-| `entity` | Entity to check (`info_alert` only; a chip checks its own entity). |
+| `entity` | Entity to check (summary `show` and button `active`; default: the part's or button's own entity; a chip checks its own entity). |
 | `above` | Numeric state greater than this value. |
 | `below` | Numeric state less than this value. |
 | `state` | State equals this value, or one of a list of values. |
 
 ```yaml
-info_alert:
+show:
   entity: binary_sensor.console_in_game
   state: "on"
 ```
@@ -176,9 +198,9 @@ Bubble module and cards that are not moved yet.
 ## Editor
 
 The visual editor groups the panel options in two expansion panels, *Header* and *Layout*; hints
-are shown as helper texts below the fields. `info_alert` has its own fields (entity, above,
-below, state), `chips` and `buttons` are edited as lists with a dialog per entry, including the chip
-`alert` and the button `active`; no option needs YAML. `columns` and `min_column_width` are only
+are shown as helper texts below the fields. The dynamic status (`summary`), `chips` and `buttons`
+are edited as lists with a dialog per entry, including the part `show`, the chip `alert` and the
+button `active`; `summary_mode: first` is a switch. No option needs YAML. `columns` and `min_column_width` are only
 shown for the grid layout. The child cards are edited with Home Assistant's own stack editor
 (tabs, card picker, card editors). Empty optional values are not stored; `frame` is only stored
 when `false`. The labels are translated (see *Language* in the [overview](README.md)).

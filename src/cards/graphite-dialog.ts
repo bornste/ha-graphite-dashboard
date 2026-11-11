@@ -7,7 +7,6 @@ import { css, html, nothing } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
 import { registerCard, registerElement } from "../core/register";
 import type { GraphiteCardConfig, HomeAssistant } from "../core/types";
-import type { ValueCondition } from "../core/conditions";
 import { loadStackCardEditor, type PanelButtonConfig, type PanelChipConfig, type PanelSummaryPart } from "./graphite-panel";
 import { GraphiteDialogEditor } from "./graphite-dialog-editor";
 
@@ -15,9 +14,8 @@ export interface DialogConfig extends GraphiteCardConfig {
   hash: string;
   title?: string;
   info?: string;
-  info_alert?: ValueCondition;
   summary?: PanelSummaryPart[];
-  summary_empty?: string;
+  summary_mode?: "all" | "first";
   chips?: PanelChipConfig[];
   buttons?: PanelButtonConfig[];
   // width on large screens; on small screens the dialog takes the full width
@@ -180,9 +178,8 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       type: "custom:graphite-panel",
       title: config.title,
       info: config.info,
-      info_alert: config.info_alert,
       summary: config.summary,
-      summary_empty: config.summary_empty,
+      summary_mode: config.summary_mode,
       chips: config.chips,
       buttons: config.buttons,
       layout: config.layout ?? "vertical",

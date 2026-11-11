@@ -217,13 +217,17 @@ export function examples(language: string): ShowcaseSection[] {
           },
         },
         {
-          title: "Status from a template, highlighted",
-          note: "info_alert shows the status in the accent color while the condition is met.",
+          title: "Dynamic status, first matching part",
+          note: "summary_mode: first works like if – else if, with info as else: playing, otherwise online, otherwise offline.",
           config: {
             type: "custom:graphite-panel",
             title: "Console",
-            info: "{{ states('sensor.console_game') }}",
-            info_alert: { entity: "binary_sensor.console_in_game", state: "on" },
+            info: "offline",
+            summary_mode: "first",
+            summary: [
+              { entity: "media_player.game_console", text: "plays Star Voyager", color: "accent", show: { state: "playing" } },
+              { entity: "binary_sensor.game_console_online", text: "online", show: { state: "on" } },
+            ],
             cards: [{ type: "tile", entity: "sensor.power_strip_power" }],
           },
         },
@@ -799,8 +803,8 @@ export function examples(language: string): ShowcaseSection[] {
           config: {
             type: "custom:graphite-panel",
             title: german ? "Wohnen" : "Living room",
-            info: german ? "2 Lichter an" : "2 lights on",
-            info_alert: { entity: "sensor.living_room_lights_on", above: 0 },
+            summary: [{ entity: "sensor.living_room_lights_on", text: german ? "{value} Lichter an" : "{value} lights on",
+              text_one: german ? "1 Licht an" : "1 light on", color: "accent" }],
             buttons: [
               { entity: "scene.living_room_off", name: german ? "Licht aus" : "Lights off", active: { entity: "sensor.living_room_lights_on", above: 0 } },
               { icon: "mdi:tune-variant", name: german ? "Einstellungen" : "Settings", tap_action: { action: "none" } },

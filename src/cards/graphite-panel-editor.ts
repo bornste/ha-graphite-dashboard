@@ -8,9 +8,6 @@ import { languageOf, translate } from "../core/i18n";
 
 const prefix = "panel.editor";
 
-// name of the nested section that holds the condition {entity, above, below, state}
-const conditionName = "info_alert";
-
 // sections that only group fields; their data stays on the top level of the config
 const chipsSection = "chipsSection";
 const buttonsSection = "buttonsSection";
@@ -80,23 +77,6 @@ function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
         { name: "title", selector: { text: {} } },
         { name: "info", selector: { text: {} } },
         {
-          // not flattened: the fields are stored below "info_alert"
-          type: "expandable",
-          name: conditionName,
-          schema: [
-            { name: "entity", selector: { entity: {} } },
-            {
-              type: "grid",
-              name: "",
-              schema: [
-                { name: "above", selector: numberBox },
-                { name: "below", selector: numberBox },
-              ],
-            },
-            { name: "state", selector: stateList },
-          ],
-        },
-        {
           type: "expandable",
           name: summarySection,
           flatten: true,
@@ -113,6 +93,7 @@ function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
                     itemField("text", { text: {} }),
                     itemField("text_one", { text: {} }),
                     itemField("color", colorSelect),
+                    itemField("show_entity", { entity: {} }),
                     itemField("show_above", numberBox),
                     itemField("show_below", numberBox),
                     itemField("show_state", stateList),
@@ -120,7 +101,7 @@ function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
                 },
               },
             },
-            { name: "summary_empty", selector: { text: {} } },
+            { name: "summary_first", selector: { boolean: {} } },
           ],
         },
         {
@@ -332,16 +313,13 @@ export class GraphitePanelEditor extends HTMLElement {
     if (this.formSchemaKey !== schemaKey) {
       this.formSchemaKey = schemaKey;
       this.form.schema = editorSchema(language, layout, this.mode);
-      // fields inside the condition section have their own texts ("condition.entity", ...)
-      const textKey = (schema: { name: string }, options?: { path?: string[] }) =>
-        (options?.path?.includes(conditionName) ? `condition.${schema.name}` : schema.name);
-      this.form.computeLabel = (schema: { name: string }, _data: unknown, options?: { path?: string[] }) => {
+      this.form.computeLabel = (schema: { name: string }) => {
         // the list sections already show the name in their header
         if (!schema.name || listNames.includes(schema.name)) return "";
-        return optionalText(language, textKey(schema, options)) ?? schema.name;
+        return optionalText(language, schema.name) ?? schema.name;
       };
-      this.form.computeHelper = (schema: { name: string }, options?: { path?: string[] }) =>
-        (schema.name ? optionalText(language, `helper.${textKey(schema, options)}`) : undefined);
+      this.form.computeHelper = (schema: { name: string }) =>
+        (schema.name ? optionalText(language, `helper.${schema.name}`) : undefined);
     }
     if (this.hassObject) {
       this.form.hass = this.hassObject;
@@ -349,10 +327,10 @@ export class GraphitePanelEditor extends HTMLElement {
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
 
-    const { title, info, info_alert, summary, summary_empty, chips, buttons, columns, gap, padding, min_column_width, frame,
+    const { title, info, summary, summary_mode, chips, buttons, columns, gap, padding, min_column_width, frame,
       hash, width } = this.config;
     const data: Record<string, unknown> = {
-      title, info, info_alert: conditionData(info_alert), summary: itemsData(summary, "show"), summary_empty,
+      title, info, summary: itemsData(summary, "show"), summary_first: summary_mode === "first",
       chips: itemsData(chips, "alert"), buttons: itemsData(buttons, "active"),
       layout, columns, gap, min_column_width,
     };
@@ -375,10 +353,11 @@ export class GraphitePanelEditor extends HTMLElement {
 
   // empty optional values are not stored, so the YAML stays clean
   private fireConfig(config: Record<string, any>): void {
+    const { summary_first: summaryFirst, ...rest } = config;
     const storedConfig: Record<string, any> = {
-      ...config,
-      info_alert: storedCondition(config.info_alert),
+      ...rest,
       summary: storedItems(config.summary, "show"),
+      summary_mode: summaryFirst === true || (summaryFirst === undefined && config.summary_mode === "first") ? "first" : undefined,
       chips: storedItems(config.chips, "alert"),
       buttons: storedItems(config.buttons, "active"),
     };
