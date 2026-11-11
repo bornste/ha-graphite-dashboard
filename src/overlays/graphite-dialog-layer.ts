@@ -36,35 +36,30 @@ const layerStyles = `
     background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 40%, transparent);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    opacity: 0;
-    transition: opacity 0.2s ease;
   }
-  :host(.show) {
-    opacity: 1;
+  :host(.sheet) {
+    align-items: flex-end;
+    padding: 0;
   }
   graphite-dialog {
     display: flex;
     justify-content: center;
     width: 100%;
     max-height: 100%;
-    transform: translateY(8px) scale(0.98);
-    transition: transform 0.2s ease;
-  }
-  :host(.show) graphite-dialog {
-    transform: none;
-  }
-  @media (max-width: 600px) {
-    :host {
-      padding: 8px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    graphite-dialog {
-      transform: none;
-      transition: none;
-    }
   }
 `;
+
+// open: zoom in with a decelerating curve; close: the same backwards, faster and accelerating.
+// Small screens get a bottom sheet that slides in from below and can be dragged down.
+const emphasized = "cubic-bezier(0.2, 0, 0, 1)";
+const accelerate = "cubic-bezier(0.3, 0, 0.8, 0.15)";
+const sheetQuery = "(max-width: 600px)";
+// a drag only starts after a few pixels, so taps on header buttons and chips stay taps
+const dragThreshold = 6;
+
+function reducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 // first element with this tag name, searching through shadow roots
 function findDeep(node: Element | ShadowRoot | null, tagName: string, depth = 0): Element | null {
@@ -109,6 +104,8 @@ class GraphiteDialogLayer {
   private lastHass?: unknown;
   private retryTimer?: number;
   private scrollRestore?: string;
+  private sheet = false;
+  private dragEndedAt = 0;
 
   constructor() {
     window.addEventListener("location-changed", () => this.sync(true));
@@ -161,11 +158,13 @@ class GraphiteDialogLayer {
     // inside the view container, so card actions reach Home Assistant; hui-root as fallback
     const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
     if (!mount) return;
-    this.remove();
+    this.remove(false);
     this.openHash = hash;
     this.openedByNavigation = openedByNavigation;
+    const sheet = window.matchMedia(sheetQuery).matches;
 
     const host = document.createElement("graphite-dialog-layer");
+    host.classList.toggle("sheet", sheet);
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `<style>${layerStyles}</style>`;
     this.copyTheme(host, mount);
@@ -174,24 +173,76 @@ class GraphiteDialogLayer {
     dialog.setConfig(config);
     dialog.hass = this.homeAssistant?.hass as any;
     this.lastHass = this.homeAssistant?.hass;
-    dialog.enableClose();
+    dialog.enableClose(sheet);
     dialog.addEventListener("graphite-dialog-close", () => this.close());
     shadow.append(dialog);
     // a click on the backdrop (outside the dialog box) closes it
     host.addEventListener("click", (event) => {
       const target = event.composedPath()[0];
+      // the click that ends a drag of the sheet is not a click on the backdrop
+      if (performance.now() - this.dragEndedAt < 300) return;
       if (target === host || target === dialog) this.close();
     });
+    if (sheet) this.attachDrag(host, dialog);
 
     mount.append(host);
     this.host = host;
     this.dialog = dialog;
+    this.sheet = sheet;
     this.lockScroll();
     this.followHass();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      host.classList.add("show");
-      dialog.updateComplete.then(() => dialog.focusDialog());
-    }));
+    host.animate([{ opacity: 0 }, { opacity: 1 }], { duration: sheet ? 300 : 200, easing: "ease" });
+    if (!reducedMotion()) dialog.animate(sheet
+      ? [{ transform: "translateY(100%)" }, { transform: "none" }]
+      : [{ transform: "scale(0.94)", opacity: 0 }, { transform: "none", opacity: 1 }],
+    { duration: sheet ? 300 : 250, easing: emphasized });
+    dialog.updateComplete.then(() => {
+      dialog.watchScroll();
+      dialog.focusDialog();
+    });
+  }
+
+  // bottom sheet: dragged down at the handle or header; a quarter of its height or a fling closes it
+  private attachDrag(host: HTMLElement, dialog: GraphiteDialog): void {
+    let drag: { pointerId: number; startY: number; lastY: number; lastTime: number; speed: number; active: boolean } | undefined;
+    dialog.addEventListener("pointerdown", (event) => {
+      // the content scrolls, the close button closes: neither starts a drag
+      const path = event.composedPath();
+      if (path.some((node) => node instanceof HTMLElement && (node.getAttribute("part") === "content" || node.classList.contains("close")))) return;
+      drag = { pointerId: event.pointerId, startY: event.clientY, lastY: event.clientY, lastTime: performance.now(), speed: 0, active: false };
+    });
+    dialog.addEventListener("pointermove", (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const offset = Math.max(0, event.clientY - drag.startY);
+      if (!drag.active) {
+        if (offset < dragThreshold) return;
+        drag.active = true;
+        dialog.setPointerCapture(event.pointerId);
+      }
+      const now = performance.now();
+      drag.speed = (event.clientY - drag.lastY) / Math.max(1, now - drag.lastTime);
+      drag.lastY = event.clientY;
+      drag.lastTime = now;
+      dialog.style.transform = `translateY(${offset}px)`;
+      host.style.opacity = String(1 - Math.min(1, offset / Math.max(1, dialog.offsetHeight)) * 0.6);
+    });
+    const end = () => {
+      if (!drag) return;
+      const { active, lastY, startY, speed } = drag;
+      drag = undefined;
+      if (!active) return;
+      this.dragEndedAt = performance.now();
+      const offset = Math.max(0, lastY - startY);
+      if (offset > dialog.offsetHeight / 4 || speed > 0.6) {
+        this.close();
+        return;
+      }
+      host.style.opacity = "";
+      dialog.animate([{ transform: dialog.style.transform }, { transform: "none" }], { duration: 200, easing: emphasized });
+      dialog.style.transform = "";
+    };
+    dialog.addEventListener("pointerup", end);
+    dialog.addEventListener("pointercancel", end);
   }
 
   // the layer is not inside the view: the theme variables of the view are copied onto it
@@ -239,16 +290,34 @@ class GraphiteDialogLayer {
     this.remove();
   }
 
-  private remove(): void {
+  // animated: the dialog zooms out (or slides down as a sheet) before it is removed;
+  // not animated when another dialog takes its place
+  private remove(animated = true): void {
     if (this.hassFrame !== undefined) cancelAnimationFrame(this.hassFrame);
     this.hassFrame = undefined;
-    if (this.host) {
-      this.host.remove();
-      document.documentElement.style.overflow = this.scrollRestore ?? "";
-    }
+    const host = this.host;
+    const dialog = this.dialog;
+    const sheet = this.sheet;
+    if (host) document.documentElement.style.overflow = this.scrollRestore ?? "";
     this.host = undefined;
     this.dialog = undefined;
     this.openHash = "";
+    if (!host || !dialog) return;
+    if (!animated || !host.isConnected) {
+      host.remove();
+      return;
+    }
+    const from = dialog.style.transform || "none";
+    const duration = sheet ? 200 : 150;
+    const removeHost = () => host.remove();
+    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" })
+      .finished.then(removeHost, removeHost);
+    if (!reducedMotion()) {
+      dialog.animate(sheet
+        ? [{ transform: from }, { transform: "translateY(100%)" }]
+        : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],
+      { duration, easing: accelerate, fill: "forwards" });
+    }
   }
 
   // Escape closes the dialog, unless it was meant for a dialog above it (e.g. more-info)

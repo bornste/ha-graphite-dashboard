@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.46.0";
+var version = "0.47.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3657,8 +3657,8 @@ var GraphitePanel = class extends GraphiteCard {
     ].filter(Boolean).join("; ");
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
-    return b2`<ha-card style=${cardStyle}>${showHeader ? b2`<div class="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
-        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}${hasActions ? b2`<slot name="actions"></slot>` : A}</span>` : A}</div>` : A}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
+    return b2`<ha-card part="card" style=${cardStyle}>${showHeader ? b2`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
+        class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}${hasActions ? b2`<slot name="actions"></slot>` : A}</span>` : A}</div>` : A}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;
   }
   getCardSize() {
     return 1 + this.childCards.length;
@@ -12833,8 +12833,9 @@ var GraphiteDialog = class extends GraphiteCard {
     if (this.hass) this.panel.hass = this.hass;
   }
   // called by the dialog layer: adds the close button to the header
-  enableClose() {
+  enableClose(sheet = false) {
     this.toggleAttribute("layered", true);
+    this.toggleAttribute("sheet", sheet);
     this.requestUpdate();
     if (this.closeButton || !this.panel) return;
     const button = document.createElement("button");
@@ -12855,6 +12856,12 @@ var GraphiteDialog = class extends GraphiteCard {
     this.panel.append(button);
     this.panel.requestUpdate?.();
   }
+  // the line under the header follows the scroll position of the content
+  async watchScroll() {
+    await this.panel?.updateComplete;
+    const content = this.panel?.shadowRoot?.querySelector(".content");
+    content?.addEventListener("scroll", () => this.toggleAttribute("scrolled", content.scrollTop > 0), { passive: true });
+  }
   focusDialog() {
     this.renderRoot.querySelector(".dialog")?.focus({ preventScroll: true });
   }
@@ -12864,7 +12871,7 @@ var GraphiteDialog = class extends GraphiteCard {
     const style = config.width ? `--dialogWidth: ${config.width}` : "";
     return b2`${layered ? A : b2`<div class="hash">${config.hash}</div>`}<div class="dialog" style=${style}
       role=${layered ? "dialog" : A} aria-modal=${layered ? "true" : A} aria-label=${config.title ?? A}
-      tabindex=${layered ? "-1" : A}>${this.panel}</div>`;
+      tabindex=${layered ? "-1" : A}>${this.hasAttribute("sheet") ? b2`<div class="handle"></div>` : A}${this.panel}</div>`;
   }
   getCardSize() {
     return 1 + (this.config?.cards?.length ?? 0);
@@ -12902,12 +12909,71 @@ GraphiteDialog.styles = i`
       line-height: 16px;
       color: var(--graphite-text-muted, var(--secondary-text-color));
     }
+    /* opened: glass surface with a light edge on top; the header stays, only the content scrolls */
     :host([layered]) .dialog {
+      display: flex;
+      flex-direction: column;
       width: min(var(--dialogWidth, 520px), 100%);
       max-height: calc(100dvh - 32px);
+      padding: 0;
+      overflow: hidden;
+      outline: none;
+      background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent);
+      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      backdrop-filter: blur(24px) saturate(1.2);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent);
+    }
+    :host([layered]) graphite-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    :host([layered]) graphite-panel::part(card) {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+    }
+    :host([layered]) graphite-panel::part(header) {
+      flex: none;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding: 16px;
+      transition: box-shadow 0.15s ease;
+    }
+    /* thin line under the header once content scrolls below it */
+    :host([layered][scrolled]) graphite-panel::part(header) {
+      box-shadow: 0 1px 0 var(--graphite-separator);
+    }
+    :host([layered]) graphite-panel::part(content) {
+      flex: 1 1 auto;
+      min-height: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
-      outline: none;
+      padding: 0 16px 16px;
+      touch-action: pan-y;
+    }
+    /* small screens: bottom sheet over the full width, only the top corners round */
+    :host([sheet]) .dialog {
+      width: 100%;
+      max-height: 92dvh;
+      border-radius: var(--graphite-radius-panel, 20px) var(--graphite-radius-panel, 20px) 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+      touch-action: none;
+    }
+    :host([sheet]) graphite-panel::part(header) {
+      padding-top: 10px;
+    }
+    .handle {
+      flex: none;
+      width: 36px;
+      height: 4px;
+      margin: 8px auto 0;
+      border-radius: 2px;
+      background: color-mix(in srgb, var(--graphite-ink, #f3f3f4) 28%, transparent);
     }
     /* close button: same as the header buttons of graphite-panel */
     .close {
@@ -12931,11 +12997,6 @@ GraphiteDialog.styles = i`
     .close:focus-visible {
       outline: 2px solid var(--graphite-accent);
       outline-offset: 2px;
-    }
-    @media (max-width: 600px) {
-      :host([layered]) .dialog {
-        max-height: calc(100dvh - 16px);
-      }
     }
   `;
 registerCard("graphite-dialog", GraphiteDialog, {
@@ -13223,35 +13284,25 @@ var layerStyles = `
     background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 40%, transparent);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    opacity: 0;
-    transition: opacity 0.2s ease;
   }
-  :host(.show) {
-    opacity: 1;
+  :host(.sheet) {
+    align-items: flex-end;
+    padding: 0;
   }
   graphite-dialog {
     display: flex;
     justify-content: center;
     width: 100%;
     max-height: 100%;
-    transform: translateY(8px) scale(0.98);
-    transition: transform 0.2s ease;
-  }
-  :host(.show) graphite-dialog {
-    transform: none;
-  }
-  @media (max-width: 600px) {
-    :host {
-      padding: 8px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    graphite-dialog {
-      transform: none;
-      transition: none;
-    }
   }
 `;
+var emphasized = "cubic-bezier(0.2, 0, 0, 1)";
+var accelerate = "cubic-bezier(0.3, 0, 0.8, 0.15)";
+var sheetQuery = "(max-width: 600px)";
+var dragThreshold = 6;
+function reducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 function findDeep(node, tagName, depth = 0) {
   if (!node || depth > 12) return null;
   const root = node.shadowRoot ?? node;
@@ -13286,6 +13337,8 @@ var GraphiteDialogLayer = class {
     this.openHash = "";
     this.openedByNavigation = false;
     this.lastPath = window.location.pathname;
+    this.sheet = false;
+    this.dragEndedAt = 0;
     window.addEventListener("location-changed", () => this.sync(true));
     window.addEventListener("popstate", () => this.sync(true));
     window.addEventListener("hashchange", () => this.sync(true));
@@ -13330,10 +13383,12 @@ var GraphiteDialogLayer = class {
     const root = this.lovelaceRoot;
     const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
     if (!mount) return;
-    this.remove();
+    this.remove(false);
     this.openHash = hash;
     this.openedByNavigation = openedByNavigation;
+    const sheet = window.matchMedia(sheetQuery).matches;
     const host = document.createElement("graphite-dialog-layer");
+    host.classList.toggle("sheet", sheet);
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `<style>${layerStyles}</style>`;
     this.copyTheme(host, mount);
@@ -13341,22 +13396,71 @@ var GraphiteDialogLayer = class {
     dialog.setConfig(config);
     dialog.hass = this.homeAssistant?.hass;
     this.lastHass = this.homeAssistant?.hass;
-    dialog.enableClose();
+    dialog.enableClose(sheet);
     dialog.addEventListener("graphite-dialog-close", () => this.close());
     shadow.append(dialog);
     host.addEventListener("click", (event) => {
       const target = event.composedPath()[0];
+      if (performance.now() - this.dragEndedAt < 300) return;
       if (target === host || target === dialog) this.close();
     });
+    if (sheet) this.attachDrag(host, dialog);
     mount.append(host);
     this.host = host;
     this.dialog = dialog;
+    this.sheet = sheet;
     this.lockScroll();
     this.followHass();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      host.classList.add("show");
-      dialog.updateComplete.then(() => dialog.focusDialog());
-    }));
+    host.animate([{ opacity: 0 }, { opacity: 1 }], { duration: sheet ? 300 : 200, easing: "ease" });
+    if (!reducedMotion()) dialog.animate(
+      sheet ? [{ transform: "translateY(100%)" }, { transform: "none" }] : [{ transform: "scale(0.94)", opacity: 0 }, { transform: "none", opacity: 1 }],
+      { duration: sheet ? 300 : 250, easing: emphasized }
+    );
+    dialog.updateComplete.then(() => {
+      dialog.watchScroll();
+      dialog.focusDialog();
+    });
+  }
+  // bottom sheet: dragged down at the handle or header; a quarter of its height or a fling closes it
+  attachDrag(host, dialog) {
+    let drag;
+    dialog.addEventListener("pointerdown", (event) => {
+      const path = event.composedPath();
+      if (path.some((node) => node instanceof HTMLElement && (node.getAttribute("part") === "content" || node.classList.contains("close")))) return;
+      drag = { pointerId: event.pointerId, startY: event.clientY, lastY: event.clientY, lastTime: performance.now(), speed: 0, active: false };
+    });
+    dialog.addEventListener("pointermove", (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const offset = Math.max(0, event.clientY - drag.startY);
+      if (!drag.active) {
+        if (offset < dragThreshold) return;
+        drag.active = true;
+        dialog.setPointerCapture(event.pointerId);
+      }
+      const now = performance.now();
+      drag.speed = (event.clientY - drag.lastY) / Math.max(1, now - drag.lastTime);
+      drag.lastY = event.clientY;
+      drag.lastTime = now;
+      dialog.style.transform = `translateY(${offset}px)`;
+      host.style.opacity = String(1 - Math.min(1, offset / Math.max(1, dialog.offsetHeight)) * 0.6);
+    });
+    const end = () => {
+      if (!drag) return;
+      const { active, lastY, startY, speed } = drag;
+      drag = void 0;
+      if (!active) return;
+      this.dragEndedAt = performance.now();
+      const offset = Math.max(0, lastY - startY);
+      if (offset > dialog.offsetHeight / 4 || speed > 0.6) {
+        this.close();
+        return;
+      }
+      host.style.opacity = "";
+      dialog.animate([{ transform: dialog.style.transform }, { transform: "none" }], { duration: 200, easing: emphasized });
+      dialog.style.transform = "";
+    };
+    dialog.addEventListener("pointerup", end);
+    dialog.addEventListener("pointercancel", end);
   }
   // the layer is not inside the view: the theme variables of the view are copied onto it
   copyTheme(host, mount) {
@@ -13399,16 +13503,33 @@ var GraphiteDialogLayer = class {
     window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: true } }));
     this.remove();
   }
-  remove() {
+  // animated: the dialog zooms out (or slides down as a sheet) before it is removed;
+  // not animated when another dialog takes its place
+  remove(animated = true) {
     if (this.hassFrame !== void 0) cancelAnimationFrame(this.hassFrame);
     this.hassFrame = void 0;
-    if (this.host) {
-      this.host.remove();
-      document.documentElement.style.overflow = this.scrollRestore ?? "";
-    }
+    const host = this.host;
+    const dialog = this.dialog;
+    const sheet = this.sheet;
+    if (host) document.documentElement.style.overflow = this.scrollRestore ?? "";
     this.host = void 0;
     this.dialog = void 0;
     this.openHash = "";
+    if (!host || !dialog) return;
+    if (!animated || !host.isConnected) {
+      host.remove();
+      return;
+    }
+    const from = dialog.style.transform || "none";
+    const duration = sheet ? 200 : 150;
+    const removeHost = () => host.remove();
+    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" }).finished.then(removeHost, removeHost);
+    if (!reducedMotion()) {
+      dialog.animate(
+        sheet ? [{ transform: from }, { transform: "translateY(100%)" }] : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],
+        { duration, easing: accelerate, fill: "forwards" }
+      );
+    }
   }
   // Escape closes the dialog, unless it was meant for a dialog above it (e.g. more-info)
   handleKey(event) {

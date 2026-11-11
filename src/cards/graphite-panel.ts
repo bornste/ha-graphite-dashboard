@@ -443,11 +443,11 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     ].filter(Boolean).join("; ");
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
-    return html`<ha-card style=${cardStyle}>${showHeader
-      ? html`<div class="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
+    return html`<ha-card part="card" style=${cardStyle}>${showHeader
+      ? html`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class=${infoClass}>${info}</span></div><span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? html`<span class="buttons">${buttons
         .map((button) => this.renderButton(button))}${hasActions ? html`<slot name="actions"></slot>` : nothing}</span>` : nothing}</div>`
-      : nothing}<div class=${contentClass} style=${contentStyle}></div></ha-card>`;
+      : nothing}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;
   }
 
   getCardSize(): number {

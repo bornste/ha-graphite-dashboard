@@ -60,12 +60,71 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       line-height: 16px;
       color: var(--graphite-text-muted, var(--secondary-text-color));
     }
+    /* opened: glass surface with a light edge on top; the header stays, only the content scrolls */
     :host([layered]) .dialog {
+      display: flex;
+      flex-direction: column;
       width: min(var(--dialogWidth, 520px), 100%);
       max-height: calc(100dvh - 32px);
+      padding: 0;
+      overflow: hidden;
+      outline: none;
+      background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent);
+      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      backdrop-filter: blur(24px) saturate(1.2);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent);
+    }
+    :host([layered]) graphite-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    :host([layered]) graphite-panel::part(card) {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+    }
+    :host([layered]) graphite-panel::part(header) {
+      flex: none;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding: 16px;
+      transition: box-shadow 0.15s ease;
+    }
+    /* thin line under the header once content scrolls below it */
+    :host([layered][scrolled]) graphite-panel::part(header) {
+      box-shadow: 0 1px 0 var(--graphite-separator);
+    }
+    :host([layered]) graphite-panel::part(content) {
+      flex: 1 1 auto;
+      min-height: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
-      outline: none;
+      padding: 0 16px 16px;
+      touch-action: pan-y;
+    }
+    /* small screens: bottom sheet over the full width, only the top corners round */
+    :host([sheet]) .dialog {
+      width: 100%;
+      max-height: 92dvh;
+      border-radius: var(--graphite-radius-panel, 20px) var(--graphite-radius-panel, 20px) 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+      touch-action: none;
+    }
+    :host([sheet]) graphite-panel::part(header) {
+      padding-top: 10px;
+    }
+    .handle {
+      flex: none;
+      width: 36px;
+      height: 4px;
+      margin: 8px auto 0;
+      border-radius: 2px;
+      background: color-mix(in srgb, var(--graphite-ink, #f3f3f4) 28%, transparent);
     }
     /* close button: same as the header buttons of graphite-panel */
     .close {
@@ -89,11 +148,6 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
     .close:focus-visible {
       outline: 2px solid var(--graphite-accent);
       outline-offset: 2px;
-    }
-    @media (max-width: 600px) {
-      :host([layered]) .dialog {
-        max-height: calc(100dvh - 16px);
-      }
     }
   `;
 
@@ -137,8 +191,9 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
   }
 
   // called by the dialog layer: adds the close button to the header
-  enableClose(): void {
+  enableClose(sheet = false): void {
     this.toggleAttribute("layered", true);
+    this.toggleAttribute("sheet", sheet);
     this.requestUpdate();
     if (this.closeButton || !this.panel) return;
     const button = document.createElement("button");
@@ -160,6 +215,13 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
     this.panel.requestUpdate?.();
   }
 
+  // the line under the header follows the scroll position of the content
+  async watchScroll(): Promise<void> {
+    await this.panel?.updateComplete;
+    const content = this.panel?.shadowRoot?.querySelector(".content") as HTMLElement | null;
+    content?.addEventListener("scroll", () => this.toggleAttribute("scrolled", content.scrollTop > 0), { passive: true });
+  }
+
   focusDialog(): void {
     (this.renderRoot.querySelector(".dialog") as HTMLElement | null)?.focus({ preventScroll: true });
   }
@@ -170,7 +232,7 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
     const style = config.width ? `--dialogWidth: ${config.width}` : "";
     return html`${layered ? nothing : html`<div class="hash">${config.hash}</div>`}<div class="dialog" style=${style}
       role=${layered ? "dialog" : nothing} aria-modal=${layered ? "true" : nothing} aria-label=${config.title ?? nothing}
-      tabindex=${layered ? "-1" : nothing}>${this.panel}</div>`;
+      tabindex=${layered ? "-1" : nothing}>${this.hasAttribute("sheet") ? html`<div class="handle"></div>` : nothing}${this.panel}</div>`;
   }
 
   getCardSize(): number {
