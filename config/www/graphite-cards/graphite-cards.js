@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.48.0";
+var version = "0.48.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13509,8 +13509,11 @@ var GraphiteDialogLayer = class {
     }
   }
   // hass changes with every state change: passed on to the dialog while it is open
+  // also keeps the layer in the page: right after loading, Home Assistant renders the view
+  // container again and removes everything in it, the open dialog included
   followHass() {
     const step = () => {
+      if (this.host && !this.host.isConnected) this.remount(this.host);
       const hass = this.homeAssistant?.hass;
       if (this.dialog && hass && hass !== this.lastHass) {
         this.lastHass = hass;
@@ -13519,6 +13522,13 @@ var GraphiteDialogLayer = class {
       this.hassFrame = requestAnimationFrame(step);
     };
     this.hassFrame = requestAnimationFrame(step);
+  }
+  remount(host) {
+    const root = this.lovelaceRoot;
+    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    if (!mount) return;
+    this.copyTheme(host, mount);
+    mount.append(host);
   }
   lockScroll() {
     this.scrollRestore = document.documentElement.style.overflow;
@@ -13555,8 +13565,9 @@ var GraphiteDialogLayer = class {
     }
     const from = dialog.style.transform || "none";
     const duration = sheet ? 200 : 150;
-    const removeHost = () => host.remove();
-    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" }).finished.then(removeHost, removeHost);
+    host.style.pointerEvents = "none";
+    window.setTimeout(() => host.remove(), duration + 50);
+    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
     if (!reducedMotion()) {
       dialog.animate(
         sheet ? [{ transform: from }, { transform: "translateY(100%)" }] : [{ transform: "none", opacity: 1 }, { transform: "scale(0.96)", opacity: 0 }],

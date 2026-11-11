@@ -264,8 +264,11 @@ class GraphiteDialogLayer {
   }
 
   // hass changes with every state change: passed on to the dialog while it is open
+  // also keeps the layer in the page: right after loading, Home Assistant renders the view
+  // container again and removes everything in it, the open dialog included
   private followHass(): void {
     const step = () => {
+      if (this.host && !this.host.isConnected) this.remount(this.host);
       const hass = this.homeAssistant?.hass;
       if (this.dialog && hass && hass !== this.lastHass) {
         this.lastHass = hass;
@@ -274,6 +277,14 @@ class GraphiteDialogLayer {
       this.hassFrame = requestAnimationFrame(step);
     };
     this.hassFrame = requestAnimationFrame(step);
+  }
+
+  private remount(host: HTMLElement): void {
+    const root = this.lovelaceRoot;
+    const mount = root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot;
+    if (!mount) return;
+    this.copyTheme(host, mount);
+    mount.append(host);
   }
 
   private lockScroll(): void {
@@ -313,9 +324,11 @@ class GraphiteDialogLayer {
     }
     const from = dialog.style.transform || "none";
     const duration = sheet ? 200 : 150;
-    const removeHost = () => host.remove();
-    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" })
-      .finished.then(removeHost, removeHost);
+    // a closing layer never catches taps; it is removed by a timer, because animations do not run
+    // on a hidden page (screen off, other tab) and would never finish there
+    host.style.pointerEvents = "none";
+    window.setTimeout(() => host.remove(), duration + 50);
+    host.animate([{ opacity: Number(host.style.opacity || 1) }, { opacity: 0 }], { duration, easing: "ease", fill: "forwards" });
     if (!reducedMotion()) {
       dialog.animate(sheet
         ? [{ transform: from }, { transform: "translateY(100%)" }]
