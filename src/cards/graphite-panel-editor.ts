@@ -1,6 +1,8 @@
 // Visual editor of graphite-panel: panel options in an ha-form (sections "header" and "layout"
 // as expansion panels, hints as helper texts below the fields), child cards in Home Assistant's
 // own stack editor (tabs, card picker, card editors).
+// graphite-dialog uses the same editor in "dialog" mode: a section "dialog" (hash, width) first,
+// no panel surface and padding (a dialog has its own surface).
 import type { HomeAssistant } from "../core/types";
 import { languageOf, translate } from "../core/i18n";
 
@@ -12,6 +14,12 @@ const conditionName = "info_alert";
 // sections that only group fields; their data stays on the top level of the config
 const chipsSection = "chipsSection";
 const buttonsSection = "buttonsSection";
+const summarySection = "summarySection";
+
+export type PanelEditorMode = "panel" | "dialog";
+
+// lists whose name the section header already shows
+const listNames = ["chips", "buttons", "summary"];
 
 // translated text or undefined when the key has no translation (e.g. a field without helper)
 function optionalText(language: string, key: string): string | undefined {
@@ -21,7 +29,7 @@ function optionalText(language: string, key: string): string | undefined {
 }
 
 // schema with translated labels; the grid options are only shown for the grid layout
-function editorSchema(language: string, layout: string) {
+function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
   const text = (key: string) => translate(language, `${prefix}.${key}`);
   // field of a list entry (chip, button): label and helper come from "item" / "helper.item"
   const itemField = (name: string, selector: unknown, required = false) => [name, {
@@ -33,8 +41,35 @@ function editorSchema(language: string, layout: string) {
   const numberBox = { number: { mode: "box", step: "any" } };
   // free texts as a list: a condition matches one of several states
   const stateList = { select: { multiple: true, custom_value: true, options: [] } };
+  // named colors of the theme, or any CSS color typed in
+  const colorSelect = {
+    select: {
+      mode: "dropdown",
+      custom_value: true,
+      options: ["accent", "success", "danger", "secondary"].map((color) => ({ value: color, label: text(`color.${color}`) })),
+    },
+  };
+
+  const dialogSection = mode === "dialog" ? [{
+    type: "expandable",
+    name: "dialogSection",
+    icon: "mdi:dock-window",
+    flatten: true,
+    expanded: true,
+    schema: [
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "hash", required: true, selector: { text: {} } },
+          { name: "width", selector: { text: {} } },
+        ],
+      },
+    ],
+  }] : [];
 
   return [
+    ...dialogSection,
     {
       type: "expandable",
       name: "header",
@@ -59,6 +94,33 @@ function editorSchema(language: string, layout: string) {
               ],
             },
             { name: "state", selector: stateList },
+          ],
+        },
+        {
+          type: "expandable",
+          name: summarySection,
+          flatten: true,
+          schema: [
+            {
+              name: "summary",
+              selector: {
+                object: {
+                  multiple: true,
+                  label_field: "text",
+                  description_field: "entity",
+                  fields: Object.fromEntries([
+                    itemField("entity", { entity: {} }, true),
+                    itemField("text", { text: {} }),
+                    itemField("text_one", { text: {} }),
+                    itemField("color", colorSelect),
+                    itemField("show_above", numberBox),
+                    itemField("show_below", numberBox),
+                    itemField("show_state", stateList),
+                  ]),
+                },
+              },
+            },
+            { name: "summary_empty", selector: { text: {} } },
           ],
         },
         {
@@ -141,15 +203,17 @@ function editorSchema(language: string, layout: string) {
             { name: "min_column_width", selector: { text: {} } },
           ],
         }] : []),
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "gap", selector: { text: {} } },
-            { name: "padding", selector: { text: {} } },
-          ],
-        },
-        { name: "frame", selector: { boolean: {} } },
+        ...(mode === "dialog" ? [{ name: "gap", selector: { text: {} } }] : [
+          {
+            type: "grid",
+            name: "",
+            schema: [
+              { name: "gap", selector: { text: {} } },
+              { name: "padding", selector: { text: {} } },
+            ],
+          },
+          { name: "frame", selector: { boolean: {} } },
+        ]),
       ],
     },
   ];
@@ -216,6 +280,7 @@ function storedItems(items: unknown, conditionKey: string): unknown[] | undefine
 }
 
 export class GraphitePanelEditor extends HTMLElement {
+  protected mode: PanelEditorMode = "panel";
   private config: Record<string, any> = {};
   private hassObject?: HomeAssistant;
   private lovelaceObject?: unknown;
@@ -263,16 +328,16 @@ export class GraphitePanelEditor extends HTMLElement {
     }
     const language = languageOf(this.isConnected ? this : undefined, this.hassObject);
     const layout = this.config.layout || "vertical";
-    const schemaKey = `${language}|${layout}`;
+    const schemaKey = `${language}|${layout}|${this.mode}`;
     if (this.formSchemaKey !== schemaKey) {
       this.formSchemaKey = schemaKey;
-      this.form.schema = editorSchema(language, layout);
+      this.form.schema = editorSchema(language, layout, this.mode);
       // fields inside the condition section have their own texts ("condition.entity", ...)
       const textKey = (schema: { name: string }, options?: { path?: string[] }) =>
         (options?.path?.includes(conditionName) ? `condition.${schema.name}` : schema.name);
       this.form.computeLabel = (schema: { name: string }, _data: unknown, options?: { path?: string[] }) => {
         // the list sections already show the name in their header
-        if (!schema.name || schema.name === "chips" || schema.name === "buttons") return "";
+        if (!schema.name || listNames.includes(schema.name)) return "";
         return optionalText(language, textKey(schema, options)) ?? schema.name;
       };
       this.form.computeHelper = (schema: { name: string }, options?: { path?: string[] }) =>
@@ -284,12 +349,16 @@ export class GraphitePanelEditor extends HTMLElement {
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
 
-    const { title, info, info_alert, chips, buttons, columns, gap, padding, min_column_width, frame } = this.config;
-    this.form.data = {
-      title, info, info_alert: conditionData(info_alert), chips: itemsData(chips, "alert"), buttons: itemsData(buttons, "active"),
-      layout, columns, gap, padding, min_column_width,
-      frame: frame !== false,
+    const { title, info, info_alert, summary, summary_empty, chips, buttons, columns, gap, padding, min_column_width, frame,
+      hash, width } = this.config;
+    const data: Record<string, unknown> = {
+      title, info, info_alert: conditionData(info_alert), summary: itemsData(summary, "show"), summary_empty,
+      chips: itemsData(chips, "alert"), buttons: itemsData(buttons, "active"),
+      layout, columns, gap, min_column_width,
     };
+    if (this.mode === "dialog") Object.assign(data, { hash, width });
+    else Object.assign(data, { padding, frame: frame !== false });
+    this.form.data = data;
     this.stackEditor.setConfig({ type: "vertical-stack", cards: this.config.cards || [] });
     this.hideStackTitle();
   }
@@ -309,14 +378,17 @@ export class GraphitePanelEditor extends HTMLElement {
     const storedConfig: Record<string, any> = {
       ...config,
       info_alert: storedCondition(config.info_alert),
+      summary: storedItems(config.summary, "show"),
       chips: storedItems(config.chips, "alert"),
       buttons: storedItems(config.buttons, "active"),
     };
     const cleanConfig = Object.fromEntries(
       Object.entries(storedConfig).filter(([key, value]) => {
         if (value === "" || value === undefined || value === null) return false;
-        // frame defaults to true, only "false" is stored
-        if (key === "frame" && value !== false) return false;
+        // frame defaults to true, only "false" is stored; a dialog has no frame
+        if (key === "frame" && (value !== false || this.mode === "dialog")) return false;
+        // vertical is the default layout of panel and dialog
+        if (key === "layout" && value === "vertical") return false;
         return true;
       }),
     );

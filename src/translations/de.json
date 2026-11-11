@@ -21,6 +21,8 @@
       "title": "Titel",
       "info": "Status",
       "info_alert": "Status hervorheben",
+      "summarySection": "Status aus Teilen",
+      "summary_empty": "Text ohne Teile",
       "chipsSection": "Chips",
       "buttonsSection": "Knöpfe",
       "layoutSection": "Layout",
@@ -33,6 +35,15 @@
       "gap": "Abstand",
       "padding": "Innenabstand",
       "frame": "Panel-Fläche anzeigen",
+      "dialogSection": "Dialog",
+      "hash": "Hash",
+      "width": "Breite",
+      "color": {
+        "accent": "Akzent",
+        "success": "Erfolg (grün)",
+        "danger": "Gefahr (rot)",
+        "secondary": "Sekundär (grau)"
+      },
       "condition": {
         "entity": "Entität",
         "above": "Über",
@@ -54,11 +65,19 @@
         "active_entity": "Aktiv: Entität",
         "active_above": "Aktiv über",
         "active_below": "Aktiv unter",
-        "active_state": "Aktiv bei Zustand"
+        "active_state": "Aktiv bei Zustand",
+        "text": "Text",
+        "text_one": "Text bei 1",
+        "color": "Farbe",
+        "show_above": "Zeigen über",
+        "show_below": "Zeigen unter",
+        "show_state": "Zeigen bei Zustand"
       },
       "helper": {
         "info": "Steht nach dem Titel. Text oder Jinja-Template.",
         "info_alert": "Zeigt den Status in Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
+        "summarySection": "Status aus mehreren farbigen Teilen, z.B. «1 offline · 2 kritisch». Ersetzt «Status».",
+        "summary_empty": "Steht, solange kein Teil gezeigt wird, z.B. Alles in Ordnung. Leer: kein Status.",
         "chipsSection": "Werte rechts im Kopf, in der Reihenfolge der Liste.",
         "buttonsSection": "Knöpfe ganz rechts im Kopf, z.B. «Licht aus» oder Einstellungen.",
         "columns": "Standard: 2",
@@ -66,6 +85,8 @@
         "gap": "Zwischen den Karten, z.B. 8px.",
         "padding": "z.B. 16px.",
         "frame": "Aus: nur Layout-Container ohne Fläche, Innenabstand und Radius.",
+        "hash": "Öffnet den Dialog auf jeder Ansicht, z.B. #lichter. Links mit Navigation zu diesem Hash öffnen ihn.",
+        "width": "Auf grossen Bildschirmen, z.B. 520px (Standard). Auf kleinen Bildschirmen volle Breite, von unten eingeblendet.",
         "condition": {
           "entity": "Entität, deren Zustand geprüft wird.",
           "state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
@@ -81,7 +102,12 @@
           "alert_above": "Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
           "alert_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen.",
           "active_entity": "Hebt den Knopf hervor, solange alle gesetzten Bedingungen dieser Entität zutreffen.",
-          "active_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
+          "active_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen.",
+          "text": "{value} wird durch den Wert ersetzt, z.B. {value} offline.",
+          "text_one": "Bei genau 1, z.B. 1 Licht an.",
+          "color": "Ohne Farbe grau. Auch eine CSS-Farbe ist möglich.",
+          "show_above": "Der Teil steht, solange alle gesetzten Bedingungen zutreffen. Standard: über 0.",
+          "show_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
         }
       }
     }

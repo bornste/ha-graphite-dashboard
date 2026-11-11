@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.49.0";
+var version = "0.50.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -575,6 +575,8 @@ var de_default = {
       title: "Titel",
       info: "Status",
       info_alert: "Status hervorheben",
+      summarySection: "Status aus Teilen",
+      summary_empty: "Text ohne Teile",
       chipsSection: "Chips",
       buttonsSection: "Kn\xF6pfe",
       layoutSection: "Layout",
@@ -587,6 +589,15 @@ var de_default = {
       gap: "Abstand",
       padding: "Innenabstand",
       frame: "Panel-Fl\xE4che anzeigen",
+      dialogSection: "Dialog",
+      hash: "Hash",
+      width: "Breite",
+      color: {
+        accent: "Akzent",
+        success: "Erfolg (gr\xFCn)",
+        danger: "Gefahr (rot)",
+        secondary: "Sekund\xE4r (grau)"
+      },
       condition: {
         entity: "Entit\xE4t",
         above: "\xDCber",
@@ -608,11 +619,19 @@ var de_default = {
         active_entity: "Aktiv: Entit\xE4t",
         active_above: "Aktiv \xFCber",
         active_below: "Aktiv unter",
-        active_state: "Aktiv bei Zustand"
+        active_state: "Aktiv bei Zustand",
+        text: "Text",
+        text_one: "Text bei 1",
+        color: "Farbe",
+        show_above: "Zeigen \xFCber",
+        show_below: "Zeigen unter",
+        show_state: "Zeigen bei Zustand"
       },
       helper: {
         info: "Steht nach dem Titel. Text oder Jinja-Template.",
         info_alert: "Zeigt den Status in Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
+        summarySection: "Status aus mehreren farbigen Teilen, z.B. \xAB1 offline \xB7 2 kritisch\xBB. Ersetzt \xABStatus\xBB.",
+        summary_empty: "Steht, solange kein Teil gezeigt wird, z.B. Alles in Ordnung. Leer: kein Status.",
         chipsSection: "Werte rechts im Kopf, in der Reihenfolge der Liste.",
         buttonsSection: "Kn\xF6pfe ganz rechts im Kopf, z.B. \xABLicht aus\xBB oder Einstellungen.",
         columns: "Standard: 2",
@@ -620,6 +639,8 @@ var de_default = {
         gap: "Zwischen den Karten, z.B. 8px.",
         padding: "z.B. 16px.",
         frame: "Aus: nur Layout-Container ohne Fl\xE4che, Innenabstand und Radius.",
+        hash: "\xD6ffnet den Dialog auf jeder Ansicht, z.B. #lichter. Links mit Navigation zu diesem Hash \xF6ffnen ihn.",
+        width: "Auf grossen Bildschirmen, z.B. 520px (Standard). Auf kleinen Bildschirmen volle Breite, von unten eingeblendet.",
         condition: {
           entity: "Entit\xE4t, deren Zustand gepr\xFCft wird.",
           state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
@@ -635,7 +656,12 @@ var de_default = {
           alert_above: "Akzentfarbe, solange alle gesetzten Bedingungen zutreffen.",
           alert_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen.",
           active_entity: "Hebt den Knopf hervor, solange alle gesetzten Bedingungen dieser Entit\xE4t zutreffen.",
-          active_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
+          active_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen.",
+          text: "{value} wird durch den Wert ersetzt, z.B. {value} offline.",
+          text_one: "Bei genau 1, z.B. 1 Licht an.",
+          color: "Ohne Farbe grau. Auch eine CSS-Farbe ist m\xF6glich.",
+          show_above: "Der Teil steht, solange alle gesetzten Bedingungen zutreffen. Standard: \xFCber 0.",
+          show_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
         }
       }
     }
@@ -1744,6 +1770,8 @@ var en_default = {
       title: "Title",
       info: "Status",
       info_alert: "Highlight status",
+      summarySection: "Status from parts",
+      summary_empty: "Text without parts",
       chipsSection: "Chips",
       buttonsSection: "Buttons",
       layoutSection: "Layout",
@@ -1756,6 +1784,15 @@ var en_default = {
       gap: "Gap",
       padding: "Padding",
       frame: "Show panel surface",
+      dialogSection: "Dialog",
+      hash: "Hash",
+      width: "Width",
+      color: {
+        accent: "Accent",
+        success: "Success (green)",
+        danger: "Danger (red)",
+        secondary: "Secondary (grey)"
+      },
       condition: {
         entity: "Entity",
         above: "Above",
@@ -1777,11 +1814,19 @@ var en_default = {
         active_entity: "Active: entity",
         active_above: "Active above",
         active_below: "Active below",
-        active_state: "Active on state"
+        active_state: "Active on state",
+        text: "Text",
+        text_one: "Text for 1",
+        color: "Color",
+        show_above: "Show above",
+        show_below: "Show below",
+        show_state: "Show on state"
       },
       helper: {
         info: "Shown after the title. Text or Jinja template.",
         info_alert: "Shows the status in the accent color while all given conditions are met.",
+        summarySection: 'Status from several colored parts, e.g. "1 offline \xB7 2 critical". Replaces "Status".',
+        summary_empty: "Shown while no part is shown, e.g. All fine. Empty: no status.",
         chipsSection: "Values on the right of the header, in list order.",
         buttonsSection: 'Buttons at the far right of the header, e.g. "lights off" or settings.',
         columns: "Default: 2",
@@ -1789,6 +1834,8 @@ var en_default = {
         gap: "Between the cards, e.g. 8px.",
         padding: "e.g. 16px.",
         frame: "Off: layout container only, without surface, padding and radius.",
+        hash: "Opens the dialog on every view, e.g. #lights. Links navigating to this hash open it.",
+        width: "On large screens, e.g. 520px (default). On small screens full width, sliding in from below.",
         condition: {
           entity: "Entity whose state is checked.",
           state: "One of the states. Type a value and confirm with Enter."
@@ -1804,7 +1851,12 @@ var en_default = {
           alert_above: "Accent color while all given conditions are met.",
           alert_state: "One of the states. Type a value and confirm with Enter.",
           active_entity: "Highlights the button while all given conditions of this entity are met.",
-          active_state: "One of the states. Type a value and confirm with Enter."
+          active_state: "One of the states. Type a value and confirm with Enter.",
+          text: "{value} is replaced by the value, e.g. {value} offline.",
+          text_one: "For exactly 1, e.g. 1 light on.",
+          color: "Grey without a color. Any CSS color works too.",
+          show_above: "The part is shown while all given conditions are met. Default: above 0.",
+          show_state: "One of the states. Type a value and confirm with Enter."
         }
       }
     }
@@ -3213,12 +3265,14 @@ var prefix = "panel.editor";
 var conditionName = "info_alert";
 var chipsSection = "chipsSection";
 var buttonsSection = "buttonsSection";
+var summarySection = "summarySection";
+var listNames = ["chips", "buttons", "summary"];
 function optionalText(language, key) {
   const fullKey = `${prefix}.${key}`;
   const text = translate(language, fullKey);
   return text === fullKey ? void 0 : text;
 }
-function editorSchema(language, layout) {
+function editorSchema(language, layout, mode) {
   const text = (key) => translate(language, `${prefix}.${key}`);
   const itemField = (name, selector, required = false) => [name, {
     selector,
@@ -3228,7 +3282,32 @@ function editorSchema(language, layout) {
   }];
   const numberBox2 = { number: { mode: "box", step: "any" } };
   const stateList = { select: { multiple: true, custom_value: true, options: [] } };
+  const colorSelect = {
+    select: {
+      mode: "dropdown",
+      custom_value: true,
+      options: ["accent", "success", "danger", "secondary"].map((color) => ({ value: color, label: text(`color.${color}`) }))
+    }
+  };
+  const dialogSection = mode === "dialog" ? [{
+    type: "expandable",
+    name: "dialogSection",
+    icon: "mdi:dock-window",
+    flatten: true,
+    expanded: true,
+    schema: [
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "hash", required: true, selector: { text: {} } },
+          { name: "width", selector: { text: {} } }
+        ]
+      }
+    ]
+  }] : [];
   return [
+    ...dialogSection,
     {
       type: "expandable",
       name: "header",
@@ -3253,6 +3332,33 @@ function editorSchema(language, layout) {
               ]
             },
             { name: "state", selector: stateList }
+          ]
+        },
+        {
+          type: "expandable",
+          name: summarySection,
+          flatten: true,
+          schema: [
+            {
+              name: "summary",
+              selector: {
+                object: {
+                  multiple: true,
+                  label_field: "text",
+                  description_field: "entity",
+                  fields: Object.fromEntries([
+                    itemField("entity", { entity: {} }, true),
+                    itemField("text", { text: {} }),
+                    itemField("text_one", { text: {} }),
+                    itemField("color", colorSelect),
+                    itemField("show_above", numberBox2),
+                    itemField("show_below", numberBox2),
+                    itemField("show_state", stateList)
+                  ])
+                }
+              }
+            },
+            { name: "summary_empty", selector: { text: {} } }
           ]
         },
         {
@@ -3335,15 +3441,17 @@ function editorSchema(language, layout) {
             { name: "min_column_width", selector: { text: {} } }
           ]
         }] : [],
-        {
-          type: "grid",
-          name: "",
-          schema: [
-            { name: "gap", selector: { text: {} } },
-            { name: "padding", selector: { text: {} } }
-          ]
-        },
-        { name: "frame", selector: { boolean: {} } }
+        ...mode === "dialog" ? [{ name: "gap", selector: { text: {} } }] : [
+          {
+            type: "grid",
+            name: "",
+            schema: [
+              { name: "gap", selector: { text: {} } },
+              { name: "padding", selector: { text: {} } }
+            ]
+          },
+          { name: "frame", selector: { boolean: {} } }
+        ]
       ]
     }
   ];
@@ -3395,6 +3503,7 @@ function storedItems(items, conditionKey) {
 var GraphitePanelEditor = class extends HTMLElement {
   constructor() {
     super(...arguments);
+    this.mode = "panel";
     this.config = {};
   }
   setConfig(config) {
@@ -3431,13 +3540,13 @@ var GraphitePanelEditor = class extends HTMLElement {
     }
     const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
     const layout = this.config.layout || "vertical";
-    const schemaKey = `${language}|${layout}`;
+    const schemaKey = `${language}|${layout}|${this.mode}`;
     if (this.formSchemaKey !== schemaKey) {
       this.formSchemaKey = schemaKey;
-      this.form.schema = editorSchema(language, layout);
+      this.form.schema = editorSchema(language, layout, this.mode);
       const textKey = (schema, options) => options?.path?.includes(conditionName) ? `condition.${schema.name}` : schema.name;
       this.form.computeLabel = (schema, _data, options) => {
-        if (!schema.name || schema.name === "chips" || schema.name === "buttons") return "";
+        if (!schema.name || listNames.includes(schema.name)) return "";
         return optionalText(language, textKey(schema, options)) ?? schema.name;
       };
       this.form.computeHelper = (schema, options) => schema.name ? optionalText(language, `helper.${textKey(schema, options)}`) : void 0;
@@ -3447,20 +3556,38 @@ var GraphitePanelEditor = class extends HTMLElement {
       this.stackEditor.hass = this.hassObject;
     }
     if (this.lovelaceObject) this.stackEditor.lovelace = this.lovelaceObject;
-    const { title, info, info_alert, chips, buttons, columns, gap, padding, min_column_width, frame } = this.config;
-    this.form.data = {
+    const {
+      title,
+      info,
+      info_alert,
+      summary,
+      summary_empty,
+      chips,
+      buttons,
+      columns,
+      gap,
+      padding,
+      min_column_width,
+      frame,
+      hash,
+      width
+    } = this.config;
+    const data = {
       title,
       info,
       info_alert: conditionData(info_alert),
+      summary: itemsData(summary, "show"),
+      summary_empty,
       chips: itemsData(chips, "alert"),
       buttons: itemsData(buttons, "active"),
       layout,
       columns,
       gap,
-      padding,
-      min_column_width,
-      frame: frame !== false
+      min_column_width
     };
+    if (this.mode === "dialog") Object.assign(data, { hash, width });
+    else Object.assign(data, { padding, frame: frame !== false });
+    this.form.data = data;
     this.stackEditor.setConfig({ type: "vertical-stack", cards: this.config.cards || [] });
     this.hideStackTitle();
   }
@@ -3478,13 +3605,15 @@ var GraphitePanelEditor = class extends HTMLElement {
     const storedConfig = {
       ...config,
       info_alert: storedCondition(config.info_alert),
+      summary: storedItems(config.summary, "show"),
       chips: storedItems(config.chips, "alert"),
       buttons: storedItems(config.buttons, "active")
     };
     const cleanConfig = Object.fromEntries(
       Object.entries(storedConfig).filter(([key, value]) => {
         if (value === "" || value === void 0 || value === null) return false;
-        if (key === "frame" && value !== false) return false;
+        if (key === "frame" && (value !== false || this.mode === "dialog")) return false;
+        if (key === "layout" && value === "vertical") return false;
         return true;
       })
     );
@@ -3495,6 +3624,13 @@ var GraphitePanelEditor = class extends HTMLElement {
 
 // src/cards/graphite-panel.ts
 var layouts = ["vertical", "horizontal", "grid"];
+async function loadStackCardEditor() {
+  if (customElements.get("hui-stack-card-editor")) return;
+  const helpers = await window.loadCardHelpers();
+  const stackCard = helpers.createCardElement({ type: "vertical-stack", cards: [] });
+  await customElements.whenDefined(stackCard.localName);
+  await customElements.get(stackCard.localName).getConfigElement();
+}
 var summaryColors = {
   accent: "var(--graphite-accent)",
   success: "var(--graphite-success)",
@@ -3693,12 +3829,7 @@ var GraphitePanel = class extends GraphiteCard {
     return { title: "Panel", layout: "vertical", cards: [] };
   }
   static async getConfigElement() {
-    if (!customElements.get("hui-stack-card-editor")) {
-      const helpers = await window.loadCardHelpers();
-      const stackCard = helpers.createCardElement({ type: "vertical-stack", cards: [] });
-      await customElements.whenDefined(stackCard.localName);
-      await customElements.get(stackCard.localName).getConfigElement();
-    }
+    await loadStackCardEditor();
     return document.createElement("graphite-panel-editor");
   }
 };
@@ -12798,6 +12929,14 @@ registerCard("graphite-light", GraphiteLight, {
   description: "Lamp as a tile: switch row head (toggle or wall switch) with brightness and white temperature sliders."
 });
 
+// src/cards/graphite-dialog-editor.ts
+var GraphiteDialogEditor = class extends GraphitePanelEditor {
+  constructor() {
+    super(...arguments);
+    this.mode = "dialog";
+  }
+};
+
 // src/cards/graphite-dialog.ts
 function normalizeHash(hash) {
   const text = String(hash ?? "").trim();
@@ -12888,6 +13027,10 @@ var GraphiteDialog = class extends GraphiteCard {
   }
   static getStubConfig() {
     return { hash: "#dialog", title: "Dialog", cards: [] };
+  }
+  static async getConfigElement() {
+    await loadStackCardEditor();
+    return document.createElement("graphite-dialog-editor");
   }
 };
 GraphiteDialog.styles = i`
@@ -13006,6 +13149,7 @@ GraphiteDialog.styles = i`
       outline-offset: 2px;
     }
   `;
+registerElement("graphite-dialog-editor", GraphiteDialogEditor);
 registerCard("graphite-dialog", GraphiteDialog, {
   name: "Graphite Dialog",
   description: "Dialog that opens on a hash (e.g. #lights) from every view; header like graphite-panel."

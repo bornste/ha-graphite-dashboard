@@ -5,10 +5,11 @@
 // a copy of it above the current view. Header like graphite-panel: title, status, chips, buttons.
 import { css, html, nothing } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
-import { registerCard } from "../core/register";
+import { registerCard, registerElement } from "../core/register";
 import type { GraphiteCardConfig, HomeAssistant } from "../core/types";
 import type { ValueCondition } from "../core/conditions";
-import type { PanelButtonConfig, PanelChipConfig, PanelSummaryPart } from "./graphite-panel";
+import { loadStackCardEditor, type PanelButtonConfig, type PanelChipConfig, type PanelSummaryPart } from "./graphite-panel";
+import { GraphiteDialogEditor } from "./graphite-dialog-editor";
 
 export interface DialogConfig extends GraphiteCardConfig {
   hash: string;
@@ -250,7 +251,14 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
   static getStubConfig(): Partial<DialogConfig> {
     return { hash: "#dialog", title: "Dialog", cards: [] };
   }
+
+  static async getConfigElement(): Promise<HTMLElement> {
+    await loadStackCardEditor();
+    return document.createElement("graphite-dialog-editor");
+  }
 }
+
+registerElement("graphite-dialog-editor", GraphiteDialogEditor);
 
 registerCard("graphite-dialog", GraphiteDialog, {
   name: "Graphite Dialog",

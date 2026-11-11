@@ -56,6 +56,16 @@ export interface PanelConfig extends GraphiteCardConfig {
 }
 
 const layouts = ["vertical", "horizontal", "grid"];
+
+// Home Assistant's stack card editor is reused for the child cards (panel and dialog): load it first
+export async function loadStackCardEditor(): Promise<void> {
+  if (customElements.get("hui-stack-card-editor")) return;
+  const helpers = await window.loadCardHelpers!();
+  const stackCard = helpers.createCardElement({ type: "vertical-stack", cards: [] });
+  // the stack card class may still be loading: wait for its definition before asking for the editor
+  await customElements.whenDefined(stackCard.localName);
+  await (customElements.get(stackCard.localName) as any).getConfigElement();
+}
 const summaryColors: Record<string, string> = {
   accent: "var(--graphite-accent)",
   success: "var(--graphite-success)",
@@ -507,14 +517,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    // Home Assistant's stack card editor is reused for the child cards: load it first
-    if (!customElements.get("hui-stack-card-editor")) {
-      const helpers = await window.loadCardHelpers!();
-      const stackCard = helpers.createCardElement({ type: "vertical-stack", cards: [] });
-      // the stack card class may still be loading: wait for its definition before asking for the editor
-      await customElements.whenDefined(stackCard.localName);
-      await (customElements.get(stackCard.localName) as any).getConfigElement();
-    }
+    await loadStackCardEditor();
     return document.createElement("graphite-panel-editor");
   }
 }
