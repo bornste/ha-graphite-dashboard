@@ -7,8 +7,7 @@ a library of Lovelace cards built for it (TypeScript + Lit, bundled into one fil
 > cover the options, cards and cases I need there – they are shared as they are, without the
 > aim of being a general purpose card collection. Feel free to use or fork them.
 
-> Work in progress: the cards are being moved step by step from single files and a
-> Bubble Card module into the library. See [docs](docs/README.md) for the available cards.
+> See [docs](docs/README.md) for the available cards.
 
 **Showcase:** all cards with sample data, without Home Assistant –
 <https://bornste.github.io/ha-graphite-dashboard/>
@@ -20,8 +19,6 @@ a library of Lovelace cards built for it (TypeScript + Lit, bundled into one fil
 | `src/` | Source of the card library (TypeScript, Lit) |
 | `config/www/graphite-cards/graphite-cards.js` | Built library – the file Home Assistant loads |
 | `config/themes/graphite/` | The Graphite theme |
-| `config/bubble_card/modules/` | Bubble Card module (being replaced by the library) |
-| `config/www/` (other folders) | Cards not yet moved into the library |
 | `docs/` | One page per card: options, behaviour, examples |
 | `showcase/` | Showcase page with sample data (published to GitHub Pages) |
 

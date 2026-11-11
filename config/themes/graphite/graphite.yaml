@@ -3,9 +3,7 @@
 #   1. Base inputs    - the only values a variant needs to change (ground, ink, accent)
 #   2. Derived tokens - surfaces and text levels, mixed from ground and ink
 #   3. Layout tokens  - radii, gaps, paddings, type scale, sizes
-#   4. HA / Bubble    - Home Assistant and Bubble Card variables mapped to the tokens
-#   5. Legacy aliases - the old sbo-* names point to the graphite-* tokens until the Bubble
-#                       pop-up module uses the new names (then they are removed)
+#   4. Home Assistant - Home Assistant variables mapped to the tokens
 # A light or tinted variant only overrides the base inputs (see examples at the end).
 Graphite: &graphite
   modes:
@@ -94,42 +92,6 @@ Graphite: &graphite
       ha-view-sections-column-gap: var(--graphite-gap-panel)
       ha-dialog-surface-background: var(--graphite-surface-panel)
 
-      # 4. Bubble Card (the Bubble module builds on these)
-      bubble-main-background-color: var(--graphite-surface-panel)
-      bubble-secondary-background-color: var(--graphite-surface-tile)
-      bubble-border-radius: var(--graphite-radius-panel)
-      bubble-pop-up-main-background-color: var(--graphite-overlay)
-      bubble-accent-color: var(--graphite-accent)
-
-      # 5. legacy aliases (old names, used by the Bubble pop-up module)
-      sbo-ground: var(--graphite-ground)
-      sbo-ink: var(--graphite-ink)
-      sbo-ink-rgb: var(--graphite-ink-rgb)
-      sbo-accent: var(--graphite-accent)
-      sbo-accent-ink: var(--graphite-accent-ink)
-      sbo-danger: var(--graphite-danger)
-      sbo-success: var(--graphite-success)
-      sbo-success-ink: var(--graphite-success-ink)
-      sbo-surface-page: var(--graphite-surface-page)
-      sbo-surface-panel: var(--graphite-surface-panel)
-      sbo-surface-tile: var(--graphite-surface-tile)
-      sbo-surface-tile-active: var(--graphite-surface-tile-active)
-      sbo-surface-track: var(--graphite-surface-track)
-      sbo-text-primary: var(--graphite-text-primary)
-      sbo-text-secondary: var(--graphite-text-secondary)
-      sbo-text-muted: var(--graphite-text-muted)
-      sbo-line: var(--graphite-divider)
-      sbo-separator: var(--graphite-separator)
-      sbo-overlay: var(--graphite-overlay)
-      sbo-radius-panel: var(--graphite-radius-panel)
-      sbo-radius-tile: var(--graphite-radius-tile)
-      sbo-radius-pill: var(--graphite-radius-pill)
-      sbo-gap-panel: var(--graphite-gap-panel)
-      sbo-gap-tile: var(--graphite-gap-tile)
-      sbo-padding-panel: var(--graphite-padding-panel)
-      sbo-title-size: var(--graphite-title-size)
-      sbo-title-weight: var(--graphite-title-weight)
-      sbo-title-color: var(--graphite-title-color)
 
 # Variant examples (not active):
 # tinted dark - only the ground changes, all surfaces follow:

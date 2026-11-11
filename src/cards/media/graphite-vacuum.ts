@@ -686,7 +686,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
     const suction = this.currentSuction();
     const boost = this.currentBoost();
     const boostName = config.boost_name || "Max+";
-    const hasBoost = config.boost !== false && !!this.stateOf(this.entities.boost);
+    const boostAvailable = config.boost !== false && !!this.stateOf(this.entities.boost);
     const allSelected = rooms.length > 0 && this.selected.length === rooms.length;
     const issues = this.roomIssues();
     return html`
@@ -711,17 +711,17 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
           </button>`)}
       </div>
       <div class="label">${this.t("suction")}</div>
-      <div class="suctions ${hasBoost ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
+      <div class="suctions ${boostAvailable ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
         ${this.suctionLevels.map((level) => html`
           <button class="suction ${level.value === suction ? "selected" : ""}" @click=${() => { this.chosenSuction = level.value; }}>
             <ha-ripple></ha-ripple>
             ${this.itemName(level, "suctionLevels")}
           </button>`)}
-        ${hasBoost
+        ${boostAvailable
           ? html`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => { this.chosenBoost = !this.currentBoost(); }}><ha-ripple></ha-ripple>${boostName}</button>`
           : nothing}
       </div>
-      ${hasBoost ? html`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : nothing}
+      ${boostAvailable ? html`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : nothing}
       <div class="label">
         ${this.t("rooms")}
         <button @click=${this.toggleAllRooms}>${allSelected ? this.t("selectNone") : this.t("selectAll")}</button>

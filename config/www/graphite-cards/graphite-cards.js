@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.52.0";
+var version = "0.53.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3810,15 +3810,11 @@ GraphitePanel.styles = i`
     :host {
       display: block;
     }
-    /* context tokens for child cards; a frameless panel is only a layout container and passes none.
-       The sbo-* names are read by the Bubble module and the not yet migrated cards. */
+    /* context tokens for child cards; a frameless panel is only a layout container and passes none */
     :host(:not([frameless])) {
       --graphite-card-surface: var(--graphite-surface-tile);
       --graphite-card-inner-surface: var(--graphite-surface-tile-active);
       --graphite-card-radius: var(--graphite-radius-tile);
-      --sbo-card-surface: var(--graphite-card-surface);
-      --sbo-card-inner-surface: var(--graphite-card-inner-surface);
-      --sbo-card-radius: var(--graphite-card-radius);
     }
     ha-card {
       background: var(--graphite-surface-panel);
@@ -8422,7 +8418,7 @@ var GraphiteVacuum = class extends GraphiteCard {
     const suction = this.currentSuction();
     const boost = this.currentBoost();
     const boostName = config.boost_name || "Max+";
-    const hasBoost = config.boost !== false && !!this.stateOf(this.entities.boost);
+    const boostAvailable = config.boost !== false && !!this.stateOf(this.entities.boost);
     const allSelected = rooms.length > 0 && this.selected.length === rooms.length;
     const issues = this.roomIssues();
     return b2`
@@ -8447,7 +8443,7 @@ var GraphiteVacuum = class extends GraphiteCard {
           </button>`)}
       </div>
       <div class="label">${this.t("suction")}</div>
-      <div class="suctions ${hasBoost ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
+      <div class="suctions ${boostAvailable ? "" : "noBoost"}" style="--suctionCount: ${this.suctionLevels.length}">
         ${this.suctionLevels.map((level) => b2`
           <button class="suction ${level.value === suction ? "selected" : ""}" @click=${() => {
       this.chosenSuction = level.value;
@@ -8455,11 +8451,11 @@ var GraphiteVacuum = class extends GraphiteCard {
             <ha-ripple></ha-ripple>
             ${this.itemName(level, "suctionLevels")}
           </button>`)}
-        ${hasBoost ? b2`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => {
+        ${boostAvailable ? b2`<button class="boost ${boost ? "on" : ""}" aria-pressed=${boost ? "true" : "false"} @click=${() => {
       this.chosenBoost = !this.currentBoost();
     }}><ha-ripple></ha-ripple>${boostName}</button>` : A}
       </div>
-      ${hasBoost ? b2`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : A}
+      ${boostAvailable ? b2`<div class="hint">${this.t(boost ? "boostActive" : "boostHint", { name: boostName })}</div>` : A}
       <div class="label">
         ${this.t("rooms")}
         <button @click=${this.toggleAllRooms}>${allSelected ? this.t("selectNone") : this.t("selectAll")}</button>

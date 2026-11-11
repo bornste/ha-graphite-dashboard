@@ -192,8 +192,7 @@ Theme variables used: `--graphite-surface-panel`, `--graphite-radius-panel`,
 
 Context tokens passed to the child cards (not in frameless panels): `--graphite-card-surface`,
 `--graphite-card-inner-surface`, `--graphite-card-radius`, and the standard `--ha-card-*`
-variables. During the migration the panel also passes the old names `--sbo-card-*` for the
-Bubble module and cards that are not moved yet.
+variables.
 
 ## Editor
 

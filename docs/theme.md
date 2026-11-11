@@ -71,12 +71,7 @@ line). Other sizes work, the separator may then need a small adjustment.
 | `graphite-watermark-size` | `34px` | Watermark icons in tiles |
 | `graphite-tint-active` | `18%` | Strength of the accent tint of active tiles and rows |
 
-## 4. Home Assistant and Bubble Card
+## 4. Home Assistant
 
 The theme maps Home Assistant variables (`primary-background-color`, `card-background-color`,
-`ha-card-*`, text colors, sections gaps) and the Bubble Card variables to the tokens above.
-
-## 5. Legacy aliases
-
-The old names `--sbo-*` point to the new tokens. Only the Bubble pop-up module still reads them;
-they will be removed together with it.
+`ha-card-*`, text colors, sections gaps) to the tokens above.

@@ -82,15 +82,11 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     :host {
       display: block;
     }
-    /* context tokens for child cards; a frameless panel is only a layout container and passes none.
-       The sbo-* names are read by the Bubble module and the not yet migrated cards. */
+    /* context tokens for child cards; a frameless panel is only a layout container and passes none */
     :host(:not([frameless])) {
       --graphite-card-surface: var(--graphite-surface-tile);
       --graphite-card-inner-surface: var(--graphite-surface-tile-active);
       --graphite-card-radius: var(--graphite-radius-tile);
-      --sbo-card-surface: var(--graphite-card-surface);
-      --sbo-card-inner-surface: var(--graphite-card-inner-surface);
-      --sbo-card-radius: var(--graphite-card-radius);
     }
     ha-card {
       background: var(--graphite-surface-panel);

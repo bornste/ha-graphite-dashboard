@@ -11,7 +11,7 @@
 // History: a dialog opened by navigation (tap on a link to #lights) is closed with history.back(),
 // so the back button and the close button do the same. A dialog opened by loading a URL with the
 // hash is closed by removing the hash (no foreign history entry is touched).
-// Hashes no graphite-dialog knows (e.g. Bubble Card pop-ups) are ignored.
+// Hashes no graphite-dialog knows (e.g. other pop-up cards) are ignored.
 import { normalizeHash, type GraphiteDialog, type DialogConfig } from "../cards/graphite-dialog";
 
 interface HomeAssistantElement extends HTMLElement {
