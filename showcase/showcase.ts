@@ -16,11 +16,80 @@ if (!customElements.get("ha-card")) {
   });
 }
 
-// icons: Home Assistant's icon sets are not available here, a neutral glyph stands in
+// icons: the mdi and ic icons the cards and examples name, embedded by the build (SHOWCASE_ICONS);
+// ha-state-icon picks a default icon per domain and device class like Home Assistant does
+declare const SHOWCASE_ICONS: Record<string, { body: string; width: number; height: number }>;
+
+const deviceClassIcons: Record<string, [string, string]> = {
+  window: ["mdi:window-open", "mdi:window-closed"],
+  door: ["mdi:door-open", "mdi:door-closed"],
+  motion: ["mdi:motion-sensor", "mdi:motion-sensor-off"],
+  connectivity: ["mdi:check-network-outline", "mdi:close-network-outline"],
+  temperature: ["mdi:thermometer", "mdi:thermometer"],
+  humidity: ["mdi:water-percent", "mdi:water-percent"],
+  battery: ["mdi:battery", "mdi:battery"],
+  power: ["mdi:flash", "mdi:flash"],
+};
+
+const domainIcons: Record<string, [string, string]> = {
+  light: ["mdi:lightbulb", "mdi:lightbulb-outline"],
+  switch: ["mdi:toggle-switch-variant", "mdi:toggle-switch-variant-off"],
+  input_boolean: ["mdi:toggle-switch-variant", "mdi:toggle-switch-variant-off"],
+  binary_sensor: ["mdi:checkbox-marked-circle", "mdi:radiobox-blank"],
+  media_player: ["mdi:cast-connected", "mdi:cast"],
+  vacuum: ["mdi:robot-vacuum", "mdi:robot-vacuum"],
+  calendar: ["mdi:calendar", "mdi:calendar"],
+  todo: ["mdi:clipboard-list", "mdi:clipboard-list"],
+  scene: ["mdi:palette", "mdi:palette"],
+  script: ["mdi:script-text", "mdi:script-text"],
+  automation: ["mdi:robot", "mdi:robot-off"],
+  sensor: ["mdi:eye", "mdi:eye"],
+};
+
+function stateIcon(stateObj: any): string {
+  if (!stateObj) return "";
+  if (stateObj.attributes?.icon) return stateObj.attributes.icon;
+  const active = !["off", "closed", "unavailable", "unknown", "idle", "docked"].includes(stateObj.state);
+  const icons = deviceClassIcons[stateObj.attributes?.device_class] ?? domainIcons[String(stateObj.entity_id).split(".")[0]];
+  return icons ? icons[active ? 0 : 1] : "";
+}
+
 class ShowcaseIcon extends HTMLElement {
+  static observedAttributes = ["icon"];
+  private iconName = "";
+  private stateObject?: any;
+
+  set icon(icon: string | undefined) {
+    this.iconName = icon ?? "";
+    this.render();
+  }
+
+  get icon(): string {
+    return this.iconName;
+  }
+
+  set stateObj(stateObj: any) {
+    this.stateObject = stateObj;
+    this.render();
+  }
+
+  set hass(_hass: unknown) {}
+
+  attributeChangedCallback(_name: string, _old: string | null, value: string | null) {
+    this.icon = value ?? "";
+  }
+
   connectedCallback() {
     this.style.cssText = "display: inline-flex; width: var(--mdc-icon-size, 24px); height: var(--mdc-icon-size, 24px)";
-    this.innerHTML = `<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+    this.render();
+  }
+
+  // a known icon as SVG, otherwise a neutral glyph
+  private render() {
+    const icon = SHOWCASE_ICONS[this.iconName || stateIcon(this.stateObject)];
+    this.innerHTML = icon
+      ? `<svg viewBox="0 0 ${icon.width} ${icon.height}" width="100%" height="100%">${icon.body}</svg>`
+      : `<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
   }
 }
 for (const tag of ["ha-icon", "ha-state-icon"]) {

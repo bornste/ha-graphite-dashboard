@@ -35,11 +35,11 @@ export const sampleStates: Record<string, any> = {
   "light.floor_lamp": entity("light.floor_lamp", "on", { friendly_name: "Floor lamp", brightness: 158, color_mode: "color_temp",
     supported_color_modes: ["color_temp", "hs"], color_temp_kelvin: 3200, min_color_temp_kelvin: 2000, max_color_temp_kelvin: 6500,
     hs_color: [32, 45] }, 42),
-  "scene.living_room_default": entity("scene.living_room_default", "2026-11-06T18:00:00", { friendly_name: "Default", icon: "mdi:lamps-outline" }, 120),
-  "scene.living_room_bright": entity("scene.living_room_bright", "2026-11-06T18:00:00", { friendly_name: "Bright", icon: "mdi:white-balance-sunny" }, 120),
-  "scene.living_room_relax": entity("scene.living_room_relax", "2026-11-06T18:00:00", { friendly_name: "Relax", icon: "mdi:sofa-outline" }, 120),
-  "scene.living_room_tv": entity("scene.living_room_tv", "2026-11-06T18:00:00", { friendly_name: "TV", icon: "mdi:television" }, 120),
-  "scene.living_room_off": entity("scene.living_room_off", "2026-11-06T18:00:00", { friendly_name: "Lights off", icon: "mdi:power" }, 120),
+  "scene.living_room_default": entity("scene.living_room_default", "2026-11-06T18:00:00", { friendly_name: "Default", icon: "ic:twotone-light" }, 120),
+  "scene.living_room_bright": entity("scene.living_room_bright", "2026-11-06T18:00:00", { friendly_name: "Bright", icon: "ic:twotone-wb-sunny" }, 120),
+  "scene.living_room_relax": entity("scene.living_room_relax", "2026-11-06T18:00:00", { friendly_name: "Relax", icon: "ic:twotone-chair" }, 120),
+  "scene.living_room_tv": entity("scene.living_room_tv", "2026-11-06T18:00:00", { friendly_name: "TV", icon: "ic:twotone-tv" }, 120),
+  "scene.living_room_off": entity("scene.living_room_off", "2026-11-06T18:00:00", { friendly_name: "Lights off", icon: "ic:twotone-power-settings-new" }, 120),
   "input_select.living_room_scenes": entity("input_select.living_room_scenes", "Relax", { friendly_name: "Living room scene" }, 30),
   "sensor.living_room_lights_on": entity("sensor.living_room_lights_on", "2", { friendly_name: "Lights on" }, 30),
   "media_player.game_console": entity("media_player.game_console", "playing", { friendly_name: "Game console", media_title: "Star Voyager", media_content_type: "game" }, 75),
@@ -51,9 +51,9 @@ export const sampleStates: Record<string, any> = {
   "select.robot_suction_level": entity("select.robot_suction_level", "standard"),
   "switch.robot_max_suction_power": entity("switch.robot_max_suction_power", "off"),
   "input_number.play_time_weekend": entity("input_number.play_time_weekend", "120", { friendly_name: "Play time weekend",
-    min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
+    min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "ic:twotone-timer" }, 600),
   "input_number.play_time_weekday": entity("input_number.play_time_weekday", "60", { friendly_name: "Play time weekday",
-    min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "mdi:timer-outline" }, 600),
+    min: 0, max: 240, step: 15, unit_of_measurement: "min", icon: "ic:twotone-timer" }, 600),
   "number.lamp_effect_speed": entity("number.lamp_effect_speed", "0.74", { friendly_name: "Effect speed", min: 0, max: 1, step: 0.02 }, 90),
   "light.ceiling_lamp": entity("light.ceiling_lamp", "unavailable", { friendly_name: "Ceiling lamp" }, 300),
   "sensor.server_power": entity("sensor.server_power", "24.6", { unit_of_measurement: "W", friendly_name: "Server", display_precision: 0 }),
@@ -70,15 +70,15 @@ export const sampleStates: Record<string, any> = {
   "switch.game_console": entity("switch.game_console", "on", { friendly_name: "Game console" }, 25),
   "binary_sensor.game_console_online": entity("binary_sensor.game_console_online", "on", { friendly_name: "Game console online" }),
   "switch.speaker": entity("switch.speaker", "off", { friendly_name: "Speaker" }, 240),
-  "sensor.server_cpu": entity("sensor.server_cpu", "34", { unit_of_measurement: "%", friendly_name: "CPU", icon: "mdi:speedometer" }),
-  "sensor.server_memory": entity("sensor.server_memory", "58", { unit_of_measurement: "%", friendly_name: "Memory", icon: "mdi:memory" }),
-  "sensor.server_disk": entity("sensor.server_disk", "86", { unit_of_measurement: "%", friendly_name: "Disk", icon: "mdi:harddisk" }),
+  "sensor.server_cpu": entity("sensor.server_cpu", "34", { unit_of_measurement: "%", friendly_name: "CPU", icon: "ic:twotone-speed" }),
+  "sensor.server_memory": entity("sensor.server_memory", "58", { unit_of_measurement: "%", friendly_name: "Memory", icon: "ic:twotone-memory" }),
+  "sensor.server_disk": entity("sensor.server_disk", "86", { unit_of_measurement: "%", friendly_name: "Disk", icon: "ic:twotone-storage" }),
   "script.start_racing_game": entity("script.start_racing_game", "on", { friendly_name: "Racing game" }, 1),
   "script.start_puzzle_game": entity("script.start_puzzle_game", "off", { friendly_name: "Puzzle game" }, 300),
   "script.start_streaming": entity("script.start_streaming", "off", { friendly_name: "Streaming" }, 900),
-  "sensor.player_one_playing_time": entity("sensor.player_one_playing_time", "11700", { friendly_name: "Player one", status: "running", accumulated_seconds: 11400, running_since: minutesAgo(5), icon: "mdi:controller" }, 5),
-  "sensor.player_two_playing_time": entity("sensor.player_two_playing_time", "6480", { friendly_name: "Player two", status: "running", accumulated_seconds: 6000, running_since: minutesAgo(8), icon: "mdi:controller" }, 8),
-  "sensor.tv_watching_time": entity("sensor.tv_watching_time", "4980", { friendly_name: "TV", status: "paused", accumulated_seconds: 4980, icon: "mdi:television" }, 30),
+  "sensor.player_one_playing_time": entity("sensor.player_one_playing_time", "11700", { friendly_name: "Player one", status: "running", accumulated_seconds: 11400, running_since: minutesAgo(5), icon: "ic:twotone-sports-esports" }, 5),
+  "sensor.player_two_playing_time": entity("sensor.player_two_playing_time", "6480", { friendly_name: "Player two", status: "running", accumulated_seconds: 6000, running_since: minutesAgo(8), icon: "ic:twotone-sports-esports" }, 8),
+  "sensor.tv_watching_time": entity("sensor.tv_watching_time", "4980", { friendly_name: "TV", status: "paused", accumulated_seconds: 4980, icon: "ic:twotone-tv" }, 30),
   "image.player_two_picture": entity("image.player_two_picture", "2026-11-01", { friendly_name: "Player two", entity_picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' fill='%237aa5d6'/><circle cx='18' cy='14' r='7' fill='%23ffffff' opacity='0.85'/><rect x='7' y='24' width='22' height='14' rx='7' fill='%23ffffff' opacity='0.85'/></svg>" }),
   "todo.shopping": entity("todo.shopping", "3", { friendly_name: "Shopping" }, 40),
   "todo.chores": entity("todo.chores", "0", { friendly_name: "Chores" }, 600),
@@ -100,7 +100,7 @@ export const sampleStates: Record<string, any> = {
   "sensor.kitchen_window_battery": entity("sensor.kitchen_window_battery", "88", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Kitchen window Battery" }),
   "sensor.living_room_switch_battery": entity("sensor.living_room_switch_battery", "100", { device_class: "battery", unit_of_measurement: "%", friendly_name: "Living room switch Battery" }),
   "sensor.open_windows": entity("sensor.open_windows", "1", { friendly_name: "Open windows" }),
-  "input_boolean.guest_mode": entity("input_boolean.guest_mode", "on", { friendly_name: "Guest mode", icon: "mdi:account-circle-outline" }),
+  "input_boolean.guest_mode": entity("input_boolean.guest_mode", "on", { friendly_name: "Guest mode", icon: "ic:twotone-account-circle" }),
   "calendar.paper_collection": entity("calendar.paper_collection", "off", { friendly_name: "Paper", message: "Paper" }),
   "calendar.cardboard_collection": entity("calendar.cardboard_collection", "off", { friendly_name: "Cardboard", message: "Cardboard" }),
   "calendar.school_homework": entity("calendar.school_homework", "off", { friendly_name: "Homework" }),
@@ -183,14 +183,10 @@ export const templateResults: Record<string, string> = {
   "{{ states('sensor.console_game') }}": "playing Starfield",
 };
 
-const roomTiles = [
-  { type: "tile", entity: "sensor.living_room_temperature" },
-  { type: "tile", entity: "sensor.bedroom_temperature" },
-  { type: "tile", entity: "sensor.office_temperature" },
-  { type: "tile", entity: "sensor.kitchen_temperature" },
-  { type: "tile", entity: "sensor.bathroom_temperature" },
-  { type: "tile", entity: "sensor.hallway_temperature" },
-];
+// child cards of the panel examples: graphite-value tiles (the library's own value tile)
+const roomTiles = ["living_room", "bedroom", "office", "kitchen", "bathroom", "hallway"]
+  .map((room) => ({ type: "custom:graphite-value", entity: `sensor.${room}_temperature`, icon: "ic:twotone-thermostat" }));
+const powerRow = { type: "custom:graphite-value", layout: "row", entity: "sensor.power_strip_power", icon: "ic:twotone-bolt" };
 
 export function examples(language: string): ShowcaseSection[] {
   const german = language === "de";
@@ -198,7 +194,7 @@ export function examples(language: string): ShowcaseSection[] {
     {
       title: "graphite-panel",
       description: `Groups cards in one panel with title, status, chips and a vertical, horizontal or grid layout.
-        Child cards get the tile surface. Built-in cards are shown as placeholder tiles here.
+        Child cards get the tile surface; the examples use graphite-value tiles and rows.
         <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-panel.md">Documentation</a>`,
       examples: [
         {
@@ -228,7 +224,7 @@ export function examples(language: string): ShowcaseSection[] {
               { entity: "media_player.game_console", text: "plays Star Voyager", color: "accent", show: { state: "playing" } },
               { entity: "binary_sensor.game_console_online", text: "online", show: { state: "on" } },
             ],
-            cards: [{ type: "tile", entity: "sensor.power_strip_power" }],
+            cards: [powerRow],
           },
         },
         {
@@ -259,7 +255,7 @@ export function examples(language: string): ShowcaseSection[] {
             type: "custom:graphite-panel",
             title: german ? "Haushalt" : "Household",
             cards: [
-              { type: "tile", entity: "sensor.power_strip_power" },
+              powerRow,
               {
                 type: "custom:graphite-panel",
                 frame: false,
@@ -381,10 +377,10 @@ export function examples(language: string): ShowcaseSection[] {
             title: german ? "Steckdosen" : "Sockets",
             layout: "horizontal",
             cards: [
-              { type: "custom:graphite-switch", layout: "tile", entity: "switch.game_console", icon: "mdi:controller", online_entity: "binary_sensor.game_console_online" },
-              { type: "custom:graphite-switch", layout: "tile", entity: "switch.tv", icon: "mdi:television", online_entity: "binary_sensor.tv_online" },
-              { type: "custom:graphite-switch", layout: "tile", entity: "switch.speaker", icon: "mdi:speaker" },
-              { type: "custom:graphite-switch", layout: "tile", entity: "switch.printer", icon: "mdi:printer" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.game_console", icon: "ic:twotone-sports-esports", online_entity: "binary_sensor.game_console_online" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.tv", icon: "ic:twotone-tv", online_entity: "binary_sensor.tv_online" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.speaker", icon: "ic:twotone-speaker" },
+              { type: "custom:graphite-switch", layout: "tile", entity: "switch.printer", icon: "ic:twotone-print" },
             ],
           },
         },
@@ -404,10 +400,10 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 3,
             cards: [
-              { type: "custom:graphite-value", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "mdi:water-outline", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
-              { type: "custom:graphite-value", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "mdi:washing-machine" },
-              { type: "custom:graphite-value", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "mdi:finance" },
-              { type: "custom:graphite-value", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "mdi:thermometer" },
+              { type: "custom:graphite-value", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "ic:twotone-water-drop", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
+              { type: "custom:graphite-value", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "ic:twotone-local-laundry-service" },
+              { type: "custom:graphite-value", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "ic:twotone-show-chart" },
+              { type: "custom:graphite-value", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "ic:twotone-thermostat" },
             ],
           },
         },
@@ -418,10 +414,10 @@ export function examples(language: string): ShowcaseSection[] {
             type: "custom:graphite-panel",
             title: german ? "Werte" : "Values",
             cards: [
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "mdi:water-outline", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "mdi:washing-machine" },
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "mdi:finance" },
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "mdi:thermometer" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "ic:twotone-water-drop", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "ic:twotone-local-laundry-service" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "ic:twotone-show-chart" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "ic:twotone-thermostat" },
             ],
           },
         },
@@ -606,9 +602,9 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 3,
             cards: [
-              { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "mdi:controller" },
-              { type: "custom:graphite-stopwatch", entity: "sensor.player_two_playing_time", icon: "mdi:controller", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
-              { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "mdi:television", icon_position: "left" },
+              { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "ic:twotone-sports-esports" },
+              { type: "custom:graphite-stopwatch", entity: "sensor.player_two_playing_time", icon: "ic:twotone-sports-esports", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
+              { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "ic:twotone-tv", icon_position: "left" },
             ],
           },
         },
@@ -628,8 +624,8 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 2,
             cards: [
-              { type: "custom:graphite-todo", entity: "todo.shopping", icon: "mdi:cart-outline", preview: true },
-              { type: "custom:graphite-todo", entity: "todo.chores", icon: "mdi:broom", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
+              { type: "custom:graphite-todo", entity: "todo.shopping", icon: "ic:twotone-shopping-cart", preview: true },
+              { type: "custom:graphite-todo", entity: "todo.chores", icon: "ic:twotone-cleaning-services", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
             ],
           },
         },
@@ -670,8 +666,8 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 2,
             cards: [
-              { type: "custom:graphite-pickup", entity: "calendar.paper_collection", icon: "mdi:newspaper-variant-outline", color: "#9aa3ad" },
-              { type: "custom:graphite-pickup", entity: "calendar.cardboard_collection", icon: "mdi:package-variant-closed", color: "#b98a5e" },
+              { type: "custom:graphite-pickup", entity: "calendar.paper_collection", icon: "ic:twotone-newspaper", color: "#9aa3ad" },
+              { type: "custom:graphite-pickup", entity: "calendar.cardboard_collection", icon: "ic:twotone-inventory-2", color: "#b98a5e" },
             ],
           },
         },
@@ -692,9 +688,9 @@ export function examples(language: string): ShowcaseSection[] {
               {
                 type: "custom:graphite-calendar",
                 calendars: [
-                  { entity: "calendar.school_homework", name: german ? "Hausaufgaben" : "Homework", color: "#8ab8f5", icon: "mdi:pencil-outline" },
-                  { entity: "calendar.school_exams", name: german ? "Prüfungen" : "Exams", color: "#e8908a", icon: "mdi:alert-outline", highlight: true },
-                  { entity: "calendar.school_events", name: german ? "Termine" : "Events", color: "#a8d5a2", icon: "mdi:calendar-blank-outline" },
+                  { entity: "calendar.school_homework", name: german ? "Hausaufgaben" : "Homework", color: "#8ab8f5", icon: "ic:twotone-edit" },
+                  { entity: "calendar.school_exams", name: german ? "Prüfungen" : "Exams", color: "#e8908a", icon: "ic:twotone-warning-amber", highlight: true },
+                  { entity: "calendar.school_events", name: german ? "Termine" : "Events", color: "#a8d5a2", icon: "ic:twotone-calendar-today" },
                 ],
                 range: "this_and_next_week",
                 max_items: 10,
@@ -738,7 +734,7 @@ export function examples(language: string): ShowcaseSection[] {
                 type: "custom:graphite-calendar",
                 calendars: ["calendar.school_homework", "calendar.school_exams", "calendar.school_events"],
                 layout: "tiles",
-                icon: "mdi:school-outline",
+                icon: "ic:twotone-school",
                 weekdays: true,
                 day_switch: "15:00",
                 rules: [{ contains_any: ["Exam", "Test"], color: "#e8908a", highlight: true }],
@@ -762,7 +758,7 @@ export function examples(language: string): ShowcaseSection[] {
                 days: 14,
                 secondary: "none",
                 highlight_days: 2,
-                rules: [{ starts_with: "Exam", color: "#e8908a", icon: "mdi:alert-outline", highlight: true }],
+                rules: [{ starts_with: "Exam", color: "#e8908a", icon: "ic:twotone-warning-amber", highlight: true }],
               },
             ],
           },
@@ -837,7 +833,7 @@ export function examples(language: string): ShowcaseSection[] {
               text_one: german ? "1 Licht an" : "1 light on", color: "accent" }],
             buttons: [
               { entity: "scene.living_room_off", name: german ? "Licht aus" : "Lights off", active: { entity: "sensor.living_room_lights_on", above: 0 } },
-              { icon: "mdi:tune-variant", name: german ? "Einstellungen" : "Settings", tap_action: { action: "none" } },
+              { icon: "ic:twotone-tune", name: german ? "Einstellungen" : "Settings", tap_action: { action: "none" } },
             ],
             layout: "grid",
             columns: 4,
@@ -864,8 +860,8 @@ export function examples(language: string): ShowcaseSection[] {
             title: "Multimedia",
             cards: [
               { type: "custom:graphite-now-playing", sources: [
-                { entity: "media_player.game_console", name: "Console", icon: "mdi:controller" },
-                { entity: "media_player.game_console", name: "Console", icon: "mdi:controller", states: ["idle"], fallback_title: "Startseite" },
+                { entity: "media_player.game_console", name: "Console", icon: "ic:twotone-sports-esports" },
+                { entity: "media_player.game_console", name: "Console", icon: "ic:twotone-sports-esports", states: ["idle"], fallback_title: "Startseite" },
               ] },
             ],
           },
@@ -890,12 +886,12 @@ export function examples(language: string): ShowcaseSection[] {
             entity: "vacuum.robot",
             layout: "panel",
             rooms: [
-              { id: 1, name: "Kitchen", icon: "mdi:chef-hat" },
-              { id: 2, name: "Living room", icon: "mdi:sofa-outline" },
-              { id: 3, name: "Bathroom", icon: "mdi:toilet" },
-              { id: 4, name: "Hall", icon: "mdi:foot-print" },
+              { id: 1, name: "Kitchen", icon: "ic:twotone-kitchen" },
+              { id: 2, name: "Living room", icon: "ic:twotone-chair" },
+              { id: 3, name: "Bathroom", icon: "ic:twotone-wc" },
+              { id: 4, name: "Hall", icon: "ic:twotone-directions-walk" },
             ],
-            presets: [{ name: "Kitchen", icon: "mdi:chef-hat", rooms: ["Kitchen"], mode: "mopping_after_sweeping" }],
+            presets: [{ name: "Kitchen", icon: "ic:twotone-kitchen", rooms: ["Kitchen"], mode: "mopping_after_sweeping" }],
           },
         },
       ],
