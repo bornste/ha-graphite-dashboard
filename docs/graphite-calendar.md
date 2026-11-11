@@ -117,7 +117,7 @@ today or tomorrow).
 | `secondary` | `calendar_location` \| `calendar` \| `location` \| `description` \| `none` | `calendar_location` | Content of the second line. Multi-day events add "bis Fr 13. Nov." unless `none`. |
 | `empty_text` | string | "Keine Einträge bis …" | Text without events. |
 | `hide_empty` | boolean | `false` | Hides the card without events. |
-| `tap_action` | action | `more-info` | `more-info` opens the details of the event (title, time, calendar, location, description); other actions run on the event's calendar entity. |
+| `tap_action` | action | `more-info` | `more-info` opens the details of the event (title, time, calendar, location, description) in a [graphite-dialog](graphite-dialog.md), also above a dialog the calendar sits in; other actions run on the event's calendar entity. |
 | `hold_action` | action | `more-info` | Runs on the event's calendar entity (more-info of the calendar). With `tap_action` and `hold_action` both `none` the events are plain text (no pointer, not focusable). Events with a description show a note icon either way. |
 
 ## Behaviour

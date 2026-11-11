@@ -273,6 +273,36 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
+      title: "graphite-dialog",
+      description: `Dialog that opens on a hash like #windows from every view: place all dialogs in one subview and link to the hash.
+        Header like graphite-panel, glass surface, bottom sheet on small screens. Shown inline here, as in the dialogs subview.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-dialog.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Windows (inline, as in the dialogs subview)",
+          note: "One window is open: the dynamic status replaces the text «All closed». In Home Assistant a navigation to #windows opens it above the current view.",
+          config: {
+            type: "custom:graphite-dialog",
+            hash: "#windows",
+            title: german ? "Fenster & Türen" : "Windows & doors",
+            info: german ? "Alle geschlossen" : "All closed",
+            summary: [{ entity: "sensor.open_windows", text: german ? "{value} Fenster offen" : "{value} windows open",
+              text_one: german ? "1 Fenster offen" : "1 window open", color: "accent" }],
+            cards: [
+              {
+                type: "custom:graphite-panel",
+                title: german ? "Fenster" : "Windows",
+                cards: [
+                  { type: "custom:graphite-status", entity: "binary_sensor.bedroom_window" },
+                  { type: "custom:graphite-status", entity: "binary_sensor.office_window" },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       title: "graphite-status",
       description: `Display row: icon, name with a "since" line and the state on the right. Active states get the accent tint,
         measured values never. <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-status.md">Documentation</a>`,

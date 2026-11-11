@@ -8,6 +8,7 @@ the special cases – also for cards with a visual editor.
 | Card | Layouts | Page | Status |
 |---|---|---|---|
 | graphite-panel | – | [graphite-panel.md](graphite-panel.md) | ready |
+| graphite-dialog | – | [graphite-dialog.md](graphite-dialog.md) | ready |
 | graphite-status | row | [graphite-status.md](graphite-status.md) | ready |
 | graphite-switch | row, tile | [graphite-switch.md](graphite-switch.md) | ready |
 | graphite-meter | tile, row | [graphite-meter.md](graphite-meter.md) | ready (row in test) |

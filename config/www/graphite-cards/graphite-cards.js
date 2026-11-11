@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.51.0";
+var version = "0.52.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13488,7 +13488,7 @@ var GraphiteDialogLayer = class {
   }
   get mountPoint() {
     const root = this.lovelaceRoot;
-    return root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot ?? null;
+    return root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot ?? document.body;
   }
   show(config, hash, openedByNavigation) {
     const mount = this.mountPoint;

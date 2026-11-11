@@ -151,8 +151,9 @@ class GraphiteDialogLayer {
 
   private get mountPoint(): ParentNode | null {
     const root = this.lovelaceRoot;
-    // inside the view container, so card actions reach Home Assistant; hui-root as fallback
-    return root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot ?? null;
+    // inside the view container, so card actions reach Home Assistant; hui-root as fallback;
+    // outside a dashboard (e.g. the showcase) the page itself
+    return root?.shadowRoot?.querySelector("#view") ?? root?.shadowRoot ?? document.body;
   }
 
   private show(config: DialogConfig, hash: string, openedByNavigation: boolean): void {
