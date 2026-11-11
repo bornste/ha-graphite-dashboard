@@ -20,6 +20,15 @@ export interface PanelChipConfig {
   tap_action?: ActionConfig | "none";
 }
 
+// one part of the status line: shown while its condition is met (default: value above 0)
+export interface PanelSummaryPart {
+  entity: string;
+  text?: string;
+  text_one?: string;
+  color?: string;
+  show?: ValueCondition;
+}
+
 // round button on the right of the header (e.g. "lights off", settings); highlighted while active
 export interface PanelButtonConfig {
   icon?: string;
@@ -33,6 +42,8 @@ export interface PanelConfig extends GraphiteCardConfig {
   title?: string;
   info?: string;
   info_alert?: ValueCondition;
+  summary?: PanelSummaryPart[];
+  summary_empty?: string;
   chips?: PanelChipConfig[];
   buttons?: PanelButtonConfig[];
   layout: "vertical" | "horizontal" | "grid";
@@ -45,6 +56,12 @@ export interface PanelConfig extends GraphiteCardConfig {
 }
 
 const layouts = ["vertical", "horizontal", "grid"];
+const summaryColors: Record<string, string> = {
+  accent: "var(--graphite-accent)",
+  success: "var(--graphite-success)",
+  danger: "var(--graphite-danger)",
+  secondary: "var(--graphite-text-secondary)",
+};
 
 export class GraphitePanel extends GraphiteCard<PanelConfig> {
   static styles = css`
@@ -163,6 +180,10 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     /* info_alert condition met: info in accent color */
     .info.alert {
       color: var(--graphite-accent, var(--accent-color));
+      font-weight: 500;
+    }
+    /* colored parts of the summary: same weight as the highlighted status */
+    .info b {
       font-weight: 500;
     }
     /* values as pills on the right; the negative margin keeps the header at title height */
@@ -288,6 +309,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       if (button.active?.entity) entities.push(button.active.entity);
     }
     if (this.config?.info_alert?.entity) entities.push(this.config.info_alert.entity);
+    for (const part of this.summaryParts()) entities.push(part.entity);
     return entities;
   }
 
@@ -325,6 +347,26 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
     return html`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
       aria-label=${label} @click=${(event: Event) => this.buttonClick(event, button)}><ha-ripple></ha-ripple>${icon}</button>`;
+  }
+
+  private summaryParts(): PanelSummaryPart[] {
+    return Array.isArray(this.config?.summary) ? this.config!.summary.filter((part) => part?.entity) : [];
+  }
+
+  // status from parts: "1 offline · 2 kritisch"; parts whose condition is not met are left out
+  private renderSummary() {
+    const shown = this.summaryParts().flatMap((part) => {
+      const state = this.hass?.states[part.entity]?.state;
+      if (!matchesCondition(part.show ?? { above: 0 }, state)) return [];
+      const number = Number(state);
+      const value = state !== "" && Number.isFinite(number) ? String(Math.round(number)) : String(state);
+      const template = number === 1 && part.text_one ? part.text_one : part.text ?? "{value}";
+      const text = template.split("{value}").join(value);
+      const color = part.color ? summaryColors[part.color] ?? part.color : "";
+      return [color ? html`<b style=${`color: ${color}`}>${text}</b>` : html`<span>${text}</span>`];
+    });
+    if (!shown.length) return this.config?.summary_empty ?? "";
+    return shown.map((part, index) => (index ? html` · ${part}` : part));
   }
 
   private chipConfigs(): PanelChipConfig[] {
@@ -426,13 +468,15 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
   protected render() {
     const config = this.config!;
     const chips = this.chipConfigs();
-    const info = isTemplate(config.info) ? this.infoText : config.info || "";
+    // summary replaces info; an empty summary (no part shown, no summary_empty) hides the status
+    const info = this.summaryParts().length ? this.renderSummary()
+      : isTemplate(config.info) ? this.infoText : config.info || "";
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : undefined;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
     const buttons = this.buttonConfigs();
     // a container (e.g. graphite-dialog) can add its own header buttons through the "actions" slot
     const hasActions = !!this.querySelector(":scope > [slot=actions]");
-    const showHeader = !!(config.title || config.info || chips.length || buttons.length || hasActions);
+    const showHeader = !!(config.title || config.info || this.summaryParts().length || chips.length || buttons.length || hasActions);
     // columns and min_column_width apply to this panel only (set on this panel only, not inherited)
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.47.1";
+var version = "0.48.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3497,6 +3497,12 @@ var GraphitePanelEditor = class extends HTMLElement {
 
 // src/cards/graphite-panel.ts
 var layouts = ["vertical", "horizontal", "grid"];
+var summaryColors = {
+  accent: "var(--graphite-accent)",
+  success: "var(--graphite-success)",
+  danger: "var(--graphite-danger)",
+  secondary: "var(--graphite-text-secondary)"
+};
 var GraphitePanel = class extends GraphiteCard {
   constructor() {
     super(...arguments);
@@ -3529,6 +3535,7 @@ var GraphitePanel = class extends GraphiteCard {
       if (button.active?.entity) entities.push(button.active.entity);
     }
     if (this.config?.info_alert?.entity) entities.push(this.config.info_alert.entity);
+    for (const part of this.summaryParts()) entities.push(part.entity);
     return entities;
   }
   connectedCallback() {
@@ -3556,6 +3563,24 @@ var GraphitePanel = class extends GraphiteCard {
     const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
     return b2`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
       aria-label=${label} @click=${(event) => this.buttonClick(event, button)}><ha-ripple></ha-ripple>${icon}</button>`;
+  }
+  summaryParts() {
+    return Array.isArray(this.config?.summary) ? this.config.summary.filter((part) => part?.entity) : [];
+  }
+  // status from parts: "1 offline · 2 kritisch"; parts whose condition is not met are left out
+  renderSummary() {
+    const shown = this.summaryParts().flatMap((part) => {
+      const state = this.hass?.states[part.entity]?.state;
+      if (!matchesCondition(part.show ?? { above: 0 }, state)) return [];
+      const number = Number(state);
+      const value = state !== "" && Number.isFinite(number) ? String(Math.round(number)) : String(state);
+      const template = number === 1 && part.text_one ? part.text_one : part.text ?? "{value}";
+      const text = template.split("{value}").join(value);
+      const color = part.color ? summaryColors[part.color] ?? part.color : "";
+      return [color ? b2`<b style=${`color: ${color}`}>${text}</b>` : b2`<span>${text}</span>`];
+    });
+    if (!shown.length) return this.config?.summary_empty ?? "";
+    return shown.map((part, index) => index ? b2` · ${part}` : part);
   }
   chipConfigs() {
     return Array.isArray(this.config?.chips) ? this.config.chips.filter((chip) => chip?.entity) : [];
@@ -3642,12 +3667,12 @@ var GraphitePanel = class extends GraphiteCard {
   render() {
     const config = this.config;
     const chips = this.chipConfigs();
-    const info = isTemplate(config.info) ? this.infoText : config.info || "";
+    const info = this.summaryParts().length ? this.renderSummary() : isTemplate(config.info) ? this.infoText : config.info || "";
     const alertState = config.info_alert?.entity ? this.hass?.states[config.info_alert.entity]?.state : void 0;
     const infoClass = matchesCondition(config.info_alert, alertState) ? "info alert" : "info";
     const buttons = this.buttonConfigs();
     const hasActions = !!this.querySelector(":scope > [slot=actions]");
-    const showHeader = !!(config.title || config.info || chips.length || buttons.length || hasActions);
+    const showHeader = !!(config.title || config.info || this.summaryParts().length || chips.length || buttons.length || hasActions);
     let columns = "";
     if (config.min_column_width) columns = `repeat(auto-fit, minmax(min(${config.min_column_width}, 100%), 1fr))`;
     else if (config.columns) columns = `repeat(${Number(config.columns)}, minmax(0, 1fr))`;
@@ -3795,6 +3820,10 @@ GraphitePanel.styles = i`
     /* info_alert condition met: info in accent color */
     .info.alert {
       color: var(--graphite-accent, var(--accent-color));
+      font-weight: 500;
+    }
+    /* colored parts of the summary: same weight as the highlighted status */
+    .info b {
       font-weight: 500;
     }
     /* values as pills on the right; the negative margin keeps the header at title height */
@@ -12821,6 +12850,8 @@ var GraphiteDialog = class extends GraphiteCard {
       title: config.title,
       info: config.info,
       info_alert: config.info_alert,
+      summary: config.summary,
+      summary_empty: config.summary_empty,
       chips: config.chips,
       buttons: config.buttons,
       layout: config.layout ?? "vertical",

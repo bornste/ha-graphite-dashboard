@@ -8,13 +8,15 @@ import { GraphiteCard } from "../core/graphite-card";
 import { registerCard } from "../core/register";
 import type { GraphiteCardConfig, HomeAssistant } from "../core/types";
 import type { ValueCondition } from "../core/conditions";
-import type { PanelButtonConfig, PanelChipConfig } from "./graphite-panel";
+import type { PanelButtonConfig, PanelChipConfig, PanelSummaryPart } from "./graphite-panel";
 
 export interface DialogConfig extends GraphiteCardConfig {
   hash: string;
   title?: string;
   info?: string;
   info_alert?: ValueCondition;
+  summary?: PanelSummaryPart[];
+  summary_empty?: string;
   chips?: PanelChipConfig[];
   buttons?: PanelButtonConfig[];
   // width on large screens; on small screens the dialog takes the full width
@@ -178,6 +180,8 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       title: config.title,
       info: config.info,
       info_alert: config.info_alert,
+      summary: config.summary,
+      summary_empty: config.summary_empty,
       chips: config.chips,
       buttons: config.buttons,
       layout: config.layout ?? "vertical",

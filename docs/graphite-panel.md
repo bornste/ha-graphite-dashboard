@@ -28,8 +28,36 @@ the header is as high as the buttons (36px); title and status stay centered on o
 | `title` | string | – | Title on the left (theme title style). |
 | `info` | string | – | Status after the title, separated by a thin line. Plain text or a Jinja template (`{{ }}` / `{% %}`), rendered live in Home Assistant. An empty result hides the status and its line. |
 | `info_alert` | condition | – | Shows the status in the accent color while the condition is met (see *Conditions*). Needs `entity`. |
+| `summary` | list | – | Status built from parts, e.g. "1 offline · 2 critical", see below. Replaces `info`. |
+| `summary_empty` | string | – | Status while no `summary` part is shown, e.g. "All fine". Without it the status is hidden. |
 | `chips` | list | – | Values as pills on the right, in list order (left to right), see below. |
 | `buttons` | list | – | Buttons at the far right (44 × 36px), e.g. "lights off" and settings of a room, see below. |
+
+### Summary
+
+Each part shows the value of an entity in a short text; the shown parts are joined with " · ".
+No template is needed, so the status updates without a server subscription.
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `entity` | entity id | – | Entity whose state is `{value}` (numbers are rounded). |
+| `text` | string | `{value}` | Text of the part, e.g. `{value} offline`. |
+| `text_one` | string | – | Text while the value is exactly 1, e.g. `1 light on`. |
+| `color` | string | – | `accent`, `success`, `danger`, `secondary` or any CSS color. Colored parts are set in medium weight. |
+| `show` | condition | `{ above: 0 }` | The part is shown while this condition is met (see *Conditions*). |
+
+```yaml
+summary:
+  - entity: sensor.batteries_offline
+    text: "{value} offline"
+    color: danger
+  - entity: sensor.batteries_critical
+    text: "{value} critical"
+    color: accent
+  - entity: sensor.batteries_low
+    text: "{value} soon"
+summary_empty: All fine
+```
 
 ### Chips
 
@@ -73,8 +101,11 @@ A room with scene tiles ([graphite-scene](graphite-scene.md)):
 ```yaml
 type: custom:graphite-panel
 title: Wohnen
-info: "{% from 'graphite.jinja' import lightStatus %}{{ lightStatus('sensor.living_room_lights_on') }}"
-info_alert: { entity: sensor.living_room_lights_on, above: 0 }
+summary:
+  - entity: sensor.living_room_lights_on
+    text: "{value} lights on"
+    text_one: "1 light on"
+    color: accent
 buttons:
   - entity: scene.living_room_off
     name: Licht aus
@@ -94,7 +125,7 @@ cards:
 
 ### Conditions
 
-Used by `info_alert`, the chip `alert` and the button `active`. All given parts must match; an unavailable or
+Used by `info_alert`, the summary `show`, the chip `alert` and the button `active`. All given parts must match; an unavailable or
 unknown state never matches.
 
 | Key | Description |
