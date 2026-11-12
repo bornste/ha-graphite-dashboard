@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.53.0";
+var version = "0.53.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13548,10 +13548,19 @@ var GraphiteDialogLayer = class {
     dialog.enableClose(sheet);
     dialog.addEventListener("graphite-dialog-close", () => close());
     shadow.append(dialog);
-    host.addEventListener("click", (event) => {
+    const isBackdrop = (event) => {
       const target = event.composedPath()[0];
-      if (performance.now() - this.dragEndedAt < 300) return;
-      if (target === host || target === dialog) close();
+      return target === host || target === dialog;
+    };
+    let pressedOnBackdrop = false;
+    host.addEventListener("pointerdown", (event) => {
+      pressedOnBackdrop = isBackdrop(event);
+    });
+    host.addEventListener("click", (event) => {
+      const pressed = pressedOnBackdrop;
+      pressedOnBackdrop = false;
+      if (!pressed || performance.now() - this.dragEndedAt < 300) return;
+      if (isBackdrop(event)) close();
     });
     if (sheet) this.attachDrag(host, dialog, close);
     mount.append(host);

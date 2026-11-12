@@ -224,12 +224,24 @@ class GraphiteDialogLayer {
     dialog.enableClose(sheet);
     dialog.addEventListener("graphite-dialog-close", () => close());
     shadow.append(dialog);
-    // a click on the backdrop (outside the dialog box) closes it
-    host.addEventListener("click", (event) => {
+    // A tap on the backdrop (outside the dialog box) closes it – only when the tap also started
+    // there. A dialog opened by a tap appears under the finger before the browser sends the click
+    // of that same tap; without this check that click would land on the new backdrop and close
+    // the dialog right away (tiles outside the dialog box, bottom sheet on phones).
+    const isBackdrop = (event: Event) => {
       const target = event.composedPath()[0];
-      // the click that ends a drag of the sheet is not a click on the backdrop
-      if (performance.now() - this.dragEndedAt < 300) return;
-      if (target === host || target === dialog) close();
+      return target === host || target === dialog;
+    };
+    let pressedOnBackdrop = false;
+    host.addEventListener("pointerdown", (event) => {
+      pressedOnBackdrop = isBackdrop(event);
+    });
+    host.addEventListener("click", (event) => {
+      const pressed = pressedOnBackdrop;
+      pressedOnBackdrop = false;
+      // the click that ends a drag of the sheet is not a click on the backdrop either
+      if (!pressed || performance.now() - this.dragEndedAt < 300) return;
+      if (isBackdrop(event)) close();
     });
     if (sheet) this.attachDrag(host, dialog, close);
     mount.append(host);
