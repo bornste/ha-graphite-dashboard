@@ -21,6 +21,7 @@ a library of Lovelace cards built for it (TypeScript + Lit, bundled into one fil
 | `config/themes/graphite/` | The Graphite theme |
 | `docs/` | One page per card: options, behaviour, examples |
 | `showcase/` | Showcase page with sample data (published to GitHub Pages) |
+| `tools/wallpaper.py` | Generates the Graphite Glass wallpaper (Python: numpy, pillow, scipy) |
 
 ## Installation
 
