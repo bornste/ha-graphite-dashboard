@@ -1,6 +1,7 @@
 // Styles of the meter tile: name on top, value (and secondary value) above a 4px instrument bar
 // in the footer, optional watermark icon top right. Geometry follows the former Bubble meter tile.
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const meterStyles = css`
   /* offline (like the switch tile): the surface fades (tile styles), value and bar at 40 %, the
@@ -271,6 +272,7 @@ export const meterRowStyles = css`
     font-size: var(--graphite-font-name-size, 15px);
     font-weight: 400;
   }
+  ${tileEdgeStyles(".row")}
 `;
 
 // Style "change" (tile and row): the needle in the middle marks the reference, the bar runs from there

@@ -7,7 +7,7 @@
 # A light or tinted variant only overrides the base inputs (see examples at the end).
 Graphite: &graphite
   modes:
-    dark:
+    dark: &graphiteDark
       # 1. base inputs
       graphite-ground: "#0a0a0b"
       graphite-ink: "#f3f3f4"
@@ -92,6 +92,23 @@ Graphite: &graphite
       ha-view-sections-column-gap: var(--graphite-gap-panel)
       ha-dialog-surface-background: var(--graphite-surface-panel)
 
+
+# Graphite Glass: Graphite on a lighter ground with a wallpaper; the outer panels are translucent with
+# a blur behind (inner panels and tiles stay solid), the tiles get a fine light edge from the top left.
+# Needs the wallpaper in /config/www/images/graphite/ (tools/wallpaper.py generates it).
+Graphite Glass:
+  modes:
+    dark:
+      <<: *graphiteDark
+      graphite-ground: "#1d1d20"
+      # grey texts mixed a bit lighter, so labels stay readable on the lighter ground
+      graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 66%, var(--graphite-ground))"
+      graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 46%, var(--graphite-ground))"
+      lovelace-background: "center / cover no-repeat url(/local/images/graphite/graphite-glass-wallpaper.webp)"
+      graphite-panel-outer-surface: "color-mix(in srgb, var(--graphite-surface-panel) 62%, transparent)"
+      graphite-panel-backdrop: blur(28px)
+      graphite-edge-show: '""'
+      graphite-tile-edge: "radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, var(--graphite-ink) 16%, transparent), transparent 60%), radial-gradient(30% 24% at 0% 100%, color-mix(in srgb, var(--graphite-ink) 5%, transparent), transparent 70%)"
 
 # Variant examples (not active):
 # tinted dark - only the ground changes, all surfaces follow:

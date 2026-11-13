@@ -8,6 +8,7 @@ import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { GraphiteCardConfig, HassEntity } from "../../core/types";
 import { GraphiteNowPlayingEditor } from "./graphite-now-playing-editor";
+import { tileEdgeStyles } from "../../core/edge";
 
 export interface NowPlayingSource {
   entity: string;
@@ -193,6 +194,7 @@ export class GraphiteNowPlaying extends GraphiteCard<NowPlayingConfig> {
       border-radius: 2px;
       background: var(--graphite-accent);
     }
+    ${tileEdgeStyles(".card")}
   `;
 
   private refreshTimer?: number;

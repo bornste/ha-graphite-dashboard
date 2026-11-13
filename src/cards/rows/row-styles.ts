@@ -1,6 +1,7 @@
 // Shared styles of the status and switch rows: full-width row, icon left, name with a "since" line,
 // value or toggle on the right. Geometry follows the former Bubble rows (icon box 42px, text at 60px).
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const rowStyles = css`
   :host {
@@ -168,4 +169,5 @@ export const rowStyles = css`
       opacity: 0.6;
     }
   }
+  ${tileEdgeStyles(".row")}
 `;

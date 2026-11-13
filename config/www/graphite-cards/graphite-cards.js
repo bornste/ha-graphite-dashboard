@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.53.1";
+var version = "0.54.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3022,6 +3022,35 @@ GraphiteCard.properties = {
   config: { state: true }
 };
 
+// src/core/edge.ts
+var edgeMask = i`
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+`;
+function tileEdgeStyles(selectors, pseudo = "before") {
+  const roots = selectors.split(",").map((selector) => selector.trim()).filter(Boolean);
+  const rootList = r(roots.join(", "));
+  const pseudoList = r(roots.map((selector) => `${selector}::${pseudo}`).join(", "));
+  return i`
+    ${rootList} {
+      position: relative;
+    }
+    ${pseudoList} {
+      content: var(--graphite-edge-show, none);
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      padding: 1px;
+      border-radius: inherit;
+      background: var(--graphite-tile-edge, none);
+      pointer-events: none;
+      ${edgeMask}
+    }
+  `;
+}
+
 // src/core/actions.ts
 var holdDelay = 500;
 var doubleTapDelay = 250;
@@ -3638,6 +3667,19 @@ var GraphitePanel = class extends GraphiteCard {
   connectedCallback() {
     super.connectedCallback();
     this.subscribeInfo();
+    this.toggleAttribute("outer", this.isOuter());
+    this.requestUpdate();
+  }
+  // outer: no framed panel and no dialog around it (frameless panels are only layout containers)
+  isOuter() {
+    let node = this;
+    for (let depth = 0; depth < 60 && node; depth++) {
+      node = node instanceof ShadowRoot ? node.host : node.parentNode;
+      if (!(node instanceof HTMLElement)) continue;
+      if (node.localName === "graphite-dialog") return false;
+      if (node.localName === "graphite-panel" && node.config?.frame !== false) return false;
+    }
+    return true;
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -3789,7 +3831,8 @@ var GraphitePanel = class extends GraphiteCard {
     ].filter(Boolean).join("; ");
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
-    return b2`<ha-card part="card" style=${cardStyle}>${showHeader ? b2`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
+    const edge = this.hasAttribute("outer") && config.frame !== false ? b2`<span class="edge"></span>` : A;
+    return b2`<ha-card part="card" style=${cardStyle}>${edge}${showHeader ? b2`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}${hasActions ? b2`<slot name="actions"></slot>` : A}</span>` : A}</div>` : A}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;
   }
   getCardSize() {
@@ -4008,6 +4051,25 @@ GraphitePanel.styles = i`
       padding: 0;
       border-radius: 0;
     }
+    /* outer panel (directly in the view, not inside another panel or a dialog): the theme can make it
+       translucent with a blur behind and give it a light edge; inner panels stay solid */
+    :host([outer]:not([frameless])) ha-card {
+      position: relative;
+      background: var(--graphite-panel-outer-surface, var(--graphite-surface-panel));
+      -webkit-backdrop-filter: var(--graphite-panel-backdrop, none);
+      backdrop-filter: var(--graphite-panel-backdrop, none);
+    }
+    .edge {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      padding: 1px;
+      border-radius: var(--graphite-radius-panel);
+      background: var(--graphite-panel-edge, none);
+      pointer-events: none;
+      ${edgeMask}
+    }
   `;
 registerElement("graphite-panel-editor", GraphitePanelEditor);
 registerCard("graphite-panel", GraphitePanel, {
@@ -4187,6 +4249,7 @@ var rowStyles = i`
       opacity: 0.6;
     }
   }
+  ${tileEdgeStyles(".row")}
 `;
 
 // src/cards/rows/graphite-row.ts
@@ -4819,6 +4882,7 @@ var tileStyles = i`
       opacity: 0.6;
     }
   }
+  ${tileEdgeStyles(".tile")}
 `;
 
 // src/cards/rows/graphite-switch.ts
@@ -5224,6 +5288,7 @@ var meterRowStyles = i`
     font-size: var(--graphite-font-name-size, 15px);
     font-weight: 400;
   }
+  ${tileEdgeStyles(".row")}
 `;
 var meterChangeStyles = i`
   :is(.tile, .row).change .bar {
@@ -7478,6 +7543,7 @@ GraphiteNowPlaying.styles = i`
       border-radius: 2px;
       background: var(--graphite-accent);
     }
+    ${tileEdgeStyles(".card")}
   `;
 registerElement("graphite-now-playing-editor", GraphiteNowPlayingEditor);
 registerCard("graphite-now-playing", GraphiteNowPlaying, {
@@ -9209,6 +9275,8 @@ var calendarStyles = i`
     line-height: 18px;
     color: var(--graphite-text-muted);
   }
+  ${tileEdgeStyles(".event", "after")}
+  ${tileEdgeStyles(".compactDay, .tile")}
 `;
 
 // src/cards/lists/graphite-calendar-editor.ts
@@ -10616,6 +10684,7 @@ var shoppingStyles = i`
     outline: 2px solid var(--shopAccent);
     outline-offset: 1px;
   }
+  ${tileEdgeStyles(".item")}
 `;
 
 // src/cards/lists/graphite-shopping.ts
@@ -11217,6 +11286,7 @@ var batteryStyles = i`
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
+  ${tileEdgeStyles(".row, .item")}
 `;
 
 // src/cards/lists/graphite-battery-editor.ts
@@ -11812,6 +11882,7 @@ var timelineStyles = i`
     line-height: 26px;
     color: var(--graphite-text-muted);
   }
+  ${tileEdgeStyles(".chart")}
 `;
 
 // src/cards/lists/graphite-timeline.ts
@@ -12719,6 +12790,7 @@ GraphiteSlider.styles = i`
     :host([inactive]) .value {
       opacity: 0.5;
     }
+    ${tileEdgeStyles(".row")}
   `;
 registerElement("graphite-slider-editor", GraphiteSliderEditor);
 registerCard("graphite-slider", GraphiteSlider, {
@@ -12980,7 +13052,7 @@ var GraphiteDialog = class extends GraphiteCard {
     const style = config.width ? `--dialogWidth: ${config.width}` : "";
     return b2`${layered ? A : b2`<div class="hash">${config.hash}</div>`}<div class="dialog" style=${style}
       role=${layered ? "dialog" : A} aria-modal=${layered ? "true" : A} aria-label=${config.title ?? A}
-      tabindex=${layered ? "-1" : A}>${this.hasAttribute("sheet") ? b2`<div class="handle"></div>` : A}${this.panel}</div>`;
+      tabindex=${layered ? "-1" : A}>${layered ? b2`<span class="edge"></span>` : A}${this.hasAttribute("sheet") ? b2`<div class="handle"></div>` : A}${this.panel}</div>`;
   }
   getCardSize() {
     return 1 + (this.config?.cards?.length ?? 0);
@@ -13031,10 +13103,23 @@ GraphiteDialog.styles = i`
       padding: 0;
       overflow: hidden;
       outline: none;
-      background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent);
+      position: relative;
+      /* theme tokens: surface, the light line on top and an optional gradient edge (.edge) */
+      background: var(--graphite-dialog-surface, color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent));
       -webkit-backdrop-filter: blur(24px) saturate(1.2);
       backdrop-filter: blur(24px) saturate(1.2);
-      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent);
+      box-shadow: var(--graphite-dialog-highlight, inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent));
+    }
+    .edge {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      box-sizing: border-box;
+      padding: 1px;
+      border-radius: inherit;
+      background: var(--graphite-dialog-edge, none);
+      pointer-events: none;
+      ${edgeMask}
     }
     :host([layered]) graphite-panel {
       display: flex;

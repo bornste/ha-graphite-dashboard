@@ -1,6 +1,7 @@
 // Styles of graphite-shopping (1:1 port of the former shopping card): list column with input and
 // items, quick pick column with chip groups and the variant chooser as overlay.
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const shoppingStyles = css`
   :host {
@@ -289,4 +290,5 @@ export const shoppingStyles = css`
     outline: 2px solid var(--shopAccent);
     outline-offset: 1px;
   }
+  ${tileEdgeStyles(".item")}
 `;

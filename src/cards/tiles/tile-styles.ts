@@ -2,6 +2,7 @@
 // toggle top left, offline badge top right. Geometry follows the former Bubble switch tile
 // (80px high, 12px inset (--graphite-padding-tile), name 13/18px with 9px to the bottom edge, 34px watermark 9px from the right edge, so a full glyph sits on the 12px padding line).
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const tileStyles = css`
   :host {
@@ -148,4 +149,5 @@ export const tileStyles = css`
       opacity: 0.6;
     }
   }
+  ${tileEdgeStyles(".tile")}
 `;

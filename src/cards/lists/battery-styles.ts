@@ -1,6 +1,7 @@
 // Styles of graphite-battery (1:1 port of the former battery card): one panel per group, large rows
 // for batteries that need attention, compact tiles for the batteries in order.
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const batteryStyles = css`
   :host {
@@ -244,4 +245,5 @@ export const batteryStyles = css`
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
+  ${tileEdgeStyles(".row, .item")}
 `;

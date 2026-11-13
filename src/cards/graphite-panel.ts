@@ -3,6 +3,7 @@
 // Child cards become tiles through context tokens (--graphite-card-surface, ...).
 import { css, html, nothing, type PropertyValues } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
+import { edgeMask } from "../core/edge";
 import { fireAction } from "../core/actions";
 import { unavailableStates } from "../core/format";
 import { matchesCondition, type ValueCondition } from "../core/conditions";
@@ -280,6 +281,25 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       padding: 0;
       border-radius: 0;
     }
+    /* outer panel (directly in the view, not inside another panel or a dialog): the theme can make it
+       translucent with a blur behind and give it a light edge; inner panels stay solid */
+    :host([outer]:not([frameless])) ha-card {
+      position: relative;
+      background: var(--graphite-panel-outer-surface, var(--graphite-surface-panel));
+      -webkit-backdrop-filter: var(--graphite-panel-backdrop, none);
+      backdrop-filter: var(--graphite-panel-backdrop, none);
+    }
+    .edge {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      padding: 1px;
+      border-radius: var(--graphite-radius-panel);
+      background: var(--graphite-panel-edge, none);
+      pointer-events: none;
+      ${edgeMask}
+    }
   `;
 
   private childCards: any[] = [];
@@ -323,6 +343,20 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
   connectedCallback(): void {
     super.connectedCallback();
     this.subscribeInfo();
+    this.toggleAttribute("outer", this.isOuter());
+    this.requestUpdate();
+  }
+
+  // outer: no framed panel and no dialog around it (frameless panels are only layout containers)
+  private isOuter(): boolean {
+    let node: Node | null = this;
+    for (let depth = 0; depth < 60 && node; depth++) {
+      node = node instanceof ShadowRoot ? node.host : node.parentNode;
+      if (!(node instanceof HTMLElement)) continue;
+      if (node.localName === "graphite-dialog") return false;
+      if (node.localName === "graphite-panel" && (node as GraphitePanel).config?.frame !== false) return false;
+    }
+    return true;
   }
 
   disconnectedCallback(): void {
@@ -504,7 +538,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     ].filter(Boolean).join("; ");
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
-    return html`<ha-card part="card" style=${cardStyle}>${showHeader
+    const edge = this.hasAttribute("outer") && config.frame !== false ? html`<span class="edge"></span>` : nothing;
+    return html`<ha-card part="card" style=${cardStyle}>${edge}${showHeader
       ? html`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? html`<span class="buttons">${buttons
         .map((button) => this.renderButton(button))}${hasActions ? html`<slot name="actions"></slot>` : nothing}</span>` : nothing}</div>`

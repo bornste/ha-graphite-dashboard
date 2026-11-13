@@ -1,6 +1,7 @@
 // Styles of graphite-timeline: period picker (like the panel buttons), the chart on a tile surface
 // with name, bar track and total per row, the time axis and the info line below.
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const timelineStyles = css`
   :host {
@@ -168,4 +169,5 @@ export const timelineStyles = css`
     line-height: 26px;
     color: var(--graphite-text-muted);
   }
+  ${tileEdgeStyles(".chart")}
 `;

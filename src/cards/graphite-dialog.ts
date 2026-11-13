@@ -5,6 +5,7 @@
 // a copy of it above the current view. Header like graphite-panel: title, status, chips, buttons.
 import { css, html, nothing } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
+import { edgeMask } from "../core/edge";
 import { registerCard, registerElement } from "../core/register";
 import type { GraphiteCardConfig, HomeAssistant } from "../core/types";
 import { loadStackCardEditor, type PanelButtonConfig, type PanelChipConfig, type PanelSummaryPart } from "./graphite-panel";
@@ -70,10 +71,23 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       padding: 0;
       overflow: hidden;
       outline: none;
-      background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent);
+      position: relative;
+      /* theme tokens: surface, the light line on top and an optional gradient edge (.edge) */
+      background: var(--graphite-dialog-surface, color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent));
       -webkit-backdrop-filter: blur(24px) saturate(1.2);
       backdrop-filter: blur(24px) saturate(1.2);
-      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent);
+      box-shadow: var(--graphite-dialog-highlight, inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent));
+    }
+    .edge {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      box-sizing: border-box;
+      padding: 1px;
+      border-radius: inherit;
+      background: var(--graphite-dialog-edge, none);
+      pointer-events: none;
+      ${edgeMask}
     }
     :host([layered]) graphite-panel {
       display: flex;
@@ -234,7 +248,8 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
     const style = config.width ? `--dialogWidth: ${config.width}` : "";
     return html`${layered ? nothing : html`<div class="hash">${config.hash}</div>`}<div class="dialog" style=${style}
       role=${layered ? "dialog" : nothing} aria-modal=${layered ? "true" : nothing} aria-label=${config.title ?? nothing}
-      tabindex=${layered ? "-1" : nothing}>${this.hasAttribute("sheet") ? html`<div class="handle"></div>` : nothing}${this.panel}</div>`;
+      tabindex=${layered ? "-1" : nothing}>${layered ? html`<span class="edge"></span>` : nothing}${this.hasAttribute("sheet")
+      ? html`<div class="handle"></div>` : nothing}${this.panel}</div>`;
   }
 
   getCardSize(): number {

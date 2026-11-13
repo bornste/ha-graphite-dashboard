@@ -10,6 +10,7 @@ import { isUnavailable } from "../../core/format";
 import { registerCard, registerElement } from "../../core/register";
 import type { GraphiteCardConfig, HassEntity } from "../../core/types";
 import { GraphiteSliderEditor } from "./graphite-slider-editor";
+import { tileEdgeStyles } from "../../core/edge";
 
 export type LightAttribute = "brightness" | "color_temp" | "hue" | "saturation";
 
@@ -137,6 +138,7 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
     :host([inactive]) .value {
       opacity: 0.5;
     }
+    ${tileEdgeStyles(".row")}
   `;
 
   private dragValue?: number;

@@ -2,6 +2,7 @@
 // 42px, text at 60px) with a short stripe in the calendar color, the header of the week range, the
 // compact layout (one block per day) and the tiles layout.
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const calendarStyles = css`
   :host {
@@ -428,4 +429,6 @@ export const calendarStyles = css`
     line-height: 18px;
     color: var(--graphite-text-muted);
   }
+  ${tileEdgeStyles(".event", "after")}
+  ${tileEdgeStyles(".compactDay, .tile")}
 `;
