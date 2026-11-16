@@ -104,11 +104,58 @@ Graphite Glass:
       # grey texts mixed a bit lighter, so labels stay readable on the lighter ground
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 66%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 46%, var(--graphite-ground))"
-      lovelace-background: "center / cover no-repeat url(/local/images/graphite/graphite-glass-wallpaper.webp)"
+      # wallpaper, dimmed by a layer of the ground colour: 0% = full image, 100% = only the ground
+      graphite-wallpaper-dim: 50%
+      lovelace-background: "linear-gradient(color-mix(in srgb, var(--graphite-ground) var(--graphite-wallpaper-dim), transparent) 0 0), center / cover no-repeat url(/local/images/graphite/graphite-glass-wallpaper.webp)"
       graphite-panel-outer-surface: "color-mix(in srgb, var(--graphite-surface-panel) 62%, transparent)"
       graphite-panel-backdrop: blur(28px)
       graphite-edge-show: '""'
       graphite-tile-edge: "radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, var(--graphite-ink) 16%, transparent), transparent 60%), radial-gradient(30% 24% at 0% 100%, color-mix(in srgb, var(--graphite-ink) 5%, transparent), transparent 70%)"
+
+# Graphite Salvia: bottle green ground, pebble text, yellow accent
+Graphite Salvia:
+  modes:
+    dark:
+      <<: *graphiteDark
+      graphite-ground: "#16302A"
+      graphite-ink: "#EEEDEA"
+      graphite-ink-rgb: 238, 237, 234
+      graphite-accent: "#FFC400"
+      graphite-accent-ink: "#2E2300"
+      # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
+      graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 57%, var(--graphite-ground))"
+      graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 43%, var(--graphite-ground))"
+      graphite-tint-active: 25%
+
+# Graphite Midnight: blue black ground, warm ivory text, amber accent
+Graphite Midnight:
+  modes:
+    dark:
+      <<: *graphiteDark
+      graphite-ground: "#0E1219"
+      graphite-ink: "#EFE6D2"
+      graphite-ink-rgb: 239, 230, 210
+      graphite-accent: "#FFB000"
+      graphite-accent-ink: "#2E2000"
+      # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
+      graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 55%, var(--graphite-ground))"
+      graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 42%, var(--graphite-ground))"
+      graphite-tint-active: 25%
+
+# Graphite Carbon: carbon ground, titanium text, turquoise accent
+Graphite Carbon:
+  modes:
+    dark:
+      <<: *graphiteDark
+      graphite-ground: "#1B1C1F"
+      graphite-ink: "#D7D9DC"
+      graphite-ink-rgb: 215, 217, 220
+      graphite-accent: "#5ED3C3"
+      graphite-accent-ink: "#112623"
+      # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
+      graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 59%, var(--graphite-ground))"
+      graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 45%, var(--graphite-ground))"
+      graphite-tint-active: 25%
 
 # Variant examples (not active):
 # tinted dark - only the ground changes, all surfaces follow:
