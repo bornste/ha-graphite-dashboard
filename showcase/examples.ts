@@ -591,6 +591,51 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
+      title: "graphite-button",
+      description: `A plain button for any action: tile, row or compact icon button; optional active state and busy spinner.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-button.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Tiles",
+          note: "The racing game script runs (busy), the streaming script is ready; the floor lamp button is active and shows the lamp's own color.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Aktionen" : "Actions",
+            layout: "grid",
+            columns: 3,
+            cards: [
+              { type: "custom:graphite-button", entity: "script.start_racing_game", icon: "ic:twotone-sports-esports", busy: true },
+              { type: "custom:graphite-button", entity: "script.start_streaming", icon: "ic:twotone-live-tv", busy: true },
+              { type: "custom:graphite-button", entity: "light.floor_lamp", name: german ? "Stehlampe" : "Floor lamp", active: { state: "on" } },
+            ],
+          },
+        },
+        {
+          title: "Rows and icon buttons",
+          note: "Rows like the status rows; icon buttons like the panel header buttons, free to place – one navigates, one is active, one is busy.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Werkzeuge" : "Tools",
+            cards: [
+              { type: "custom:graphite-button", layout: "row", name: german ? "Themes neu laden" : "Reload themes", icon: "ic:twotone-palette", tap_action: { action: "none" } },
+              { type: "custom:graphite-button", layout: "row", entity: "script.start_racing_game", busy: true },
+              {
+                type: "custom:graphite-panel",
+                frame: false,
+                layout: "horizontal",
+                gap: "8px",
+                cards: [
+                  { type: "custom:graphite-button", layout: "icon", name: german ? "Batterien" : "Batteries", icon: "ic:twotone-battery-5-bar", tap_action: { action: "navigate", navigation_path: "#batteries" } },
+                  { type: "custom:graphite-button", layout: "icon", entity: "light.floor_lamp", active: { state: "on" } },
+                  { type: "custom:graphite-button", layout: "icon", entity: "script.start_racing_game", busy: true },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       title: "graphite-stopwatch",
       description: `Elapsed time of a Stopwatch Plus sensor, optional daily limit; picture or icon on the left.
         <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-stopwatch.md">Documentation</a>`,

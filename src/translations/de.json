@@ -249,6 +249,33 @@
       }
     }
   },
+  "button": {
+    "editor": {
+      "layout": "Darstellung",
+      "entity": "Entität",
+      "name": "Name",
+      "icon": "Icon",
+      "busy": "Läuft-Anzeige",
+      "active": "Aktiv wenn",
+      "tap_action": "Aktion beim Tippen",
+      "hold_action": "Aktion beim Halten",
+      "double_tap_action": "Aktion beim Doppeltippen",
+      "layouts": {
+        "tile": "Kachel",
+        "row": "Zeile",
+        "icon": "Icon-Knopf"
+      },
+      "helper": {
+        "layout": "Kachel wie die Schalter, Zeile wie die Status-Zeilen oder kompakter Knopf wie im Panel-Kopf.",
+        "entity": "Optional. Skript, Szene, Button und Automation werden gestartet, Schaltbares umgeschaltet, sonst More-Info.",
+        "name": "Standard: Name der Entität. Beim Icon-Knopf als Tooltip.",
+        "icon": "Standard: Icon der Entität.",
+        "busy": "Tönung und Kreisel, solange die Entität an ist (z.B. ein laufendes Skript).",
+        "active": "Füllt den Knopf mit dem Akzent, solange alle gesetzten Bedingungen zutreffen. Ohne Entität wird die Entität des Knopfs geprüft.",
+        "tap_action": "Standard je nach Entität: starten, umschalten oder More-Info."
+      }
+    }
+  },
   "stopwatch": {
     "running": "läuft",
     "paused": "pausiert",

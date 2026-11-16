@@ -249,6 +249,33 @@
       }
     }
   },
+  "button": {
+    "editor": {
+      "layout": "Layout",
+      "entity": "Entity",
+      "name": "Name",
+      "icon": "Icon",
+      "busy": "Busy indicator",
+      "active": "Active when",
+      "tap_action": "Tap action",
+      "hold_action": "Hold action",
+      "double_tap_action": "Double tap action",
+      "layouts": {
+        "tile": "Tile",
+        "row": "Row",
+        "icon": "Icon button"
+      },
+      "helper": {
+        "layout": "Tile like the switches, row like the status rows or a compact button like in the panel header.",
+        "entity": "Optional. Scripts, scenes, buttons and automations are started, switchable entities toggled, otherwise more-info.",
+        "name": "Default: name of the entity. Shown as tooltip on the icon button.",
+        "icon": "Default: icon of the entity.",
+        "busy": "Tint and spinner while the entity is on (e.g. a running script).",
+        "active": "Fills the button in the accent while all set conditions are met. Without an entity the button's entity is checked.",
+        "tap_action": "Default by entity: start, toggle or more-info."
+      }
+    }
+  },
   "stopwatch": {
     "running": "running",
     "paused": "paused",

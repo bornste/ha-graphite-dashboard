@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.58.0";
+var version = "0.59.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -800,6 +800,33 @@ var de_default = {
         name: "Beschriftung ohne Bild, sonst nur f\xFCr Screenreader.",
         image: "/local/... oder media-source://...",
         busy: "T\xF6nung und Kreisel, solange die Entit\xE4t an ist."
+      }
+    }
+  },
+  button: {
+    editor: {
+      layout: "Darstellung",
+      entity: "Entit\xE4t",
+      name: "Name",
+      icon: "Icon",
+      busy: "L\xE4uft-Anzeige",
+      active: "Aktiv wenn",
+      tap_action: "Aktion beim Tippen",
+      hold_action: "Aktion beim Halten",
+      double_tap_action: "Aktion beim Doppeltippen",
+      layouts: {
+        tile: "Kachel",
+        row: "Zeile",
+        icon: "Icon-Knopf"
+      },
+      helper: {
+        layout: "Kachel wie die Schalter, Zeile wie die Status-Zeilen oder kompakter Knopf wie im Panel-Kopf.",
+        entity: "Optional. Skript, Szene, Button und Automation werden gestartet, Schaltbares umgeschaltet, sonst More-Info.",
+        name: "Standard: Name der Entit\xE4t. Beim Icon-Knopf als Tooltip.",
+        icon: "Standard: Icon der Entit\xE4t.",
+        busy: "T\xF6nung und Kreisel, solange die Entit\xE4t an ist (z.B. ein laufendes Skript).",
+        active: "F\xFCllt den Knopf mit dem Akzent, solange alle gesetzten Bedingungen zutreffen. Ohne Entit\xE4t wird die Entit\xE4t des Knopfs gepr\xFCft.",
+        tap_action: "Standard je nach Entit\xE4t: starten, umschalten oder More-Info."
       }
     }
   },
@@ -1985,6 +2012,33 @@ var en_default = {
         name: "Label without an image, otherwise only for screen readers.",
         image: "/local/... or media-source://...",
         busy: "Tint and spinner while the entity is on."
+      }
+    }
+  },
+  button: {
+    editor: {
+      layout: "Layout",
+      entity: "Entity",
+      name: "Name",
+      icon: "Icon",
+      busy: "Busy indicator",
+      active: "Active when",
+      tap_action: "Tap action",
+      hold_action: "Hold action",
+      double_tap_action: "Double tap action",
+      layouts: {
+        tile: "Tile",
+        row: "Row",
+        icon: "Icon button"
+      },
+      helper: {
+        layout: "Tile like the switches, row like the status rows or a compact button like in the panel header.",
+        entity: "Optional. Scripts, scenes, buttons and automations are started, switchable entities toggled, otherwise more-info.",
+        name: "Default: name of the entity. Shown as tooltip on the icon button.",
+        icon: "Default: icon of the entity.",
+        busy: "Tint and spinner while the entity is on (e.g. a running script).",
+        active: "Fills the button in the accent while all set conditions are met. Without an entity the button's entity is checked.",
+        tap_action: "Default by entity: start, toggle or more-info."
       }
     }
   },
@@ -6096,6 +6150,32 @@ var GraphiteImageEditor = class extends GraphiteFormEditor {
   }
 };
 
+// src/core/spinner.ts
+var spinnerStyles = i`
+  .spinner {
+    position: absolute;
+    z-index: 3;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--graphite-accent) 28%, transparent);
+    border-top-color: var(--graphite-accent);
+    pointer-events: none;
+    animation: graphite-spin 0.9s linear infinite;
+  }
+  @keyframes graphite-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation-duration: 3s;
+    }
+  }
+`;
+
 // src/cards/tiles/graphite-image.ts
 var imageCache = {};
 var imageCacheTime = 2e4;
@@ -6165,28 +6245,8 @@ var imageStyles = i`
     z-index: 1;
   }
   .spinner {
-    position: absolute;
     top: 10px;
     right: 10px;
-    z-index: 3;
-    width: 14px;
-    height: 14px;
-    box-sizing: border-box;
-    border-radius: 50%;
-    border: 2px solid color-mix(in srgb, var(--graphite-accent) 28%, transparent);
-    border-top-color: var(--graphite-accent);
-    pointer-events: none;
-    animation: graphite-spin 0.9s linear infinite;
-  }
-  @keyframes graphite-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .spinner {
-      animation-duration: 3s;
-    }
   }
 `;
 var GraphiteImage = class extends GraphiteCard {
@@ -6267,7 +6327,7 @@ var GraphiteImage = class extends GraphiteCard {
     return document.createElement("graphite-image-editor");
   }
 };
-GraphiteImage.styles = [tileStyles, imageStyles];
+GraphiteImage.styles = [tileStyles, spinnerStyles, imageStyles];
 GraphiteImage.properties = {
   ...GraphiteCard.properties,
   imageUrl: { state: true }
@@ -12989,6 +13049,249 @@ registerElement("graphite-light-editor", GraphiteLightEditor);
 registerCard("graphite-light", GraphiteLight, {
   name: "Graphite Light",
   description: "Lamp as a tile: switch row head (toggle or wall switch) with brightness and white temperature sliders."
+});
+
+// src/cards/controls/graphite-button-editor.ts
+var GraphiteButtonEditor = class extends GraphiteFormEditor {
+  labelPrefix() {
+    return "button.editor";
+  }
+  schema() {
+    return [
+      this.selectField("layout", "layouts", ["tile", "row", "icon"], "list"),
+      { name: "entity", selector: { entity: {} } },
+      this.grid(
+        { name: "name", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
+      ),
+      { name: "busy", selector: { boolean: {} } },
+      this.conditionSection("active"),
+      this.actionsSection()
+    ];
+  }
+  defaults() {
+    return { layout: "tile" };
+  }
+  skipValue(key, value) {
+    if (key === "busy") return value !== true;
+    return false;
+  }
+};
+
+// src/cards/controls/graphite-button.ts
+var layouts2 = ["tile", "row", "icon"];
+var startServices = {
+  script: "script.turn_on",
+  scene: "scene.turn_on",
+  button: "button.press",
+  input_button: "input_button.press",
+  automation: "automation.trigger"
+};
+var toggleDomains = ["light", "switch", "input_boolean", "fan", "siren", "humidifier", "media_player", "cover", "climate"];
+function buttonLayoutOf(config) {
+  return layouts2.includes(config?.layout) ? config.layout : "tile";
+}
+function defaultButtonAction(entity) {
+  if (!entity) return { action: "none" };
+  const domain = entity.split(".")[0];
+  const service = startServices[domain];
+  if (service) return { action: "perform-action", perform_action: service, target: { entity_id: entity } };
+  return toggleDomains.includes(domain) ? { action: "toggle" } : { action: "more-info" };
+}
+var buttonTileStyles = i`
+  /* icon top left, where a switch tile has its toggle; name bottom left */
+  .icon {
+    position: absolute;
+    left: var(--graphite-padding-tile, 12px);
+    top: var(--graphite-padding-tile, 12px);
+    display: flex;
+    color: var(--graphite-text-secondary);
+    pointer-events: none;
+    --mdc-icon-size: var(--graphite-row-icon-size, 24px);
+  }
+  .tile.on .icon {
+    color: var(--graphite-state-text, var(--graphite-accent));
+  }
+  /* long names wrap to a second line (like the labels of graphite-image and graphite-effect),
+     longer ones end with an ellipsis */
+  .name {
+    white-space: normal;
+    line-height: 1.15;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .tile.busy {
+    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+  }
+  .tile.unavailable .icon {
+    opacity: 0.4;
+  }
+  .spinner {
+    top: 12px;
+    right: 12px;
+  }
+  ha-ripple {
+    z-index: 1;
+  }
+`;
+var buttonRowStyles = i`
+  .row.busy {
+    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+  }
+  .spinner {
+    position: relative;
+    flex: none;
+    margin: 0 18px 0 12px;
+  }
+`;
+var iconButtonStyles = i`
+  :host {
+    display: block;
+  }
+  .button {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 36px;
+    border-radius: var(--graphite-radius-tile, 12px);
+    background: var(--graphite-surface-tile);
+    color: var(--graphite-text-secondary);
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    --mdc-icon-size: 18px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .button.interactive {
+    cursor: pointer;
+  }
+  .button.interactive:focus-visible {
+    outline: 2px solid var(--graphite-accent);
+    outline-offset: 2px;
+  }
+  .button.on {
+    background: var(--graphite-state-color, var(--graphite-accent));
+    color: var(--graphite-state-ink, var(--graphite-accent-ink));
+  }
+  .button.unavailable {
+    opacity: 0.4;
+  }
+  .spinner {
+    position: relative;
+  }
+`;
+var tileLayout = [tileStyles, spinnerStyles, buttonTileStyles];
+var rowLayout = [rowStyles, spinnerStyles, buttonRowStyles];
+var iconLayout = [spinnerStyles, iconButtonStyles];
+var GraphiteButton = class extends GraphiteCard {
+  stylesForConfig() {
+    const layout = buttonLayoutOf(this.config);
+    return layout === "row" ? rowLayout : layout === "icon" ? iconLayout : tileLayout;
+  }
+  normalizeConfig(config) {
+    if (config.layout !== void 0 && !layouts2.includes(config.layout)) {
+      throw new Error(`graphite-button: layout must be one of ${layouts2.join(", ")}`);
+    }
+    return { tap_action: defaultButtonAction(config.entity), hold_action: defaultHoldAction(config.entity), ...config };
+  }
+  watchedEntities() {
+    const config = this.config;
+    return [config?.entity, config?.active?.entity].filter((entity) => !!entity);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.detachActions = attachActionHandler(this, {
+      hasHold: () => hasAction(this.config?.hold_action),
+      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
+    }, (action) => this.handleAction(action));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.detachActions?.();
+    this.detachActions = void 0;
+  }
+  handleAction(action) {
+    const config = this.config;
+    if (!config || !hasAction(config[`${action}_action`])) return;
+    fireAction(this, config, action);
+  }
+  // active while the condition is met; without its own entity the condition checks the button's entity
+  isActive(stateObj) {
+    const active = this.config?.active;
+    if (!active) return false;
+    const state = active.entity ? this.hass?.states[active.entity]?.state : stateObj?.state;
+    return matchesCondition(active, state);
+  }
+  renderIcon(stateObj) {
+    const icon = this.config.icon;
+    if (icon || !stateObj || !customElements.get("ha-state-icon")) {
+      return b2`<ha-icon .icon=${icon || stateObj?.attributes?.icon || "mdi:gesture-tap-button"}></ha-icon>`;
+    }
+    return b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+  }
+  render() {
+    const config = this.config;
+    const layout = buttonLayoutOf(config);
+    const stateObj = config.entity ? this.hass?.states[config.entity] : void 0;
+    const unavailable2 = !!config.entity && isUnavailable(stateObj);
+    const active = !unavailable2 && this.isActive(stateObj);
+    const busy = !!config.busy && stateObj?.state === "on";
+    const interactive = !unavailable2 && (hasAction(config.tap_action) || hasAction(config.double_tap_action));
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity ?? "";
+    const color = active ? lampColor(stateObj) : void 0;
+    const style = color ? `--graphite-state-color: ${color}; --graphite-state-text: ${lampTextColor(color)}; --graphite-state-ink: color-mix(in srgb, ${color} 25%, #000000)` : "";
+    const root = layout === "icon" ? "button" : layout;
+    const classes = [
+      root,
+      active ? "on active" : "",
+      busy ? "busy" : "",
+      unavailable2 ? "unavailable" : "",
+      interactive ? "interactive" : ""
+    ].filter(Boolean).join(" ");
+    const ripple = interactive ? b2`<ha-ripple></ha-ripple>` : A;
+    const spinner = busy ? b2`<div class="spinner"></div>` : A;
+    const offline = b2`<div class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div>`;
+    if (layout === "icon") {
+      return b2`<div class=${classes} style=${style} role=${interactive ? "button" : A}
+        tabindex=${interactive ? "0" : A} title=${name} aria-label=${name}>${ripple}${busy ? spinner : this.renderIcon(stateObj)}</div>`;
+    }
+    if (layout === "row") {
+      return b2`<div class=${classes} style=${style} role=${interactive ? "button" : A}
+        tabindex=${interactive ? "0" : A} aria-label=${name}>${ripple}<div class="icon">${this.renderIcon(stateObj)}</div><div
+        class="text"><div class="name">${name}</div></div>${spinner}${offline}</div>`;
+    }
+    return b2`<div class=${classes} style=${style} role=${interactive ? "button" : A}
+      tabindex=${interactive ? "0" : A} aria-label=${name}>${ripple}<div class="icon">${this.renderIcon(stateObj)}</div><div
+      class="name">${name}</div>${spinner}${offline}</div>`;
+  }
+  getCardSize() {
+    return buttonLayoutOf(this.config) === "tile" ? 2 : 1;
+  }
+  getGridOptions() {
+    const layout = buttonLayoutOf(this.config);
+    if (layout === "icon") return { columns: 2, rows: 1, min_columns: 1 };
+    if (layout === "row") return { columns: 12, rows: "auto", min_columns: 3 };
+    return { columns: 3, rows: 2, min_columns: 2 };
+  }
+  static getStubConfig(hass) {
+    const entity = Object.keys(hass?.states ?? {}).find((id) => id.startsWith("script.")) ?? "";
+    return entity ? { entity, busy: true } : { name: "Button", icon: "mdi:gesture-tap-button" };
+  }
+  static async getConfigElement() {
+    return document.createElement("graphite-button-editor");
+  }
+};
+GraphiteButton.styles = [];
+registerElement("graphite-button-editor", GraphiteButtonEditor);
+registerCard("graphite-button", GraphiteButton, {
+  name: "Graphite Button",
+  description: "A plain button for any action: tile, row or compact icon button; optional active state and busy spinner."
 });
 
 // src/cards/graphite-dialog-editor.ts
