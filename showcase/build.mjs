@@ -11,10 +11,21 @@ const packageInfo = JSON.parse(await readFile(new URL("package.json", root), "ut
 
 await mkdir(site, { recursive: true });
 
-// theme: the dark mode variables of "Graphite" on the page root
-const theme = parse(await readFile(new URL("config/themes/graphite/graphite.yaml", root), "utf8"));
-const variables = theme.Graphite.modes.dark;
-const css = `:root {\n${Object.entries(variables).map(([name, value]) => `  --${name}: ${value};`).join("\n")}\n}\n`;
+// themes: every theme of graphite.yaml as CSS variables. "Graphite" sits on the page root, the others
+// on :root[data-theme="…"] for the theme switcher. A theme uses its dark mode, a light theme its light
+// mode; the merge keys (<<) of the file are resolved. The wallpaper of a theme (lovelace-background)
+// lives in Home Assistant, the showcase keeps the plain ground.
+const themes = parse(await readFile(new URL("config/themes/graphite/graphite.yaml", root), "utf8"), { merge: true });
+const themeSlug = (name) => name.toLowerCase().split(" ").join("-");
+const themeList = Object.entries(themes).map(([name, theme]) => {
+  const light = !theme.modes.dark || (theme.modes.light && theme.modes.dark === theme.modes.light);
+  return { name, slug: themeSlug(name), light, variables: light ? theme.modes.light : theme.modes.dark };
+});
+const themeBlock = (selector, variables, light) => `${selector} {\n  color-scheme: ${light ? "light" : "dark"};\n${Object.entries(variables)
+  .filter(([name]) => name !== "lovelace-background")
+  .map(([name, value]) => `  --${name}: ${value};`).join("\n")}\n}\n`;
+const css = themeList.map((theme) => themeBlock(theme.name === "Graphite" ? ":root" : `:root[data-theme="${theme.slug}"]`,
+  theme.variables, theme.light)).join("\n");
 await writeFile(new URL("theme.css", site), css);
 await copyFile(new URL("index.html", import.meta.url), new URL("index.html", site));
 
@@ -94,7 +105,11 @@ const options = {
   bundle: true,
   format: "esm",
   target: "es2021",
-  define: { GRAPHITE_VERSION: JSON.stringify(packageInfo.version), SHOWCASE_ICONS: JSON.stringify(showcaseIcons) },
+  define: {
+    GRAPHITE_VERSION: JSON.stringify(packageInfo.version),
+    SHOWCASE_ICONS: JSON.stringify(showcaseIcons),
+    SHOWCASE_THEMES: JSON.stringify(themeList.map(({ name, slug }) => ({ name, slug }))),
+  },
   nodePaths: process.env.GRAPHITE_NODE_PATH ? [process.env.GRAPHITE_NODE_PATH] : [],
   logLevel: "info",
 };

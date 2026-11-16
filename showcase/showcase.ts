@@ -389,6 +389,38 @@ function renderTokens(): HTMLElement {
 const main = document.getElementById("showcase")!;
 const languageSelect = document.getElementById("language") as HTMLSelectElement;
 
+// theme switcher: the themes of graphite.yaml (theme.css holds their variables); the choice is kept
+// in the browser and can be given as ?theme=<slug>
+declare const SHOWCASE_THEMES: Array<{ name: string; slug: string }>;
+const themeSelect = document.getElementById("theme") as HTMLSelectElement;
+const themeKey = "graphite-showcase-theme";
+
+function storedTheme(): string | null {
+  const fromAddress = new URLSearchParams(location.search).get("theme");
+  if (fromAddress) return fromAddress;
+  try {
+    return localStorage.getItem(themeKey);
+  } catch {
+    return null;
+  }
+}
+
+function applyTheme(slug: string): void {
+  if (slug === "graphite") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", slug);
+  try {
+    localStorage.setItem(themeKey, slug);
+  } catch {
+    // private window or blocked storage: the choice only lasts for this page
+  }
+}
+
+themeSelect.replaceChildren(...SHOWCASE_THEMES.map((theme) => new Option(theme.name, theme.slug)));
+const initialTheme = storedTheme();
+themeSelect.value = SHOWCASE_THEMES.some((theme) => theme.slug === initialTheme) ? initialTheme! : "graphite";
+applyTheme(themeSelect.value);
+themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
+
 function render(): void {
   const language = languageSelect.value;
   // the cards read their language from this theme variable

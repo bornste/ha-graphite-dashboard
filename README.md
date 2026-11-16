@@ -9,7 +9,8 @@ a library of Lovelace cards built for it (TypeScript + Lit, bundled into one fil
 
 > See [docs](docs/README.md) for the available cards.
 
-**Showcase:** all cards with sample data, without Home Assistant –
+**Showcase:** all cards with sample data, without Home Assistant, in every theme of
+`graphite.yaml` (theme switcher at the top, or `?theme=graphite-sand`) –
 <https://bornste.github.io/ha-graphite-dashboard/>
 
 ## Contents
