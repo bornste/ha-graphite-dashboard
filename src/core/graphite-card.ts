@@ -4,8 +4,9 @@ import type { GraphiteCardConfig, HomeAssistant } from "./types";
 import { languageOf, themeLanguageOf, translate } from "./i18n";
 
 // checks for the theme language of a card that was built before the view theme applied
-// (40 x 250 ms = 10 s; a hidden page slows the timers down, so this also covers a slow start)
-const languageChecks = 40;
+// (80 x 250 ms = 20 s; Home Assistant may build the view late when the page loads with a dialog hash,
+// and a hidden page slows the timers down)
+const languageChecks = 80;
 const languageCheckDelay = 250;
 
 export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = GraphiteCardConfig> extends LitElement {
@@ -79,6 +80,8 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
     super.connectedCallback();
     this.languageCache = undefined;
     this.languageChecksLeft = languageChecks;
+    // a card that rendered its texts before it was in the page looks for the theme language now
+    if (!themeLanguageOf(this)) this.scheduleLanguageCheck();
   }
 
   disconnectedCallback(): void {
