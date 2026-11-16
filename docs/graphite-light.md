@@ -37,7 +37,7 @@ wall_switch: true
 
 ## Behaviour
 
-- **On:** soft accent tint (`--graphite-light-tint`, 10 %), name in medium weight, accent icon, toggle on.
+- **On:** soft tint in the lamp's own color (`rgb_color`, white temperatures included; `--graphite-light-color` for lamps without a color) at `--graphite-light-tint` (10 %), icon in that color, name in medium weight, toggle on. The color does not depend on the theme; status and switch rows of lamps follow the same rule.
 - **Off:** the sliders stay usable; moving the brightness turns the lamp on (Home Assistant sets a
   brightness with `light.turn_on`). The fill is quiet (`--graphite-text-muted`).
 - **Unavailable:** dimmed head with an offline badge, sliders locked. With `wall_switch` no badge and no

@@ -40,7 +40,8 @@ export class GraphiteSwitch extends GraphiteRow {
     const interactive = this.isInteractive(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const classes = ["tile", ...this.rowClasses(stateObj).slice(1)].join(" ");
-    return html`<div class=${classes} role=${interactive ? "button" : nothing} tabindex=${interactive ? "0" : nothing}
+    return html`<div class=${classes} style=${this.stateColorStyle(stateObj)} role=${interactive ? "button" : nothing}
+      tabindex=${interactive ? "0" : nothing}
       aria-label=${name}>${interactive ? html`<ha-ripple></ha-ripple>` : nothing}<div class="watermark">${this
       .renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;

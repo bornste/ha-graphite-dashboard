@@ -35,9 +35,9 @@ const lightStyles = css`
     height: auto;
     padding: 12px;
   }
-  /* on: soft accent tint, weaker than the switch tile (the sliders carry more surface) */
+  /* on: soft tint in the lamp's colour, weaker than the switch tile (the sliders carry more surface) */
   .row.light.active {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
   }
   .head {
     position: relative;
@@ -138,8 +138,8 @@ export class GraphiteLight extends GraphiteRow {
     const since = this.sinceLine(stateObj);
     const interactive = this.isInteractive(stateObj);
     const sliders = this.sliderAttributes(stateObj);
-    return html`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : nothing}
-      tabindex=${interactive ? "0" : nothing} aria-label=${name}>${interactive ? html`<ha-ripple></ha-ripple>` : nothing}<div
+    return html`<div class=${this.rowClasses(stateObj).join(" ")} style=${this.stateColorStyle(stateObj)}
+      role=${interactive ? "button" : nothing} tabindex=${interactive ? "0" : nothing} aria-label=${name}>${interactive ? html`<ha-ripple></ha-ripple>` : nothing}<div
       class="head"><div class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since
       ? html`<div class="since">${since}</div>` : nothing}</div>${this.renderEnd(stateObj)}<div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>${sliders.length

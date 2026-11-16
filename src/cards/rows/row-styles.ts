@@ -26,9 +26,10 @@ export const rowStyles = css`
   .row.interactive:focus-visible {
     box-shadow: inset 0 0 0 2px var(--graphite-accent);
   }
-  /* active (on, open, ...): soft accent tint, not for measured values */
+  /* active (on, open, ...): soft accent tint, not for measured values; a lamp sets
+     --graphite-state-color to its own colour */
   .row.active {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
   }
   /* 42px icon box like the rows of the Home Assistant style; at 9px (not 8px) the 20px visible glyph
      sits exactly between the edge and the text (20/20) */
@@ -45,7 +46,7 @@ export const rowStyles = css`
     --mdc-icon-size: var(--graphite-row-icon-size, 24px);
   }
   .row.active .icon {
-    color: var(--graphite-accent);
+    color: var(--graphite-state-color, var(--graphite-accent));
   }
   .text {
     flex: 1 1 auto;
@@ -85,7 +86,7 @@ export const rowStyles = css`
   }
   .row.active .value {
     font-weight: 500;
-    color: var(--graphite-accent);
+    color: var(--graphite-state-color, var(--graphite-accent));
   }
   /* toggle (switch row): pure display, the row itself switches */
   .toggle {

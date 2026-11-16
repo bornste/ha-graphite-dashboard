@@ -34,7 +34,9 @@ export const sampleStates: Record<string, any> = {
   "binary_sensor.office_window": entity("binary_sensor.office_window", "off", { friendly_name: "Office window", device_class: "window" }, 190),
   "light.floor_lamp": entity("light.floor_lamp", "on", { friendly_name: "Floor lamp", brightness: 158, color_mode: "color_temp",
     supported_color_modes: ["color_temp", "hs"], color_temp_kelvin: 3200, min_color_temp_kelvin: 2000, max_color_temp_kelvin: 6500,
-    hs_color: [32, 45] }, 42),
+    hs_color: [32, 45], rgb_color: [255, 196, 137] }, 42),
+  "light.led_strip": entity("light.led_strip", "on", { friendly_name: "LED strip", brightness: 140, color_mode: "hs",
+    supported_color_modes: ["hs"], hs_color: [228, 56], rgb_color: [111, 140, 255] }, 12),
   "scene.living_room_default": entity("scene.living_room_default", "2026-11-06T18:00:00", { friendly_name: "Default", icon: "ic:twotone-light" }, 120),
   "scene.living_room_bright": entity("scene.living_room_bright", "2026-11-06T18:00:00", { friendly_name: "Bright", icon: "ic:twotone-wb-sunny" }, 120),
   "scene.living_room_relax": entity("scene.living_room_relax", "2026-11-06T18:00:00", { friendly_name: "Relax", icon: "ic:twotone-chair" }, 120),
@@ -806,12 +808,13 @@ export function examples(language: string): ShowcaseSection[] {
       examples: [
         {
           title: "Lamps",
-          note: "Floor lamp on with brightness and white temperature; the ceiling lamp is off at the wall switch, its sliders stay locked.",
+          note: "A lamp that is on shows its own color: the floor lamp warm white, the LED strip blue. The ceiling lamp is off at the wall switch, its sliders stay locked.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Lampen" : "Lamps",
             cards: [
               { type: "custom:graphite-light", entity: "light.floor_lamp" },
+              { type: "custom:graphite-light", entity: "light.led_strip" },
               { type: "custom:graphite-light", entity: "light.ceiling_lamp", wall_switch: true },
             ],
           },

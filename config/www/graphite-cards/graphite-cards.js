@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.54.0";
+var version = "0.55.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -4077,6 +4077,13 @@ registerCard("graphite-panel", GraphitePanel, {
   description: "Groups cards in one panel with title, status, chips and a vertical, horizontal or grid layout."
 });
 
+// src/core/lamp-color.ts
+function lampColor(stateObj) {
+  if (!stateObj || stateObj.state !== "on" || stateObj.entity_id.split(".")[0] !== "light") return void 0;
+  const rgb = stateObj.attributes?.rgb_color;
+  return Array.isArray(rgb) && rgb.length === 3 ? `rgb(${rgb.join(", ")})` : "var(--graphite-light-color, #f5c48a)";
+}
+
 // src/core/offline-dot.ts
 var offlineDot = b2`<svg class="offline-dot" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle
   cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"></circle><circle cx="12" cy="12" r="7.5" fill="none"
@@ -4106,9 +4113,10 @@ var rowStyles = i`
   .row.interactive:focus-visible {
     box-shadow: inset 0 0 0 2px var(--graphite-accent);
   }
-  /* active (on, open, ...): soft accent tint, not for measured values */
+  /* active (on, open, ...): soft accent tint, not for measured values; a lamp sets
+     --graphite-state-color to its own colour */
   .row.active {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
   }
   /* 42px icon box like the rows of the Home Assistant style; at 9px (not 8px) the 20px visible glyph
      sits exactly between the edge and the text (20/20) */
@@ -4125,7 +4133,7 @@ var rowStyles = i`
     --mdc-icon-size: var(--graphite-row-icon-size, 24px);
   }
   .row.active .icon {
-    color: var(--graphite-accent);
+    color: var(--graphite-state-color, var(--graphite-accent));
   }
   .text {
     flex: 1 1 auto;
@@ -4165,7 +4173,7 @@ var rowStyles = i`
   }
   .row.active .value {
     font-weight: 500;
-    color: var(--graphite-accent);
+    color: var(--graphite-state-color, var(--graphite-accent));
   }
   /* toggle (switch row): pure display, the row itself switches */
   .toggle {
@@ -4342,6 +4350,11 @@ var GraphiteRow = class extends GraphiteCard {
     }
     return classes;
   }
+  // a lamp that is on tints the row in its own colour instead of the accent (see core/lamp-color)
+  stateColorStyle(stateObj) {
+    const color = lampColor(stateObj);
+    return color ? `--graphite-state-color: ${color}` : "";
+  }
   renderIcon(stateObj) {
     const icon = this.config.icon;
     if (icon || !customElements.get("ha-state-icon")) {
@@ -4356,8 +4369,8 @@ var GraphiteRow = class extends GraphiteCard {
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const since = this.sinceLine(stateObj);
     const interactive = this.isInteractive(stateObj);
-    return b2`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : A}
-      tabindex=${interactive ? "0" : A}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+    return b2`<div class=${this.rowClasses(stateObj).join(" ")} style=${this.stateColorStyle(stateObj)}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
       class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj, unavailable2)}<div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
@@ -4758,9 +4771,9 @@ var tileStyles = i`
   .tile.interactive:focus-visible {
     box-shadow: inset 0 0 0 2px var(--graphite-accent);
   }
-  /* on: soft accent tint */
+  /* on: soft accent tint (a lamp: its own colour, see --graphite-state-color) */
   .tile.on {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
   }
   /* icon as watermark bottom right */
   .watermark {
@@ -4908,7 +4921,8 @@ var GraphiteSwitch = class extends GraphiteRow {
     const interactive = this.isInteractive(stateObj);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
     const classes = ["tile", ...this.rowClasses(stateObj).slice(1)].join(" ");
-    return b2`<div class=${classes} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}
+    return b2`<div class=${classes} style=${this.stateColorStyle(stateObj)} role=${interactive ? "button" : A}
+      tabindex=${interactive ? "0" : A}
       aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div class="watermark">${this.renderIcon(stateObj)}</div><div class="toggle"></div><div class="name">${name}</div><div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>`;
   }
@@ -12671,7 +12685,9 @@ var GraphiteSlider = class extends GraphiteCard {
     const offline = isUnavailable(stateObj);
     const usable = !!model && !offline && model.supported;
     this.toggleAttribute("inactive", !usable);
-    this.style.setProperty("--graphite-slider-fill", this.isLight() && stateObj?.state !== "on" ? "var(--graphite-text-muted)" : "");
+    const color = lampColor(stateObj);
+    this.style.setProperty("--graphite-slider-fill", this.isLight() && stateObj?.state !== "on" ? "var(--graphite-text-muted)" : color ?? "");
+    this.style.setProperty("--graphite-state-color", color ?? "");
     if (this.dragValue !== void 0 && model && Math.abs(model.value - this.dragValue) < model.step / 2) this.dragValue = void 0;
     const value = this.dragValue ?? model?.value ?? NaN;
     const range = model ? Math.abs(model.max - model.min) : 1;
@@ -12754,7 +12770,7 @@ GraphiteSlider.styles = i`
       align-self: center;
     }
     :host([on]) .icon {
-      color: var(--graphite-accent);
+      color: var(--graphite-state-color, var(--graphite-accent));
     }
     .name {
       min-width: 0;
@@ -12841,9 +12857,9 @@ var lightStyles = i`
     height: auto;
     padding: 12px;
   }
-  /* on: soft accent tint, weaker than the switch tile (the sliders carry more surface) */
+  /* on: soft tint in the lamp's colour, weaker than the switch tile (the sliders carry more surface) */
   .row.light.active {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
   }
   .head {
     position: relative;
@@ -12931,8 +12947,8 @@ var GraphiteLight = class extends GraphiteRow {
     const since = this.sinceLine(stateObj);
     const interactive = this.isInteractive(stateObj);
     const sliders = this.sliderAttributes(stateObj);
-    return b2`<div class=${this.rowClasses(stateObj).join(" ")} role=${interactive ? "button" : A}
-      tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
+    return b2`<div class=${this.rowClasses(stateObj).join(" ")} style=${this.stateColorStyle(stateObj)}
+      role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A} aria-label=${name}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
       class="head"><div class="icon">${this.renderIcon(stateObj)}</div><div class="text"><div class="name">${name}</div>${since ? b2`<div class="since">${since}</div>` : A}</div>${this.renderEnd(stateObj)}<div
       class="offline">${offlineDot}<span>${this.localize("rows.offline")}</span></div></div>${sliders.length ? b2`<div class="sliders">${sliders.map((attribute) => b2`<graphite-slider .hass=${this.hass}
         .config=${{

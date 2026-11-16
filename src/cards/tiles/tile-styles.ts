@@ -25,9 +25,9 @@ export const tileStyles = css`
   .tile.interactive:focus-visible {
     box-shadow: inset 0 0 0 2px var(--graphite-accent);
   }
-  /* on: soft accent tint */
+  /* on: soft accent tint (a lamp: its own colour, see --graphite-state-color) */
   .tile.on {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
   }
   /* icon as watermark bottom right */
   .watermark {

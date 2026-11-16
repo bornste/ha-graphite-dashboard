@@ -4,6 +4,11 @@
 these variables (`--graphite-*`); every card has the same values as fallback, so a missing token
 never breaks a card. A variant only overrides the base inputs, everything else follows.
 
+The file holds further themes built the same way: **Graphite Glass** (wallpaper, translucent outer
+panels), **Graphite Salvia** (bottle green, yellow accent), **Graphite Midnight** (blue black, amber
+accent) and **Graphite Carbon** (carbon, turquoise accent). Lamps and scenes keep their own colors in
+all of them; the accent only marks switches, states and highlights.
+
 ## 1. Base inputs
 
 | Token | Default | Use |
@@ -12,6 +17,7 @@ never breaks a card. A variant only overrides the base inputs, everything else f
 | `graphite-ink` | `#f3f3f4` | Lightest color, primary text; all surfaces mix ground and ink |
 | `graphite-ink-rgb` | `243, 243, 244` | Ink as RGB triple (for Home Assistant's `rgb-primary-text-color`) |
 | `graphite-accent` / `graphite-accent-ink` | `#f5c48a` / `#3a2410` | Highlights (on, alert) and text on accent |
+| `graphite-light-color` | `#f5c48a` | Lamps that are on and report no color; a lamp with a color (`rgb_color`, white temperatures included) tints its row or tile in that color, in every theme |
 | `graphite-success` / `graphite-success-ink` | `#a8d5a2` / `#17331a` | Second highlight color (e.g. visitor mode) |
 | `graphite-danger` | `#e8908a` | Errors |
 | `graphite-language` | `de` | Language of the card texts (`de`, `en`); remove to follow the Home Assistant language |
