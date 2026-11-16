@@ -17,6 +17,7 @@ in dark mode.
 
 | Token | Default | Use |
 |---|---|---|
+| `graphite-dialog-shadow` | `none` | Shadow of the dialog; the light themes use a light one to set it apart from the page |
 | `graphite-tile-shadow` | `none` | Shadow of tiles and rows, e.g. raised tiles of a light theme; a card's own focus ring or outline takes precedence |
 
 ## 1. Base inputs

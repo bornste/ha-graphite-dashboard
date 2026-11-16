@@ -117,6 +117,10 @@ the title has an optical inset of 4px. The close button is a header button (44 �
 `--graphite-surface-tile`). The panels inside keep their surface, so the levels read
 ground → panel → tile.
 
+A theme can change the look with `--graphite-dialog-surface`, `--graphite-dialog-highlight`,
+`--graphite-dialog-edge` and `--graphite-dialog-shadow` (none by default; the light themes set a light
+shadow), see [theme](theme.md).
+
 ## Editor
 
 The panel editor in dialog mode: the section *Dialog* first (hash, width), then *Header* (title,

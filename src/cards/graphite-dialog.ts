@@ -72,11 +72,13 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       overflow: hidden;
       outline: none;
       position: relative;
-      /* theme tokens: surface, the light line on top and an optional gradient edge (.edge) */
+      /* theme tokens: surface, the light line on top, an optional shadow (none by default) and an
+         optional gradient edge (.edge) */
       background: var(--graphite-dialog-surface, color-mix(in srgb, var(--graphite-ground, #0a0a0b) 72%, transparent));
       -webkit-backdrop-filter: blur(24px) saturate(1.2);
       backdrop-filter: blur(24px) saturate(1.2);
-      box-shadow: var(--graphite-dialog-highlight, inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent));
+      box-shadow: var(--graphite-dialog-highlight, inset 0 1px 0 color-mix(in srgb, var(--graphite-ink, #f3f3f4) 10%, transparent)),
+        var(--graphite-dialog-shadow, 0 0 transparent);
     }
     .edge {
       position: absolute;
