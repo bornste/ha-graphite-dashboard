@@ -162,7 +162,7 @@ Graphite Carbon:
 # the light edge of tiles is white.
 Graphite Lavender:
   modes:
-    light:
+    light: &lavender
       <<: *graphiteDark
       graphite-ground: "#D8D3E6"
       graphite-ink: "#2B2D5C"
@@ -186,13 +186,15 @@ Graphite Lavender:
       graphite-edge-show: '""'
       graphite-tile-edge: "radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, #ffffff 70%, transparent), transparent 60%), radial-gradient(30% 24% at 0% 100%, color-mix(in srgb, #ffffff 30%, transparent), transparent 70%)"
       graphite-dialog-highlight: "inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent)"
+    # the same light colors on a device in dark mode (a theme without its mode is not applied)
+    dark: *lavender
 
 # Graphite Sand: sand ground, mocha green text, petrol accent
 # Light theme: panels are lighter than the ground (white mixed in), tiles a step darker (ink mixed in);
 # the light edge of tiles is white.
 Graphite Sand:
   modes:
-    light:
+    light: &sand
       <<: *graphiteDark
       graphite-ground: "#F0E5DB"
       graphite-ink: "#474329"
@@ -216,6 +218,8 @@ Graphite Sand:
       graphite-edge-show: '""'
       graphite-tile-edge: "radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, #ffffff 70%, transparent), transparent 60%), radial-gradient(30% 24% at 0% 100%, color-mix(in srgb, #ffffff 30%, transparent), transparent 70%)"
       graphite-dialog-highlight: "inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent)"
+    # the same light colors on a device in dark mode (a theme without its mode is not applied)
+    dark: *sand
 
 # Variant examples (not active):
 # tinted dark - only the ground changes, all surfaces follow:
