@@ -4,6 +4,7 @@
 //   --graphite-tile-edge         gradient of tiles and rows
 //   --graphite-panel-edge        gradient of outer panels (graphite-panel)
 //   --graphite-dialog-edge       gradient of the dialog
+//   --graphite-tile-shadow       shadow of tiles and rows (e.g. raised light tiles), none by default
 import { css, unsafeCSS, type CSSResult } from "lit";
 
 // mask that keeps only the 1px border of the element (padding box cut out)
@@ -13,7 +14,9 @@ export const edgeMask = css`
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 `;
 
-// edge on the given tile roots (comma separated selectors) as ::before or, where that is taken, ::after
+// edge on the given tile roots (comma separated selectors) as ::before or, where that is taken, ::after;
+// the roots also get --graphite-tile-shadow, without specificity (:where), so a card's own box-shadow
+// (focus ring, outline of a selected button) still wins
 export function tileEdgeStyles(selectors: string, pseudo: "before" | "after" = "before"): CSSResult {
   const roots = selectors.split(",").map((selector) => selector.trim()).filter(Boolean);
   const rootList = unsafeCSS(roots.join(", "));
@@ -21,6 +24,9 @@ export function tileEdgeStyles(selectors: string, pseudo: "before" | "after" = "
   return css`
     ${rootList} {
       position: relative;
+    }
+    :where(${rootList}) {
+      box-shadow: var(--graphite-tile-shadow, none);
     }
     ${pseudoList} {
       content: var(--graphite-edge-show, none);

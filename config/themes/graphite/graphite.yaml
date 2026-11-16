@@ -158,8 +158,8 @@ Graphite Carbon:
       graphite-tint-active: 25%
 
 # Graphite Lavender: lavender ground, indigo text, berry accent
-# Light theme: panels are lighter than the ground (white mixed in), tiles a step darker (ink mixed in);
-# the light edge of tiles is white.
+# Light theme: from the ground inwards every level gets lighter, like the dark themes (what is closer
+# is lighter): ground, panel with white mixed in, tiles almost white. Flat, without edge or shadow.
 Graphite Lavender:
   modes:
     light: &lavender
@@ -172,10 +172,10 @@ Graphite Lavender:
       graphite-danger: "#B3261E"
       graphite-success: "#2F7D3A"
       graphite-success-ink: "#FFFFFF"
-      graphite-surface-panel: "color-mix(in srgb, #ffffff 55%, var(--graphite-ground))"
-      graphite-surface-tile: "color-mix(in srgb, var(--graphite-ink) 6%, var(--graphite-ground))"
-      graphite-surface-tile-active: "color-mix(in srgb, var(--graphite-ink) 10%, var(--graphite-ground))"
-      graphite-surface-track: "color-mix(in srgb, var(--graphite-ink) 18%, var(--graphite-ground))"
+      graphite-surface-panel: "color-mix(in srgb, #ffffff 40%, var(--graphite-ground))"
+      graphite-surface-tile: "color-mix(in srgb, #ffffff 78%, var(--graphite-ground))"
+      graphite-surface-tile-active: "color-mix(in srgb, #ffffff 92%, var(--graphite-ground))"
+      graphite-surface-track: "color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-ground))"
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 77%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 63%, var(--graphite-ground))"
@@ -183,15 +183,15 @@ Graphite Lavender:
       graphite-tint-active: 25%
       # icons and values of lamps that are on: their colour mixed towards the text, so warm white reads
       graphite-lamp-text-strength: 50%
-      graphite-edge-show: '""'
-      graphite-tile-edge: "radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, #ffffff 70%, transparent), transparent 60%), radial-gradient(30% 24% at 0% 100%, color-mix(in srgb, #ffffff 30%, transparent), transparent 70%)"
+      # raised tiles, not used yet (flat): a soft shadow and a faint outline instead of the light edge
+      # graphite-tile-shadow: "0 1px 2px color-mix(in srgb, var(--graphite-ink) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--graphite-ink) 5%, transparent)"
       graphite-dialog-highlight: "inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent)"
     # the same light colors on a device in dark mode (a theme without its mode is not applied)
     dark: *lavender
 
 # Graphite Sand: sand ground, mocha green text, petrol accent
-# Light theme: panels are lighter than the ground (white mixed in), tiles a step darker (ink mixed in);
-# the light edge of tiles is white.
+# Light theme: from the ground inwards every level gets lighter, like the dark themes (what is closer
+# is lighter): ground, panel with white mixed in, tiles almost white. Flat, without edge or shadow.
 Graphite Sand:
   modes:
     light: &sand
@@ -204,10 +204,10 @@ Graphite Sand:
       graphite-danger: "#B3261E"
       graphite-success: "#2F7D3A"
       graphite-success-ink: "#FFFFFF"
-      graphite-surface-panel: "color-mix(in srgb, #ffffff 55%, var(--graphite-ground))"
-      graphite-surface-tile: "color-mix(in srgb, var(--graphite-ink) 6%, var(--graphite-ground))"
-      graphite-surface-tile-active: "color-mix(in srgb, var(--graphite-ink) 10%, var(--graphite-ground))"
-      graphite-surface-track: "color-mix(in srgb, var(--graphite-ink) 18%, var(--graphite-ground))"
+      graphite-surface-panel: "color-mix(in srgb, #ffffff 40%, var(--graphite-ground))"
+      graphite-surface-tile: "color-mix(in srgb, #ffffff 78%, var(--graphite-ground))"
+      graphite-surface-tile-active: "color-mix(in srgb, #ffffff 92%, var(--graphite-ground))"
+      graphite-surface-track: "color-mix(in srgb, var(--graphite-ink) 14%, var(--graphite-ground))"
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 81%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 67%, var(--graphite-ground))"
@@ -215,8 +215,8 @@ Graphite Sand:
       graphite-tint-active: 25%
       # icons and values of lamps that are on: their colour mixed towards the text, so warm white reads
       graphite-lamp-text-strength: 50%
-      graphite-edge-show: '""'
-      graphite-tile-edge: "radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, #ffffff 70%, transparent), transparent 60%), radial-gradient(30% 24% at 0% 100%, color-mix(in srgb, #ffffff 30%, transparent), transparent 70%)"
+      # raised tiles, not used yet (flat): a soft shadow and a faint outline instead of the light edge
+      # graphite-tile-shadow: "0 1px 2px color-mix(in srgb, var(--graphite-ink) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--graphite-ink) 5%, transparent)"
       graphite-dialog-highlight: "inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent)"
     # the same light colors on a device in dark mode (a theme without its mode is not applied)
     dark: *sand

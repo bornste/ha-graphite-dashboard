@@ -10,8 +10,14 @@ accent), **Graphite Carbon** (carbon, turquoise accent) and the light themes **G
 (lavender, berry accent) and **Graphite Sand** (sand, petrol accent). Lamps and scenes keep their own
 colors in all of them; the accent only marks switches, states and highlights.
 
-A light theme (`modes: light`) overrides the derived surfaces as well: panels are lighter than the
-ground (white mixed in), tiles a step darker (ink mixed in), and the light edge of tiles is white.
+A light theme overrides the derived surfaces as well. Like in the dark themes every level gets lighter
+from the ground inwards (what is closer is lighter): ground, panel with white mixed in, tiles almost
+white. It defines its light colors for both modes (`light` and `dark`), so it also applies on a device
+in dark mode.
+
+| Token | Default | Use |
+|---|---|---|
+| `graphite-tile-shadow` | `none` | Shadow of tiles and rows, e.g. raised tiles of a light theme; a card's own focus ring or outline takes precedence |
 
 ## 1. Base inputs
 

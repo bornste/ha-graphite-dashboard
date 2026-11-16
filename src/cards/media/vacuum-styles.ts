@@ -9,7 +9,7 @@ export const tileStyles = css`
     background: var(--vacTile);
     border-radius: var(--vacRadius);
     border: none;
-    box-shadow: none;
+    box-shadow: var(--graphite-tile-shadow, none);
     padding: 12px 14px 12px 12px;
     box-sizing: border-box;
     min-height: var(--graphite-tile-height-media, 88px);

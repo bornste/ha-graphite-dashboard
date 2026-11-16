@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.56.0";
+var version = "0.57.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3035,6 +3035,9 @@ function tileEdgeStyles(selectors, pseudo = "before") {
   return i`
     ${rootList} {
       position: relative;
+    }
+    :where(${rootList}) {
+      box-shadow: var(--graphite-tile-shadow, none);
     }
     ${pseudoList} {
       content: var(--graphite-edge-show, none);
@@ -7752,7 +7755,7 @@ var tileStyles2 = i`
     background: var(--vacTile);
     border-radius: var(--vacRadius);
     border: none;
-    box-shadow: none;
+    box-shadow: var(--graphite-tile-shadow, none);
     padding: 12px 14px 12px 12px;
     box-sizing: border-box;
     min-height: var(--graphite-tile-height-media, 88px);
