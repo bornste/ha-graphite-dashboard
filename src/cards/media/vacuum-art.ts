@@ -37,8 +37,10 @@ export const artStyles = css`
     --vacAccentInk: var(--graphite-accent-ink, #3a2410);
     --vacDanger: var(--graphite-danger, #e8908a);
     --vacWater: #7cc4f0;
-    --vacLine: #c4c4c8;
-    --vacDock: #6a6a70;
+    /* lines of the artwork mixed from ink and tile, so they read on light themes too
+       (on Graphite they come out as the former #c4c4c8 and #6a6a70) */
+    --vacLine: color-mix(in srgb, var(--graphite-ink, #f3f3f4) 78%, var(--vacTile));
+    --vacDock: color-mix(in srgb, var(--graphite-ink, #f3f3f4) 36%, var(--vacTile));
     /* second tone of the two-tone artwork, matches the dimmed icons of the other tiles */
     --vacTone: var(--graphite-vacuum-tone, 0.12);
     --vacRadius: var(--graphite-radius-tile, 12px);

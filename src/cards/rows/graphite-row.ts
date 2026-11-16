@@ -5,7 +5,7 @@ import { GraphiteCard } from "../../core/graphite-card";
 import { attachActionHandler, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { agoText, formatState, isUnavailable, sinceText } from "../../core/format";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
-import { lampColor } from "../../core/lamp-color";
+import { lampColor, lampTextColor } from "../../core/lamp-color";
 import { offlineDot } from "../../core/offline-dot";
 import { rowStyles } from "./row-styles";
 
@@ -154,7 +154,7 @@ export abstract class GraphiteRow extends GraphiteCard<RowConfig> {
   // a lamp that is on tints the row in its own colour instead of the accent (see core/lamp-color)
   protected stateColorStyle(stateObj: HassEntity | undefined): string {
     const color = lampColor(stateObj);
-    return color ? `--graphite-state-color: ${color}` : "";
+    return color ? `--graphite-state-color: ${color}; --graphite-state-text: ${lampTextColor(color)}` : "";
   }
 
   protected renderIcon(stateObj: HassEntity | undefined) {

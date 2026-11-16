@@ -46,7 +46,7 @@ export const rowStyles = css`
     --mdc-icon-size: var(--graphite-row-icon-size, 24px);
   }
   .row.active .icon {
-    color: var(--graphite-state-color, var(--graphite-accent));
+    color: var(--graphite-state-text, var(--graphite-accent));
   }
   .text {
     flex: 1 1 auto;
@@ -86,7 +86,7 @@ export const rowStyles = css`
   }
   .row.active .value {
     font-weight: 500;
-    color: var(--graphite-state-color, var(--graphite-accent));
+    color: var(--graphite-state-text, var(--graphite-accent));
   }
   /* toggle (switch row): pure display, the row itself switches */
   .toggle {

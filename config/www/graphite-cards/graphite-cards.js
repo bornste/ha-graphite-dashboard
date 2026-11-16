@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.55.0";
+var version = "0.56.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -4078,6 +4078,9 @@ registerCard("graphite-panel", GraphitePanel, {
 });
 
 // src/core/lamp-color.ts
+function lampTextColor(color) {
+  return `color-mix(in srgb, ${color} var(--graphite-lamp-text-strength, 100%), var(--graphite-text-primary))`;
+}
 function lampColor(stateObj) {
   if (!stateObj || stateObj.state !== "on" || stateObj.entity_id.split(".")[0] !== "light") return void 0;
   const rgb = stateObj.attributes?.rgb_color;
@@ -4133,7 +4136,7 @@ var rowStyles = i`
     --mdc-icon-size: var(--graphite-row-icon-size, 24px);
   }
   .row.active .icon {
-    color: var(--graphite-state-color, var(--graphite-accent));
+    color: var(--graphite-state-text, var(--graphite-accent));
   }
   .text {
     flex: 1 1 auto;
@@ -4173,7 +4176,7 @@ var rowStyles = i`
   }
   .row.active .value {
     font-weight: 500;
-    color: var(--graphite-state-color, var(--graphite-accent));
+    color: var(--graphite-state-text, var(--graphite-accent));
   }
   /* toggle (switch row): pure display, the row itself switches */
   .toggle {
@@ -4353,7 +4356,7 @@ var GraphiteRow = class extends GraphiteCard {
   // a lamp that is on tints the row in its own colour instead of the accent (see core/lamp-color)
   stateColorStyle(stateObj) {
     const color = lampColor(stateObj);
-    return color ? `--graphite-state-color: ${color}` : "";
+    return color ? `--graphite-state-color: ${color}; --graphite-state-text: ${lampTextColor(color)}` : "";
   }
   renderIcon(stateObj) {
     const icon = this.config.icon;
@@ -7682,8 +7685,10 @@ var artStyles = i`
     --vacAccentInk: var(--graphite-accent-ink, #3a2410);
     --vacDanger: var(--graphite-danger, #e8908a);
     --vacWater: #7cc4f0;
-    --vacLine: #c4c4c8;
-    --vacDock: #6a6a70;
+    /* lines of the artwork mixed from ink and tile, so they read on light themes too
+       (on Graphite they come out as the former #c4c4c8 and #6a6a70) */
+    --vacLine: color-mix(in srgb, var(--graphite-ink, #f3f3f4) 78%, var(--vacTile));
+    --vacDock: color-mix(in srgb, var(--graphite-ink, #f3f3f4) 36%, var(--vacTile));
     /* second tone of the two-tone artwork, matches the dimmed icons of the other tiles */
     --vacTone: var(--graphite-vacuum-tone, 0.12);
     --vacRadius: var(--graphite-radius-tile, 12px);
@@ -12689,7 +12694,7 @@ var GraphiteSlider = class extends GraphiteCard {
     this.toggleAttribute("inactive", !usable);
     const color = lampColor(stateObj);
     this.style.setProperty("--graphite-slider-fill", this.isLight() && stateObj?.state !== "on" ? "var(--graphite-text-muted)" : color ?? "");
-    this.style.setProperty("--graphite-state-color", color ?? "");
+    this.style.setProperty("--graphite-state-text", color ? lampTextColor(color) : "");
     if (this.dragValue !== void 0 && model && Math.abs(model.value - this.dragValue) < model.step / 2) this.dragValue = void 0;
     const value = this.dragValue ?? model?.value ?? NaN;
     const range = model ? Math.abs(model.max - model.min) : 1;
@@ -12772,7 +12777,7 @@ GraphiteSlider.styles = i`
       align-self: center;
     }
     :host([on]) .icon {
-      color: var(--graphite-state-color, var(--graphite-accent));
+      color: var(--graphite-state-text, var(--graphite-accent));
     }
     .name {
       min-width: 0;

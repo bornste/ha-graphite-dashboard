@@ -6,8 +6,12 @@ never breaks a card. A variant only overrides the base inputs, everything else f
 
 The file holds further themes built the same way: **Graphite Glass** (wallpaper, translucent outer
 panels), **Graphite Salvia** (bottle green, yellow accent), **Graphite Midnight** (blue black, amber
-accent) and **Graphite Carbon** (carbon, turquoise accent). Lamps and scenes keep their own colors in
-all of them; the accent only marks switches, states and highlights.
+accent), **Graphite Carbon** (carbon, turquoise accent) and the light themes **Graphite Lavender**
+(lavender, berry accent) and **Graphite Sand** (sand, petrol accent). Lamps and scenes keep their own
+colors in all of them; the accent only marks switches, states and highlights.
+
+A light theme (`modes: light`) overrides the derived surfaces as well: panels are lighter than the
+ground (white mixed in), tiles a step darker (ink mixed in), and the light edge of tiles is white.
 
 ## 1. Base inputs
 
@@ -18,6 +22,7 @@ all of them; the accent only marks switches, states and highlights.
 | `graphite-ink-rgb` | `243, 243, 244` | Ink as RGB triple (for Home Assistant's `rgb-primary-text-color`) |
 | `graphite-accent` / `graphite-accent-ink` | `#f5c48a` / `#3a2410` | Highlights (on, alert) and text on accent |
 | `graphite-light-color` | `#f5c48a` | Lamps that are on and report no color; a lamp with a color (`rgb_color`, white temperatures included) tints its row or tile in that color, in every theme |
+| `graphite-lamp-text-strength` | `100%` | Share of the lamp color in its icon and value (the rest is primary text); light themes use `50%` so a warm white stays readable |
 | `graphite-success` / `graphite-success-ink` | `#a8d5a2` / `#17331a` | Second highlight color (e.g. visitor mode) |
 | `graphite-danger` | `#e8908a` | Errors |
 | `graphite-language` | `de` | Language of the card texts (`de`, `en`); remove to follow the Home Assistant language |

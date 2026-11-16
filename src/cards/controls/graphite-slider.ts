@@ -7,7 +7,7 @@ import { GraphiteCard } from "../../core/graphite-card";
 import "../../core/graphite-range";
 import type { RangeTick, TickMode } from "../../core/graphite-range";
 import { isUnavailable } from "../../core/format";
-import { lampColor } from "../../core/lamp-color";
+import { lampColor, lampTextColor } from "../../core/lamp-color";
 import { registerCard, registerElement } from "../../core/register";
 import type { GraphiteCardConfig, HassEntity } from "../../core/types";
 import { GraphiteSliderEditor } from "./graphite-slider-editor";
@@ -103,7 +103,7 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
       align-self: center;
     }
     :host([on]) .icon {
-      color: var(--graphite-state-color, var(--graphite-accent));
+      color: var(--graphite-state-text, var(--graphite-accent));
     }
     .name {
       min-width: 0;
@@ -360,7 +360,7 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
     this.toggleAttribute("inactive", !usable);
     const color = lampColor(stateObj);
     this.style.setProperty("--graphite-slider-fill", this.isLight() && stateObj?.state !== "on" ? "var(--graphite-text-muted)" : color ?? "");
-    this.style.setProperty("--graphite-state-color", color ?? "");
+    this.style.setProperty("--graphite-state-text", color ? lampTextColor(color) : "");
     // the dragged value until Home Assistant reports the new state
     if (this.dragValue !== undefined && model && Math.abs(model.value - this.dragValue) < model.step / 2) this.dragValue = undefined;
     const value = this.dragValue ?? model?.value ?? NaN;
