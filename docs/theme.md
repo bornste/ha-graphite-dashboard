@@ -30,6 +30,7 @@ in dark mode.
 | `graphite-ink` | `#f3f3f4` | Lightest color, primary text; all surfaces mix ground and ink |
 | `graphite-ink-rgb` | `243, 243, 244` | Ink as RGB triple (for Home Assistant's `rgb-primary-text-color`) |
 | `graphite-accent` / `graphite-accent-ink` | `#f5c48a` / `#3a2410` | Highlights (on, alert) and text on accent |
+| `graphite-accent-rgb` | `245, 196, 138` | Accent as RGB triple (for Home Assistant's `rgb-primary-color`) |
 | `graphite-light-color` | `#f5c48a` | Lamps that are on and report no color; a lamp with a color (`rgb_color`, white temperatures included) tints its row or tile in that color, in every theme |
 | `graphite-lamp-text-strength` | `100%` | Share of the lamp color in its icon and value (the rest is primary text); light themes use `50%` so a warm white stays readable |
 | `graphite-success` / `graphite-success-ink` | `#a8d5a2` / `#17331a` | Second highlight color (e.g. visitor mode) |
@@ -97,3 +98,9 @@ The theme maps Home Assistant variables (`primary-background-color`, `card-backg
 `ha-card-*`, text colors, sections gaps) to the tokens above. Hover and press of tiles and buttons
 (`ha-ripple-hover-color`, `ha-ripple-pressed-color`) use the ground with a quarter of ink instead of
 grey, so they follow the tone of each theme; the accent stays reserved for active states.
+
+The Home Assistant sidebar follows the theme as well: the selected entry uses the accent
+(`sidebar-selected-icon-color`, `sidebar-selected-text-color`), and text on accent surfaces such as the
+notification badge uses the accent ink (`text-accent-color`). Home Assistant's primary color (`primary-color`,
+`rgb-primary-color` and the `ha-color-primary-05` to `-95` scale) is the accent too, so switches, buttons,
+links and selections on the Home Assistant pages match the dashboard.

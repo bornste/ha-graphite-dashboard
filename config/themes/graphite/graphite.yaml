@@ -13,6 +13,7 @@ Graphite: &graphite
       graphite-ink: "#f3f3f4"
       graphite-ink-rgb: 243, 243, 244
       graphite-accent: "#f5c48a"
+      graphite-accent-rgb: 245, 196, 138
       graphite-accent-ink: "#3a2410"
       graphite-danger: "#e8908a"
       # second highlight color (e.g. visitor mode), same lightness as the accent
@@ -87,6 +88,32 @@ Graphite: &graphite
       rgb-primary-text-color: var(--graphite-ink-rgb)
       divider-color: var(--graphite-divider)
       accent-color: var(--graphite-accent)
+      # text on accent surfaces (e.g. the notification badge in the sidebar)
+      text-accent-color: var(--graphite-accent-ink)
+      # selected sidebar entry in the accent instead of the HA blue
+      sidebar-selected-icon-color: var(--graphite-accent)
+      sidebar-selected-text-color: var(--graphite-accent)
+      # primary color of Home Assistant (switches, buttons, links, selections) in the accent; the
+      # ha-color-primary scale runs from the accent towards black (05-30) and white (50-95)
+      primary-color: var(--graphite-accent)
+      rgb-primary-color: var(--graphite-accent-rgb)
+      dark-primary-color: "color-mix(in srgb, var(--graphite-accent) 80%, #000000)"
+      light-primary-color: "color-mix(in srgb, var(--graphite-accent) 40%, #ffffff)"
+      text-primary-color: var(--graphite-accent-ink)
+      mdc-theme-primary: var(--graphite-accent)
+      mdc-theme-on-primary: var(--graphite-accent-ink)
+      ha-color-on-primary-loud: var(--graphite-accent-ink)
+      ha-color-primary-05: "color-mix(in srgb, var(--graphite-accent) 10%, #000000)"
+      ha-color-primary-10: "color-mix(in srgb, var(--graphite-accent) 20%, #000000)"
+      ha-color-primary-20: "color-mix(in srgb, var(--graphite-accent) 32%, #000000)"
+      ha-color-primary-30: "color-mix(in srgb, var(--graphite-accent) 62%, #000000)"
+      ha-color-primary-40: var(--graphite-accent)
+      ha-color-primary-50: "color-mix(in srgb, var(--graphite-accent) 85%, #ffffff)"
+      ha-color-primary-60: "color-mix(in srgb, var(--graphite-accent) 70%, #ffffff)"
+      ha-color-primary-70: "color-mix(in srgb, var(--graphite-accent) 50%, #ffffff)"
+      ha-color-primary-80: "color-mix(in srgb, var(--graphite-accent) 30%, #ffffff)"
+      ha-color-primary-90: "color-mix(in srgb, var(--graphite-accent) 15%, #ffffff)"
+      ha-color-primary-95: "color-mix(in srgb, var(--graphite-accent) 8%, #ffffff)"
       ha-section-grid-row-gap: var(--graphite-gap-panel)
       ha-section-grid-column-gap: var(--graphite-gap-panel)
       ha-view-sections-column-gap: var(--graphite-gap-panel)
@@ -127,6 +154,7 @@ Graphite Salvia:
       graphite-ink: "#EEEDEA"
       graphite-ink-rgb: 238, 237, 234
       graphite-accent: "#FFC400"
+      graphite-accent-rgb: 255, 196, 0
       graphite-accent-ink: "#2E2300"
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 57%, var(--graphite-ground))"
@@ -142,6 +170,7 @@ Graphite Midnight:
       graphite-ink: "#EFE6D2"
       graphite-ink-rgb: 239, 230, 210
       graphite-accent: "#FFB000"
+      graphite-accent-rgb: 255, 176, 0
       graphite-accent-ink: "#2E2000"
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 55%, var(--graphite-ground))"
@@ -157,6 +186,7 @@ Graphite Carbon:
       graphite-ink: "#D7D9DC"
       graphite-ink-rgb: 215, 217, 220
       graphite-accent: "#5ED3C3"
+      graphite-accent-rgb: 94, 211, 195
       graphite-accent-ink: "#112623"
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 59%, var(--graphite-ground))"
@@ -174,6 +204,7 @@ Graphite Lavender:
       graphite-ink: "#2B2D5C"
       graphite-ink-rgb: 43, 45, 92
       graphite-accent: "#B4387A"
+      graphite-accent-rgb: 180, 56, 122
       graphite-accent-ink: "#FFFFFF"
       graphite-danger: "#B3261E"
       graphite-success: "#2F7D3A"
@@ -211,6 +242,7 @@ Graphite Sand:
       graphite-ink: "#474329"
       graphite-ink-rgb: 71, 67, 41
       graphite-accent: "#2F7F7A"
+      graphite-accent-rgb: 47, 127, 122
       graphite-accent-ink: "#FFFFFF"
       graphite-danger: "#B3261E"
       graphite-success: "#2F7D3A"
