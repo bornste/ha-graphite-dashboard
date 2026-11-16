@@ -16,6 +16,7 @@ the special cases – also for cards with a visual editor.
 | graphite-effect | tile | [graphite-effect.md](graphite-effect.md) | ready |
 | graphite-image | tile | [graphite-image.md](graphite-image.md) | ready |
 | graphite-button | tile, row, icon | [graphite-button.md](graphite-button.md) | new |
+| graphite-select | segments, tiles | [graphite-select.md](graphite-select.md) | new |
 | graphite-stopwatch | tile | [graphite-stopwatch.md](graphite-stopwatch.md) | ready |
 | graphite-todo | tile | [graphite-todo.md](graphite-todo.md) | ready |
 | graphite-ink | tile | [graphite-ink.md](graphite-ink.md) | ready |

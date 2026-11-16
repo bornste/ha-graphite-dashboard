@@ -78,6 +78,10 @@ export const sampleStates: Record<string, any> = {
   "script.start_racing_game": entity("script.start_racing_game", "on", { friendly_name: "Racing game" }, 1),
   "script.start_puzzle_game": entity("script.start_puzzle_game", "off", { friendly_name: "Puzzle game" }, 300),
   "script.start_streaming": entity("script.start_streaming", "off", { friendly_name: "Streaming" }, 900),
+  "input_select.theme_mode": entity("input_select.theme_mode", "Automatisch", { friendly_name: "Theme mode", options: ["Automatisch", "Hell", "Dunkel"] }, 60),
+  "input_select.light_theme": entity("input_select.light_theme", "Graphite Lavender", { friendly_name: "Light theme", options: ["Graphite Sand", "Graphite Lavender"] }, 600),
+  "input_select.dark_theme": entity("input_select.dark_theme", "Graphite Salvia", { friendly_name: "Dark theme", options: ["Graphite Salvia", "Graphite", "Graphite Midnight", "Graphite Carbon"] }, 600),
+  "input_select.vacuum_power": entity("input_select.vacuum_power", "Standard", { friendly_name: "Suction", options: ["Quiet", "Standard", "Turbo", "Max"] }, 30),
   "sensor.player_one_playing_time": entity("sensor.player_one_playing_time", "11700", { friendly_name: "Player one", status: "running", accumulated_seconds: 11400, running_since: minutesAgo(5), icon: "ic:twotone-sports-esports" }, 5),
   "sensor.player_two_playing_time": entity("sensor.player_two_playing_time", "6480", { friendly_name: "Player two", status: "running", accumulated_seconds: 6000, running_since: minutesAgo(8), icon: "ic:twotone-sports-esports" }, 8),
   "sensor.tv_watching_time": entity("sensor.tv_watching_time", "4980", { friendly_name: "TV", status: "paused", accumulated_seconds: 4980, icon: "ic:twotone-tv" }, 30),
@@ -628,6 +632,64 @@ export function examples(language: string): ShowcaseSection[] {
                   { type: "custom:graphite-button", layout: "icon", name: german ? "Batterien" : "Batteries", icon: "ic:twotone-battery-5-bar", tap_action: { action: "navigate", navigation_path: "#batteries" } },
                   { type: "custom:graphite-button", layout: "icon", entity: "light.floor_lamp", active: { state: "on" } },
                   { type: "custom:graphite-button", layout: "icon", entity: "script.start_racing_game", busy: true },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      title: "graphite-select",
+      description: `Picks one option of an input_select or select: as segments or as tiles, optionally with a preview of the theme each option names.
+        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-select.md">Documentation</a>`,
+      examples: [
+        {
+          title: "Segments",
+          note: "A mode as a row of buttons; names and icons of the options come from the card config.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Modus" : "Mode",
+            cards: [
+              {
+                type: "custom:graphite-select",
+                entity: "input_select.theme_mode",
+                options: [
+                  { option: "Automatisch", name: "Auto", icon: "mdi:brightness-6" },
+                  { option: "Hell", name: german ? "Hell" : "Light", icon: "mdi:white-balance-sunny" },
+                  { option: "Dunkel", name: german ? "Dunkel" : "Dark", icon: "mdi:weather-night" },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          title: "Theme preview",
+          note: "With preview: theme each tile draws its Graphite theme with the theme's own tokens; \"Graphite \" in front of the name is left out. The selected theme gets a check mark.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Dunkles Theme" : "Dark theme",
+            cards: [
+              { type: "custom:graphite-select", entity: "input_select.dark_theme", layout: "tiles", preview: "theme" },
+            ],
+          },
+        },
+        {
+          title: "Tiles",
+          note: "Without preview the tiles show icon and name, like graphite-button.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Saugkraft" : "Suction",
+            cards: [
+              {
+                type: "custom:graphite-select",
+                entity: "input_select.vacuum_power",
+                layout: "tiles",
+                options: [
+                  { option: "Quiet", name: german ? "Leise" : "Quiet", icon: "mdi:fan-speed-1" },
+                  { option: "Standard", icon: "mdi:fan-speed-2" },
+                  { option: "Turbo", icon: "mdi:fan-speed-3" },
+                  { option: "Max", icon: "mdi:fan-plus" },
                 ],
               },
             ],

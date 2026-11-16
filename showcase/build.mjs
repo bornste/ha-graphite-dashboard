@@ -14,7 +14,8 @@ await mkdir(site, { recursive: true });
 // themes: every theme of graphite.yaml as CSS variables. "Graphite" sits on the page root, the others
 // on :root[data-theme="…"] for the theme switcher. A theme uses its dark mode, a light theme its light
 // mode; the merge keys (<<) of the file are resolved. The wallpaper of a theme (lovelace-background)
-// lives in Home Assistant, the showcase keeps the plain ground.
+// lives in Home Assistant, the showcase keeps the plain ground. The variables also go to the
+// page as hass.themes (for the theme preview of graphite-select).
 const themes = parse(await readFile(new URL("config/themes/graphite/graphite.yaml", root), "utf8"), { merge: true });
 const themeSlug = (name) => name.toLowerCase().split(" ").join("-");
 const themeList = Object.entries(themes).map(([name, theme]) => {
@@ -108,7 +109,7 @@ const options = {
   define: {
     GRAPHITE_VERSION: JSON.stringify(packageInfo.version),
     SHOWCASE_ICONS: JSON.stringify(showcaseIcons),
-    SHOWCASE_THEMES: JSON.stringify(themeList.map(({ name, slug }) => ({ name, slug }))),
+    SHOWCASE_THEMES: JSON.stringify(themeList.map(({ name, slug, variables }) => ({ name, slug, variables }))),
   },
   nodePaths: process.env.GRAPHITE_NODE_PATH ? [process.env.GRAPHITE_NODE_PATH] : [],
   logLevel: "info",

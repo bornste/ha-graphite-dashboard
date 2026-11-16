@@ -156,6 +156,10 @@ customElements.define("showcase-tile", ShowcaseTile);
   },
 });
 
+// themes of graphite.yaml (name, slug and variables), injected by the build
+declare const SHOWCASE_THEMES: Array<{ name: string; slug: string; variables: Record<string, string> }>;
+const showcaseThemes = Object.fromEntries(SHOWCASE_THEMES.map((theme) => [theme.name, theme.variables]));
+
 // a minimal hass object: states, number formatting and canned template results
 // states of the page; toggling replaces an entity object (like Home Assistant), so the cards re-render
 let states: Record<string, any> = { ...sampleStates };
@@ -197,7 +201,12 @@ function createHass(language: string): any {
         return () => undefined;
       },
     },
-    async callService() {
+    // themes of graphite.yaml, as Home Assistant hands them to the cards
+    themes: { themes: showcaseThemes },
+    async callService(domain: string, service: string, data?: Record<string, unknown>, target?: Record<string, unknown>) {
+      // select_option of input_select / select changes the sample state, everything else does nothing
+      const entityId = target?.entity_id as string | undefined;
+      if (service === "select_option" && entityId && typeof data?.option === "string") setState(entityId, data.option);
       return undefined;
     },
     async callApi(method: string, path: string) {
@@ -391,7 +400,6 @@ const languageSelect = document.getElementById("language") as HTMLSelectElement;
 
 // theme switcher: the themes of graphite.yaml (theme.css holds their variables); the choice is kept
 // in the browser and can be given as ?theme=<slug>
-declare const SHOWCASE_THEMES: Array<{ name: string; slug: string }>;
 const themeSelect = document.getElementById("theme") as HTMLSelectElement;
 const themeKey = "graphite-showcase-theme";
 

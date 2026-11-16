@@ -276,6 +276,39 @@
       }
     }
   },
+  "select": {
+    "editor": {
+      "entity": "Entity",
+      "layout": "Layout",
+      "columns": "Columns",
+      "preview": "Preview",
+      "options": "Options",
+      "layouts": {
+        "segments": "Segments",
+        "tiles": "Tiles"
+      },
+      "previews": {
+        "theme": "Theme"
+      },
+      "sections": {
+        "options": "Options"
+      },
+      "options_item": {
+        "option": "Option",
+        "name": "Name",
+        "icon": "Icon"
+      },
+      "helper": {
+        "entity": "input_select or select.",
+        "layout": "Segments: a row of buttons (e.g. a mode). Tiles: a grid.",
+        "columns": "Default: segments all options in one row, tiles 4.",
+        "preview": "Tiles only: shows a small preview of the Home Assistant theme the option names.",
+        "sections": {
+          "options": "Optional: name and icon of single options. The option must match the value of the entity exactly."
+        }
+      }
+    }
+  },
   "stopwatch": {
     "running": "running",
     "paused": "paused",

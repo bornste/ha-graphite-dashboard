@@ -24,6 +24,7 @@ import "./cards/lists/graphite-timeline";
 import "./cards/controls/graphite-slider";
 import "./cards/controls/graphite-light";
 import "./cards/controls/graphite-button";
+import "./cards/controls/graphite-select";
 import "./cards/graphite-dialog";
 import "./overlays/graphite-toast";
 import "./overlays/graphite-dialog-layer";

@@ -18,6 +18,8 @@ export interface HomeAssistant {
   entities?: Record<string, { display_precision?: number }>;
   locale?: { language: string };
   language?: string;
+  // themes of Home Assistant (name -> custom properties, optional light/dark modes)
+  themes?: { themes?: Record<string, Record<string, any>>; default_theme?: string; darkMode?: boolean };
   connection: HassConnection;
   formatEntityState?: (stateObj: HassEntity, state?: string) => string;
   formatEntityAttributeValue?: (stateObj: HassEntity, attribute: string, value?: unknown) => string;

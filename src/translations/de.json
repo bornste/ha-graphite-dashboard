@@ -276,6 +276,39 @@
       }
     }
   },
+  "select": {
+    "editor": {
+      "entity": "Entität",
+      "layout": "Darstellung",
+      "columns": "Spalten",
+      "preview": "Vorschau",
+      "options": "Optionen",
+      "layouts": {
+        "segments": "Segmente",
+        "tiles": "Kacheln"
+      },
+      "previews": {
+        "theme": "Theme"
+      },
+      "sections": {
+        "options": "Optionen"
+      },
+      "options_item": {
+        "option": "Option",
+        "name": "Name",
+        "icon": "Icon"
+      },
+      "helper": {
+        "entity": "input_select oder select.",
+        "layout": "Segmente: eine Reihe von Knöpfen (z.B. ein Modus). Kacheln: ein Raster.",
+        "columns": "Standard: Segmente alle Optionen in einer Reihe, Kacheln 4.",
+        "preview": "Nur bei Kacheln: zeigt eine kleine Vorschau des Home-Assistant-Themes, das die Option nennt.",
+        "sections": {
+          "options": "Optional: Name und Icon einzelner Optionen. Die Option muss genau dem Wert der Entität entsprechen."
+        }
+      }
+    }
+  },
   "stopwatch": {
     "running": "läuft",
     "paused": "pausiert",
