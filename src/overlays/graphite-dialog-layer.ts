@@ -89,6 +89,9 @@ function findDialog(node: unknown, hash: string, depth = 0): DialogConfig | unde
   return undefined;
 }
 
+// fallback check of hass while a dialog is open (ms), see followHass
+const hassCheckInterval = 250;
+
 class GraphiteDialogLayer {
   private host?: HTMLElement;
   private dialog?: GraphiteDialog;
@@ -96,6 +99,7 @@ class GraphiteDialogLayer {
   private openedByNavigation = false;
   private lastPath = window.location.pathname;
   private hassFrame?: number;
+  private hassTimer?: number;
   private lastHass?: unknown;
   private retryTimer?: number;
   private scrollRestore?: string;
@@ -341,18 +345,25 @@ class GraphiteDialogLayer {
 
   // hass changes with every state change: passed on to the dialog while it is open
   // also keeps the layer in the page: right after loading, Home Assistant renders the view
-  // container again and removes everything in it, the open dialog included
+  // container again and removes everything in it, the open dialog included.
+  // Checked every frame and, as a fallback, on a timer: some kiosk browsers pause or throttle
+  // animation frames although the page is shown, the dialog would then keep an old hass.
   private followHass(): void {
-    const step = () => {
+    const check = () => {
       if (this.host && !this.host.isConnected) this.remount(this.host);
       const hass = this.homeAssistant?.hass;
       if (this.dialog && hass && hass !== this.lastHass) {
         this.lastHass = hass;
         this.dialog.hass = hass as any;
       }
+    };
+    const step = () => {
+      check();
       this.hassFrame = requestAnimationFrame(step);
     };
     this.hassFrame = requestAnimationFrame(step);
+    window.clearInterval(this.hassTimer);
+    this.hassTimer = window.setInterval(check, hassCheckInterval);
   }
 
   private remount(host: HTMLElement): void {
@@ -393,6 +404,8 @@ class GraphiteDialogLayer {
   private remove(animated = true): void {
     if (this.hassFrame !== undefined) cancelAnimationFrame(this.hassFrame);
     this.hassFrame = undefined;
+    window.clearInterval(this.hassTimer);
+    this.hassTimer = undefined;
     const host = this.host;
     const dialog = this.dialog;
     this.host = undefined;

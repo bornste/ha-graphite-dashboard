@@ -49,6 +49,8 @@ preview: theme
   look as in the theme itself. A theme with light and dark mode uses its dark mode, a light-only theme
   its light mode. An option that names no theme shows an empty frame. After reloading the themes the
   previews follow.
+- **Tap:** the tapped option shows as selected right away, until the entity reports it (at most
+  4 seconds). The option is sent even if it already looks selected.
 - **Unavailable:** the options are dimmed and do not react.
 - **Keyboard:** the options are radio buttons; Enter or Space selects.
 - **Hover and press:** Home Assistant's ripple in the tone of the theme, see [theme](theme.md).

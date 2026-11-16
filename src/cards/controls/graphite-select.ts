@@ -32,6 +32,8 @@ export interface SelectConfig extends GraphiteCardConfig {
 const layouts: SelectLayout[] = ["segments", "tiles"];
 const selectDomains = ["input_select", "select"];
 const themePrefix = "Graphite ";
+// how long a tapped option shows as selected without the entity following (ms)
+const pendingTimeout = 4000;
 
 export function selectLayoutOf(config: { layout?: string } | undefined): SelectLayout {
   return layouts.includes(config?.layout as SelectLayout) ? config!.layout as SelectLayout : "segments";
@@ -216,6 +218,10 @@ const selectStyles = css`
 export class GraphiteSelect extends GraphiteCard<SelectConfig> {
   static styles: CSSResultGroup = selectStyles;
 
+  // option tapped last, shown as selected until the entity follows
+  private pendingOption?: string;
+  private pendingTimer?: number;
+
   protected normalizeConfig(config: SelectConfig): SelectConfig {
     if (!config.entity) throw new Error("graphite-select: entity is required");
     if (!selectDomains.includes(config.entity.split(".")[0])) {
@@ -256,12 +262,28 @@ export class GraphiteSelect extends GraphiteCard<SelectConfig> {
     return option;
   }
 
+  // the tapped option shows as selected right away, until the entity reports it (or a few seconds
+  // passed); the service is called even if the option already looks selected, so a card with an
+  // outdated state can still switch back
   private select(option: string): void {
     const config = this.config;
     if (!config || !this.hass) return;
     const stateObj = this.hass.states[config.entity];
-    if (!stateObj || isUnavailable(stateObj) || stateObj.state === option) return;
+    if (!stateObj || isUnavailable(stateObj)) return;
+    this.pendingOption = option;
+    window.clearTimeout(this.pendingTimer);
+    this.pendingTimer = window.setTimeout(() => {
+      this.pendingOption = undefined;
+      this.requestUpdate();
+    }, pendingTimeout);
+    this.requestUpdate();
     this.hass.callService(config.entity.split(".")[0], "select_option", { option }, { entity_id: config.entity });
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.clearTimeout(this.pendingTimer);
+    this.pendingOption = undefined;
   }
 
   private onKey(event: KeyboardEvent, option: string): void {
@@ -305,9 +327,14 @@ export class GraphiteSelect extends GraphiteCard<SelectConfig> {
     const options: string[] = Array.isArray(stateObj?.attributes?.options) ? stateObj!.attributes.options : [];
     const columns = config.columns ?? (layout === "segments" ? Math.max(options.length, 1) : 4);
     const name = stateObj?.attributes?.friendly_name ?? config.entity;
+    if (this.pendingOption !== undefined && stateObj?.state === this.pendingOption) {
+      this.pendingOption = undefined;
+      window.clearTimeout(this.pendingTimer);
+    }
+    const selected = this.pendingOption ?? stateObj?.state;
     return html`<div class="options ${layout}${unavailable ? " unavailable" : ""}" role="radiogroup" aria-label=${name}
       style="--selectColumns: ${columns}">${options.map((option) =>
-        this.renderOption(option, stateObj?.state === option, !unavailable))}</div>`;
+        this.renderOption(option, selected === option, !unavailable))}</div>`;
   }
 
   getCardSize(): number {

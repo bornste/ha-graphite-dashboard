@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.62.0";
+var version = "0.62.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13517,6 +13517,7 @@ var GraphiteSelectEditor = class extends GraphiteFormEditor {
 var layouts3 = ["segments", "tiles"];
 var selectDomains = ["input_select", "select"];
 var themePrefix = "Graphite ";
+var pendingTimeout2 = 4e3;
 function selectLayoutOf(config) {
   return layouts3.includes(config?.layout) ? config.layout : "segments";
 }
@@ -13728,12 +13729,27 @@ var GraphiteSelect = class extends GraphiteCard {
     }
     return option;
   }
+  // the tapped option shows as selected right away, until the entity reports it (or a few seconds
+  // passed); the service is called even if the option already looks selected, so a card with an
+  // outdated state can still switch back
   select(option) {
     const config = this.config;
     if (!config || !this.hass) return;
     const stateObj = this.hass.states[config.entity];
-    if (!stateObj || isUnavailable(stateObj) || stateObj.state === option) return;
+    if (!stateObj || isUnavailable(stateObj)) return;
+    this.pendingOption = option;
+    window.clearTimeout(this.pendingTimer);
+    this.pendingTimer = window.setTimeout(() => {
+      this.pendingOption = void 0;
+      this.requestUpdate();
+    }, pendingTimeout2);
+    this.requestUpdate();
     this.hass.callService(config.entity.split(".")[0], "select_option", { option }, { entity_id: config.entity });
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.clearTimeout(this.pendingTimer);
+    this.pendingOption = void 0;
   }
   onKey(event, option) {
     if (event.key !== "Enter" && event.key !== " ") return;
@@ -13770,8 +13786,13 @@ var GraphiteSelect = class extends GraphiteCard {
     const options = Array.isArray(stateObj?.attributes?.options) ? stateObj.attributes.options : [];
     const columns = config.columns ?? (layout === "segments" ? Math.max(options.length, 1) : 4);
     const name = stateObj?.attributes?.friendly_name ?? config.entity;
+    if (this.pendingOption !== void 0 && stateObj?.state === this.pendingOption) {
+      this.pendingOption = void 0;
+      window.clearTimeout(this.pendingTimer);
+    }
+    const selected = this.pendingOption ?? stateObj?.state;
     return b2`<div class="options ${layout}${unavailable2 ? " unavailable" : ""}" role="radiogroup" aria-label=${name}
-      style="--selectColumns: ${columns}">${options.map((option) => this.renderOption(option, stateObj?.state === option, !unavailable2))}</div>`;
+      style="--selectColumns: ${columns}">${options.map((option) => this.renderOption(option, selected === option, !unavailable2))}</div>`;
   }
   getCardSize() {
     return selectLayoutOf(this.config) === "segments" ? 1 : 2;
@@ -14366,6 +14387,7 @@ function findDialog(node, hash, depth = 0) {
   }
   return void 0;
 }
+var hassCheckInterval = 250;
 var GraphiteDialogLayer = class {
   constructor() {
     this.openHash = "";
@@ -14583,18 +14605,25 @@ var GraphiteDialogLayer = class {
   }
   // hass changes with every state change: passed on to the dialog while it is open
   // also keeps the layer in the page: right after loading, Home Assistant renders the view
-  // container again and removes everything in it, the open dialog included
+  // container again and removes everything in it, the open dialog included.
+  // Checked every frame and, as a fallback, on a timer: some kiosk browsers pause or throttle
+  // animation frames although the page is shown, the dialog would then keep an old hass.
   followHass() {
-    const step = () => {
+    const check2 = () => {
       if (this.host && !this.host.isConnected) this.remount(this.host);
       const hass = this.homeAssistant?.hass;
       if (this.dialog && hass && hass !== this.lastHass) {
         this.lastHass = hass;
         this.dialog.hass = hass;
       }
+    };
+    const step = () => {
+      check2();
       this.hassFrame = requestAnimationFrame(step);
     };
     this.hassFrame = requestAnimationFrame(step);
+    window.clearInterval(this.hassTimer);
+    this.hassTimer = window.setInterval(check2, hassCheckInterval);
   }
   remount(host) {
     const mount = this.mountPoint;
@@ -14630,6 +14659,8 @@ var GraphiteDialogLayer = class {
   remove(animated = true) {
     if (this.hassFrame !== void 0) cancelAnimationFrame(this.hassFrame);
     this.hassFrame = void 0;
+    window.clearInterval(this.hassTimer);
+    this.hassTimer = void 0;
     const host = this.host;
     const dialog = this.dialog;
     this.host = void 0;
