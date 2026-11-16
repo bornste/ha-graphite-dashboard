@@ -3,6 +3,7 @@
 // Child cards become tiles through context tokens (--graphite-card-surface, ...).
 import { css, html, nothing, type PropertyValues } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
+import { solidHoverStyles } from "../core/hover";
 import { edgeMask } from "../core/edge";
 import { fireAction } from "../core/actions";
 import { unavailableStates } from "../core/format";
@@ -300,6 +301,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       pointer-events: none;
       ${edgeMask}
     }
+    ${solidHoverStyles(".button", ".button:not(.active)")}
   `;
 
   private childCards: any[] = [];

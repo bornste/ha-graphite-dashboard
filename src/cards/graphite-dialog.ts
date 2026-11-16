@@ -5,6 +5,7 @@
 // a copy of it above the current view. Header like graphite-panel: title, status, chips, buttons.
 import { css, html, nothing } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
+import { solidHoverStyles } from "../core/hover";
 import { edgeMask } from "../core/edge";
 import { registerCard, registerElement } from "../core/register";
 import type { GraphiteCardConfig, HomeAssistant } from "../core/types";
@@ -166,6 +167,7 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       outline: 2px solid var(--graphite-accent);
       outline-offset: 2px;
     }
+    ${solidHoverStyles(".close")}
   `;
 
   private panel?: any;

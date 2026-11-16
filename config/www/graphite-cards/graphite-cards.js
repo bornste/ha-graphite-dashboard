@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.60.0";
+var version = "0.60.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3076,6 +3076,23 @@ GraphiteCard.properties = {
   config: { state: true }
 };
 
+// src/core/hover.ts
+function solidHoverStyles(selector, hovered = selector) {
+  const button = r(selector);
+  const hover = r(hovered);
+  return i`
+    ${button} ha-ripple {
+      --ha-ripple-hover-opacity: 0;
+    }
+    @media (hover: hover) {
+      ${hover}:hover {
+        background: color-mix(in srgb, var(--ha-ripple-hover-color, var(--secondary-text-color, #8f8f92))
+          calc(var(--ha-ripple-hover-opacity, 0.08) * 100%), var(--graphite-surface-tile));
+      }
+    }
+  `;
+}
+
 // src/core/edge.ts
 var edgeMask = i`
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -4127,6 +4144,7 @@ GraphitePanel.styles = i`
       pointer-events: none;
       ${edgeMask}
     }
+    ${solidHoverStyles(".button", ".button:not(.active)")}
   `;
 registerElement("graphite-panel-editor", GraphitePanelEditor);
 registerCard("graphite-panel", GraphitePanel, {
@@ -13185,6 +13203,7 @@ var iconButtonStyles = i`
   .spinner {
     position: relative;
   }
+  ${solidHoverStyles(".button", ".button.interactive:not(.on)")}
 `;
 var tileLayout = [tileStyles, spinnerStyles, buttonTileStyles];
 var rowLayout = [rowStyles, spinnerStyles, buttonRowStyles];
@@ -13527,6 +13546,7 @@ GraphiteDialog.styles = i`
       outline: 2px solid var(--graphite-accent);
       outline-offset: 2px;
     }
+    ${solidHoverStyles(".close")}
   `;
 registerElement("graphite-dialog-editor", GraphiteDialogEditor);
 registerCard("graphite-dialog", GraphiteDialog, {

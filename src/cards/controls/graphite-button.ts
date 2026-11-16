@@ -7,6 +7,7 @@ import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type Act
 import { matchesCondition, type ValueCondition } from "../../core/conditions";
 import { isUnavailable } from "../../core/format";
 import { GraphiteCard } from "../../core/graphite-card";
+import { solidHoverStyles } from "../../core/hover";
 import { lampColor, lampTextColor } from "../../core/lamp-color";
 import { offlineDot } from "../../core/offline-dot";
 import { registerCard, registerElement } from "../../core/register";
@@ -146,6 +147,7 @@ const iconButtonStyles = css`
   .spinner {
     position: relative;
   }
+  ${solidHoverStyles(".button", ".button.interactive:not(.on)")}
 `;
 
 const tileLayout = [tileStyles, spinnerStyles, buttonTileStyles];
