@@ -1,6 +1,7 @@
 // Base class of all Graphite cards: config handling, hass updates limited to the watched entities.
 import { adoptStyles, LitElement, type CSSResultGroup, type PropertyValues } from "lit";
 import type { GraphiteCardConfig, HomeAssistant } from "./types";
+import { rememberHass } from "./hass-store";
 import { languageOf, themeLanguageOf, translate } from "./i18n";
 
 // checks for the theme language of a card that was built before the view theme applied
@@ -26,6 +27,7 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
   set hass(hass: HomeAssistant | undefined) {
     const previous = this.hassObject;
     this.hassObject = hass;
+    rememberHass(hass);
     if (previous?.locale?.language !== hass?.locale?.language) this.languageCache = undefined;
     this.hassChanged(hass);
     this.requestUpdate("hass", previous);

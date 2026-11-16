@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.62.1";
+var version = "0.62.3";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -550,6 +550,15 @@ i4._$litElement$ = true, i4["finalized"] = true, s3.litElementHydrateSupport?.({
 var o4 = s3.litElementPolyfillSupport;
 o4?.({ LitElement: i4 });
 (s3.litElementVersions ??= []).push("4.2.2");
+
+// src/core/hass-store.ts
+var newestHass;
+function rememberHass(hass) {
+  if (hass) newestHass = hass;
+}
+function currentHass() {
+  return newestHass;
+}
 
 // src/translations/de.json
 var de_default = {
@@ -3084,6 +3093,7 @@ var GraphiteCard = class extends i4 {
   set hass(hass) {
     const previous = this.hassObject;
     this.hassObject = hass;
+    rememberHass(hass);
     if (previous?.locale?.language !== hass?.locale?.language) this.languageCache = void 0;
     this.hassChanged(hass);
     this.requestUpdate("hass", previous);
@@ -14387,6 +14397,18 @@ function findDialog(node, hash, depth = 0) {
   }
   return void 0;
 }
+var newestUpdates = /* @__PURE__ */ new WeakMap();
+function newestUpdate(hass) {
+  const cached = newestUpdates.get(hass);
+  if (cached !== void 0) return cached;
+  let newest = "";
+  for (const state of Object.values(hass.states ?? {})) {
+    const updated = state?.last_updated ?? "";
+    if (updated > newest) newest = updated;
+  }
+  newestUpdates.set(hass, newest);
+  return newest;
+}
 var hassCheckInterval = 250;
 var GraphiteDialogLayer = class {
   constructor() {
@@ -14404,6 +14426,15 @@ var GraphiteDialogLayer = class {
   }
   get homeAssistant() {
     return document.querySelector("home-assistant");
+  }
+  // the fresher of two sources: the hass of the <home-assistant> element and the newest hass a
+  // Graphite card got. Either can fall behind: some kiosk browsers do not keep the element's hass
+  // current, and Home Assistant may pause the cards behind an open dialog.
+  get hass() {
+    const element = this.homeAssistant?.hass;
+    const cards = currentHass();
+    if (!element || !cards || element === cards) return element ?? cards;
+    return newestUpdate(cards) > newestUpdate(element) ? cards : element;
   }
   get lovelaceRoot() {
     return findDeep(this.homeAssistant, "hui-root");
@@ -14497,8 +14528,8 @@ var GraphiteDialogLayer = class {
     this.copyTheme(host, mount);
     const dialog = document.createElement("graphite-dialog");
     dialog.setConfig(config);
-    dialog.hass = this.homeAssistant?.hass;
-    this.lastHass = this.homeAssistant?.hass;
+    dialog.hass = this.hass;
+    this.lastHass = this.hass;
     dialog.enableClose(sheet);
     dialog.addEventListener("graphite-dialog-close", () => close());
     shadow.append(dialog);
@@ -14611,7 +14642,7 @@ var GraphiteDialogLayer = class {
   followHass() {
     const check2 = () => {
       if (this.host && !this.host.isConnected) this.remount(this.host);
-      const hass = this.homeAssistant?.hass;
+      const hass = this.hass;
       if (this.dialog && hass && hass !== this.lastHass) {
         this.lastHass = hass;
         this.dialog.hass = hass;

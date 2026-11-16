@@ -13,6 +13,7 @@
 // hash is closed by removing the hash (no foreign history entry is touched).
 // Hashes no graphite-dialog knows (e.g. other pop-up cards) are ignored.
 import { normalizeHash, type GraphiteDialog, type DialogConfig } from "../cards/graphite-dialog";
+import { currentHass } from "../core/hass-store";
 
 interface HomeAssistantElement extends HTMLElement {
   hass?: Record<string, unknown>;
@@ -89,6 +90,26 @@ function findDialog(node: unknown, hash: string, depth = 0): DialogConfig | unde
   return undefined;
 }
 
+interface HassLike {
+  states?: Record<string, { last_updated?: string }>;
+}
+
+// newest last_updated of all states of a hass object (ISO texts compare in time order); computed
+// once per hass object, Home Assistant makes a new one on every change
+const newestUpdates = new WeakMap<object, string>();
+
+function newestUpdate(hass: HassLike): string {
+  const cached = newestUpdates.get(hass);
+  if (cached !== undefined) return cached;
+  let newest = "";
+  for (const state of Object.values(hass.states ?? {})) {
+    const updated = state?.last_updated ?? "";
+    if (updated > newest) newest = updated;
+  }
+  newestUpdates.set(hass, newest);
+  return newest;
+}
+
 // fallback check of hass while a dialog is open (ms), see followHass
 const hassCheckInterval = 250;
 
@@ -118,6 +139,16 @@ class GraphiteDialogLayer {
 
   private get homeAssistant(): HomeAssistantElement | null {
     return document.querySelector("home-assistant") as HomeAssistantElement | null;
+  }
+
+  // the fresher of two sources: the hass of the <home-assistant> element and the newest hass a
+  // Graphite card got. Either can fall behind: some kiosk browsers do not keep the element's hass
+  // current, and Home Assistant may pause the cards behind an open dialog.
+  private get hass(): unknown {
+    const element = this.homeAssistant?.hass as HassLike | undefined;
+    const cards = currentHass() as HassLike | undefined;
+    if (!element || !cards || element === cards) return element ?? cards;
+    return newestUpdate(cards) > newestUpdate(element) ? cards : element;
   }
 
   private get lovelaceRoot(): LovelaceRoot | null {
@@ -224,8 +255,8 @@ class GraphiteDialogLayer {
 
     const dialog = document.createElement("graphite-dialog") as GraphiteDialog;
     dialog.setConfig(config);
-    dialog.hass = this.homeAssistant?.hass as any;
-    this.lastHass = this.homeAssistant?.hass;
+    dialog.hass = this.hass as any;
+    this.lastHass = this.hass;
     dialog.enableClose(sheet);
     dialog.addEventListener("graphite-dialog-close", () => close());
     shadow.append(dialog);
@@ -351,7 +382,7 @@ class GraphiteDialogLayer {
   private followHass(): void {
     const check = () => {
       if (this.host && !this.host.isConnected) this.remount(this.host);
-      const hass = this.homeAssistant?.hass;
+      const hass = this.hass;
       if (this.dialog && hass && hass !== this.lastHass) {
         this.lastHass = hass;
         this.dialog.hass = hass as any;
