@@ -7840,6 +7840,7 @@ var tileStyles2 = i`
     background: color-mix(in srgb, var(--vacAccent) 16%, var(--vacTile));
     color: var(--vacAccent);
   }
+  ${tileEdgeStyles("ha-card")}
 `;
 var panelStyles = i`
   .columns {
@@ -8031,6 +8032,7 @@ var panelStyles = i`
   @container (max-width: 380px) {
     .presets, .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
+  ${tileEdgeStyles(".preset, .room, .mode, .suction, .boost, .start, .toStation, .action")}
 `;
 
 // src/cards/media/graphite-vacuum.ts

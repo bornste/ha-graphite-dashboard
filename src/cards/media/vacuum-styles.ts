@@ -1,6 +1,7 @@
 // Styles of graphite-vacuum: the tile (layout: tile) and the panel (layout: panel). Sizes follow the
 // Graphite tokens: tiles and buttons 60px (row height), gaps 8px (tile gap) and 16px (panel gap).
 import { css } from "lit";
+import { tileEdgeStyles } from "../../core/edge";
 
 export const tileStyles = css`
   ha-card {
@@ -101,6 +102,7 @@ export const tileStyles = css`
     background: color-mix(in srgb, var(--vacAccent) 16%, var(--vacTile));
     color: var(--vacAccent);
   }
+  ${tileEdgeStyles("ha-card")}
 `;
 
 export const panelStyles = css`
@@ -293,4 +295,5 @@ export const panelStyles = css`
   @container (max-width: 380px) {
     .presets, .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
+  ${tileEdgeStyles(".preset, .room, .mode, .suction, .boost, .start, .toStation, .action")}
 `;

@@ -7,11 +7,23 @@ type Config = Record<string, any>;
 
 // --- stand-ins for Home Assistant parts the cards rely on ---------------------------------
 
-// ha-card is a plain block container in Home Assistant
+// ha-card is a plain block container in Home Assistant; like there, the block display comes from its
+// own shadow styles, so a card can still make it a grid or flex box
 if (!customElements.get("ha-card")) {
   customElements.define("ha-card", class extends HTMLElement {
-    connectedCallback() {
-      this.style.display = "block";
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" }).innerHTML = "<style>:host { display: block; }</style><slot></slot>";
+    }
+  });
+}
+
+// ha-ripple lies over its parent without taking space (hover and press are left out here)
+if (!customElements.get("ha-ripple")) {
+  customElements.define("ha-ripple", class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" }).innerHTML = "<style>:host { position: absolute; inset: 0; pointer-events: none; }</style>";
     }
   });
 }
