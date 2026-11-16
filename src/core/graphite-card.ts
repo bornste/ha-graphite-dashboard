@@ -4,7 +4,8 @@ import type { GraphiteCardConfig, HomeAssistant } from "./types";
 import { languageOf, themeLanguageOf, translate } from "./i18n";
 
 // checks for the theme language of a card that was built before the view theme applied
-const languageChecks = 12;
+// (40 x 250 ms = 10 s; a hidden page slows the timers down, so this also covers a slow start)
+const languageChecks = 40;
 const languageCheckDelay = 250;
 
 export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = GraphiteCardConfig> extends LitElement {

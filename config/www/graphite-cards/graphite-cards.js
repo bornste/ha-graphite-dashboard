@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.61.0";
+var version = "0.61.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3004,7 +3004,7 @@ function translate(language, key, params = {}) {
 }
 
 // src/core/graphite-card.ts
-var languageChecks = 12;
+var languageChecks = 40;
 var languageCheckDelay = 250;
 var GraphiteCard = class extends i4 {
   constructor() {
