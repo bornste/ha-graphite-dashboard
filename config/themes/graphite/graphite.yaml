@@ -91,11 +91,12 @@ Graphite: &graphite
       ha-section-grid-column-gap: var(--graphite-gap-panel)
       ha-view-sections-column-gap: var(--graphite-gap-panel)
       ha-dialog-surface-background: var(--graphite-surface-panel)
-      # hover and press of tiles and buttons (ha-ripple) in the accent instead of grey: a faint
-      # accent shimmer, clearly weaker than the tint of an active tile
-      ha-ripple-hover-color: var(--graphite-accent)
-      ha-ripple-hover-opacity: "0.1"
-      ha-ripple-pressed-color: var(--graphite-accent)
+      # hover and press of tiles and buttons (ha-ripple) in the tone of the theme instead of grey: the
+      # ground with a quarter of ink; the accent stays reserved for active states
+      ha-ripple-hover-color: "color-mix(in srgb, var(--graphite-ink) 25%, var(--graphite-ground))"
+      ha-ripple-hover-opacity: "0.3"
+      ha-ripple-pressed-color: "color-mix(in srgb, var(--graphite-ink) 25%, var(--graphite-ground))"
+      ha-ripple-pressed-opacity: "0.4"
 
 
 # Graphite Glass: Graphite on a lighter ground with a wallpaper; the outer panels are translucent with

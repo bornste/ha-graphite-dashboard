@@ -93,5 +93,5 @@ line). Other sizes work, the separator may then need a small adjustment.
 
 The theme maps Home Assistant variables (`primary-background-color`, `card-background-color`,
 `ha-card-*`, text colors, sections gaps) to the tokens above. Hover and press of tiles and buttons
-(`ha-ripple-hover-color`, `ha-ripple-pressed-color`) use the accent at 10 % instead of grey, so they
-follow the color of each theme.
+(`ha-ripple-hover-color`, `ha-ripple-pressed-color`) use the ground with a quarter of ink instead of
+grey, so they follow the tone of each theme; the accent stays reserved for active states.
