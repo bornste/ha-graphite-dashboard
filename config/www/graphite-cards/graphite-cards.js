@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.61.2";
+var version = "0.61.3";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3032,6 +3032,7 @@ var GraphiteCard = class extends i4 {
   get language() {
     if (this.languageCache) return this.languageCache;
     const language = languageOf(this.isConnected ? this : void 0, this.hass);
+    this.usedLanguage = language;
     if (!this.isConnected) return language;
     if (themeLanguageOf(this) || this.languageChecksLeft <= 0) this.languageCache = language;
     else this.scheduleLanguageCheck();
@@ -3045,12 +3046,17 @@ var GraphiteCard = class extends i4 {
       if (!this.isConnected) return;
       if (themeLanguageOf(this)) {
         this.languageCache = void 0;
-        this.requestUpdate();
-        this.languageChanged();
+        this.refreshLanguage();
       } else {
         void this.language;
       }
     }, languageCheckDelay);
+  }
+  // texts made in another language than the one that applies now: render again
+  refreshLanguage() {
+    if (this.usedLanguage === void 0 || this.usedLanguage === languageOf(this, this.hass)) return;
+    this.requestUpdate();
+    this.languageChanged();
   }
   // called when the language of the texts changed after the first render (e.g. labels set outside render)
   languageChanged() {
@@ -3063,7 +3069,8 @@ var GraphiteCard = class extends i4 {
     super.connectedCallback();
     this.languageCache = void 0;
     this.languageChecksLeft = languageChecks;
-    if (!themeLanguageOf(this)) this.scheduleLanguageCheck();
+    if (themeLanguageOf(this)) this.refreshLanguage();
+    else this.scheduleLanguageCheck();
   }
   disconnectedCallback() {
     super.disconnectedCallback();

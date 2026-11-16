@@ -35,6 +35,8 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
   protected hassChanged(_hass: HomeAssistant | undefined): void {}
 
   private languageCache?: string;
+  // the language the texts were last made in (also while the card was not in the page yet)
+  private usedLanguage?: string;
   private languageCheck?: number;
   private languageChecksLeft = languageChecks;
 
@@ -45,6 +47,7 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
   protected get language(): string {
     if (this.languageCache) return this.languageCache;
     const language = languageOf(this.isConnected ? this : undefined, this.hass);
+    this.usedLanguage = language;
     if (!this.isConnected) return language;
     if (themeLanguageOf(this) || this.languageChecksLeft <= 0) this.languageCache = language;
     else this.scheduleLanguageCheck();
@@ -59,13 +62,19 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
       if (!this.isConnected) return;
       if (themeLanguageOf(this)) {
         this.languageCache = undefined;
-        this.requestUpdate();
-        this.languageChanged();
+        this.refreshLanguage();
       } else {
         // still no theme language: look again (the getter caches the fallback after the last check)
         void this.language;
       }
     }, languageCheckDelay);
+  }
+
+  // texts made in another language than the one that applies now: render again
+  private refreshLanguage(): void {
+    if (this.usedLanguage === undefined || this.usedLanguage === languageOf(this, this.hass)) return;
+    this.requestUpdate();
+    this.languageChanged();
   }
 
   // called when the language of the texts changed after the first render (e.g. labels set outside render)
@@ -80,8 +89,10 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
     super.connectedCallback();
     this.languageCache = undefined;
     this.languageChecksLeft = languageChecks;
-    // a card that rendered its texts before it was in the page looks for the theme language now
-    if (!themeLanguageOf(this)) this.scheduleLanguageCheck();
+    // texts made before the card was in the page (or before the theme applied): check them now,
+    // and keep looking for the theme language while it is missing
+    if (themeLanguageOf(this)) this.refreshLanguage();
+    else this.scheduleLanguageCheck();
   }
 
   disconnectedCallback(): void {
