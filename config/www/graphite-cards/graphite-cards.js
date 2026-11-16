@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.60.2";
+var version = "0.60.3";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13396,6 +13396,13 @@ var GraphiteDialog = class extends GraphiteCard {
       cards: config.cards
     });
     if (this.hass) this.panel.hass = this.hass;
+  }
+  // the close button is usually added before the dialog is in the page: label it again once it is
+  // (this also starts the check for a theme language that arrives late)
+  connectedCallback() {
+    super.connectedCallback();
+    void this.language;
+    this.languageChanged();
   }
   // the label of the close button is set outside render: follow a language that arrives late
   languageChanged() {
