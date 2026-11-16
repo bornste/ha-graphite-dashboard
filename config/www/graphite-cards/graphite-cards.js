@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.60.3";
+var version = "0.61.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -12292,7 +12292,11 @@ registerCard("graphite-timeline", GraphiteTimeline, {
 });
 
 // src/core/graphite-range.ts
-var knobSize = 16;
+var handleWidth = 4;
+var handleHeight = 26;
+var trackHeight = 10;
+var handleGap = 5;
+var trackTop = (handleHeight - trackHeight) / 2;
 var minTickGap = 12;
 var quarterTicks = [0, 0.25, 0.5, 0.75, 1].map((share) => ({ share, major: share === 0 || share === 0.5 || share === 1 }));
 var GraphiteRange = class extends i4 {
@@ -12406,14 +12410,24 @@ var GraphiteRange = class extends i4 {
   }
   render() {
     const share = this.shownShare;
-    const position = `calc(${share * 100}%)`;
+    const width = this.areaWidth;
+    const fill = this.mode === "fill";
+    const x2 = share * width;
+    const beforeEnd = x2 - handleWidth / 2 - handleGap;
+    const afterStart = x2 + handleWidth / 2 + handleGap;
+    const trackStart = -handleWidth / 2;
+    const trackEnd = width + handleWidth / 2;
+    const colorTrack = !fill && this.track ? this.track : "";
+    const colorStyle = (left) => colorTrack ? `--range-color-track: ${colorTrack}; background-size: ${trackEnd - trackStart}px 100%; background-position: ${trackStart - left}px 0;` : "";
+    const parts = width > 0 ? b2`${beforeEnd - trackStart > 0.5 ? b2`<div class=${`part before${fill ? " fill" : ""}${colorTrack ? " color" : ""}`}
+      style=${`left: ${trackStart}px; width: ${beforeEnd - trackStart}px; ${colorStyle(trackStart)}`}></div>` : A}${trackEnd - afterStart > 0.5 ? b2`<div class=${`part after${colorTrack ? " color" : ""}`}
+      style=${`left: ${afterStart}px; width: ${trackEnd - afterStart}px; ${colorStyle(afterStart)}`}></div>` : A}` : A;
     return b2`<div class="labels"><span class="label">${this.label}</span><span class="value">${this.valueText}</span></div><div
-      class=${this.mode === "color" ? "track color" : "track"} style=${this.mode === "color" && this.track ? `--range-color-track: ${this.track}` : A}></div><div class="area" role="slider" tabindex=${this.disabled ? "-1" : "0"}
+      class="area" role="slider" tabindex=${this.disabled ? "-1" : "0"}
       aria-label=${this.label} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(share * 100)}
       aria-valuetext=${this.valueText || A} aria-disabled=${this.disabled ? "true" : "false"}
       @pointerdown=${this.onPointerDown} @pointermove=${this.onPointerMove} @pointerup=${this.onPointerUp}
-      @pointercancel=${this.onPointerCancel} @click=${this.stop} @dblclick=${this.stop} @keydown=${this.onKeyDown}>${this.ticks().map((tick) => b2`<div class=${tick.major ? "tick major" : "tick"} style=${`left: ${tick.share * 100}%`}></div>`)}${this.mode === "fill" ? b2`<div class="fill" style=${`width: calc(${position} + ${knobSize / 2}px)`}></div>` : A}<div class="knob"
-      style=${`left: ${position}`}></div></div>`;
+      @pointercancel=${this.onPointerCancel} @click=${this.stop} @dblclick=${this.stop} @keydown=${this.onKeyDown}>${parts}${this.ticks().map((tick) => b2`<div class=${tick.major ? "tick major" : "tick"} style=${`left: ${tick.share * 100}%`}></div>`)}${width > 0 ? b2`<div class="handle" style=${`left: ${x2}px`}></div>` : A}</div>`;
   }
 };
 GraphiteRange.properties = {
@@ -12436,13 +12450,13 @@ GraphiteRange.styles = i`
     :host {
       display: block;
       position: relative;
-      height: 42px;
+      height: 48px;
       --range-track: var(--graphite-slider-track, color-mix(in srgb, var(--graphite-ink) 16%, var(--graphite-card-surface, var(--graphite-surface-tile))));
       --range-fill: var(--graphite-slider-fill, var(--graphite-accent));
       -webkit-tap-highlight-color: transparent;
     }
     :host([compact]) {
-      height: 20px;
+      height: ${handleHeight}px;
     }
     :host([compact]) .labels {
       display: none;
@@ -12464,25 +12478,13 @@ GraphiteRange.styles = i`
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .track {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 8px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--range-track);
-    }
-    .track.color {
-      background: var(--range-color-track);
-    }
-    /* touch area: inset by half a knob */
+    /* touch area: inset by half a handle; track parts, ticks and handle are placed inside it */
     .area {
       position: absolute;
-      left: ${knobSize / 2}px;
-      right: ${knobSize / 2}px;
+      left: ${handleWidth / 2}px;
+      right: ${handleWidth / 2}px;
       top: 22px;
-      height: 20px;
+      height: ${handleHeight}px;
       cursor: pointer;
       touch-action: pan-y;
       outline: none;
@@ -12490,22 +12492,32 @@ GraphiteRange.styles = i`
     :host([disabled]) .area {
       cursor: default;
     }
-    .area:focus-visible .knob {
-      box-shadow: 0 0 0 2px var(--graphite-accent), 0 1px 4px rgba(0, 0, 0, 0.5);
-    }
-    /* fill from the left edge to the knob center */
-    .fill {
+    /* the two parts of the track: filled up to the handle, empty after it; round outer ends, small
+       inner corners at the gap */
+    .part {
       position: absolute;
-      left: -${knobSize / 2}px;
-      top: 8px;
-      height: 4px;
-      border-radius: 2px;
+      top: ${trackTop}px;
+      height: ${trackHeight}px;
+      background: var(--range-track);
+      pointer-events: none;
+    }
+    .part.before {
+      border-radius: ${trackHeight / 2}px 2px 2px ${trackHeight / 2}px;
+    }
+    .part.after {
+      border-radius: 2px ${trackHeight / 2}px ${trackHeight / 2}px 2px;
+    }
+    .part.fill {
       background: var(--range-fill);
+    }
+    /* color track: one gradient over the whole width, each part shows its section of it */
+    .part.color {
+      background: var(--range-color-track) no-repeat;
     }
     /* ticks below the track, like a ruler; round values (and both ends) longer */
     .tick {
       position: absolute;
-      top: 14px;
+      top: ${trackTop + trackHeight + 3}px;
       width: 1px;
       height: 3px;
       margin-left: -0.5px;
@@ -12517,15 +12529,19 @@ GraphiteRange.styles = i`
       height: 5px;
       background: var(--graphite-slider-tick-major, var(--graphite-text-secondary));
     }
-    .knob {
+    /* handle: a slim bar in the color of the meter needle */
+    .handle {
       position: absolute;
-      top: 2px;
-      width: ${knobSize}px;
-      height: ${knobSize}px;
-      margin-left: -${knobSize / 2}px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      top: 0;
+      width: ${handleWidth}px;
+      height: ${handleHeight}px;
+      margin-left: -${handleWidth / 2}px;
+      border-radius: ${handleWidth / 2}px;
+      background: var(--graphite-slider-handle, var(--graphite-text-primary));
+      pointer-events: none;
+    }
+    .area:focus-visible .handle {
+      box-shadow: 0 0 0 2px var(--graphite-accent);
     }
   `;
 if (!customElements.get("graphite-range")) customElements.define("graphite-range", GraphiteRange);
@@ -12859,13 +12875,13 @@ GraphiteSlider.styles = i`
       min-width: 0;
     }
     /* row: 72px like the compact tiles; icon centered on the left, name and value in the first line,
-       the slider below the name (text and slider at 60px) */
+       the slider (26px, handle height) below the name (text and slider at 60px) */
     .row {
       box-sizing: border-box;
       display: grid;
       grid-template-columns: 42px minmax(0, 1fr) auto;
-      grid-template-rows: 24px 20px;
-      row-gap: 4px;
+      grid-template-rows: 22px 26px;
+      row-gap: 0;
       column-gap: 10px;
       padding: 12px 14px 12px 8px;
       border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));

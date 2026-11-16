@@ -47,7 +47,7 @@ wall_switch: true
 
 ## Geometry
 
-12px padding, 36px head (icon box 42px at 8/9, name at 60px), sliders 42px each from 58px with 12px
+12px padding, 36px head (icon box 42px at 8/9, name at 60px), sliders 48px each with 8px
 between them, toggle and wall switch icon 14px from the right edge: 112px with one slider, 166px with two.
 
 ## Editor

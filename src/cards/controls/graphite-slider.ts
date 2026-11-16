@@ -68,13 +68,13 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
       min-width: 0;
     }
     /* row: 72px like the compact tiles; icon centered on the left, name and value in the first line,
-       the slider below the name (text and slider at 60px) */
+       the slider (26px, handle height) below the name (text and slider at 60px) */
     .row {
       box-sizing: border-box;
       display: grid;
       grid-template-columns: 42px minmax(0, 1fr) auto;
-      grid-template-rows: 24px 20px;
-      row-gap: 4px;
+      grid-template-rows: 22px 26px;
+      row-gap: 0;
       column-gap: 10px;
       padding: 12px 14px 12px 8px;
       border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));

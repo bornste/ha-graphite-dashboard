@@ -1,12 +1,15 @@
 # graphite-slider
 
 One slider for a `number` or `input_number` entity, or for a light: brightness, white temperature,
-color (hue) or saturation. The knob jumps from step to step, ticks below the track show the steps
-(or the quarters), round values get a longer tick. The value is set when the knob is released.
+color (hue) or saturation. A 10px track with a slim handle (4 × 26px) in the color of the meter
+needle; the track is cut out 5px on both sides of the handle, filled on the left and empty on the
+right, so it reads like the meter bars. The handle jumps from step to step, ticks below the track
+show the steps (or the quarters), round values get a longer tick. The value is set when the handle
+is released.
 
 | Layout | Look | Good for |
 |---|---|---|
-| `inline` (default) | No surface: label left and value right above the track (42px + 4px). | Below effect tiles, inside a panel with other sliders. |
+| `inline` (default) | No surface: label left and value right above the track (48px + 4px). | Below effect tiles, inside a panel with other sliders. |
 | `row` | A card of its own, 72px: icon centered on the left, name and value in the first line, the track below the name. | Standalone settings next to status and switch rows. |
 
 ```yaml
@@ -36,15 +39,16 @@ attribute: color_temp
 | `step` | number | entity step, 1 | Values are whole multiples of the step (step 5: 5, 10, 15 %). White temperature: 50 K. |
 | `value_format` | `percent` \| `state` | `percent` | Numbers only: value in percent of the range or as the formatted state ("120 min"). Lights always show %, K or °. |
 | `ticks` | `auto` \| `steps` \| `quarters` \| `none` | `auto` | Ticks below the track. `auto`: every step while they are at least 12px apart, otherwise the quarters. |
-| `tick_every` | number | – | Ticks at multiples of this value instead of the steps (e.g. 10 on a 1 % slider); the knob still snaps to the steps. Long ticks every fifth unless `major_every` is set. |
+| `tick_every` | number | – | Ticks at multiples of this value instead of the steps (e.g. 10 on a 1 % slider); the handle still snaps to the steps. Long ticks every fifth unless `major_every` is set. |
 | `major_every` | number | round value | Values with a longer tick. Default: 60 for minutes, otherwise the smallest round multiple of the step with at most 10 intervals (10 for 0–100 %). Both ends are always long. |
 
 ## Behaviour
 
-- **Snapping:** while dragging and with the arrow keys the knob jumps to the next possible value;
+- **Snapping:** while dragging and with the arrow keys the handle jumps to the next possible value;
   it never rests between two steps.
 - **White temperature:** color track cold (left) to warm (right) like the Bubble slider; color: rainbow
-  track; saturation: white to the current color. Hue is a circle: the knob keeps its end when the lamp
+  track; saturation: white to the current color. A color track runs through both parts, only the gap
+  around the handle is cut out. Hue is a circle: the handle keeps its end when the lamp
   reports 0° after 360°.
 - **Unavailable**, or a lamp without the controlled capability: dimmed (50 %) and locked. A light that
   is off shows a quiet fill (`--graphite-text-muted`).
@@ -54,7 +58,8 @@ attribute: color_temp
 
 | Variable | Default | Use |
 |---|---|---|
-| `--graphite-slider-fill` | `--graphite-accent` | Fill up to the knob. |
+| `--graphite-slider-fill` | `--graphite-accent` | Fill up to the handle (a lamp: its own color). |
+| `--graphite-slider-handle` | `--graphite-text-primary` | Handle, like the meter needle. |
 | `--graphite-slider-track` | ink 16 % over the card surface | Track. |
 | `--graphite-slider-text` | `--graphite-text-secondary` | Label and value of `inline`. |
 | `--graphite-slider-tick`, `--graphite-slider-tick-major` | `--graphite-text-muted`, `--graphite-text-secondary` | Ticks. |

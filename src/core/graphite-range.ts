@@ -1,12 +1,19 @@
 // graphite-range: the shared slider of the light tile and the slider card. A label row (label left,
-// value right, 12/16px) above a thin 4px track with a round 16px knob, 42px in total like the
-// Bubble sliders. The touch area (20px) is inset by half a knob, so the knob stays fully visible at
-// 0 and 100 %. Fill mode: the track fills up to the knob; color mode: a color track (e.g. white
-// temperature) with the knob only. Reports "range-input" while dragging and "range-change" on
-// release, both with detail.share (0..1); the parent turns the share into a value.
+// value right, 12/16px) above a 10px track with a slim handle (4 x 26px) like a large meter needle,
+// 48px in total. The track is cut out on both sides of the handle (5px gap), like the ring the meter
+// needle has: filled on the left, empty on the right. Ticks below the track show the steps. The touch
+// area (26px) is inset by half a handle, so the handle stays inside at 0 and 100 %. Fill mode: the
+// left part is filled; color mode: a color track (e.g. white temperature) runs through both parts.
+// Reports "range-input" while dragging and "range-change" on release, both with detail.share (0..1);
+// the parent turns the share into a value.
 import { css, html, LitElement, nothing } from "lit";
 
-const knobSize = 16;
+const handleWidth = 4;
+const handleHeight = 26;
+const trackHeight = 10;
+// space between the handle and the track on both sides
+const handleGap = 5;
+const trackTop = (handleHeight - trackHeight) / 2;
 // below this distance in px the step ticks would be too dense: quarters instead
 const minTickGap = 12;
 
@@ -80,13 +87,13 @@ export class GraphiteRange extends LitElement {
     :host {
       display: block;
       position: relative;
-      height: 42px;
+      height: 48px;
       --range-track: var(--graphite-slider-track, color-mix(in srgb, var(--graphite-ink) 16%, var(--graphite-card-surface, var(--graphite-surface-tile))));
       --range-fill: var(--graphite-slider-fill, var(--graphite-accent));
       -webkit-tap-highlight-color: transparent;
     }
     :host([compact]) {
-      height: 20px;
+      height: ${handleHeight}px;
     }
     :host([compact]) .labels {
       display: none;
@@ -108,25 +115,13 @@ export class GraphiteRange extends LitElement {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .track {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 8px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--range-track);
-    }
-    .track.color {
-      background: var(--range-color-track);
-    }
-    /* touch area: inset by half a knob */
+    /* touch area: inset by half a handle; track parts, ticks and handle are placed inside it */
     .area {
       position: absolute;
-      left: ${knobSize / 2}px;
-      right: ${knobSize / 2}px;
+      left: ${handleWidth / 2}px;
+      right: ${handleWidth / 2}px;
       top: 22px;
-      height: 20px;
+      height: ${handleHeight}px;
       cursor: pointer;
       touch-action: pan-y;
       outline: none;
@@ -134,22 +129,32 @@ export class GraphiteRange extends LitElement {
     :host([disabled]) .area {
       cursor: default;
     }
-    .area:focus-visible .knob {
-      box-shadow: 0 0 0 2px var(--graphite-accent), 0 1px 4px rgba(0, 0, 0, 0.5);
-    }
-    /* fill from the left edge to the knob center */
-    .fill {
+    /* the two parts of the track: filled up to the handle, empty after it; round outer ends, small
+       inner corners at the gap */
+    .part {
       position: absolute;
-      left: -${knobSize / 2}px;
-      top: 8px;
-      height: 4px;
-      border-radius: 2px;
+      top: ${trackTop}px;
+      height: ${trackHeight}px;
+      background: var(--range-track);
+      pointer-events: none;
+    }
+    .part.before {
+      border-radius: ${trackHeight / 2}px 2px 2px ${trackHeight / 2}px;
+    }
+    .part.after {
+      border-radius: 2px ${trackHeight / 2}px ${trackHeight / 2}px 2px;
+    }
+    .part.fill {
       background: var(--range-fill);
+    }
+    /* color track: one gradient over the whole width, each part shows its section of it */
+    .part.color {
+      background: var(--range-color-track) no-repeat;
     }
     /* ticks below the track, like a ruler; round values (and both ends) longer */
     .tick {
       position: absolute;
-      top: 14px;
+      top: ${trackTop + trackHeight + 3}px;
       width: 1px;
       height: 3px;
       margin-left: -0.5px;
@@ -161,15 +166,19 @@ export class GraphiteRange extends LitElement {
       height: 5px;
       background: var(--graphite-slider-tick-major, var(--graphite-text-secondary));
     }
-    .knob {
+    /* handle: a slim bar in the color of the meter needle */
+    .handle {
       position: absolute;
-      top: 2px;
-      width: ${knobSize}px;
-      height: ${knobSize}px;
-      margin-left: -${knobSize / 2}px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      top: 0;
+      width: ${handleWidth}px;
+      height: ${handleHeight}px;
+      margin-left: -${handleWidth / 2}px;
+      border-radius: ${handleWidth / 2}px;
+      background: var(--graphite-slider-handle, var(--graphite-text-primary));
+      pointer-events: none;
+    }
+    .area:focus-visible .handle {
+      box-shadow: 0 0 0 2px var(--graphite-accent);
     }
   `;
 
@@ -283,17 +292,31 @@ export class GraphiteRange extends LitElement {
 
   protected render() {
     const share = this.shownShare;
-    const position = `calc(${share * 100}%)`;
+    const width = this.areaWidth;
+    const fill = this.mode === "fill";
+    // in px inside the area: the handle centre and the ends of both parts (the track reaches half a
+    // handle beyond the area on both sides)
+    const x = share * width;
+    const beforeEnd = x - handleWidth / 2 - handleGap;
+    const afterStart = x + handleWidth / 2 + handleGap;
+    const trackStart = -handleWidth / 2;
+    const trackEnd = width + handleWidth / 2;
+    const colorTrack = !fill && this.track ? this.track : "";
+    // a color track keeps its full width in both parts, shifted to the part's position
+    const colorStyle = (left: number) => colorTrack
+      ? `--range-color-track: ${colorTrack}; background-size: ${trackEnd - trackStart}px 100%; background-position: ${trackStart - left}px 0;` : "";
+    const parts = width > 0 ? html`${beforeEnd - trackStart > 0.5 ? html`<div class=${`part before${fill ? " fill" : ""}${colorTrack ? " color" : ""}`}
+      style=${`left: ${trackStart}px; width: ${beforeEnd - trackStart}px; ${colorStyle(trackStart)}`}></div>` : nothing}${trackEnd - afterStart > 0.5
+      ? html`<div class=${`part after${colorTrack ? " color" : ""}`}
+      style=${`left: ${afterStart}px; width: ${trackEnd - afterStart}px; ${colorStyle(afterStart)}`}></div>` : nothing}` : nothing;
     return html`<div class="labels"><span class="label">${this.label}</span><span class="value">${this.valueText}</span></div><div
-      class=${this.mode === "color" ? "track color" : "track"} style=${this.mode === "color" && this.track
-      ? `--range-color-track: ${this.track}` : nothing}></div><div class="area" role="slider" tabindex=${this.disabled ? "-1" : "0"}
+      class="area" role="slider" tabindex=${this.disabled ? "-1" : "0"}
       aria-label=${this.label} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(share * 100)}
       aria-valuetext=${this.valueText || nothing} aria-disabled=${this.disabled ? "true" : "false"}
       @pointerdown=${this.onPointerDown} @pointermove=${this.onPointerMove} @pointerup=${this.onPointerUp}
-      @pointercancel=${this.onPointerCancel} @click=${this.stop} @dblclick=${this.stop} @keydown=${this.onKeyDown}>${this.ticks()
-      .map((tick) => html`<div class=${tick.major ? "tick major" : "tick"} style=${`left: ${tick.share * 100}%`}></div>`)}${this.mode === "fill"
-      ? html`<div class="fill" style=${`width: calc(${position} + ${knobSize / 2}px)`}></div>` : nothing}<div class="knob"
-      style=${`left: ${position}`}></div></div>`;
+      @pointercancel=${this.onPointerCancel} @click=${this.stop} @dblclick=${this.stop} @keydown=${this.onKeyDown}>${parts}${this.ticks()
+      .map((tick) => html`<div class=${tick.major ? "tick major" : "tick"} style=${`left: ${tick.share * 100}%`}></div>`)}${width > 0
+      ? html`<div class="handle" style=${`left: ${x}px`}></div>` : nothing}</div>`;
   }
 }
 
