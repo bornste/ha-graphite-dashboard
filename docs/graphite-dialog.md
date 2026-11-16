@@ -118,8 +118,10 @@ the title has an optical inset of 4px. The close button is a header button (44 �
 ground → panel → tile.
 
 A theme can change the look with `--graphite-dialog-surface`, `--graphite-dialog-highlight`,
-`--graphite-dialog-edge` and `--graphite-dialog-shadow` (none by default; the light themes set a light
-shadow), see [theme](theme.md).
+`--graphite-dialog-edge`, `--graphite-dialog-shadow` (none by default) and `--graphite-dialog-backdrop`
+(the layer over the blurred dashboard), see [theme](theme.md). The light themes dim the dashboard
+(Lavender with its ink, Sand with its darkened ground), use a more opaque glass (85 %) and a light shadow, so the dialog stands out
+light and clear.
 
 ## Editor
 

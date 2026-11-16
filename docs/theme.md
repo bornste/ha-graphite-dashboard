@@ -18,6 +18,8 @@ in dark mode.
 | Token | Default | Use |
 |---|---|---|
 | `graphite-dialog-shadow` | `none` | Shadow of the dialog; the light themes use a light one to set it apart from the page |
+| `graphite-dialog-backdrop` | ground at 40 % | Layer over the blurred dashboard behind a dialog; the light themes dim it (Lavender with its ink at 32 %, Sand with its darkened ground at 40 %) |
+| `graphite-dialog-surface` | ground at 72 % | Glass of the dialog; the light themes use 85 %, so it stands out against the dimmed backdrop |
 | `graphite-tile-shadow` | `none` | Shadow of tiles and rows, e.g. raised tiles of a light theme; a card's own focus ring or outline takes precedence |
 
 ## 1. Base inputs

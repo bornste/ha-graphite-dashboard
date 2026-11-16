@@ -5,6 +5,7 @@
 //   --graphite-panel-edge        gradient of outer panels (graphite-panel)
 //   --graphite-dialog-edge       gradient of the dialog
 //   --graphite-dialog-shadow     shadow of the dialog (graphite-dialog.ts), none by default
+//   --graphite-dialog-backdrop   layer over the dashboard behind a dialog (graphite-dialog-layer.ts)
 //   --graphite-tile-shadow       shadow of tiles and rows (e.g. raised light tiles), none by default
 import { css, unsafeCSS, type CSSResult } from "lit";
 

@@ -30,8 +30,9 @@ interface LovelaceRoot extends HTMLElement {
 
 const layerStyles = `
   :host {
-    /* the dashboard stays visible behind, blurred and dimmed */
-    background: color-mix(in srgb, var(--graphite-ground, #0a0a0b) 40%, transparent);
+    /* the dashboard stays visible behind, blurred and dimmed (a light theme sets a darker
+       --graphite-dialog-backdrop, the ground alone would lighten it) */
+    background: var(--graphite-dialog-backdrop, color-mix(in srgb, var(--graphite-ground, #0a0a0b) 40%, transparent));
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }

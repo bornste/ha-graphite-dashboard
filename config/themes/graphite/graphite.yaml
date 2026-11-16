@@ -192,7 +192,10 @@ Graphite Lavender:
       # raised tiles, not used yet (flat): a soft shadow and a faint outline instead of the light edge
       # graphite-tile-shadow: "0 1px 2px color-mix(in srgb, var(--graphite-ink) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--graphite-ink) 5%, transparent)"
       graphite-dialog-highlight: "inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent)"
-      # a light shadow sets the dialog apart from the light page behind it
+      # dialogs: the dashboard behind is dimmed (an overlay darkens, also in a light theme) and the
+      # glass of the dialog is more opaque, so it stands out light and clear; a light shadow sets it apart
+      graphite-dialog-backdrop: "color-mix(in srgb, var(--graphite-ink) 32%, transparent)"
+      graphite-dialog-surface: "color-mix(in srgb, var(--graphite-ground) 85%, transparent)"
       graphite-dialog-shadow: "0 16px 40px color-mix(in srgb, var(--graphite-ink) 16%, transparent), 0 2px 8px color-mix(in srgb, var(--graphite-ink) 8%, transparent)"
     # the same light colors on a device in dark mode (a theme without its mode is not applied)
     dark: *lavender
@@ -226,7 +229,11 @@ Graphite Sand:
       # raised tiles, not used yet (flat): a soft shadow and a faint outline instead of the light edge
       # graphite-tile-shadow: "0 1px 2px color-mix(in srgb, var(--graphite-ink) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--graphite-ink) 5%, transparent)"
       graphite-dialog-highlight: "inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent)"
-      # a light shadow sets the dialog apart from the light page behind it
+      # dialogs: the dashboard behind is dimmed (an overlay darkens, also in a light theme) and the
+      # glass of the dialog is more opaque, so it stands out light and clear; a light shadow sets it apart
+      # backdrop: the sand darkened (the olive ink would muddy it), so the page keeps its warm tone
+      graphite-dialog-backdrop: "color-mix(in srgb, color-mix(in srgb, var(--graphite-ground) 35%, #000000) 40%, transparent)"
+      graphite-dialog-surface: "color-mix(in srgb, var(--graphite-ground) 85%, transparent)"
       graphite-dialog-shadow: "0 16px 40px color-mix(in srgb, var(--graphite-ink) 16%, transparent), 0 2px 8px color-mix(in srgb, var(--graphite-ink) 8%, transparent)"
     # the same light colors on a device in dark mode (a theme without its mode is not applied)
     dark: *sand
