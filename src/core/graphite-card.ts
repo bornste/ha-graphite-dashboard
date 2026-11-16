@@ -1,7 +1,11 @@
 // Base class of all Graphite cards: config handling, hass updates limited to the watched entities.
 import { adoptStyles, LitElement, type CSSResultGroup, type PropertyValues } from "lit";
 import type { GraphiteCardConfig, HomeAssistant } from "./types";
-import { languageOf, translate } from "./i18n";
+import { languageOf, themeLanguageOf, translate } from "./i18n";
+
+// checks for the theme language of a card that was built before the view theme applied
+const languageChecks = 12;
+const languageCheckDelay = 250;
 
 export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = GraphiteCardConfig> extends LitElement {
   static properties = {
@@ -29,15 +33,41 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
   protected hassChanged(_hass: HomeAssistant | undefined): void {}
 
   private languageCache?: string;
+  private languageCheck?: number;
+  private languageChecksLeft = languageChecks;
 
   // language of the texts: theme variable --graphite-language, else the Home Assistant language
-  // (cached once the card is in the page, because the theme variable needs the computed style)
+  // (cached once the card is in the page, because the theme variable needs the computed style).
+  // A card built before the view theme applied (e.g. a dialog opened with the URL) does not see the
+  // variable yet: it then checks again for a few seconds and renders again once the theme is there.
   protected get language(): string {
     if (this.languageCache) return this.languageCache;
     const language = languageOf(this.isConnected ? this : undefined, this.hass);
-    if (this.isConnected) this.languageCache = language;
+    if (!this.isConnected) return language;
+    if (themeLanguageOf(this) || this.languageChecksLeft <= 0) this.languageCache = language;
+    else this.scheduleLanguageCheck();
     return language;
   }
+
+  private scheduleLanguageCheck(): void {
+    if (this.languageCheck !== undefined) return;
+    this.languageCheck = window.setTimeout(() => {
+      this.languageCheck = undefined;
+      this.languageChecksLeft--;
+      if (!this.isConnected) return;
+      if (themeLanguageOf(this)) {
+        this.languageCache = undefined;
+        this.requestUpdate();
+        this.languageChanged();
+      } else {
+        // still no theme language: look again (the getter caches the fallback after the last check)
+        void this.language;
+      }
+    }, languageCheckDelay);
+  }
+
+  // called when the language of the texts changed after the first render (e.g. labels set outside render)
+  protected languageChanged(): void {}
 
   // translated text, e.g. this.localize("time.sinceMinutes", { minutes: 5 })
   protected localize(key: string, params: Record<string, string | number> = {}): string {
@@ -47,6 +77,13 @@ export abstract class GraphiteCard<TConfig extends GraphiteCardConfig = Graphite
   connectedCallback(): void {
     super.connectedCallback();
     this.languageCache = undefined;
+    this.languageChecksLeft = languageChecks;
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.clearTimeout(this.languageCheck);
+    this.languageCheck = undefined;
   }
 
   // called by Home Assistant with the YAML / editor config; throw to show a config error

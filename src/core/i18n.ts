@@ -18,10 +18,14 @@ function supportedLanguage(language: string | undefined): string {
   return translations[base] ? base : fallbackLanguage;
 }
 
+// language set by the theme on an element (--graphite-language), "" while no theme sets it (yet)
+export function themeLanguageOf(element: Element | undefined): string {
+  return element ? getComputedStyle(element).getPropertyValue("--graphite-language").replaceAll('"', "").trim() : "";
+}
+
 // language for an element: theme variable first (it follows the view theme), then Home Assistant
 export function languageOf(element: Element | undefined, hass: HomeAssistant | undefined): string {
-  const themeLanguage = element ? getComputedStyle(element).getPropertyValue("--graphite-language") : "";
-  return supportedLanguage(themeLanguage.replaceAll('"', "") || hass?.locale?.language || hass?.language);
+  return supportedLanguage(themeLanguageOf(element) || hass?.locale?.language || hass?.language);
 }
 
 function lookup(tree: TranslationTree | undefined, key: string): string | undefined {

@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.60.1";
+var version = "0.60.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -2984,9 +2984,11 @@ function supportedLanguage(language) {
   const base = code.split("-")[0];
   return translations[base] ? base : fallbackLanguage;
 }
+function themeLanguageOf(element) {
+  return element ? getComputedStyle(element).getPropertyValue("--graphite-language").replaceAll('"', "").trim() : "";
+}
 function languageOf(element, hass) {
-  const themeLanguage = element ? getComputedStyle(element).getPropertyValue("--graphite-language") : "";
-  return supportedLanguage(themeLanguage.replaceAll('"', "") || hass?.locale?.language || hass?.language);
+  return supportedLanguage(themeLanguageOf(element) || hass?.locale?.language || hass?.language);
 }
 function lookup(tree, key) {
   let node = tree;
@@ -3002,7 +3004,13 @@ function translate(language, key, params = {}) {
 }
 
 // src/core/graphite-card.ts
+var languageChecks = 12;
+var languageCheckDelay = 250;
 var GraphiteCard = class extends i4 {
+  constructor() {
+    super(...arguments);
+    this.languageChecksLeft = languageChecks;
+  }
   // hass is set by Home Assistant on every state change anywhere; shouldUpdate filters it
   get hass() {
     return this.hassObject;
@@ -3018,12 +3026,34 @@ var GraphiteCard = class extends i4 {
   hassChanged(_hass) {
   }
   // language of the texts: theme variable --graphite-language, else the Home Assistant language
-  // (cached once the card is in the page, because the theme variable needs the computed style)
+  // (cached once the card is in the page, because the theme variable needs the computed style).
+  // A card built before the view theme applied (e.g. a dialog opened with the URL) does not see the
+  // variable yet: it then checks again for a few seconds and renders again once the theme is there.
   get language() {
     if (this.languageCache) return this.languageCache;
     const language = languageOf(this.isConnected ? this : void 0, this.hass);
-    if (this.isConnected) this.languageCache = language;
+    if (!this.isConnected) return language;
+    if (themeLanguageOf(this) || this.languageChecksLeft <= 0) this.languageCache = language;
+    else this.scheduleLanguageCheck();
     return language;
+  }
+  scheduleLanguageCheck() {
+    if (this.languageCheck !== void 0) return;
+    this.languageCheck = window.setTimeout(() => {
+      this.languageCheck = void 0;
+      this.languageChecksLeft--;
+      if (!this.isConnected) return;
+      if (themeLanguageOf(this)) {
+        this.languageCache = void 0;
+        this.requestUpdate();
+        this.languageChanged();
+      } else {
+        void this.language;
+      }
+    }, languageCheckDelay);
+  }
+  // called when the language of the texts changed after the first render (e.g. labels set outside render)
+  languageChanged() {
   }
   // translated text, e.g. this.localize("time.sinceMinutes", { minutes: 5 })
   localize(key, params = {}) {
@@ -3032,6 +3062,12 @@ var GraphiteCard = class extends i4 {
   connectedCallback() {
     super.connectedCallback();
     this.languageCache = void 0;
+    this.languageChecksLeft = languageChecks;
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.clearTimeout(this.languageCheck);
+    this.languageCheck = void 0;
   }
   // called by Home Assistant with the YAML / editor config; throw to show a config error
   setConfig(config) {
@@ -13360,6 +13396,13 @@ var GraphiteDialog = class extends GraphiteCard {
       cards: config.cards
     });
     if (this.hass) this.panel.hass = this.hass;
+  }
+  // the label of the close button is set outside render: follow a language that arrives late
+  languageChanged() {
+    if (!this.closeButton) return;
+    const label = this.localize("dialog.close");
+    this.closeButton.title = label;
+    this.closeButton.setAttribute("aria-label", label);
   }
   // called by the dialog layer: adds the close button to the header
   enableClose(sheet = false) {

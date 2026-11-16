@@ -210,6 +210,14 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
     if (this.hass) this.panel.hass = this.hass;
   }
 
+  // the label of the close button is set outside render: follow a language that arrives late
+  protected languageChanged(): void {
+    if (!this.closeButton) return;
+    const label = this.localize("dialog.close");
+    this.closeButton.title = label;
+    this.closeButton.setAttribute("aria-label", label);
+  }
+
   // called by the dialog layer: adds the close button to the header
   enableClose(sheet = false): void {
     this.toggleAttribute("layered", true);
