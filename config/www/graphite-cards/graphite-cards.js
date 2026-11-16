@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.61.3";
+var version = "0.61.4";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -12301,9 +12301,9 @@ registerCard("graphite-timeline", GraphiteTimeline, {
 
 // src/core/graphite-range.ts
 var handleWidth = 4;
-var handleHeight = 26;
-var trackHeight = 10;
-var handleGap = 5;
+var handleHeight = 24;
+var trackHeight = 6;
+var handleGap = 4;
 var trackTop = (handleHeight - trackHeight) / 2;
 var minTickGap = 12;
 var quarterTicks = [0, 0.25, 0.5, 0.75, 1].map((share) => ({ share, major: share === 0 || share === 0.5 || share === 1 }));
@@ -12458,7 +12458,7 @@ GraphiteRange.styles = i`
     :host {
       display: block;
       position: relative;
-      height: 48px;
+      height: ${22 + handleHeight}px;
       --range-track: var(--graphite-slider-track, color-mix(in srgb, var(--graphite-ink) 16%, var(--graphite-card-surface, var(--graphite-surface-tile))));
       --range-fill: var(--graphite-slider-fill, var(--graphite-accent));
       -webkit-tap-highlight-color: transparent;
@@ -12883,12 +12883,12 @@ GraphiteSlider.styles = i`
       min-width: 0;
     }
     /* row: 72px like the compact tiles; icon centered on the left, name and value in the first line,
-       the slider (26px, handle height) below the name (text and slider at 60px) */
+       the slider (24px, handle height) below the name (text and slider at 60px) */
     .row {
       box-sizing: border-box;
       display: grid;
       grid-template-columns: 42px minmax(0, 1fr) auto;
-      grid-template-rows: 22px 26px;
+      grid-template-rows: 24px 24px;
       row-gap: 0;
       column-gap: 10px;
       padding: 12px 14px 12px 8px;

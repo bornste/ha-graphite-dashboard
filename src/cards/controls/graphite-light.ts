@@ -4,7 +4,7 @@
 // wall_switch the lamp is switched at the wall: a quiet wall switch icon replaces the toggle, an
 // unavailable lamp counts as "off at the wall" and tapping does nothing by default.
 // Geometry of the former Bubble light tile: 12px padding, 36px head (icon 42px at 8/9, name at 60px),
-// sliders 48px each (see core/graphite-range) with 8px between, toggle / icon 14px from the right edge.
+// sliders 46px each (see core/graphite-range) with 8px between, toggle / icon 14px from the right edge.
 import { css, html, nothing, type CSSResultGroup } from "lit";
 import { defaultHoldAction } from "../../core/actions";
 import { isUnavailable } from "../../core/format";

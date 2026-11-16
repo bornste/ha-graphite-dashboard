@@ -1,18 +1,18 @@
 // graphite-range: the shared slider of the light tile and the slider card. A label row (label left,
-// value right, 12/16px) above a 10px track with a slim handle (4 x 26px) like a large meter needle,
-// 48px in total. The track is cut out on both sides of the handle (5px gap), like the ring the meter
+// value right, 12/16px) above a 6px track with a slim handle (4 x 24px) like a large meter needle,
+// 46px in total. The track is cut out on both sides of the handle (4px gap), like the ring the meter
 // needle has: filled on the left, empty on the right. Ticks below the track show the steps. The touch
-// area (26px) is inset by half a handle, so the handle stays inside at 0 and 100 %. Fill mode: the
+// area (24px) is inset by half a handle, so the handle stays inside at 0 and 100 %. Fill mode: the
 // left part is filled; color mode: a color track (e.g. white temperature) runs through both parts.
 // Reports "range-input" while dragging and "range-change" on release, both with detail.share (0..1);
 // the parent turns the share into a value.
 import { css, html, LitElement, nothing } from "lit";
 
 const handleWidth = 4;
-const handleHeight = 26;
-const trackHeight = 10;
+const handleHeight = 24;
+const trackHeight = 6;
 // space between the handle and the track on both sides
-const handleGap = 5;
+const handleGap = 4;
 const trackTop = (handleHeight - trackHeight) / 2;
 // below this distance in px the step ticks would be too dense: quarters instead
 const minTickGap = 12;
@@ -87,7 +87,7 @@ export class GraphiteRange extends LitElement {
     :host {
       display: block;
       position: relative;
-      height: 48px;
+      height: ${22 + handleHeight}px;
       --range-track: var(--graphite-slider-track, color-mix(in srgb, var(--graphite-ink) 16%, var(--graphite-card-surface, var(--graphite-surface-tile))));
       --range-fill: var(--graphite-slider-fill, var(--graphite-accent));
       -webkit-tap-highlight-color: transparent;

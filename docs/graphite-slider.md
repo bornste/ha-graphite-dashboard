@@ -1,15 +1,15 @@
 # graphite-slider
 
 One slider for a `number` or `input_number` entity, or for a light: brightness, white temperature,
-color (hue) or saturation. A 10px track with a slim handle (4 × 26px) in the color of the meter
-needle; the track is cut out 5px on both sides of the handle, filled on the left and empty on the
+color (hue) or saturation. A 6px track with a slim handle (4 × 24px) in the color of the meter
+needle; the track is cut out 4px on both sides of the handle, filled on the left and empty on the
 right, so it reads like the meter bars. The handle jumps from step to step, ticks below the track
 show the steps (or the quarters), round values get a longer tick. The value is set when the handle
 is released.
 
 | Layout | Look | Good for |
 |---|---|---|
-| `inline` (default) | No surface: label left and value right above the track (48px + 4px). | Below effect tiles, inside a panel with other sliders. |
+| `inline` (default) | No surface: label left and value right above the track (46px + 4px). | Below effect tiles, inside a panel with other sliders. |
 | `row` | A card of its own, 72px: icon centered on the left, name and value in the first line, the track below the name. | Standalone settings next to status and switch rows. |
 
 ```yaml
