@@ -1,5 +1,6 @@
 // graphite-scene: a scene or a light effect as a tile (64px, --graphite-tile-height-scene). Inactive: a
-// stripe in the colors (42px, --graphite-scene-stripe-width), the name (up to two lines, the tile keeps
+// stripe in the colors (short: 28px, --graphite-scene-stripe-width; full: the whole width inside the
+// padding, for effects with many colors), the name (up to two lines, the tile keeps
 // its height) and the icon as watermark; active (e.g. an input_select names the scene): the tile is
 // filled with the color gradient, text and icon turn dark or white depending on the colors.
 // Tapping activates a scene, holding opens more-info. Light effects of a lamp: icon none, the lamp as
@@ -10,7 +11,7 @@ import { matchesCondition, type ValueCondition } from "../../core/conditions";
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
-// the stripe of the label layout (4px high, 12px from the left, 10px from the top; scenes make it 42px wide)
+// the stripe of the label layout (28 x 4px, 12px from the left, 10px from the top)
 import { labelStyles } from "./label-styles";
 import { tileNameStyles, tileStyles } from "./tile-styles";
 import { GraphiteSceneEditor } from "./graphite-scene-editor";
@@ -20,19 +21,29 @@ export interface SceneConfig extends GraphiteCardConfig {
   name?: string;
   icon?: string;
   colors?: string[];
+  stripe?: SceneStripe;
   active?: ValueCondition;
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
 }
 
+export type SceneStripe = "short" | "full";
+
+const stripes: SceneStripe[] = ["short", "full"];
+
 const sceneStyles = css`
   .tile.scene {
     height: var(--graphite-tile-height-scene, 64px);
   }
   .tile.scene .stripe {
-    width: var(--graphite-scene-stripe-width, 42px);
+    width: var(--graphite-scene-stripe-width, 28px);
     background: var(--scene-gradient, var(--graphite-accent));
+  }
+  /* full: the whole width inside the padding, so a gradient of many colors can be read */
+  .tile.scene.full .stripe {
+    width: auto;
+    right: var(--graphite-padding-tile, 12px);
   }
   /* long names wrap to a second line; the tile keeps its height, so it stays as high as its neighbours */
   .tile.scene .name {
@@ -78,6 +89,9 @@ export class GraphiteScene extends GraphiteCard<SceneConfig> {
 
   // default tap: a scene is activated, another entity opens more-info, without an entity nothing
   protected normalizeConfig(config: SceneConfig): SceneConfig {
+    if (config.stripe !== undefined && !stripes.includes(config.stripe)) {
+      throw new Error(`${this.localName}: stripe must be one of ${stripes.join(", ")}`);
+    }
     const entity = config.entity;
     const tapAction: ActionConfig = !entity
       ? { action: "none" }
@@ -125,7 +139,8 @@ export class GraphiteScene extends GraphiteCard<SceneConfig> {
     const active = matchesCondition(config.active, activeState);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity ?? "";
     const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
-    const classes = ["tile", "scene", active ? "active" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const classes = ["tile", "scene", config.stripe === "full" ? "full" : "", active ? "active" : "",
+      interactive ? "interactive" : ""].filter(Boolean).join(" ");
     const style = [gradient ? `--scene-gradient: ${gradient}` : "", `--scene-ink: ${ink}`].filter(Boolean).join("; ");
     // watermark: the configured icon, else the entity icon; "none" (or no entity) shows none
     const icon = config.icon === "none"

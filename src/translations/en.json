@@ -641,6 +641,11 @@
       "name": "Name",
       "icon": "Icon",
       "colors": "Colors",
+      "stripe": "Stripe",
+      "stripes": {
+        "short": "Short",
+        "full": "Full width"
+      },
       "active": "Active when",
       "tap_action": "Tap action",
       "hold_action": "Hold action",
@@ -651,7 +656,8 @@
         "icon": "Watermark bottom right. Default: entity icon; \"none\" shows none.",
         "colors": "Stripe and gradient, e.g. #f5c48a.",
         "active": "Fills the tile while all given conditions are met. Without an entity the scene's own state is checked.",
-        "tap_action": "Default: activate the scene, other entity: more-info, without an entity: nothing."
+        "tap_action": "Default: activate the scene, other entity: more-info, without an entity: nothing.",
+        "stripe": "Short (28px) for scenes, full width for effects with many colors."
       }
     }
   },

@@ -641,6 +641,11 @@
       "name": "Name",
       "icon": "Icon",
       "colors": "Farben",
+      "stripe": "Streifen",
+      "stripes": {
+        "short": "Kurz",
+        "full": "Ganze Breite"
+      },
       "active": "Aktiv wenn",
       "tap_action": "Aktion beim Tippen",
       "hold_action": "Aktion beim Halten",
@@ -651,7 +656,8 @@
         "icon": "Wasserzeichen unten rechts. Standard: Icon der Entität; «none» zeigt keines.",
         "colors": "Streifen und Verlauf, z.B. #f5c48a.",
         "active": "Füllt die Kachel, solange alle gesetzten Bedingungen zutreffen. Ohne Entität wird der Zustand der Szene selbst geprüft.",
-        "tap_action": "Standard: Szene aktivieren, andere Entität: More-Info, ohne Entität: nichts."
+        "tap_action": "Standard: Szene aktivieren, andere Entität: More-Info, ohne Entität: nichts.",
+        "stripe": "Kurz (28px) für Szenen, ganze Breite für Effekte mit vielen Farben."
       }
     }
   },

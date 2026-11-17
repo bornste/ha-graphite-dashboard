@@ -931,7 +931,7 @@ export function examples(language: string): ShowcaseSection[] {
         },
         {
           title: "Effects of a lamp",
-          note: "Light effects as scene tiles: icon none, the lamp only for holding; tapping starts the effect (a toast here). Long names wrap, the tiles keep their height.",
+          note: "Light effects as scene tiles: icon none, stripe full, the lamp only for holding; tapping starts the effect (a toast here). Long names wrap, the tiles keep their height.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Effekte" : "Effects",
@@ -939,12 +939,12 @@ export function examples(language: string): ShowcaseSection[] {
             layout: "grid",
             columns: 3,
             cards: [
-              { type: "custom:graphite-scene", icon: "none", name: "Sunset", colors: ["#fffb5c", "#ffd958", "#ffa658", "#ff9150", "#ff7a3d"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "sunset" } } },
-              { type: "custom:graphite-scene", icon: "none", name: "Aurora", colors: ["#29ff84", "#55ffc1", "#26eaff", "#0c3aff", "#0a12ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "aurora" } } },
-              { type: "custom:graphite-scene", icon: "none", name: "Vapor Wave", colors: ["#ff72fb", "#784dff", "#2536ff", "#1135ff", "#0d31ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "vapor_wave" } } },
-              { type: "custom:graphite-scene", icon: "none", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
-              { type: "custom:graphite-scene", icon: "none", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
-              { type: "custom:graphite-scene", icon: "none", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
+              { type: "custom:graphite-scene", icon: "none", stripe: "full", name: "Sunset", colors: ["#fffb5c", "#ffd958", "#ffa658", "#ff9150", "#ff7a3d"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "sunset" } } },
+              { type: "custom:graphite-scene", icon: "none", stripe: "full", name: "Aurora", colors: ["#29ff84", "#55ffc1", "#26eaff", "#0c3aff", "#0a12ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "aurora" } } },
+              { type: "custom:graphite-scene", icon: "none", stripe: "full", name: "Vapor Wave", colors: ["#ff72fb", "#784dff", "#2536ff", "#1135ff", "#0d31ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "vapor_wave" } } },
+              { type: "custom:graphite-scene", icon: "none", stripe: "full", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
+              { type: "custom:graphite-scene", icon: "none", stripe: "full", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
+              { type: "custom:graphite-scene", icon: "none", stripe: "full", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
             ],
           },
         },

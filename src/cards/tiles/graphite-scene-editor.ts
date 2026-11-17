@@ -14,8 +14,13 @@ export class GraphiteSceneEditor extends GraphiteFormEditor {
         { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
       ),
       { name: "colors", selector: { text: { multiple: true } } },
+      this.selectField("stripe", "stripes", ["short", "full"], "list"),
       this.conditionSection("active"),
       this.actionsSection(),
     ];
+  }
+
+  protected defaults(): Record<string, unknown> {
+    return { stripe: "short" };
   }
 }

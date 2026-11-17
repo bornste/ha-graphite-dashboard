@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.64.0";
+var version = "0.65.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -1204,6 +1204,11 @@ var de_default = {
       name: "Name",
       icon: "Icon",
       colors: "Farben",
+      stripe: "Streifen",
+      stripes: {
+        short: "Kurz",
+        full: "Ganze Breite"
+      },
       active: "Aktiv wenn",
       tap_action: "Aktion beim Tippen",
       hold_action: "Aktion beim Halten",
@@ -1214,7 +1219,8 @@ var de_default = {
         icon: "Wasserzeichen unten rechts. Standard: Icon der Entit\xE4t; \xABnone\xBB zeigt keines.",
         colors: "Streifen und Verlauf, z.B. #f5c48a.",
         active: "F\xFCllt die Kachel, solange alle gesetzten Bedingungen zutreffen. Ohne Entit\xE4t wird der Zustand der Szene selbst gepr\xFCft.",
-        tap_action: "Standard: Szene aktivieren, andere Entit\xE4t: More-Info, ohne Entit\xE4t: nichts."
+        tap_action: "Standard: Szene aktivieren, andere Entit\xE4t: More-Info, ohne Entit\xE4t: nichts.",
+        stripe: "Kurz (28px) f\xFCr Szenen, ganze Breite f\xFCr Effekte mit vielen Farben."
       }
     }
   },
@@ -2434,6 +2440,11 @@ var en_default = {
       name: "Name",
       icon: "Icon",
       colors: "Colors",
+      stripe: "Stripe",
+      stripes: {
+        short: "Short",
+        full: "Full width"
+      },
       active: "Active when",
       tap_action: "Tap action",
       hold_action: "Hold action",
@@ -2444,7 +2455,8 @@ var en_default = {
         icon: 'Watermark bottom right. Default: entity icon; "none" shows none.',
         colors: "Stripe and gradient, e.g. #f5c48a.",
         active: "Fills the tile while all given conditions are met. Without an entity the scene's own state is checked.",
-        tap_action: "Default: activate the scene, other entity: more-info, without an entity: nothing."
+        tap_action: "Default: activate the scene, other entity: more-info, without an entity: nothing.",
+        stripe: "Short (28px) for scenes, full width for effects with many colors."
       }
     }
   },
@@ -7123,20 +7135,30 @@ var GraphiteSceneEditor = class extends GraphiteFormEditor {
         { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
       ),
       { name: "colors", selector: { text: { multiple: true } } },
+      this.selectField("stripe", "stripes", ["short", "full"], "list"),
       this.conditionSection("active"),
       this.actionsSection()
     ];
   }
+  defaults() {
+    return { stripe: "short" };
+  }
 };
 
 // src/cards/tiles/graphite-scene.ts
+var stripes = ["short", "full"];
 var sceneStyles = i`
   .tile.scene {
     height: var(--graphite-tile-height-scene, 64px);
   }
   .tile.scene .stripe {
-    width: var(--graphite-scene-stripe-width, 42px);
+    width: var(--graphite-scene-stripe-width, 28px);
     background: var(--scene-gradient, var(--graphite-accent));
+  }
+  /* full: the whole width inside the padding, so a gradient of many colors can be read */
+  .tile.scene.full .stripe {
+    width: auto;
+    right: var(--graphite-padding-tile, 12px);
   }
   /* long names wrap to a second line; the tile keeps its height, so it stays as high as its neighbours */
   .tile.scene .name {
@@ -7175,6 +7197,9 @@ function luminanceOf(color) {
 var GraphiteScene = class extends GraphiteCard {
   // default tap: a scene is activated, another entity opens more-info, without an entity nothing
   normalizeConfig(config) {
+    if (config.stripe !== void 0 && !stripes.includes(config.stripe)) {
+      throw new Error(`${this.localName}: stripe must be one of ${stripes.join(", ")}`);
+    }
     const entity = config.entity;
     const tapAction = !entity ? { action: "none" } : entity.startsWith("scene.") ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: entity } } : { action: "more-info" };
     return { tap_action: tapAction, hold_action: defaultHoldAction(entity), ...config };
@@ -7212,7 +7237,13 @@ var GraphiteScene = class extends GraphiteCard {
     const active = matchesCondition(config.active, activeState);
     const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity ?? "";
     const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
-    const classes = ["tile", "scene", active ? "active" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
+    const classes = [
+      "tile",
+      "scene",
+      config.stripe === "full" ? "full" : "",
+      active ? "active" : "",
+      interactive ? "interactive" : ""
+    ].filter(Boolean).join(" ");
     const style = [gradient ? `--scene-gradient: ${gradient}` : "", `--scene-ink: ${ink}`].filter(Boolean).join("; ");
     const icon = config.icon === "none" ? void 0 : config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : stateObj ? b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>` : void 0;
     return b2`<div class=${classes} style=${style} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}

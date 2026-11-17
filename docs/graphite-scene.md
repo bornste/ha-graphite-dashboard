@@ -1,7 +1,7 @@
 # graphite-scene
 
 A scene or a light effect as a tile (64px, `--graphite-tile-height-scene`): a stripe in the colors top
-left (42px), the name bottom left and the icon as watermark. While the scene is active (e.g. an
+left (short, or over the whole width for effects), the name bottom left and the icon as watermark. While the scene is active (e.g. an
 `input_select` names it), the whole tile is filled with the color gradient; name and icon turn dark on
 bright colors and white on dark ones. Long names wrap to a second line, the tile keeps its height, so
 it stays as high as its neighbours. Several scene tiles in a [graphite-panel](graphite-panel.md) with
@@ -24,6 +24,7 @@ running effect, if the lamp (or a helper) reports it.
 type: custom:graphite-scene
 name: Sunset
 icon: none
+stripe: full
 colors: ["#ffb25c", "#ff7a3d", "#c2408f"]
 entity: light.floor_lamp
 tap_action:
@@ -46,6 +47,7 @@ active:
 | `name` | string | friendly name | Name bottom left, up to two lines. |
 | `icon` | icon / `none` | entity icon | Watermark bottom right; `none` shows none (also without an entity). |
 | `colors` | list | accent | Colors of the stripe and the gradient, left to right (hex colors decide the text color of the filled tile). |
+| `stripe` | `short` / `full` | `short` | Short stripe (28px) or the whole width inside the padding (a gradient of many colors can be read, e.g. effects). |
 | `active` | condition | – | Filled while the condition is met (`entity` plus `state`, `above` or `below`, see the panel conditions). Without `entity` the card's own entity is checked. |
 | `tap_action` | action | by entity | `scene.turn_on` for a scene, more-info for another entity, nothing without an entity. |
 | `hold_action` | action | `more-info` with `entity`, else `none` | Action on hold. |
@@ -55,4 +57,5 @@ active:
 
 Same tokens as the other tiles: `--graphite-tile-height-scene` (64px), `--graphite-padding-tile` (12px),
 `--graphite-font-tile-name-size` (15px, the name size), `--graphite-watermark-size` (34px). The stripe is
-4px high like the meter bar, 42px wide (`--graphite-scene-stripe-width`).
+4px high like the meter bar; short 28px (`--graphite-scene-stripe-width`), full the whole width inside the
+padding like the meter bar.
