@@ -141,7 +141,7 @@ const selectStyles = css`
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: var(--graphite-font-label-size, 13px);
+    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
     line-height: 18px;
     color: var(--graphite-text-primary);
   }
@@ -151,9 +151,11 @@ const selectStyles = css`
     height: auto;
     padding: 6px 6px 8px;
   }
+  /* (the preview is the main content: the name is its label) */
   .tiles .option.preview .label {
     position: static;
     margin: 7px 2px 0;
+    font-size: var(--graphite-font-label-size, 13px);
     color: inherit;
   }
   .check {

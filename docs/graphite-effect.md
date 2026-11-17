@@ -36,6 +36,7 @@ tap_action:
 |---|---|---|
 | `--graphite-tile-height-compact` | `72px` | Minimum height of the tile. |
 | `--graphite-padding-tile` | `12px` | Inset of the name on the left. |
+| `--graphite-font-tile-name-size` | `15px` (name size) | Font size of the name (wraps to a second line when needed). |
 | `--graphite-effect-saturation` | `0.85` | Saturation of the gradient. |
 | `--graphite-effect-brightness` | `0.88` | Brightness of the gradient. |
 | `--graphite-card-radius` | `12px` | Corner radius (set by the panel). |

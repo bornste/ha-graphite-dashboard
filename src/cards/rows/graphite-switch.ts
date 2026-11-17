@@ -7,16 +7,18 @@ import { layoutOf } from "../../core/layout";
 import { offlineDot } from "../../core/offline-dot";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, HassEntity } from "../../core/types";
-import { tileStyles } from "../tiles/tile-styles";
+import { tileNameStyles, tileStyles } from "../tiles/tile-styles";
 import { GraphiteRow } from "./graphite-row";
 import { GraphiteRowEditor } from "./graphite-row-editor";
 import { rowStyles } from "./row-styles";
+
+const switchTileStyles = [tileStyles, tileNameStyles];
 
 export class GraphiteSwitch extends GraphiteRow {
   static styles: CSSResultGroup = [];
 
   protected stylesForConfig() {
-    return layoutOf(this.config, "row") === "tile" ? tileStyles : rowStyles;
+    return layoutOf(this.config, "row") === "tile" ? switchTileStyles : rowStyles;
   }
 
   protected defaultActions(entity: string): { tap_action: ActionConfig; hold_action: ActionConfig } {

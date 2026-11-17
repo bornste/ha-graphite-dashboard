@@ -44,7 +44,7 @@ const effectStyles = css`
     right: auto;
     bottom: auto;
     margin: var(--graphite-padding-tile, 12px) 14px 9px var(--graphite-padding-tile, 12px);
-    font-size: 14px;
+    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
     font-weight: 400;
     line-height: 1.1;
     color: #fff;

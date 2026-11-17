@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.62.3";
+var version = "0.63.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -4948,6 +4948,11 @@ registerCard("graphite-status", GraphiteStatus, {
 });
 
 // src/cards/tiles/tile-styles.ts
+var tileNameStyles = i`
+  .tile .name {
+    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
+  }
+`;
 var tileStyles = i`
   :host {
     display: block;
@@ -5097,9 +5102,10 @@ var tileStyles = i`
 `;
 
 // src/cards/rows/graphite-switch.ts
+var switchTileStyles = [tileStyles, tileNameStyles];
 var GraphiteSwitch = class extends GraphiteRow {
   stylesForConfig() {
-    return layoutOf(this.config, "row") === "tile" ? tileStyles : rowStyles;
+    return layoutOf(this.config, "row") === "tile" ? switchTileStyles : rowStyles;
   }
   defaultActions(entity) {
     return { tap_action: { action: "toggle" }, hold_action: defaultHoldAction(entity) };
@@ -6191,7 +6197,7 @@ var effectStyles = i`
     right: auto;
     bottom: auto;
     margin: var(--graphite-padding-tile, 12px) 14px 9px var(--graphite-padding-tile, 12px);
-    font-size: 14px;
+    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
     font-weight: 400;
     line-height: 1.1;
     color: #fff;
@@ -7368,7 +7374,7 @@ var GraphiteScene = class extends GraphiteCard {
     return document.createElement("graphite-scene-editor");
   }
 };
-GraphiteScene.styles = [tileStyles, labelStyles, sceneStyles];
+GraphiteScene.styles = [tileStyles, labelStyles, tileNameStyles, sceneStyles];
 registerElement("graphite-scene-editor", GraphiteSceneEditor);
 registerCard("graphite-scene", GraphiteScene, {
   name: "Graphite Scene",
@@ -13341,7 +13347,7 @@ var iconButtonStyles = i`
   }
   ${solidHoverStyles(".button", ".button.interactive:not(.on)")}
 `;
-var tileLayout = [tileStyles, spinnerStyles, buttonTileStyles];
+var tileLayout = [tileStyles, tileNameStyles, spinnerStyles, buttonTileStyles];
 var rowLayout = [rowStyles, spinnerStyles, buttonRowStyles];
 var iconLayout = [spinnerStyles, iconButtonStyles];
 var GraphiteButton = class extends GraphiteCard {
@@ -13629,7 +13635,7 @@ var selectStyles = i`
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: var(--graphite-font-label-size, 13px);
+    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
     line-height: 18px;
     color: var(--graphite-text-primary);
   }
@@ -13639,9 +13645,11 @@ var selectStyles = i`
     height: auto;
     padding: 6px 6px 8px;
   }
+  /* (the preview is the main content: the name is its label) */
   .tiles .option.preview .label {
     position: static;
     margin: 7px 2px 0;
+    font-size: var(--graphite-font-label-size, 13px);
     color: inherit;
   }
   .check {

@@ -14,7 +14,7 @@ import { registerCard, registerElement } from "../../core/register";
 import { spinnerStyles } from "../../core/spinner";
 import type { ActionConfig, GraphiteCardConfig, HassEntity } from "../../core/types";
 import { rowStyles } from "../rows/row-styles";
-import { tileStyles } from "../tiles/tile-styles";
+import { tileNameStyles, tileStyles } from "../tiles/tile-styles";
 import { GraphiteButtonEditor } from "./graphite-button-editor";
 
 export type ButtonLayout = "tile" | "row" | "icon";
@@ -150,7 +150,7 @@ const iconButtonStyles = css`
   ${solidHoverStyles(".button", ".button.interactive:not(.on)")}
 `;
 
-const tileLayout = [tileStyles, spinnerStyles, buttonTileStyles];
+const tileLayout = [tileStyles, tileNameStyles, spinnerStyles, buttonTileStyles];
 const rowLayout = [rowStyles, spinnerStyles, buttonRowStyles];
 const iconLayout = [spinnerStyles, iconButtonStyles];
 

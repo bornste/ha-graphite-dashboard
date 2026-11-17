@@ -32,4 +32,4 @@ active:
 ## Styling
 
 Same tokens as the other tiles: `--graphite-tile-height-scene` (64px), `--graphite-padding-tile` (12px),
-`--graphite-font-label-size` (13px), `--graphite-watermark-size` (34px), stripe 28 × 4px like the label tiles.
+`--graphite-font-tile-name-size` (15px, the name size), `--graphite-watermark-size` (34px), stripe 28 × 4px like the label tiles.

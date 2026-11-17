@@ -1,8 +1,17 @@
 // Shared styles of the Graphite tiles: tile surface, watermark icon bottom right, name bottom left,
 // toggle top left, offline badge top right. Geometry follows the former Bubble switch tile
 // (80px high, 12px inset (--graphite-padding-tile), name 13/18px with 9px to the bottom edge, 34px watermark 9px from the right edge, so a full glyph sits on the 12px padding line).
+// The name is a label here (13px); tiles whose name is their main content add tileNameStyles (15px).
 import { css } from "lit";
 import { tileEdgeStyles } from "../../core/edge";
+
+// tiles whose name is their main content (switch, button, scene, effect, select): the name in the
+// size of names (like in the rows); tiles that show a value keep the name as a label (13px)
+export const tileNameStyles = css`
+  .tile .name {
+    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
+  }
+`;
 
 export const tileStyles = css`
   :host {

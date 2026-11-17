@@ -10,7 +10,7 @@ import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
 // the stripe of the label layout (28 x 4px, 12px from the left, 10px from the top)
 import { labelStyles } from "./label-styles";
-import { tileStyles } from "./tile-styles";
+import { tileNameStyles, tileStyles } from "./tile-styles";
 import { GraphiteSceneEditor } from "./graphite-scene-editor";
 
 export interface SceneConfig extends GraphiteCardConfig {
@@ -59,7 +59,7 @@ function luminanceOf(color: string): number | null {
 }
 
 export class GraphiteScene extends GraphiteCard<SceneConfig> {
-  static styles = [tileStyles, labelStyles, sceneStyles];
+  static styles = [tileStyles, labelStyles, tileNameStyles, sceneStyles];
 
   private detachActions?: () => void;
 

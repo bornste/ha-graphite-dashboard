@@ -81,7 +81,7 @@ The row uses the same variables as [graphite-status](graphite-status.md); the to
 |---|---|---|
 | `--graphite-tile-height` | `80px` | Height of the tile. |
 | `--graphite-watermark-size` | `34px` | Size of the watermark icon. |
-| `--graphite-font-label-size` | `13px` | Font size of the name. |
+| `--graphite-font-tile-name-size` | `15px` (name size) | Font size of the name. |
 | `--graphite-tint-active` | `18%` | Strength of the accent tint while on. |
 | `--graphite-card-surface`, `--graphite-card-radius` | tile surface, `12px` | Set by the panel for its children. |
 
