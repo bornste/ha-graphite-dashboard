@@ -74,8 +74,17 @@ Graphite: &graphite
       # strength of the accent tint of active tiles and rows
       graphite-tint-active: 18%
 
+      # page background: a soft glow from the bottom right corner, barely lighter than the ground,
+      # under a fine grain (also keeps the flat gradient free of banding)
+      graphite-glow-color: var(--graphite-ink)
+      graphite-glow-strength: 4%
+      graphite-glow-size: 80% 90%
+      # centre of the glow (x y of the screen; 50% 0% = middle of the top edge)
+      graphite-glow-position: 100% 100%
+      graphite-noise: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27240%27 height=%27240%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27 opacity=%270.05%27/%3E%3C/svg%3E")'
+
       # 4. Home Assistant
-      lovelace-background: var(--graphite-surface-page)
+      lovelace-background: "var(--graphite-noise), radial-gradient(ellipse var(--graphite-glow-size) at var(--graphite-glow-position), color-mix(in srgb, var(--graphite-glow-color) var(--graphite-glow-strength), var(--graphite-ground)), var(--graphite-ground)) fixed, var(--graphite-ground)"
       primary-background-color: var(--graphite-surface-page)
       secondary-background-color: var(--graphite-surface-panel)
       card-background-color: var(--graphite-surface-panel)
@@ -203,6 +212,9 @@ Graphite Lavender:
     light: &lavender
       <<: *graphiteDark
       graphite-ground: "#D8D3E6"
+      # glow of the page background in the berry accent
+      graphite-glow-color: var(--graphite-accent)
+      graphite-glow-strength: 10%
       graphite-ink: "#2B2D5C"
       graphite-ink-rgb: 43, 45, 92
       graphite-accent: "#B4387A"
@@ -242,6 +254,9 @@ Graphite Sand:
       <<: *graphiteDark
       graphite-ground: "#F0E5DB"
       graphite-ink: "#474329"
+      # the glow of the page background in white: the petrol accent would darken the light ground
+      graphite-glow-color: "#ffffff"
+      graphite-glow-strength: 10%
       graphite-ink-rgb: 71, 67, 41
       graphite-accent: "#2F7F7A"
       graphite-accent-rgb: 47, 127, 122

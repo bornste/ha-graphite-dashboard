@@ -108,3 +108,19 @@ The Home Assistant sidebar follows the theme as well: the selected entry uses th
 notification badge uses the accent ink (`text-accent-color`). Home Assistant's primary color (`primary-color`,
 `rgb-primary-color` and the `ha-color-primary-05` to `-95` scale) is the accent too, so switches, buttons,
 links and selections on the Home Assistant pages match the dashboard.
+
+### Page background
+
+The page (`lovelace-background`) is the ground with a soft glow from the bottom right corner, barely
+lighter than the ground, under a fine grain. The grain is a small SVG noise inside the theme (no image
+file); it also keeps the flat gradient free of banding. The glow stays in place while the page scrolls.
+
+| Token | Default | Use |
+|---|---|---|
+| `graphite-glow-color` | ink (Lavender: accent, Sand: white) | Color the glow mixes into the ground |
+| `graphite-glow-strength` | `4%` (Lavender and Sand 10 %) | Share of that color at the centre of the glow |
+| `graphite-glow-size` | `80% 90%` | Width and height of the glow (ellipse) |
+| `graphite-glow-position` | `100% 100%` | Centre of the glow on the screen (x y; `50% 0%` = middle of the top edge) |
+| `graphite-noise` | SVG noise, 5 % | Grain layer over the page; `none` turns it off |
+
+Graphite Glass keeps its wallpaper instead.
