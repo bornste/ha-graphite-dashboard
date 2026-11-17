@@ -217,21 +217,6 @@
       }
     }
   },
-  "effect": {
-    "editor": {
-      "name": "Name",
-      "colors": "Farben des Verlaufs",
-      "entity": "Entität",
-      "tap_action": "Aktion beim Tippen",
-      "hold_action": "Aktion beim Halten",
-      "double_tap_action": "Aktion beim Doppeltippen",
-      "helper": {
-        "colors": "z.B. #ff7a3d.",
-        "entity": "Für More-Info beim Halten, z.B. die Lampe.",
-        "tap_action": "z.B. den Effekt setzen."
-      }
-    }
-  },
   "image": {
     "editor": {
       "entity": "Entität",
@@ -661,12 +646,12 @@
       "hold_action": "Aktion beim Halten",
       "double_tap_action": "Aktion beim Doppeltippen",
       "helper": {
-        "entity": "Oder eine andere Entität.",
+        "entity": "Optional: Szene oder eine andere Entität. Ohne Entität macht Tippen nur, was die Aktion sagt (z.B. einen Effekt setzen).",
         "name": "Standard: Name der Entität.",
-        "icon": "Wasserzeichen unten rechts. Standard: Icon der Entität.",
+        "icon": "Wasserzeichen unten rechts. Standard: Icon der Entität; «none» zeigt keines.",
         "colors": "Streifen und Verlauf, z.B. #f5c48a.",
         "active": "Füllt die Kachel, solange alle gesetzten Bedingungen zutreffen. Ohne Entität wird der Zustand der Szene selbst geprüft.",
-        "tap_action": "Standard: Szene aktivieren."
+        "tap_action": "Standard: Szene aktivieren, andere Entität: More-Info, ohne Entität: nichts."
       }
     }
   },

@@ -8,7 +8,7 @@ export class GraphiteSceneEditor extends GraphiteFormEditor {
 
   protected schema(): unknown[] {
     return [
-      { name: "entity", required: true, selector: { entity: {} } },
+      { name: "entity", selector: { entity: {} } },
       this.grid(
         { name: "name", selector: { text: {} } },
         { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },

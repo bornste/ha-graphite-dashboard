@@ -71,7 +71,7 @@ const buttonTileStyles = css`
   .tile.on .icon {
     color: var(--graphite-state-text, var(--graphite-accent));
   }
-  /* long names wrap to a second line (like the labels of graphite-image and graphite-effect),
+  /* long names wrap to a second line (like the labels of graphite-image and graphite-scene),
      longer ones end with an ellipsis */
   .name {
     white-space: normal;

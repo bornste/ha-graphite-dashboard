@@ -5,7 +5,7 @@
 import { css } from "lit";
 import { tileEdgeStyles } from "../../core/edge";
 
-// tiles whose name is their main content (switch, button, scene, effect, select): the name in the
+// tiles whose name is their main content (switch, button, scene, select): the name in the
 // size of names (like in the rows); tiles that show a value keep the name as a label (13px)
 export const tileNameStyles = css`
   .tile .name {

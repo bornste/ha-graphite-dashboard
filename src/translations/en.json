@@ -217,21 +217,6 @@
       }
     }
   },
-  "effect": {
-    "editor": {
-      "name": "Name",
-      "colors": "Gradient colors",
-      "entity": "Entity",
-      "tap_action": "Tap action",
-      "hold_action": "Hold action",
-      "double_tap_action": "Double tap action",
-      "helper": {
-        "colors": "e.g. #ff7a3d.",
-        "entity": "For more-info on hold, e.g. the lamp.",
-        "tap_action": "e.g. set the effect."
-      }
-    }
-  },
   "image": {
     "editor": {
       "entity": "Entity",
@@ -661,12 +646,12 @@
       "hold_action": "Hold action",
       "double_tap_action": "Double tap action",
       "helper": {
-        "entity": "Or another entity.",
+        "entity": "Optional: a scene or another entity. Without an entity tapping only does what the action says (e.g. set an effect).",
         "name": "Default: entity name.",
-        "icon": "Watermark bottom right. Default: entity icon.",
+        "icon": "Watermark bottom right. Default: entity icon; \"none\" shows none.",
         "colors": "Stripe and gradient, e.g. #f5c48a.",
         "active": "Fills the tile while all given conditions are met. Without an entity the scene's own state is checked.",
-        "tap_action": "Default: activate the scene."
+        "tap_action": "Default: activate the scene, other entity: more-info, without an entity: nothing."
       }
     }
   },

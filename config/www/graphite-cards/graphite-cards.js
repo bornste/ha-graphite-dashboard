@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.63.0";
+var version = "0.64.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -780,21 +780,6 @@ var de_default = {
       }
     }
   },
-  effect: {
-    editor: {
-      name: "Name",
-      colors: "Farben des Verlaufs",
-      entity: "Entit\xE4t",
-      tap_action: "Aktion beim Tippen",
-      hold_action: "Aktion beim Halten",
-      double_tap_action: "Aktion beim Doppeltippen",
-      helper: {
-        colors: "z.B. #ff7a3d.",
-        entity: "F\xFCr More-Info beim Halten, z.B. die Lampe.",
-        tap_action: "z.B. den Effekt setzen."
-      }
-    }
-  },
   image: {
     editor: {
       entity: "Entit\xE4t",
@@ -1224,12 +1209,12 @@ var de_default = {
       hold_action: "Aktion beim Halten",
       double_tap_action: "Aktion beim Doppeltippen",
       helper: {
-        entity: "Oder eine andere Entit\xE4t.",
+        entity: "Optional: Szene oder eine andere Entit\xE4t. Ohne Entit\xE4t macht Tippen nur, was die Aktion sagt (z.B. einen Effekt setzen).",
         name: "Standard: Name der Entit\xE4t.",
-        icon: "Wasserzeichen unten rechts. Standard: Icon der Entit\xE4t.",
+        icon: "Wasserzeichen unten rechts. Standard: Icon der Entit\xE4t; \xABnone\xBB zeigt keines.",
         colors: "Streifen und Verlauf, z.B. #f5c48a.",
         active: "F\xFCllt die Kachel, solange alle gesetzten Bedingungen zutreffen. Ohne Entit\xE4t wird der Zustand der Szene selbst gepr\xFCft.",
-        tap_action: "Standard: Szene aktivieren."
+        tap_action: "Standard: Szene aktivieren, andere Entit\xE4t: More-Info, ohne Entit\xE4t: nichts."
       }
     }
   },
@@ -2025,21 +2010,6 @@ var en_default = {
       }
     }
   },
-  effect: {
-    editor: {
-      name: "Name",
-      colors: "Gradient colors",
-      entity: "Entity",
-      tap_action: "Tap action",
-      hold_action: "Hold action",
-      double_tap_action: "Double tap action",
-      helper: {
-        colors: "e.g. #ff7a3d.",
-        entity: "For more-info on hold, e.g. the lamp.",
-        tap_action: "e.g. set the effect."
-      }
-    }
-  },
   image: {
     editor: {
       entity: "Entity",
@@ -2469,12 +2439,12 @@ var en_default = {
       hold_action: "Hold action",
       double_tap_action: "Double tap action",
       helper: {
-        entity: "Or another entity.",
+        entity: "Optional: a scene or another entity. Without an entity tapping only does what the action says (e.g. set an effect).",
         name: "Default: entity name.",
-        icon: "Watermark bottom right. Default: entity icon.",
+        icon: 'Watermark bottom right. Default: entity icon; "none" shows none.',
         colors: "Stripe and gradient, e.g. #f5c48a.",
         active: "Fills the tile while all given conditions are met. Without an entity the scene's own state is checked.",
-        tap_action: "Default: activate the scene."
+        tap_action: "Default: activate the scene, other entity: more-info, without an entity: nothing."
       }
     }
   },
@@ -6151,129 +6121,6 @@ registerCard("graphite-value", GraphiteValue, {
   description: "One value \u2013 number or word \u2013 as a tile or a row: name, value with unit, optional second value."
 });
 
-// src/cards/tiles/graphite-effect-editor.ts
-var GraphiteEffectEditor = class extends GraphiteFormEditor {
-  labelPrefix() {
-    return "effect.editor";
-  }
-  schema() {
-    return [
-      { name: "name", selector: { text: {} } },
-      { name: "colors", required: true, selector: { text: { multiple: true } } },
-      { name: "entity", selector: { entity: {} } },
-      this.actionsSection()
-    ];
-  }
-  skipValue(key, value) {
-    if (key === "colors") return !Array.isArray(value) || value.length === 0;
-    return false;
-  }
-};
-
-// src/cards/tiles/graphite-effect.ts
-var effectStyles = i`
-  /* the tile grows with a long name, at least the compact tile height */
-  .tile {
-    display: flex;
-    align-items: flex-end;
-    height: auto;
-    min-height: var(--graphite-tile-height-compact, 72px);
-  }
-  .gradient {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background:
-      linear-gradient(to top, rgba(0, 0, 0, 0.35) 0%, transparent 60%),
-      var(--effect-gradient);
-    filter: saturate(var(--graphite-effect-saturation, 0.85)) brightness(var(--graphite-effect-brightness, 0.88));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-    pointer-events: none;
-  }
-  /* name bottom left on the gradient, wraps instead of being cut off */
-  .name {
-    position: relative;
-    left: auto;
-    right: auto;
-    bottom: auto;
-    margin: var(--graphite-padding-tile, 12px) 14px 9px var(--graphite-padding-tile, 12px);
-    font-size: var(--graphite-font-tile-name-size, var(--graphite-font-name-size, 15px));
-    font-weight: 400;
-    line-height: 1.1;
-    color: #fff;
-    white-space: normal;
-    overflow-wrap: break-word;
-    hyphens: auto;
-  }
-  .dots {
-    position: absolute;
-    top: 9px;
-    right: 9px;
-    display: flex;
-    pointer-events: none;
-  }
-  .dots span {
-    width: 13px;
-    height: 13px;
-    margin-left: -2px;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
-  }
-`;
-var GraphiteEffect = class extends GraphiteCard {
-  normalizeConfig(config) {
-    if (!Array.isArray(config.colors) || config.colors.length === 0) {
-      throw new Error(`${this.localName}: 'colors' (list of colors) is required`);
-    }
-    return { tap_action: { action: "none" }, hold_action: defaultHoldAction(config.entity), ...config };
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this.detachActions = attachActionHandler(this, {
-      hasHold: () => hasAction(this.config?.hold_action),
-      hasDoubleTap: () => hasAction(this.config?.double_tap_action)
-    }, (action) => this.handleAction(action));
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.detachActions?.();
-    this.detachActions = void 0;
-  }
-  handleAction(action) {
-    const config = this.config;
-    if (!config || !hasAction(config[`${action}_action`])) return;
-    fireAction(this, config, action);
-  }
-  render() {
-    const config = this.config;
-    const colors = config.colors.map((color) => String(color).trim()).filter(Boolean);
-    const name = config.name ?? "";
-    const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
-    return b2`<div class=${interactive ? "tile interactive" : "tile"} style=${`--effect-gradient: linear-gradient(90deg, ${colors.join(", ")})`} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}
-      aria-label=${name}><div class="gradient"></div>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
-      class="dots">${colors.map((color) => b2`<span style=${`background: ${color}`}></span>`)}</div><div
-      class="name">${name}</div></div>`;
-  }
-  getCardSize() {
-    return 2;
-  }
-  getGridOptions() {
-    return { columns: 3, rows: "auto", min_columns: 2 };
-  }
-  static getStubConfig() {
-    return { name: "Sunset", colors: ["#ffb25c", "#ff7a3d", "#c2408f"] };
-  }
-  static async getConfigElement() {
-    return document.createElement("graphite-effect-editor");
-  }
-};
-GraphiteEffect.styles = [tileStyles, effectStyles];
-registerElement("graphite-effect-editor", GraphiteEffectEditor);
-registerCard("graphite-effect", GraphiteEffect, {
-  name: "Graphite Effect",
-  description: "Light effect or scene as a tile with its color gradient and color dots."
-});
-
 // src/cards/tiles/graphite-image-editor.ts
 var GraphiteImageEditor = class extends GraphiteFormEditor {
   labelPrefix() {
@@ -7270,7 +7117,7 @@ var GraphiteSceneEditor = class extends GraphiteFormEditor {
   }
   schema() {
     return [
-      { name: "entity", required: true, selector: { entity: {} } },
+      { name: "entity", selector: { entity: {} } },
       this.grid(
         { name: "name", selector: { text: {} } },
         { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } }
@@ -7288,7 +7135,18 @@ var sceneStyles = i`
     height: var(--graphite-tile-height-scene, 64px);
   }
   .tile.scene .stripe {
+    width: var(--graphite-scene-stripe-width, 42px);
     background: var(--scene-gradient, var(--graphite-accent));
+  }
+  /* long names wrap to a second line; the tile keeps its height, so it stays as high as its neighbours */
+  .tile.scene .name {
+    white-space: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
   /* active: the whole tile in the scene colors */
   .tile.scene.active {
@@ -7315,14 +7173,15 @@ function luminanceOf(color) {
   return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
 }
 var GraphiteScene = class extends GraphiteCard {
+  // default tap: a scene is activated, another entity opens more-info, without an entity nothing
   normalizeConfig(config) {
-    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
-    const tapAction = config.entity.startsWith("scene.") ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: config.entity } } : { action: "more-info" };
-    return { tap_action: tapAction, hold_action: defaultHoldAction(config.entity), ...config };
+    const entity = config.entity;
+    const tapAction = !entity ? { action: "none" } : entity.startsWith("scene.") ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: entity } } : { action: "more-info" };
+    return { tap_action: tapAction, hold_action: defaultHoldAction(entity), ...config };
   }
   watchedEntities() {
     const config = this.config;
-    return config.active?.entity ? [config.entity, config.active.entity] : [config.entity];
+    return [config.entity, config.active?.entity].filter((entity) => !!entity);
   }
   connectedCallback() {
     super.connectedCallback();
@@ -7343,7 +7202,7 @@ var GraphiteScene = class extends GraphiteCard {
   }
   render() {
     const config = this.config;
-    const stateObj = this.hass?.states[config.entity];
+    const stateObj = config.entity ? this.hass?.states[config.entity] : void 0;
     const colors = (Array.isArray(config.colors) ? config.colors : []).map((color) => String(color).trim()).filter(Boolean);
     const gradient = colors.length > 1 ? `linear-gradient(90deg, ${colors.join(", ")})` : colors[0] ?? "";
     const luminances = colors.map(luminanceOf).filter((value) => value !== null);
@@ -7351,14 +7210,14 @@ var GraphiteScene = class extends GraphiteCard {
     const ink = average > 0.35 ? "#2a1a0c" : "#ffffff";
     const activeState = config.active?.entity ? this.hass?.states[config.active.entity]?.state : stateObj?.state;
     const active = matchesCondition(config.active, activeState);
-    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity ?? "";
     const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
     const classes = ["tile", "scene", active ? "active" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
     const style = [gradient ? `--scene-gradient: ${gradient}` : "", `--scene-ink: ${ink}`].filter(Boolean).join("; ");
-    const icon = config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    const icon = config.icon === "none" ? void 0 : config.icon ? b2`<ha-icon .icon=${config.icon}></ha-icon>` : stateObj ? b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>` : void 0;
     return b2`<div class=${classes} style=${style} role=${interactive ? "button" : A} tabindex=${interactive ? "0" : A}
       aria-label=${name} aria-pressed=${active ? "true" : "false"}>${interactive ? b2`<ha-ripple></ha-ripple>` : A}<div
-      class="stripe"></div><div class="watermark">${icon}</div><div class="name">${name}</div></div>`;
+      class="stripe"></div>${icon ? b2`<div class="watermark">${icon}</div>` : A}<div class="name">${name}</div></div>`;
   }
   getCardSize() {
     return 1;
@@ -7378,7 +7237,7 @@ GraphiteScene.styles = [tileStyles, labelStyles, tileNameStyles, sceneStyles];
 registerElement("graphite-scene-editor", GraphiteSceneEditor);
 registerCard("graphite-scene", GraphiteScene, {
   name: "Graphite Scene",
-  description: "Scene as a tile: color stripe and watermark, filled with the scene colors while active."
+  description: "Scene or light effect as a tile: color stripe and watermark, filled with the colors while active."
 });
 
 // src/cards/media/graphite-now-playing-editor.ts
@@ -13272,7 +13131,7 @@ var buttonTileStyles = i`
   .tile.on .icon {
     color: var(--graphite-state-text, var(--graphite-accent));
   }
-  /* long names wrap to a second line (like the labels of graphite-image and graphite-effect),
+  /* long names wrap to a second line (like the labels of graphite-image and graphite-scene),
      longer ones end with an ellipsis */
   .name {
     white-space: normal;

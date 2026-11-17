@@ -13,7 +13,6 @@ the special cases – also for cards with a visual editor.
 | graphite-switch | row, tile | [graphite-switch.md](graphite-switch.md) | ready |
 | graphite-meter | tile, row | [graphite-meter.md](graphite-meter.md) | ready (row in test) |
 | graphite-value | tile, row | [graphite-value.md](graphite-value.md) | ready |
-| graphite-effect | tile | [graphite-effect.md](graphite-effect.md) | ready |
 | graphite-image | tile | [graphite-image.md](graphite-image.md) | ready |
 | graphite-button | tile, row, icon | [graphite-button.md](graphite-button.md) | new |
 | graphite-select | segments, tiles | [graphite-select.md](graphite-select.md) | new |

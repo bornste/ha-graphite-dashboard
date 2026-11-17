@@ -69,7 +69,7 @@ in dark mode.
 |---|---|---|
 | `graphite-font-value-size` / `graphite-font-value-weight` | `22px` / `300` | Measured values in tiles |
 | `graphite-font-name-size` | `15px` | Names in rows |
-| `graphite-font-tile-name-size` | name size | Names of tiles whose name is their main content (switch, button, scene, effect, select) |
+| `graphite-font-tile-name-size` | name size | Names of tiles whose name is their main content (switch, button, scene, select) |
 | `graphite-font-label-size` | `13px` | Names of tiles that show a value or a picture (meter, value, todo, …), status after titles, chips |
 | `graphite-font-caption-size` | `12px` | Secondary lines ("seit 12 Min."), units in chips |
 
@@ -86,7 +86,7 @@ line). Other sizes work, the separator may then need a small adjustment.
 | `graphite-padding-tile` | `12px` | Inset of the content inside tiles (left, right, toggle top) |
 | `graphite-gap-header` | `12px` | Between title and status, and below a header |
 | `graphite-tile-height` | `80px` | Standard tiles |
-| `graphite-tile-height-compact` | `72px` | Compact tiles (stopwatch, todo, image, effect) |
+| `graphite-tile-height-compact` | `72px` | Compact tiles (stopwatch, todo, image) |
 | `graphite-tile-height-scene` | `64px` | Scene buttons |
 | `graphite-tile-height-media` | `88px` | Tiles with a 64px picture (now playing, vacuum) |
 | `graphite-row-height` | `60px` | Rows (status and switch rows) |

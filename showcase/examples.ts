@@ -548,32 +548,6 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-effect",
-      description: `Light effect as a tile with its color gradient and the colors as dots; long names wrap.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-effect.md">Documentation</a>`,
-      examples: [
-        {
-          title: "Effects of a lamp",
-          note: "Tapping starts the effect (shown as a toast here), holding opens the lamp.",
-          config: {
-            type: "custom:graphite-panel",
-            title: german ? "Effekte" : "Effects",
-            info: german ? "Stehlampe" : "Floor lamp",
-            layout: "grid",
-            columns: 3,
-            cards: [
-              { type: "custom:graphite-effect", name: "Sunset", colors: ["#fffb5c", "#ffd958", "#ffa658", "#ff9150", "#ff7a3d"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "sunset" } } },
-              { type: "custom:graphite-effect", name: "Aurora", colors: ["#29ff84", "#55ffc1", "#26eaff", "#0c3aff", "#0a12ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "aurora" } } },
-              { type: "custom:graphite-effect", name: "Vapor Wave", colors: ["#ff72fb", "#784dff", "#2536ff", "#1135ff", "#0d31ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "vapor_wave" } } },
-              { type: "custom:graphite-effect", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
-              { type: "custom:graphite-effect", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
-              { type: "custom:graphite-effect", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
-            ],
-          },
-        },
-      ],
-    },
-    {
       title: "graphite-image",
       description: `Action tile with a picture (blurred backdrop and thumbnail) or a label; a spinner while the script runs.
         <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-image.md">Documentation</a>`,
@@ -930,7 +904,7 @@ export function examples(language: string): ShowcaseSection[] {
     },
     {
       title: "graphite-scene",
-      description: `Scene as a tile; several of them with header buttons in a graphite-panel make a room.
+      description: `Scene or light effect as a tile; several of them with header buttons in a graphite-panel make a room.
         <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-scene.md">Documentation</a>`,
       examples: [
         {
@@ -952,6 +926,25 @@ export function examples(language: string): ShowcaseSection[] {
               { type: "custom:graphite-scene", entity: "scene.living_room_bright", name: german ? "Hell" : "Bright", colors: ["#f4a93c", "#ffd166", "#ffe9a8"], active: { entity: "input_select.living_room_scenes", state: "Hell" } },
               { type: "custom:graphite-scene", entity: "scene.living_room_relax", name: "Relax", colors: ["#ff9a3c", "#ff6f61", "#b8478a"], active: { entity: "input_select.living_room_scenes", state: "Relax" } },
               { type: "custom:graphite-scene", entity: "scene.living_room_tv", name: "TV", colors: ["#1e3cff", "#4b6bff", "#9a7bff"], active: { entity: "input_select.living_room_scenes", state: "TV" } },
+            ],
+          },
+        },
+        {
+          title: "Effects of a lamp",
+          note: "Light effects as scene tiles: icon none, the lamp only for holding; tapping starts the effect (a toast here). Long names wrap, the tiles keep their height.",
+          config: {
+            type: "custom:graphite-panel",
+            title: german ? "Effekte" : "Effects",
+            info: german ? "Stehlampe" : "Floor lamp",
+            layout: "grid",
+            columns: 3,
+            cards: [
+              { type: "custom:graphite-scene", icon: "none", name: "Sunset", colors: ["#fffb5c", "#ffd958", "#ffa658", "#ff9150", "#ff7a3d"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "sunset" } } },
+              { type: "custom:graphite-scene", icon: "none", name: "Aurora", colors: ["#29ff84", "#55ffc1", "#26eaff", "#0c3aff", "#0a12ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "aurora" } } },
+              { type: "custom:graphite-scene", icon: "none", name: "Vapor Wave", colors: ["#ff72fb", "#784dff", "#2536ff", "#1135ff", "#0d31ff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "vapor_wave" } } },
+              { type: "custom:graphite-scene", icon: "none", name: "Tropical Twilight", colors: ["#ffa36f", "#ff836d", "#ff99a1", "#6587ff", "#475bff"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "tropical_twilight" } } },
+              { type: "custom:graphite-scene", icon: "none", name: "Under The Tree", colors: ["#15ff63", "#02ff1a", "#ff880e", "#ff4d28", "#ff0605"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "under_the_tree" } } },
+              { type: "custom:graphite-scene", icon: "none", name: "Winter Beauty", colors: ["#1dccff", "#29ff66", "#90ff43", "#ffd739", "#ff6410"], entity: "light.floor_lamp", tap_action: { action: "perform-action", perform_action: "light.turn_on", target: { entity_id: "light.floor_lamp" }, data: { effect: "winter_beauty" } } },
             ],
           },
         },

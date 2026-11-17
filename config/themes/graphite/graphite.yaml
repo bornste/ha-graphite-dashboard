@@ -54,7 +54,7 @@ Graphite: &graphite
       graphite-font-value-weight: "300"
       graphite-font-name-size: 15px
       graphite-font-label-size: 13px
-      # names of tiles whose name is their main content (switch, button, scene, effect, select)
+      # names of tiles whose name is their main content (switch, button, scene, select)
       graphite-font-tile-name-size: var(--graphite-font-name-size)
       graphite-font-caption-size: 12px
 

@@ -1,20 +1,22 @@
-// graphite-scene: a scene as a tile (64px, --graphite-tile-height-scene). Inactive: a short stripe in
-// the scene colors, the name and the icon as watermark; active (e.g. an input_select names the scene):
-// the tile is filled with the color gradient, text and icon turn dark or white depending on the colors.
-// Tapping activates the scene, holding opens more-info.
+// graphite-scene: a scene or a light effect as a tile (64px, --graphite-tile-height-scene). Inactive: a
+// stripe in the colors (42px, --graphite-scene-stripe-width), the name (up to two lines, the tile keeps
+// its height) and the icon as watermark; active (e.g. an input_select names the scene): the tile is
+// filled with the color gradient, text and icon turn dark or white depending on the colors.
+// Tapping activates a scene, holding opens more-info. Light effects of a lamp: icon none, the lamp as
+// entity for holding, tapping does what tap_action says.
 import { css, html, nothing } from "lit";
 import { attachActionHandler, defaultHoldAction, fireAction, hasAction, type ActionKind } from "../../core/actions";
 import { matchesCondition, type ValueCondition } from "../../core/conditions";
 import { GraphiteCard } from "../../core/graphite-card";
 import { registerCard, registerElement } from "../../core/register";
 import type { ActionConfig, GraphiteCardConfig } from "../../core/types";
-// the stripe of the label layout (28 x 4px, 12px from the left, 10px from the top)
+// the stripe of the label layout (4px high, 12px from the left, 10px from the top; scenes make it 42px wide)
 import { labelStyles } from "./label-styles";
 import { tileNameStyles, tileStyles } from "./tile-styles";
 import { GraphiteSceneEditor } from "./graphite-scene-editor";
 
 export interface SceneConfig extends GraphiteCardConfig {
-  entity: string;
+  entity?: string;
   name?: string;
   icon?: string;
   colors?: string[];
@@ -29,7 +31,18 @@ const sceneStyles = css`
     height: var(--graphite-tile-height-scene, 64px);
   }
   .tile.scene .stripe {
+    width: var(--graphite-scene-stripe-width, 42px);
     background: var(--scene-gradient, var(--graphite-accent));
+  }
+  /* long names wrap to a second line; the tile keeps its height, so it stays as high as its neighbours */
+  .tile.scene .name {
+    white-space: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
   /* active: the whole tile in the scene colors */
   .tile.scene.active {
@@ -63,17 +76,20 @@ export class GraphiteScene extends GraphiteCard<SceneConfig> {
 
   private detachActions?: () => void;
 
+  // default tap: a scene is activated, another entity opens more-info, without an entity nothing
   protected normalizeConfig(config: SceneConfig): SceneConfig {
-    if (!config.entity) throw new Error(`${this.localName}: 'entity' is required`);
-    const tapAction: ActionConfig = config.entity.startsWith("scene.")
-      ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: config.entity } }
-      : { action: "more-info" };
-    return { tap_action: tapAction, hold_action: defaultHoldAction(config.entity), ...config };
+    const entity = config.entity;
+    const tapAction: ActionConfig = !entity
+      ? { action: "none" }
+      : entity.startsWith("scene.")
+        ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: entity } }
+        : { action: "more-info" };
+    return { tap_action: tapAction, hold_action: defaultHoldAction(entity), ...config };
   }
 
   protected watchedEntities(): string[] {
     const config = this.config!;
-    return config.active?.entity ? [config.entity, config.active.entity] : [config.entity];
+    return [config.entity, config.active?.entity].filter((entity): entity is string => !!entity);
   }
 
   connectedCallback(): void {
@@ -98,7 +114,7 @@ export class GraphiteScene extends GraphiteCard<SceneConfig> {
 
   protected render() {
     const config = this.config!;
-    const stateObj = this.hass?.states[config.entity];
+    const stateObj = config.entity ? this.hass?.states[config.entity] : undefined;
     const colors = (Array.isArray(config.colors) ? config.colors : []).map((color) => String(color).trim()).filter(Boolean);
     const gradient = colors.length > 1 ? `linear-gradient(90deg, ${colors.join(", ")})` : colors[0] ?? "";
     // text on the filled tile: dark on bright colors, white on dark ones
@@ -107,16 +123,19 @@ export class GraphiteScene extends GraphiteCard<SceneConfig> {
     const ink = average > 0.35 ? "#2a1a0c" : "#ffffff";
     const activeState = config.active?.entity ? this.hass?.states[config.active.entity]?.state : stateObj?.state;
     const active = matchesCondition(config.active, activeState);
-    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity;
+    const name = config.name ?? stateObj?.attributes?.friendly_name ?? config.entity ?? "";
     const interactive = hasAction(config.tap_action) || hasAction(config.double_tap_action);
     const classes = ["tile", "scene", active ? "active" : "", interactive ? "interactive" : ""].filter(Boolean).join(" ");
     const style = [gradient ? `--scene-gradient: ${gradient}` : "", `--scene-ink: ${ink}`].filter(Boolean).join("; ");
-    const icon = config.icon
-      ? html`<ha-icon .icon=${config.icon}></ha-icon>`
-      : html`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
+    // watermark: the configured icon, else the entity icon; "none" (or no entity) shows none
+    const icon = config.icon === "none"
+      ? undefined
+      : config.icon
+        ? html`<ha-icon .icon=${config.icon}></ha-icon>`
+        : stateObj ? html`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>` : undefined;
     return html`<div class=${classes} style=${style} role=${interactive ? "button" : nothing} tabindex=${interactive ? "0" : nothing}
       aria-label=${name} aria-pressed=${active ? "true" : "false"}>${interactive ? html`<ha-ripple></ha-ripple>` : nothing}<div
-      class="stripe"></div><div class="watermark">${icon}</div><div class="name">${name}</div></div>`;
+      class="stripe"></div>${icon ? html`<div class="watermark">${icon}</div>` : nothing}<div class="name">${name}</div></div>`;
   }
 
   getCardSize(): number {
@@ -140,5 +159,5 @@ export class GraphiteScene extends GraphiteCard<SceneConfig> {
 registerElement("graphite-scene-editor", GraphiteSceneEditor);
 registerCard("graphite-scene", GraphiteScene, {
   name: "Graphite Scene",
-  description: "Scene as a tile: color stripe and watermark, filled with the scene colors while active.",
+  description: "Scene or light effect as a tile: color stripe and watermark, filled with the colors while active.",
 });
