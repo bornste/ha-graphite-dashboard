@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.67.1";
+var version = "0.67.2";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -13947,8 +13947,9 @@ GraphiteDialog.styles = i`
       border-radius: var(--graphite-radius-panel, 20px);
       background: var(--graphite-overlay, rgba(10, 10, 11, 0.9));
       color: var(--graphite-text-primary, var(--primary-text-color));
-      /* the first panel sits as far below the header buttons as they sit below the dialog edge */
-      --graphite-header-margin: 16px;
+      /* the header is as high as the close button (36px), so the title already has room below it;
+         8px = the gap between tiles, the buttons sit above the panels like a row of tiles */
+      --graphite-header-margin: 8px;
       /* optical inset: the title alone looks too close to the dialog edge */
       --graphite-title-inset: 4px;
     }

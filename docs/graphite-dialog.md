@@ -112,7 +112,7 @@ cards:
 
 The dialog is glass: `--graphite-ground` at 72 % with a blur behind it and a light edge at the top
 (`--graphite-ink` at 10 %), no frame. The backdrop dims the dashboard (`--graphite-ground` at 40 %)
-and blurs it. Corners `--graphite-radius-panel`, padding 16px, 16px between header and content;
+and blurs it. Corners `--graphite-radius-panel`, padding 16px, 8px between header and content (the header is as high as the close button);
 the title has an optical inset of 4px. The close button is a header button (44 × 36px,
 `--graphite-surface-tile`). The panels inside keep their surface, so the levels read
 ground → panel → tile.
