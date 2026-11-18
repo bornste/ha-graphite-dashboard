@@ -106,7 +106,8 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       position: relative;
       z-index: 1;
       margin: 0;
-      padding: 16px;
+      /* 8px below, as in the inline dialog (see graphite-panel :host([dialog]) .header) */
+      padding: 16px 16px 8px;
       transition: box-shadow 0.15s ease;
     }
     /* thin line under the header once content scrolls below it */

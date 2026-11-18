@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.67.3";
+var version = "0.67.4";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -14014,7 +14014,8 @@ GraphiteDialog.styles = i`
       position: relative;
       z-index: 1;
       margin: 0;
-      padding: 16px;
+      /* 8px below, as in the inline dialog (see graphite-panel :host([dialog]) .header) */
+      padding: 16px 16px 8px;
       transition: box-shadow 0.15s ease;
     }
     /* thin line under the header once content scrolls below it */
