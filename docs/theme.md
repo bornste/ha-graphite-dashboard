@@ -124,3 +124,32 @@ file); it also keeps the flat gradient free of banding. The glow stays in place 
 | `graphite-noise` | SVG noise, 5 % | Grain layer over the page; `none` turns it off |
 
 Graphite Glass keeps its wallpaper instead.
+
+### Depth: fills, edges and shadows
+
+Graphite is flat by default. A theme can add depth with these tokens; unset they cost nothing and the
+cards look as before.
+
+| Token | Default | Use |
+|---|---|---|
+| `graphite-panel-fill` | panel surface | Background of framed panels; a colour or a gradient (e.g. the top 2 % lighter) |
+| `graphite-tile-fill` | tile surface | Background of tiles and rows; a colour or a gradient |
+| `graphite-panel-shadow` | `none` | Shadow of framed panels; several layers allowed (an inset light line on top, a fine frame, a soft shadow) |
+| `graphite-tile-shadow` | `none` | Shadow of tiles and rows, same idea |
+| `graphite-edge-show` | – | `'""'` turns the gradient edge of tiles on (with `graphite-tile-edge`) |
+| `graphite-tile-edge` / `graphite-panel-edge` | `none` | 1px edge painted with a gradient (tiles; outer panels), as Graphite Glass uses it |
+
+The surface tokens (`graphite-surface-*`) stay plain colours, because the cards mix them for states and
+hover; the fill tokens may be gradients built from them. Active and hovered tiles keep their solid
+state colour. The own surfaces of graphite-battery, graphite-shopping and graphite-vacuum do not follow
+the fill tokens yet.
+
+Example (light line 10 %, fine dark frame 5 %, fine shadow 12 %, surfaces 2 % lighter at the top):
+
+```yaml
+graphite-depth-dark: "color-mix(in srgb, var(--graphite-ground) 55%, #000000)"
+graphite-panel-fill: "linear-gradient(180deg, color-mix(in srgb, #ffffff 2%, var(--graphite-surface-panel)), var(--graphite-surface-panel))"
+graphite-tile-fill: "linear-gradient(180deg, color-mix(in srgb, #ffffff 2%, var(--graphite-surface-tile)), var(--graphite-surface-tile))"
+graphite-panel-shadow: "inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent), 0 0 0 1px color-mix(in srgb, var(--graphite-depth-dark) 5%, transparent), 0 1px 2px color-mix(in srgb, var(--graphite-depth-dark) 12%, transparent)"
+graphite-tile-shadow: "inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent), 0 0 0 1px color-mix(in srgb, var(--graphite-depth-dark) 5%, transparent), 0 1px 2px color-mix(in srgb, var(--graphite-depth-dark) 12%, transparent)"
+```

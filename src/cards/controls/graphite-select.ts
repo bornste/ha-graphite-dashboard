@@ -70,7 +70,7 @@ const selectStyles = css`
     box-sizing: border-box;
     min-width: 0;
     border-radius: var(--graphite-radius-tile, 12px);
-    background: var(--graphite-surface-tile);
+    background: var(--graphite-tile-fill, var(--graphite-surface-tile));
     color: var(--graphite-text-secondary);
     -webkit-tap-highlight-color: transparent;
     outline: none;

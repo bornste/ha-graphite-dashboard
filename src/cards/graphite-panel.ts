@@ -91,7 +91,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       --graphite-card-radius: var(--graphite-radius-tile);
     }
     ha-card {
-      background: var(--graphite-surface-panel);
+      background: var(--graphite-panel-fill, var(--graphite-surface-panel));
       border-radius: var(--graphite-radius-panel);
       border: none;
       box-shadow: none;
@@ -282,11 +282,15 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       padding: 0;
       border-radius: 0;
     }
+    /* framed panels: shadow set by the theme (--graphite-panel-shadow, none by default) */
+    :host(:not([frameless])) ha-card {
+      box-shadow: var(--graphite-panel-shadow, none);
+    }
     /* outer panel (directly in the view, not inside another panel or a dialog): the theme can make it
        translucent with a blur behind and give it a light edge; inner panels stay solid */
     :host([outer]:not([frameless])) ha-card {
       position: relative;
-      background: var(--graphite-panel-outer-surface, var(--graphite-surface-panel));
+      background: var(--graphite-panel-outer-surface, var(--graphite-panel-fill, var(--graphite-surface-panel)));
       -webkit-backdrop-filter: var(--graphite-panel-backdrop, none);
       backdrop-filter: var(--graphite-panel-backdrop, none);
     }

@@ -43,7 +43,7 @@ export const calendarStyles = css`
     min-height: var(--graphite-row-height, 60px);
     padding: 9px 0;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     cursor: pointer;
     outline: none;
@@ -147,7 +147,7 @@ export const calendarStyles = css`
     align-items: center;
     min-height: var(--graphite-row-height, 60px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     font-size: 14px;
     color: var(--graphite-text-secondary);
   }
@@ -212,7 +212,7 @@ export const calendarStyles = css`
     min-height: var(--graphite-row-height, 60px);
     padding: 9px 14px 9px 0;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   .compactDay.past {
     opacity: 0.45;
@@ -318,7 +318,7 @@ export const calendarStyles = css`
     box-sizing: border-box;
     height: var(--graphite-tile-height-compact, 72px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     outline: none;
     -webkit-tap-highlight-color: transparent;
     transition: background-color 0.3s ease;

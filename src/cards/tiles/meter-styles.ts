@@ -166,7 +166,7 @@ export const meterRowStyles = css`
     gap: 2px 12px;
     padding: 12px 14px;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     outline: none;

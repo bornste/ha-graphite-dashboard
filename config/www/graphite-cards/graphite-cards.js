@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.65.0";
+var version = "0.66.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -4036,7 +4036,7 @@ GraphitePanel.styles = i`
       --graphite-card-radius: var(--graphite-radius-tile);
     }
     ha-card {
-      background: var(--graphite-surface-panel);
+      background: var(--graphite-panel-fill, var(--graphite-surface-panel));
       border-radius: var(--graphite-radius-panel);
       border: none;
       box-shadow: none;
@@ -4227,11 +4227,15 @@ GraphitePanel.styles = i`
       padding: 0;
       border-radius: 0;
     }
+    /* framed panels: shadow set by the theme (--graphite-panel-shadow, none by default) */
+    :host(:not([frameless])) ha-card {
+      box-shadow: var(--graphite-panel-shadow, none);
+    }
     /* outer panel (directly in the view, not inside another panel or a dialog): the theme can make it
        translucent with a blur behind and give it a light edge; inner panels stay solid */
     :host([outer]:not([frameless])) ha-card {
       position: relative;
-      background: var(--graphite-panel-outer-surface, var(--graphite-surface-panel));
+      background: var(--graphite-panel-outer-surface, var(--graphite-panel-fill, var(--graphite-surface-panel)));
       -webkit-backdrop-filter: var(--graphite-panel-backdrop, none);
       backdrop-filter: var(--graphite-panel-backdrop, none);
     }
@@ -4281,7 +4285,7 @@ var rowStyles = i`
     box-sizing: border-box;
     height: var(--graphite-row-height, 60px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     outline: none;
@@ -4944,7 +4948,7 @@ var tileStyles = i`
     box-sizing: border-box;
     height: var(--graphite-tile-height, 80px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     outline: none;
@@ -5382,7 +5386,7 @@ var meterRowStyles = i`
     gap: 2px 12px;
     padding: 12px 14px;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     outline: none;
@@ -9007,7 +9011,7 @@ var calendarStyles = i`
     min-height: var(--graphite-row-height, 60px);
     padding: 9px 0;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     cursor: pointer;
     outline: none;
@@ -9111,7 +9115,7 @@ var calendarStyles = i`
     align-items: center;
     min-height: var(--graphite-row-height, 60px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     font-size: 14px;
     color: var(--graphite-text-secondary);
   }
@@ -9176,7 +9180,7 @@ var calendarStyles = i`
     min-height: var(--graphite-row-height, 60px);
     padding: 9px 14px 9px 0;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   .compactDay.past {
     opacity: 0.45;
@@ -9282,7 +9286,7 @@ var calendarStyles = i`
     box-sizing: border-box;
     height: var(--graphite-tile-height-compact, 72px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     outline: none;
     -webkit-tap-highlight-color: transparent;
     transition: background-color 0.3s ease;
@@ -11851,7 +11855,7 @@ var timelineStyles = i`
     padding: 0;
     border: none;
     border-radius: var(--graphite-radius-tile, 12px);
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     color: var(--graphite-text-secondary);
     font: inherit;
     font-size: var(--graphite-font-caption-size, 12px);
@@ -11874,7 +11878,7 @@ var timelineStyles = i`
   .chart {
     padding: 12px 14px 10px;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   /* the name column is as wide as the longest name (at most 40% of the chart) */
   .rows {
@@ -12865,7 +12869,7 @@ GraphiteSlider.styles = i`
       column-gap: 10px;
       padding: 12px 14px 12px 8px;
       border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-      background: var(--graphite-card-surface, var(--graphite-surface-tile));
+      background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     }
     .head {
       display: contents;
@@ -13454,7 +13458,7 @@ var selectStyles = i`
     box-sizing: border-box;
     min-width: 0;
     border-radius: var(--graphite-radius-tile, 12px);
-    background: var(--graphite-surface-tile);
+    background: var(--graphite-tile-fill, var(--graphite-surface-tile));
     color: var(--graphite-text-secondary);
     -webkit-tap-highlight-color: transparent;
     outline: none;

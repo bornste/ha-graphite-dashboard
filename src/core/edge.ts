@@ -7,6 +7,12 @@
 //   --graphite-dialog-shadow     shadow of the dialog (graphite-dialog.ts), none by default
 //   --graphite-dialog-backdrop   layer over the dashboard behind a dialog (graphite-dialog-layer.ts)
 //   --graphite-tile-shadow       shadow of tiles and rows (e.g. raised light tiles), none by default
+//   --graphite-tile-fill         background of tiles and rows (a colour or a gradient), the tile surface by default
+//   --graphite-panel-fill        background of framed panels (a colour or a gradient), the panel surface by default
+//   --graphite-panel-shadow      shadow of framed panels (graphite-panel.ts), none by default
+// The surface tokens (--graphite-surface-*) stay plain colours: cards mix them (states, hover); the fill
+// tokens may be gradients built from them. Edge and shadow may hold several layers (e.g. a light line
+// on top over a fine dark frame).
 import { css, unsafeCSS, type CSSResult } from "lit";
 
 // mask that keeps only the 1px border of the element (padding box cut out)

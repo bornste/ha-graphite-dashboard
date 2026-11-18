@@ -14,7 +14,7 @@ export const rowStyles = css`
     box-sizing: border-box;
     height: var(--graphite-row-height, 60px);
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     outline: none;

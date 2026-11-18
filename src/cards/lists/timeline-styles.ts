@@ -20,7 +20,7 @@ export const timelineStyles = css`
     padding: 0;
     border: none;
     border-radius: var(--graphite-radius-tile, 12px);
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     color: var(--graphite-text-secondary);
     font: inherit;
     font-size: var(--graphite-font-caption-size, 12px);
@@ -43,7 +43,7 @@ export const timelineStyles = css`
   .chart {
     padding: 12px 14px 10px;
     border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-    background: var(--graphite-card-surface, var(--graphite-surface-tile));
+    background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   /* the name column is as wide as the longest name (at most 40% of the chart) */
   .rows {

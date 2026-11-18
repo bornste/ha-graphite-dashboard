@@ -78,7 +78,7 @@ export class GraphiteSlider extends GraphiteCard<SliderConfig> {
       column-gap: 10px;
       padding: 12px 14px 12px 8px;
       border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-      background: var(--graphite-card-surface, var(--graphite-surface-tile));
+      background: var(--graphite-tile-fill, var(--graphite-card-surface, var(--graphite-surface-tile)));
     }
     .head {
       display: contents;
