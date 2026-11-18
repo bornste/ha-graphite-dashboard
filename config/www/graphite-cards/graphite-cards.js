@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.68.0";
+var version = "0.68.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -7244,8 +7244,12 @@ var sceneStyles = i`
     width: auto;
     right: var(--graphite-padding-tile, 12px);
   }
-  /* long names wrap to a second line; the tile keeps its height, so it stays as high as its neighbours */
+  /* long names wrap to a second line; the tile keeps its height, so it stays as high as its neighbours.
+     The name may use half of the right padding: on narrow tiles (four in a column) a word like
+     "Standard" fits on one line instead of breaking inside the word; only a word that is still too
+     long breaks */
   .tile.scene .name {
+    right: calc(var(--graphite-padding-tile, 12px) / 2);
     white-space: normal;
     overflow-wrap: break-word;
     hyphens: auto;
