@@ -110,7 +110,13 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       justify-content: flex-start;
       align-items: center;
       gap: var(--graphite-gap-header, 12px);
-      margin-bottom: var(--graphite-header-margin, var(--graphite-gap-header, 12px));
+      margin-bottom: var(--graphite-gap-header, 12px);
+    }
+    /* the header of a dialog (only its own panel, not the panels inside it): as high as the close
+       button (36px), so the title already has room below it; 8px = the gap between tiles, the buttons
+       sit above the panels like a row of tiles */
+    :host([dialog]) .header {
+      margin-bottom: 8px;
     }
     /* title and info share one baseline; the header row is as high as the title (chips and buttons
        take a negative margin) */
@@ -180,8 +186,11 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       font-size: var(--graphite-title-size, 18px);
       font-weight: var(--graphite-title-weight, 400);
       line-height: 1.2;
-      padding-left: var(--graphite-title-inset, 0);
       color: var(--graphite-title-color, var(--primary-text-color));
+    }
+    /* optical inset: the title of a dialog alone looks too close to the dialog edge */
+    :host([dialog]) .title {
+      padding-left: 4px;
     }
     .title:empty {
       display: none;

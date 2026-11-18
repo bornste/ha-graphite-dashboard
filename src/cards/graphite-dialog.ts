@@ -48,11 +48,6 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
       border-radius: var(--graphite-radius-panel, 20px);
       background: var(--graphite-overlay, rgba(10, 10, 11, 0.9));
       color: var(--graphite-text-primary, var(--primary-text-color));
-      /* the header is as high as the close button (36px), so the title already has room below it;
-         8px = the gap between tiles, the buttons sit above the panels like a row of tiles */
-      --graphite-header-margin: 8px;
-      /* optical inset: the title alone looks too close to the dialog edge */
-      --graphite-title-inset: 4px;
     }
     /* inline in the dialogs view: a thin outline shows the dialog edge on the page ground */
     :host(:not([layered])) .dialog {
