@@ -69,7 +69,7 @@ const inkStyles = css`
   }
   /* empty cartridge: accent tint, name primary, unit in accent */
   .tile.alert {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.alert .name {
     color: var(--graphite-text-primary);

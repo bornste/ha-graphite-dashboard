@@ -131,10 +131,10 @@ export const batteryStyles = css`
     -webkit-tap-highlight-color: transparent;
   }
   .row.offline {
-    background: color-mix(in srgb, var(--danger) 16%, var(--tileRaised));
+    background: color-mix(in srgb, var(--danger) var(--graphite-tint-alert, 16%), var(--tileRaised));
   }
   .row.critical {
-    background: color-mix(in srgb, var(--accent) 14%, var(--tileRaised));
+    background: color-mix(in srgb, var(--accent) var(--graphite-tint-alert, 16%), var(--tileRaised));
   }
   .row .name {
     font-size: 15px;

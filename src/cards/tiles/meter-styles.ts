@@ -148,7 +148,7 @@ export const meterStyles = css`
     color: var(--graphite-accent);
   }
   .tile.empty {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
 `;
 
@@ -259,7 +259,7 @@ export const meterRowStyles = css`
     color: var(--graphite-accent);
   }
   .row.empty {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* offline: dimmed like every other offline row */
   .row.unavailable {

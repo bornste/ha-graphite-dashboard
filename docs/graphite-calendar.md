@@ -166,7 +166,7 @@ today or tomorrow).
 
 List rows use the geometry of the status rows (`--graphite-row-height`, `--graphite-row-icon-size`,
 `--graphite-font-name-size`, `--graphite-font-caption-size`), day headers `--graphite-font-label-size`.
-The tint of highlighted events is 16 % of the event color. Compact day blocks are
+The tint of highlighted events is `--graphite-tint-alert` (16 %) of the event color. Compact day blocks are
 `--graphite-row-height` high at least, with `--graphite-card-surface` and `--graphite-card-radius`; the
 header uses `--graphite-title-size`, `--graphite-gap-header` and `--graphite-separator`.
 

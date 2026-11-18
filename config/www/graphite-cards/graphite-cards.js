@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.67.4";
+var version = "0.68.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -4263,7 +4263,7 @@ GraphitePanel.styles = i`
     }
     /* alert condition met: accent text on a tinted pill */
     .chip.alert {
-      background: color-mix(in srgb, var(--graphite-accent) 18%, var(--graphite-surface-panel));
+      background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 16%), var(--graphite-surface-panel));
     }
     .chip.alert .value,
     .chip.alert .label,
@@ -4380,7 +4380,7 @@ var rowStyles = i`
   /* active (on, open, ...): soft accent tint, not for measured values; a lamp sets
      --graphite-state-color to its own colour */
   .row.active {
-    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* 42px icon box like the rows of the Home Assistant style; at 9px (not 8px) the 20px visible glyph
      sits exactly between the edge and the text (20/20) */
@@ -4477,7 +4477,7 @@ var rowStyles = i`
     margin: 0 14px 0 auto;
     padding: 0 8px 0 6px;
     border-radius: var(--graphite-radius-pill, 999px);
-    background: color-mix(in srgb, var(--graphite-danger) 14%, var(--graphite-surface-tile));
+    background: color-mix(in srgb, var(--graphite-danger) var(--graphite-tint-alert, 16%), var(--graphite-surface-tile));
     color: var(--graphite-danger);
     font-size: 11px;
     font-weight: 500;
@@ -5042,7 +5042,7 @@ var tileStyles = i`
   }
   /* on: soft accent tint (a lamp: its own colour, see --graphite-state-color) */
   .tile.on {
-    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* icon as watermark bottom right */
   .watermark {
@@ -5115,7 +5115,7 @@ var tileStyles = i`
     height: 20px;
     padding: 0 8px 0 6px;
     border-radius: var(--graphite-radius-pill, 999px);
-    background: color-mix(in srgb, var(--graphite-danger) 14%, var(--graphite-surface-tile));
+    background: color-mix(in srgb, var(--graphite-danger) var(--graphite-tint-alert, 16%), var(--graphite-surface-tile));
     color: var(--graphite-danger);
     font-size: 11px;
     font-weight: 500;
@@ -5451,7 +5451,7 @@ var meterStyles = i`
     color: var(--graphite-accent);
   }
   .tile.empty {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
 `;
 var meterRowStyles = i`
@@ -5559,7 +5559,7 @@ var meterRowStyles = i`
     color: var(--graphite-accent);
   }
   .row.empty {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* offline: dimmed like every other offline row */
   .row.unavailable {
@@ -6272,7 +6272,7 @@ var imageStyles = i`
     isolation: isolate;
   }
   .tile.busy {
-    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* blurred, dimmed backdrop (slightly larger than the tile, so the blur has no soft edges) */
   .backdrop {
@@ -6506,10 +6506,10 @@ var tickInterval = 15e3;
 var stopwatchStyles = i`
   /* running: accent tint, name in primary, secondary text in accent */
   .tile.running {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.running.over {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 28%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 16%), var(--graphite-surface-tile-active));
   }
   .tile.running .name {
     color: var(--graphite-text-primary);
@@ -6892,7 +6892,7 @@ var inkStyles = i`
   }
   /* empty cartridge: accent tint, name primary, unit in accent */
   .tile.alert {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.alert .name {
     color: var(--graphite-text-primary);
@@ -7114,7 +7114,7 @@ var GraphitePickupEditor = class extends GraphiteFormEditor {
 var refreshInterval = 15 * 60 * 1e3;
 var pickupStyles = i`
   .tile.due {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.due .name {
     color: var(--graphite-text-primary);
@@ -7633,7 +7633,7 @@ GraphiteNowPlaying.styles = i`
       min-height: var(--graphite-tile-height-media, 88px);
       padding: var(--graphite-padding-tile, 12px) 14px var(--graphite-padding-tile, 12px) var(--graphite-padding-tile, 12px);
       border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-      background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+      background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, var(--graphite-tint-active, 10%)), var(--graphite-surface-tile-active));
       overflow: hidden;
       isolation: isolate;
     }
@@ -9169,7 +9169,7 @@ var calendarStyles = i`
     display: block;
   }
   .event.highlight {
-    background: color-mix(in srgb, var(--event-color) 16%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-alert, 16%), var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   .event.highlight .when {
     color: var(--event-color);
@@ -9298,7 +9298,7 @@ var calendarStyles = i`
   }
   .compactDay.today .date span {
     color: var(--graphite-accent);
-    background: color-mix(in srgb, var(--graphite-accent) 16%, transparent);
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), transparent);
   }
   .compactDay.today .date b {
     color: var(--graphite-accent);
@@ -9379,7 +9379,7 @@ var calendarStyles = i`
   }
   /* next highlighted event today or tomorrow: tint and value in its color */
   .tile.alert {
-    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.alert .tileValue {
     color: var(--event-color);
@@ -11374,10 +11374,10 @@ var batteryStyles = i`
     -webkit-tap-highlight-color: transparent;
   }
   .row.offline {
-    background: color-mix(in srgb, var(--danger) 16%, var(--tileRaised));
+    background: color-mix(in srgb, var(--danger) var(--graphite-tint-alert, 16%), var(--tileRaised));
   }
   .row.critical {
-    background: color-mix(in srgb, var(--accent) 14%, var(--tileRaised));
+    background: color-mix(in srgb, var(--accent) var(--graphite-tint-alert, 16%), var(--tileRaised));
   }
   .row .name {
     font-size: 15px;
@@ -13063,7 +13063,7 @@ var lightStyles = i`
   }
   /* on: soft tint in the lamp's colour, weaker than the switch tile (the sliders carry more surface) */
   .row.light.active {
-    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-light-tint, var(--graphite-tint-active, 10%)), var(--graphite-surface-tile-active));
   }
   .head {
     position: relative;
@@ -13276,7 +13276,7 @@ var buttonTileStyles = i`
     line-clamp: 2;
   }
   .tile.busy {
-    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.unavailable .icon {
     opacity: 0.4;
@@ -13291,7 +13291,7 @@ var buttonTileStyles = i`
 `;
 var buttonRowStyles = i`
   .row.busy {
-    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .spinner {
     position: relative;
@@ -13570,7 +13570,7 @@ var selectStyles = i`
   }
   /* selected: soft accent tint like an active tile */
   .option.selected {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
     color: var(--graphite-text-primary);
   }
   .options.unavailable .option {
@@ -13680,7 +13680,7 @@ var selectStyles = i`
     background: var(--graphite-surface-tile);
   }
   .miniTile.on {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .miniText {
     position: absolute;

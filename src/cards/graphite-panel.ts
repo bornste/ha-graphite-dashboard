@@ -255,7 +255,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     }
     /* alert condition met: accent text on a tinted pill */
     .chip.alert {
-      background: color-mix(in srgb, var(--graphite-accent) 18%, var(--graphite-surface-panel));
+      background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 16%), var(--graphite-surface-panel));
     }
     .chip.alert .value,
     .chip.alert .label,

@@ -84,7 +84,7 @@ const selectStyles = css`
   }
   /* selected: soft accent tint like an active tile */
   .option.selected {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
     color: var(--graphite-text-primary);
   }
   .options.unavailable .option {
@@ -194,7 +194,7 @@ const selectStyles = css`
     background: var(--graphite-surface-tile);
   }
   .miniTile.on {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .miniText {
     position: absolute;

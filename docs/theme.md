@@ -94,7 +94,8 @@ line). Other sizes work, the separator may then need a small adjustment.
 | `graphite-row-icon-size` | `24px` | Icons in rows |
 | `graphite-watermark-inset` | `9px` | Watermark icon from the right edge (a full 34px glyph then sits on the 12px padding line) |
 | `graphite-watermark-size` | `34px` | Watermark icons in tiles |
-| `graphite-tint-active` | `18%` | Strength of the accent tint of active tiles and rows |
+| `graphite-tint-active` | `10%` | Strength of the tint of active tiles and rows (accent, or the lamp color), the same in the dark themes; the light themes use 20 % (their active tiles are almost white) |
+| `graphite-tint-alert` | `16%` | Stronger tint for warnings: alert chips, empty or offline batteries, highlighted calendar events, play time over the limit; 32 % in the light themes |
 
 ## 4. Home Assistant
 

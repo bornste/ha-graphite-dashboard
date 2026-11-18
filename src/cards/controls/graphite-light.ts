@@ -37,7 +37,7 @@ const lightStyles = css`
   }
   /* on: soft tint in the lamp's colour, weaker than the switch tile (the sliders carry more surface) */
   .row.light.active {
-    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-light-tint, var(--graphite-tint-active, 10%)), var(--graphite-surface-tile-active));
   }
   .head {
     position: relative;

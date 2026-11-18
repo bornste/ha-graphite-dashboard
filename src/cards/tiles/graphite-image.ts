@@ -31,7 +31,7 @@ const imageStyles = css`
     isolation: isolate;
   }
   .tile.busy {
-    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* blurred, dimmed backdrop (slightly larger than the tile, so the blur has no soft edges) */
   .backdrop {

@@ -71,8 +71,11 @@ Graphite: &graphite
       graphite-row-icon-size: 24px
       graphite-watermark-size: 34px
       graphite-watermark-inset: 9px
-      # strength of the accent tint of active tiles and rows
-      graphite-tint-active: 18%
+      # strength of the tint of active tiles and rows (accent, or a lamp's own colour), the same in
+      # every dark theme so the page stays calm even with a bright accent (light themes: 20 %)
+      graphite-tint-active: 10%
+      # stronger tint for warnings: alert chips, empty or offline batteries, exams, play time over
+      graphite-tint-alert: 16%
 
       # page background: a soft glow from the bottom right corner, barely lighter than the ground,
       # under a fine grain (also keeps the flat gradient free of banding)
@@ -170,7 +173,6 @@ Graphite Salvia:
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 57%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 43%, var(--graphite-ground))"
-      graphite-tint-active: 25%
 
 # Graphite Midnight: blue black ground, warm ivory text, amber accent
 Graphite Midnight:
@@ -186,7 +188,6 @@ Graphite Midnight:
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 55%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 42%, var(--graphite-ground))"
-      graphite-tint-active: 25%
 
 # Graphite Carbon: carbon ground, titanium text, turquoise accent
 Graphite Carbon:
@@ -202,7 +203,6 @@ Graphite Carbon:
       # grey text levels mixed for the contrast of Graphite (secondary 5:1, muted 3.5:1)
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 59%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 45%, var(--graphite-ground))"
-      graphite-tint-active: 25%
 
 # Graphite Lavender: lavender ground, indigo text, berry accent
 # Light theme: from the ground inwards every level gets lighter, like the dark themes (what is closer
@@ -231,7 +231,10 @@ Graphite Lavender:
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 77%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 63%, var(--graphite-ground))"
       graphite-divider: "color-mix(in srgb, var(--graphite-ink) 10%, transparent)"
-      graphite-tint-active: 25%
+      # active tiles are almost white: twice the tint, so it reads as calm as the sidebar selection
+      # instead of milky
+      graphite-tint-active: 20%
+      graphite-tint-alert: 32%
       # icons and values of lamps that are on: their colour mixed towards the text, so warm white reads
       graphite-lamp-text-strength: 50%
       # raised tiles, not used yet (flat): a soft shadow and a faint outline instead of the light edge
@@ -272,7 +275,10 @@ Graphite Sand:
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 81%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 67%, var(--graphite-ground))"
       graphite-divider: "color-mix(in srgb, var(--graphite-ink) 10%, transparent)"
-      graphite-tint-active: 25%
+      # active tiles are almost white: twice the tint, so it reads as calm as the sidebar selection
+      # instead of milky
+      graphite-tint-active: 20%
+      graphite-tint-alert: 32%
       # icons and values of lamps that are on: their colour mixed towards the text, so warm white reads
       graphite-lamp-text-strength: 50%
       # raised tiles, not used yet (flat): a soft shadow and a faint outline instead of the light edge

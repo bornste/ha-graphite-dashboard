@@ -36,7 +36,7 @@ export const tileStyles = css`
   }
   /* on: soft accent tint (a lamp: its own colour, see --graphite-state-color) */
   .tile.on {
-    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* icon as watermark bottom right */
   .watermark {
@@ -109,7 +109,7 @@ export const tileStyles = css`
     height: 20px;
     padding: 0 8px 0 6px;
     border-radius: var(--graphite-radius-pill, 999px);
-    background: color-mix(in srgb, var(--graphite-danger) 14%, var(--graphite-surface-tile));
+    background: color-mix(in srgb, var(--graphite-danger) var(--graphite-tint-alert, 16%), var(--graphite-surface-tile));
     color: var(--graphite-danger);
     font-size: 11px;
     font-weight: 500;

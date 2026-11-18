@@ -84,7 +84,7 @@ const buttonTileStyles = css`
     line-clamp: 2;
   }
   .tile.busy {
-    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.unavailable .icon {
     opacity: 0.4;
@@ -100,7 +100,7 @@ const buttonTileStyles = css`
 
 const buttonRowStyles = css`
   .row.busy {
-    background: color-mix(in srgb, var(--graphite-accent) 12%, var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .spinner {
     position: relative;

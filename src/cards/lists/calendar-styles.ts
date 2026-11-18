@@ -121,7 +121,7 @@ export const calendarStyles = css`
     display: block;
   }
   .event.highlight {
-    background: color-mix(in srgb, var(--event-color) 16%, var(--graphite-card-surface, var(--graphite-surface-tile)));
+    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-alert, 16%), var(--graphite-card-surface, var(--graphite-surface-tile)));
   }
   .event.highlight .when {
     color: var(--event-color);
@@ -250,7 +250,7 @@ export const calendarStyles = css`
   }
   .compactDay.today .date span {
     color: var(--graphite-accent);
-    background: color-mix(in srgb, var(--graphite-accent) 16%, transparent);
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), transparent);
   }
   .compactDay.today .date b {
     color: var(--graphite-accent);
@@ -331,7 +331,7 @@ export const calendarStyles = css`
   }
   /* next highlighted event today or tomorrow: tint and value in its color */
   .tile.alert {
-    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--event-color) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.alert .tileValue {
     color: var(--event-color);

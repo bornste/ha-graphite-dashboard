@@ -28,7 +28,7 @@ const refreshInterval = 15 * 60 * 1000;
 
 const pickupStyles = css`
   .tile.due {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.due .name {
     color: var(--graphite-text-primary);

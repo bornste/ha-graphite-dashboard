@@ -43,7 +43,7 @@ name: Bedroom window
 Size and type come from the theme: `--graphite-row-height` (60px), `--graphite-font-name-size` (15px),
 `--graphite-font-caption-size` (12px), `--graphite-row-icon-size` (24px). The surface follows the panel
 (`--graphite-card-surface`, `--graphite-card-radius`); the active tint is
-`--graphite-tint-active` (18 %) of `--graphite-accent`. See [theme.md](theme.md).
+`--graphite-tint-active` (10 %) of `--graphite-accent`. See [theme.md](theme.md).
 
 The icon sits in a 42px box at 9px from the edge, the text starts at 60px: a 20px glyph is then
 centered between edge and text.

@@ -29,7 +29,7 @@ export const rowStyles = css`
   /* active (on, open, ...): soft accent tint, not for measured values; a lamp sets
      --graphite-state-color to its own colour */
   .row.active {
-    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-state-color, var(--graphite-accent)) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   /* 42px icon box like the rows of the Home Assistant style; at 9px (not 8px) the 20px visible glyph
      sits exactly between the edge and the text (20/20) */
@@ -126,7 +126,7 @@ export const rowStyles = css`
     margin: 0 14px 0 auto;
     padding: 0 8px 0 6px;
     border-radius: var(--graphite-radius-pill, 999px);
-    background: color-mix(in srgb, var(--graphite-danger) 14%, var(--graphite-surface-tile));
+    background: color-mix(in srgb, var(--graphite-danger) var(--graphite-tint-alert, 16%), var(--graphite-surface-tile));
     color: var(--graphite-danger);
     font-size: 11px;
     font-weight: 500;

@@ -37,10 +37,10 @@ const tickInterval = 15000;
 const stopwatchStyles = css`
   /* running: accent tint, name in primary, secondary text in accent */
   .tile.running {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 18%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-active, 10%), var(--graphite-surface-tile-active));
   }
   .tile.running.over {
-    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 28%), var(--graphite-surface-tile-active));
+    background: color-mix(in srgb, var(--graphite-accent) var(--graphite-tint-alert, 16%), var(--graphite-surface-tile-active));
   }
   .tile.running .name {
     color: var(--graphite-text-primary);

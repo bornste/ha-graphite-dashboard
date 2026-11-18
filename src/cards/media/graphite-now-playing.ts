@@ -86,7 +86,7 @@ export class GraphiteNowPlaying extends GraphiteCard<NowPlayingConfig> {
       min-height: var(--graphite-tile-height-media, 88px);
       padding: var(--graphite-padding-tile, 12px) 14px var(--graphite-padding-tile, 12px) var(--graphite-padding-tile, 12px);
       border-radius: var(--graphite-card-radius, var(--graphite-radius-tile, 12px));
-      background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, 10%), var(--graphite-surface-tile-active));
+      background: color-mix(in srgb, var(--graphite-accent) var(--graphite-light-tint, var(--graphite-tint-active, 10%)), var(--graphite-surface-tile-active));
       overflow: hidden;
       isolation: isolate;
     }
