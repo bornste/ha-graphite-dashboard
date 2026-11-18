@@ -19,6 +19,7 @@
     "editor": {
       "header": "Header",
       "title": "Title",
+      "title_action": "Title tap action",
       "info": "Status",
       "summarySection": "Dynamic status",
       "summary_first": "Show only the first matching part",
@@ -98,7 +99,8 @@
           "show_entity": "Entity whose state is checked. Default: the entity of the part.",
           "show_above": "The part is shown while all given conditions are met. Without a condition: numbers above 0, texts while available.",
           "show_state": "One of the states. Type a value and confirm with Enter."
-        }
+        },
+        "title_action": "Optional, e.g. open a dialog (navigate to #lights). A chevron after the title shows it; title and status can then be tapped."
       }
     }
   },

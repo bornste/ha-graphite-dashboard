@@ -3,9 +3,9 @@
 // Child cards become tiles through context tokens (--graphite-card-surface, ...).
 import { css, html, nothing, type PropertyValues } from "lit";
 import { GraphiteCard } from "../core/graphite-card";
-import { solidHoverStyles } from "../core/hover";
 import { edgeMask } from "../core/edge";
-import { fireAction } from "../core/actions";
+import { fireAction, hasAction } from "../core/actions";
+import { pillButtonsMargin, pillButtonStyles } from "../core/pill-button";
 import { unavailableStates } from "../core/format";
 import { matchesCondition, type ValueCondition } from "../core/conditions";
 import { isTemplate, subscribeTemplate } from "../core/template";
@@ -52,6 +52,8 @@ export interface PanelConfig extends GraphiteCardConfig {
   summary_mode?: "all" | "first";
   chips?: PanelChipConfig[];
   buttons?: PanelButtonConfig[];
+  // tapping the title (with the status) does this, e.g. open a dialog; a chevron after the title shows it
+  title_action?: ActionConfig;
   layout: "vertical" | "horizontal" | "grid";
   columns?: number;
   min_column_width?: string;
@@ -101,7 +103,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       /* only colors animate; the theme applies after the first render and would animate the radius */
       transition: background-color 0.3s ease;
     }
-    /* title and info share one baseline, separated by a thin line (same as dialogs and room cards) */
+    /* title and info share one baseline; they differ in size and colour, a chevron after the title marks
+       a title that opens something */
     .header {
       display: flex;
       justify-content: flex-start;
@@ -109,7 +112,8 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       gap: var(--graphite-gap-header, 12px);
       margin-bottom: var(--graphite-header-margin, var(--graphite-gap-header, 12px));
     }
-    /* title and info share one baseline; with buttons the row is as high as the buttons */
+    /* title and info share one baseline; the header row is as high as the title (chips and buttons
+       take a negative margin) */
     .heading {
       flex: 1 1 auto;
       display: flex;
@@ -117,37 +121,59 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       gap: var(--graphite-gap-header, 12px);
       min-width: 0;
     }
+    /* buttons as pills like the chips (6px apart: the 44px buttons hold a 40px pill) */
     .buttons {
       display: flex;
       flex: none;
+      gap: calc(var(--graphite-chip-gap, 6px) - 4px);
+      margin-block: ${pillButtonsMargin};
+      margin-inline: -2px;
+    }
+    ${pillButtonStyles(".button")}
+    /* in a dialog the buttons stay tiles (44 x 36) like the dialog's close button */
+    :host([dialog]) .buttons {
       gap: var(--graphite-gap-tile, 8px);
+      margin: 0;
     }
-    .button {
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 36px;
-      padding: 0;
-      border: none;
-      border-radius: var(--graphite-radius-tile, 12px);
-      background: var(--graphite-surface-tile);
-      color: var(--graphite-text-secondary);
-      cursor: pointer;
-      font: inherit;
-      -webkit-tap-highlight-color: transparent;
+    :host([dialog]) .button {
       --mdc-icon-size: 18px;
-      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    .button:focus-visible {
+    :host([dialog]) .button .pill {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--graphite-radius-tile, 12px);
+    }
+    /* a title with an action: title, chevron and status are one tap target */
+    .link {
+      display: flex;
+      align-items: baseline;
+      gap: var(--graphite-gap-header, 12px);
+      min-width: 0;
+      cursor: pointer;
+      border-radius: 6px;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .link:focus-visible {
       outline: 2px solid var(--graphite-accent);
-      outline-offset: 2px;
+      outline-offset: 4px;
     }
-    .button.active {
-      background: var(--graphite-accent);
-      color: var(--graphite-accent-ink);
+    .link:active {
+      opacity: 0.7;
+    }
+    .chevron {
+      flex: none;
+      align-self: center;
+      width: 18px;
+      height: 18px;
+      margin: 0 -6px 0 -8px;
+      fill: var(--graphite-text-secondary);
+      transition: fill 0.2s ease;
+    }
+    @media (hover: hover) {
+      .link:hover .chevron {
+        fill: var(--graphite-text-primary);
+      }
     }
     .title {
       flex: none;
@@ -162,29 +188,12 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     }
     .info {
       min-width: 0;
-      padding-left: var(--graphite-gap-header, 12px);
-      position: relative;
-      /* 2px more room on top for the separator line (it reads too short at cap height);
-         the negative margin keeps the text on the shared baseline */
-      padding-top: 2px;
-      margin-top: -2px;
       font-size: var(--graphite-font-label-size, 13px);
       line-height: 16px;
       color: var(--graphite-text-secondary, var(--secondary-text-color));
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    /* separator from the title's cap height down to the shared baseline
-       (13px text in a 16px line: the baseline sits 3.5px above the bottom) */
-    .info::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 3.5px;
-      width: 1px;
-      background: var(--graphite-separator);
     }
     .info:empty {
       display: none;
@@ -305,7 +314,6 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       pointer-events: none;
       ${edgeMask}
     }
-    ${solidHoverStyles(".button", ".button:not(.active)")}
   `;
 
   private childCards: any[] = [];
@@ -384,6 +392,29 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     fireAction(this, { type: "button", entity, tap_action: button.tap_action ?? fallback }, "tap");
   }
 
+  private titleClick(event: Event): void {
+    event.stopPropagation();
+    fireAction(this, { type: "title", tap_action: this.config!.title_action }, "tap");
+  }
+
+  private titleKey(event: KeyboardEvent): void {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    this.titleClick(event);
+  }
+
+  // title and status; with a title action both are one tap target with a chevron after the title
+  private renderHeading(info: unknown) {
+    const config = this.config!;
+    const title = html`<span class="title">${config.title ?? ""}</span>`;
+    const status = html`<span class="info">${info}</span>`;
+    if (!hasAction(config.title_action)) return html`<div class="heading">${title}${status}</div>`;
+    const chevron = html`<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path
+      d="M8.59 16.58 13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg>`;
+    return html`<div class="heading"><span class="link" role="button" tabindex="0" aria-label=${config.title ?? ""}
+      @click=${(event: Event) => this.titleClick(event)} @keydown=${(event: KeyboardEvent) => this.titleKey(event)}>${title}${chevron}${status}</span></div>`;
+  }
+
   private renderButton(button: PanelButtonConfig) {
     const activeState = button.active?.entity ? this.hass?.states[button.active.entity]?.state
       : button.entity ? this.hass?.states[button.entity]?.state : undefined;
@@ -393,7 +424,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       : html`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
     const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
     return html`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
-      aria-label=${label} @click=${(event: Event) => this.buttonClick(event, button)}><ha-ripple></ha-ripple>${icon}</button>`;
+      aria-label=${label} @click=${(event: Event) => this.buttonClick(event, button)}><span class="pill"><ha-ripple></ha-ripple>${icon}</span></button>`;
   }
 
   private summaryParts(): PanelSummaryPart[] {
@@ -546,7 +577,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
     const edge = this.hasAttribute("outer") && config.frame !== false ? html`<span class="edge"></span>` : nothing;
     return html`<ha-card part="card" style=${cardStyle}>${edge}${showHeader
-      ? html`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
+      ? html`<div class="header" part="header">${this.renderHeading(info)}<span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? html`<span class="buttons">${buttons
         .map((button) => this.renderButton(button))}${hasActions ? html`<slot name="actions"></slot>` : nothing}</span>` : nothing}</div>`
       : nothing}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;

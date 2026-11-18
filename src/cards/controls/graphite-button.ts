@@ -109,7 +109,8 @@ const buttonRowStyles = css`
   }
 `;
 
-// compact icon button, the same as the header buttons of graphite-panel (44 x 36)
+// compact icon button, the same pill as the header buttons of graphite-panel (40 x 24 in a 44 x 36 place;
+// the whole card reacts to taps, so it stays easy to hit)
 const iconButtonStyles = css`
   :host {
     display: block;
@@ -120,14 +121,15 @@ const iconButtonStyles = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 36px;
-    border-radius: var(--graphite-radius-tile, 12px);
+    width: 40px;
+    height: 24px;
+    margin: 6px 2px;
+    border-radius: var(--graphite-radius-pill, 999px);
     background: var(--graphite-surface-tile);
     color: var(--graphite-text-secondary);
     -webkit-tap-highlight-color: transparent;
     outline: none;
-    --mdc-icon-size: 18px;
+    --mdc-icon-size: 16px;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   .button.interactive {

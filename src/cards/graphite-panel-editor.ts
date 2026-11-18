@@ -75,6 +75,7 @@ function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
       expanded: true,
       schema: [
         { name: "title", selector: { text: {} } },
+        { name: "title_action", selector: { ui_action: {} } },
         { name: "info", selector: { text: {} } },
         {
           type: "expandable",

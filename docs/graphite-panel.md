@@ -20,17 +20,21 @@ cards:
 ## Header
 
 Header rule of the Graphite style: **title and status on the left, values (chips) and buttons
-on the right**. Without `title`, `info`, `chips` and `buttons` the header takes no space. With buttons
-the header is as high as the buttons (36px); title and status stay centered on one baseline.
+on the right**. Without `title`, `info`, `chips` and `buttons` the header takes no space. The header is
+always as high as the title: chips and buttons are pills that reach a little above and below it.
+Title and status sit on one baseline and differ in size and colour (no separator line). With
+`title_action` the title opens something: a chevron follows the title, and title and status are one
+tap target.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `title` | string | – | Title on the left (theme title style). |
-| `info` | string | – | Status after the title, separated by a thin line, while no `summary` part is shown. Plain text or a Jinja template (`{{ }}` / `{% %}`), rendered live in Home Assistant. Without a status the line is hidden too. |
+| `title_action` | action | – | Tapping the title (and the status) does this, e.g. `navigate` to a dialog hash or another view. A chevron after the title shows it. |
+| `info` | string | – | Status after the title while no `summary` part is shown. Plain text or a Jinja template (`{{ }}` / `{% %}`), rendered live in Home Assistant. |
 | `summary` | list | – | Dynamic status from parts, e.g. "1 offline · 2 critical", see below. While a part is shown, it replaces `info`. |
 | `summary_mode` | `all` / `first` | `all` | `first`: only the first part that is shown, like "if – else if" with `info` as "else". |
 | `chips` | list | – | Values as pills on the right, in list order (left to right), see below. |
-| `buttons` | list | – | Buttons at the far right (44 × 36px), e.g. "lights off" and settings of a room, see below. |
+| `buttons` | list | – | Icon buttons at the far right, as pills like the chips (40 × 24px; the tap target stays 44 × 36px), e.g. "lights off" of a room, see below. In a [graphite-dialog](graphite-dialog.md) they stay tiles like its close button. |
 
 ### Dynamic status
 
@@ -118,11 +122,12 @@ chips:
 | `active` | condition | – | Highlights the button (accent surface) while the condition is met, e.g. while lights are on. |
 | `tap_action` | action | see `entity` | Action on tap. |
 
-A room with scene tiles ([graphite-scene](graphite-scene.md)):
+A room with scene tiles ([graphite-scene](graphite-scene.md)); the title opens the room's dialog:
 
 ```yaml
 type: custom:graphite-panel
 title: Wohnen
+title_action: { action: navigate, navigation_path: "#living-room" }
 summary:
   - entity: sensor.living_room_lights_on
     text: "{value} lights on"
@@ -132,9 +137,6 @@ buttons:
   - entity: scene.living_room_off
     name: Licht aus
     active: { entity: sensor.living_room_lights_on, above: 0 }
-  - icon: mdi:tune-variant
-    name: Einstellungen
-    tap_action: { action: navigate, navigation_path: "#living-room" }
 layout: grid
 columns: 4
 cards:
@@ -186,7 +188,7 @@ its slot, so no empty gap remains.
 Theme variables used: `--graphite-surface-panel`, `--graphite-radius-panel`,
 `--graphite-padding-panel`, `--graphite-gap-tile`, `--graphite-surface-tile`,
 `--graphite-surface-tile-active`, `--graphite-radius-tile`, `--graphite-title-*`,
-`--graphite-text-*`, `--graphite-separator`, `--graphite-accent`, `--graphite-radius-pill`,
+`--graphite-text-*`, `--graphite-accent`, `--graphite-radius-pill`,
 `--graphite-gap-header`, `--graphite-font-label-size`, `--graphite-font-caption-size`, `--graphite-chip-padding`,
 `--graphite-chip-gap` (see [theme.md](theme.md)).
 

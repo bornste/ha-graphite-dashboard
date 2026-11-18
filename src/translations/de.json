@@ -19,6 +19,7 @@
     "editor": {
       "header": "Kopf",
       "title": "Titel",
+      "title_action": "Aktion beim Tippen auf den Titel",
       "info": "Status",
       "summarySection": "Dynamischer Status",
       "summary_first": "Nur den ersten passenden Teil zeigen",
@@ -98,7 +99,8 @@
           "show_entity": "Entität, deren Zustand geprüft wird. Standard: die Entität des Teils.",
           "show_above": "Der Teil steht, solange alle gesetzten Bedingungen zutreffen. Ohne Bedingung: Zahlen über 0, Texte solange verfügbar.",
           "show_state": "Einer der Zustände. Wert eingeben und mit Enter bestätigen."
-        }
+        },
+        "title_action": "Optional, z.B. einen Dialog öffnen (Navigation zu #lights). Ein Pfeil nach dem Titel zeigt es an; Titel und Status lassen sich dann antippen."
       }
     }
   },

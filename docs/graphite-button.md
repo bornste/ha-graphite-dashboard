@@ -6,8 +6,9 @@ Three layouts with the same options:
 - `tile` (default): a tile like the [switch tile](graphite-switch.md) – icon top left, name bottom left
   (a long name wraps to a second line, e.g. in a panel with three columns).
 - `row`: a row like the [status rows](graphite-status.md) – icon, name.
-- `icon`: a compact icon button (44 × 36px), the same as the header buttons of
-  [graphite-panel](graphite-panel.md), but free to place; the name is its tooltip.
+- `icon`: a compact icon button, a pill (40 × 24px) like the header buttons of
+  [graphite-panel](graphite-panel.md), but free to place; the whole card is the tap target, the name
+  is its tooltip.
 
 ```yaml
 type: custom:graphite-button

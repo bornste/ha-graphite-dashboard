@@ -52,7 +52,7 @@ tap_action:
 | `summary` | list | – | Dynamic status from parts, see [graphite-panel](graphite-panel.md#dynamic-status). |
 | `summary_mode` | `all` / `first` | `all` | `first`: only the first part that is shown. |
 | `chips` | list | – | Values as pills in the header, see [graphite-panel](graphite-panel.md#chips). |
-| `buttons` | list | – | Header buttons before the close button, e.g. "lights off", see [graphite-panel](graphite-panel.md#buttons). |
+| `buttons` | list | – | Header buttons before the close button, e.g. "lights off", see [graphite-panel](graphite-panel.md#buttons). In the dialog they are tiles like the close button (44 × 36px), not pills. |
 | `width` | string | `520px` | Width on large screens. |
 | `layout` | `vertical` / `horizontal` / `grid` | `vertical` | Arrangement of the cards, like graphite-panel. |
 | `columns` | number | `2` | Columns of the grid layout. |

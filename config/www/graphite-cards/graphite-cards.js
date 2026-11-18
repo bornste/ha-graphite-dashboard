@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.66.0";
+var version = "0.67.1";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -582,6 +582,7 @@ var de_default = {
     editor: {
       header: "Kopf",
       title: "Titel",
+      title_action: "Aktion beim Tippen auf den Titel",
       info: "Status",
       summarySection: "Dynamischer Status",
       summary_first: "Nur den ersten passenden Teil zeigen",
@@ -661,7 +662,8 @@ var de_default = {
           show_entity: "Entit\xE4t, deren Zustand gepr\xFCft wird. Standard: die Entit\xE4t des Teils.",
           show_above: "Der Teil steht, solange alle gesetzten Bedingungen zutreffen. Ohne Bedingung: Zahlen \xFCber 0, Texte solange verf\xFCgbar.",
           show_state: "Einer der Zust\xE4nde. Wert eingeben und mit Enter best\xE4tigen."
-        }
+        },
+        title_action: "Optional, z.B. einen Dialog \xF6ffnen (Navigation zu #lights). Ein Pfeil nach dem Titel zeigt es an; Titel und Status lassen sich dann antippen."
       }
     }
   },
@@ -1818,6 +1820,7 @@ var en_default = {
     editor: {
       header: "Header",
       title: "Title",
+      title_action: "Title tap action",
       info: "Status",
       summarySection: "Dynamic status",
       summary_first: "Show only the first matching part",
@@ -1897,7 +1900,8 @@ var en_default = {
           show_entity: "Entity whose state is checked. Default: the entity of the part.",
           show_above: "The part is shown while all given conditions are met. Without a condition: numbers above 0, texts while available.",
           show_state: "One of the states. Type a value and confirm with Enter."
-        }
+        },
+        title_action: "Optional, e.g. open a dialog (navigate to #lights). A chevron after the title shows it; title and status can then be tapped."
       }
     }
   },
@@ -3178,23 +3182,6 @@ GraphiteCard.properties = {
   config: { state: true }
 };
 
-// src/core/hover.ts
-function solidHoverStyles(selector, hovered = selector) {
-  const button = r(selector);
-  const hover = r(hovered);
-  return i`
-    ${button} ha-ripple {
-      --ha-ripple-hover-opacity: 0;
-    }
-    @media (hover: hover) {
-      ${hover}:hover {
-        background: color-mix(in srgb, var(--ha-ripple-hover-color, var(--secondary-text-color, #8f8f92))
-          calc(var(--ha-ripple-hover-opacity, 0.08) * 100%), var(--graphite-surface-tile));
-      }
-    }
-  `;
-}
-
 // src/core/edge.ts
 var edgeMask = i`
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -3358,6 +3345,63 @@ function attachActionHandler(element, options, onAction) {
   };
 }
 
+// src/core/pill-button.ts
+var pillButtonsMargin = i`calc((var(--graphite-title-size, 18px) * 1.2 - 36px) / 2)`;
+function pillButtonStyles(selector) {
+  const button = r(selector);
+  return i`
+    ${button} {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      background: none;
+      color: var(--graphite-text-secondary);
+      cursor: pointer;
+      font: inherit;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      --mdc-icon-size: 16px;
+    }
+    ${button} .pill {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 24px;
+      border-radius: var(--graphite-radius-pill, 999px);
+      background: var(--graphite-surface-tile);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    ${button}:focus-visible .pill {
+      outline: 2px solid var(--graphite-accent);
+      outline-offset: 2px;
+    }
+    ${button}.active {
+      color: var(--graphite-accent-ink);
+    }
+    ${button}.active .pill {
+      background: var(--graphite-accent);
+    }
+    /* hover in the tone of the theme on the pill itself (see core/hover.ts), the ripple only presses */
+    ${button} ha-ripple {
+      --ha-ripple-hover-opacity: 0;
+    }
+    @media (hover: hover) {
+      ${button}:not(.active):hover .pill {
+        background: color-mix(in srgb, var(--ha-ripple-hover-color, var(--secondary-text-color, #8f8f92))
+          calc(var(--ha-ripple-hover-opacity, 0.08) * 100%), var(--graphite-surface-tile));
+      }
+    }
+  `;
+}
+
 // src/core/format.ts
 var unavailableStates = ["unavailable", "unknown"];
 function isUnavailable(stateObj) {
@@ -3500,6 +3544,7 @@ function editorSchema(language, layout, mode) {
       expanded: true,
       schema: [
         { name: "title", selector: { text: {} } },
+        { name: "title_action", selector: { ui_action: {} } },
         { name: "info", selector: { text: {} } },
         {
           type: "expandable",
@@ -3871,13 +3916,33 @@ var GraphitePanel = class extends GraphiteCard {
     const fallback = entity?.startsWith("scene.") ? { action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: entity } } : { action: entity ? "more-info" : "none" };
     fireAction(this, { type: "button", entity, tap_action: button.tap_action ?? fallback }, "tap");
   }
+  titleClick(event) {
+    event.stopPropagation();
+    fireAction(this, { type: "title", tap_action: this.config.title_action }, "tap");
+  }
+  titleKey(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    this.titleClick(event);
+  }
+  // title and status; with a title action both are one tap target with a chevron after the title
+  renderHeading(info) {
+    const config = this.config;
+    const title = b2`<span class="title">${config.title ?? ""}</span>`;
+    const status = b2`<span class="info">${info}</span>`;
+    if (!hasAction(config.title_action)) return b2`<div class="heading">${title}${status}</div>`;
+    const chevron = b2`<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path
+      d="M8.59 16.58 13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg>`;
+    return b2`<div class="heading"><span class="link" role="button" tabindex="0" aria-label=${config.title ?? ""}
+      @click=${(event) => this.titleClick(event)} @keydown=${(event) => this.titleKey(event)}>${title}${chevron}${status}</span></div>`;
+  }
   renderButton(button) {
     const activeState = button.active?.entity ? this.hass?.states[button.active.entity]?.state : button.entity ? this.hass?.states[button.entity]?.state : void 0;
     const stateObj = button.entity ? this.hass?.states[button.entity] : void 0;
     const icon = button.icon ? b2`<ha-icon .icon=${button.icon}></ha-icon>` : b2`<ha-state-icon .hass=${this.hass} .stateObj=${stateObj}></ha-state-icon>`;
     const label = button.name ?? stateObj?.attributes?.friendly_name ?? "";
     return b2`<button class=${matchesCondition(button.active, activeState) ? "button active" : "button"} title=${label}
-      aria-label=${label} @click=${(event) => this.buttonClick(event, button)}><ha-ripple></ha-ripple>${icon}</button>`;
+      aria-label=${label} @click=${(event) => this.buttonClick(event, button)}><span class="pill"><ha-ripple></ha-ripple>${icon}</span></button>`;
   }
   summaryParts() {
     return Array.isArray(this.config?.summary) ? this.config.summary.filter((part) => part?.entity) : [];
@@ -4008,7 +4073,7 @@ var GraphitePanel = class extends GraphiteCard {
     const cardStyle = config.padding && config.frame !== false ? `padding: ${config.padding}` : "";
     const contentClass = `content ${config.layout}${config.min_column_width ? " responsive" : ""}`;
     const edge = this.hasAttribute("outer") && config.frame !== false ? b2`<span class="edge"></span>` : A;
-    return b2`<ha-card part="card" style=${cardStyle}>${edge}${showHeader ? b2`<div class="header" part="header"><div class="heading"><span class="title">${config.title ?? ""}</span><span class="info">${info}</span></div><span
+    return b2`<ha-card part="card" style=${cardStyle}>${edge}${showHeader ? b2`<div class="header" part="header">${this.renderHeading(info)}<span
         class="chips">${chips.map((chip) => this.renderChip(chip))}</span>${buttons.length || hasActions ? b2`<span class="buttons">${buttons.map((button) => this.renderButton(button))}${hasActions ? b2`<slot name="actions"></slot>` : A}</span>` : A}</div>` : A}<div class=${contentClass} part="content" style=${contentStyle}></div></ha-card>`;
   }
   getCardSize() {
@@ -4046,7 +4111,8 @@ GraphitePanel.styles = i`
       /* only colors animate; the theme applies after the first render and would animate the radius */
       transition: background-color 0.3s ease;
     }
-    /* title and info share one baseline, separated by a thin line (same as dialogs and room cards) */
+    /* title and info share one baseline; they differ in size and colour, a chevron after the title marks
+       a title that opens something */
     .header {
       display: flex;
       justify-content: flex-start;
@@ -4054,7 +4120,8 @@ GraphitePanel.styles = i`
       gap: var(--graphite-gap-header, 12px);
       margin-bottom: var(--graphite-header-margin, var(--graphite-gap-header, 12px));
     }
-    /* title and info share one baseline; with buttons the row is as high as the buttons */
+    /* title and info share one baseline; the header row is as high as the title (chips and buttons
+       take a negative margin) */
     .heading {
       flex: 1 1 auto;
       display: flex;
@@ -4062,37 +4129,59 @@ GraphitePanel.styles = i`
       gap: var(--graphite-gap-header, 12px);
       min-width: 0;
     }
+    /* buttons as pills like the chips (6px apart: the 44px buttons hold a 40px pill) */
     .buttons {
       display: flex;
       flex: none;
+      gap: calc(var(--graphite-chip-gap, 6px) - 4px);
+      margin-block: ${pillButtonsMargin};
+      margin-inline: -2px;
+    }
+    ${pillButtonStyles(".button")}
+    /* in a dialog the buttons stay tiles (44 x 36) like the dialog's close button */
+    :host([dialog]) .buttons {
       gap: var(--graphite-gap-tile, 8px);
+      margin: 0;
     }
-    .button {
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 36px;
-      padding: 0;
-      border: none;
-      border-radius: var(--graphite-radius-tile, 12px);
-      background: var(--graphite-surface-tile);
-      color: var(--graphite-text-secondary);
-      cursor: pointer;
-      font: inherit;
-      -webkit-tap-highlight-color: transparent;
+    :host([dialog]) .button {
       --mdc-icon-size: 18px;
-      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    .button:focus-visible {
+    :host([dialog]) .button .pill {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--graphite-radius-tile, 12px);
+    }
+    /* a title with an action: title, chevron and status are one tap target */
+    .link {
+      display: flex;
+      align-items: baseline;
+      gap: var(--graphite-gap-header, 12px);
+      min-width: 0;
+      cursor: pointer;
+      border-radius: 6px;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .link:focus-visible {
       outline: 2px solid var(--graphite-accent);
-      outline-offset: 2px;
+      outline-offset: 4px;
     }
-    .button.active {
-      background: var(--graphite-accent);
-      color: var(--graphite-accent-ink);
+    .link:active {
+      opacity: 0.7;
+    }
+    .chevron {
+      flex: none;
+      align-self: center;
+      width: 18px;
+      height: 18px;
+      margin: 0 -6px 0 -8px;
+      fill: var(--graphite-text-secondary);
+      transition: fill 0.2s ease;
+    }
+    @media (hover: hover) {
+      .link:hover .chevron {
+        fill: var(--graphite-text-primary);
+      }
     }
     .title {
       flex: none;
@@ -4107,29 +4196,12 @@ GraphitePanel.styles = i`
     }
     .info {
       min-width: 0;
-      padding-left: var(--graphite-gap-header, 12px);
-      position: relative;
-      /* 2px more room on top for the separator line (it reads too short at cap height);
-         the negative margin keeps the text on the shared baseline */
-      padding-top: 2px;
-      margin-top: -2px;
       font-size: var(--graphite-font-label-size, 13px);
       line-height: 16px;
       color: var(--graphite-text-secondary, var(--secondary-text-color));
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    /* separator from the title's cap height down to the shared baseline
-       (13px text in a 16px line: the baseline sits 3.5px above the bottom) */
-    .info::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 3.5px;
-      width: 1px;
-      background: var(--graphite-separator);
     }
     .info:empty {
       display: none;
@@ -4250,7 +4322,6 @@ GraphitePanel.styles = i`
       pointer-events: none;
       ${edgeMask}
     }
-    ${solidHoverStyles(".button", ".button:not(.active)")}
   `;
 registerElement("graphite-panel-editor", GraphitePanelEditor);
 registerCard("graphite-panel", GraphitePanel, {
@@ -13105,6 +13176,23 @@ registerCard("graphite-light", GraphiteLight, {
   description: "Lamp as a tile: switch row head (toggle or wall switch) with brightness and white temperature sliders."
 });
 
+// src/core/hover.ts
+function solidHoverStyles(selector, hovered = selector) {
+  const button = r(selector);
+  const hover = r(hovered);
+  return i`
+    ${button} ha-ripple {
+      --ha-ripple-hover-opacity: 0;
+    }
+    @media (hover: hover) {
+      ${hover}:hover {
+        background: color-mix(in srgb, var(--ha-ripple-hover-color, var(--secondary-text-color, #8f8f92))
+          calc(var(--ha-ripple-hover-opacity, 0.08) * 100%), var(--graphite-surface-tile));
+      }
+    }
+  `;
+}
+
 // src/cards/controls/graphite-button-editor.ts
 var GraphiteButtonEditor = class extends GraphiteFormEditor {
   labelPrefix() {
@@ -13212,14 +13300,15 @@ var iconButtonStyles = i`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 36px;
-    border-radius: var(--graphite-radius-tile, 12px);
+    width: 40px;
+    height: 24px;
+    margin: 6px 2px;
+    border-radius: var(--graphite-radius-pill, 999px);
     background: var(--graphite-surface-tile);
     color: var(--graphite-text-secondary);
     -webkit-tap-highlight-color: transparent;
     outline: none;
-    --mdc-icon-size: 18px;
+    --mdc-icon-size: 16px;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   .button.interactive {
@@ -13757,7 +13846,10 @@ var GraphiteDialog = class extends GraphiteCard {
   // the content is a frameless graphite-panel: same header, same layouts, child panels stay panels
   buildPanel() {
     const config = this.config;
-    if (!this.panel) this.panel = document.createElement("graphite-panel");
+    if (!this.panel) {
+      this.panel = document.createElement("graphite-panel");
+      this.panel.setAttribute("dialog", "");
+    }
     this.panel.setConfig({
       type: "custom:graphite-panel",
       title: config.title,

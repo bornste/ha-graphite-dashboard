@@ -191,7 +191,11 @@ export class GraphiteDialog extends GraphiteCard<DialogConfig> {
   // the content is a frameless graphite-panel: same header, same layouts, child panels stay panels
   private buildPanel(): void {
     const config = this.config!;
-    if (!this.panel) this.panel = document.createElement("graphite-panel");
+    if (!this.panel) {
+      this.panel = document.createElement("graphite-panel");
+      // header buttons keep the tile look of the close button
+      this.panel.setAttribute("dialog", "");
+    }
     this.panel.setConfig({
       type: "custom:graphite-panel",
       title: config.title,

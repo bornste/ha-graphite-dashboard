@@ -234,10 +234,12 @@ export function examples(language: string): ShowcaseSection[] {
           },
         },
         {
-          title: "Grid with three columns",
+          title: "Grid with three columns, title as link",
+          note: "title_action: the chevron after the title shows that title and status open something (here a detail view).",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Raumklima" : "Climate",
+            title_action: { action: "navigate", navigation_path: "/climate" },
             layout: "grid",
             columns: 3,
             cards: roomTiles,
@@ -909,15 +911,15 @@ export function examples(language: string): ShowcaseSection[] {
       examples: [
         {
           title: "Room (panel with buttons and scenes)",
-          note: "Relax is active (filled), two lights are on: status and the lights-off button are highlighted.",
+          note: "Relax is active (filled), two lights are on: status and the lights-off pill are highlighted. The title opens the room's dialog.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Wohnen" : "Living room",
+            title_action: { action: "navigate", navigation_path: "#living-room" },
             summary: [{ entity: "sensor.living_room_lights_on", text: german ? "{value} Lichter an" : "{value} lights on",
               text_one: german ? "1 Licht an" : "1 light on", color: "accent" }],
             buttons: [
               { entity: "scene.living_room_off", name: german ? "Licht aus" : "Lights off", active: { entity: "sensor.living_room_lights_on", above: 0 } },
-              { icon: "ic:twotone-tune", name: german ? "Einstellungen" : "Settings", tap_action: { action: "none" } },
             ],
             layout: "grid",
             columns: 4,
