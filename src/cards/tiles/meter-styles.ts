@@ -49,6 +49,12 @@ export const meterStyles = css`
     align-items: baseline;
     justify-content: space-between;
     gap: 6px;
+    /* all or nothing: the row is one value line high; a secondary value that does not fit next to the
+       value wraps to the hidden second line instead of being cut ("54…") */
+    flex-wrap: wrap;
+    row-gap: 0;
+    height: calc(var(--graphite-font-value-size, 22px) * 1.1);
+    overflow: hidden;
   }
   .value {
     font-size: var(--graphite-font-value-size, 22px);
@@ -64,19 +70,16 @@ export const meterStyles = css`
     margin-left: 3px;
     color: var(--graphite-text-muted);
   }
-  /* a block (not flex), so a too long text ends with an ellipsis */
   .secondary {
     display: block;
+    /* never shrinks: it is shown whole or not at all (see .value-row) */
+    flex: none;
     font-size: var(--graphite-font-label-size, 13px);
     font-weight: 400;
     /* not taller than the value line: a taller line would lift the baseline of the whole row
        (the value then sits 1-2px higher than on tiles without a secondary value) */
     line-height: 1.2;
     white-space: nowrap;
-    /* on narrow tiles the secondary value gives way (ellipsis) instead of running out of the tile */
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     color: var(--graphite-text-muted);
     --mdc-icon-size: 13px;
   }
@@ -356,9 +359,6 @@ export const meterChangeStyles = css`
     .tile.change .unit {
       display: none;
     }
-  }
-  .tile.change .secondary {
-    flex: none;
   }
   .row .caption {
     margin-left: 4px;

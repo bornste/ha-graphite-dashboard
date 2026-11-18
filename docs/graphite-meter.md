@@ -110,7 +110,7 @@ invert: true
 | `invert` | boolean | `false` | `style: change`: more is bad – an increase is red, a decrease green. |
 | `change_decimals` | number | `1` (absolute: `decimals`) | `style: change`: decimals of the change. |
 | `unit` | string | entity unit | Unit after the value; `""` hides it. |
-| `secondary_entity` | entity id | – | Second value: on the right of the value row (tile) or as status line (row). |
+| `secondary_entity` | entity id | – | Second value: on the right of the value row (tile) or as status line (row). On a tile it is shown whole or not at all: if it does not fit next to the value, it is left out instead of cut off. |
 | `secondary_decimals` | number | `0` | Decimals of the second value. |
 | `secondary_unit` | string | entity unit | Unit of the second value. |
 | `secondary_icon` | icon | – | Small icon before the second value. |
