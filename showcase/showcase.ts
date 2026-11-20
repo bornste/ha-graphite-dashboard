@@ -66,10 +66,14 @@ function stateIcon(stateObj: any): string {
   return icons ? icons[active ? 0 : 1] : "";
 }
 
+// the icon goes into its own shadow root, like in Home Assistant: in the light DOM the SVG would be
+// added while Lit clones a card template (the icon attribute upgrades the element), and the extra
+// nodes would shift the positions Lit fills in, so text ends up in the wrong place
 class ShowcaseIcon extends HTMLElement {
   static observedAttributes = ["icon"];
   private iconName = "";
   private stateObject?: any;
+  private root = this.attachShadow({ mode: "open" });
 
   set icon(icon: string | undefined) {
     this.iconName = icon ?? "";
@@ -99,7 +103,7 @@ class ShowcaseIcon extends HTMLElement {
   // a known icon as SVG, otherwise a neutral glyph
   private render() {
     const icon = SHOWCASE_ICONS[this.iconName || stateIcon(this.stateObject)];
-    this.innerHTML = icon
+    this.root.innerHTML = icon
       ? `<svg viewBox="0 0 ${icon.width} ${icon.height}" width="100%" height="100%">${icon.body}</svg>`
       : `<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="7.5" fill="currentColor" opacity="0.3"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
   }
@@ -164,6 +168,46 @@ const showcaseThemes = Object.fromEntries(SHOWCASE_THEMES.map((theme) => [theme.
 // states of the page; toggling replaces an entity object (like Home Assistant), so the cards re-render
 let states: Record<string, any> = { ...sampleStates };
 
+// todo lists: a small live store, so adding, changing and removing on the shopping list works;
+// like the Bring integration, a change arrives in the list after a moment
+interface ShowcaseTodoItem {
+  uid: string;
+  summary: string;
+  status: string;
+  description?: string;
+}
+
+const todoLists: Record<string, ShowcaseTodoItem[]> = Object.fromEntries(Object.entries(todoItems)
+  .map(([entityId, items]) => [entityId, items.map((item, index) => ({ uid: `${entityId}-${index}`, ...item }))]));
+const todoListeners = new Map<string, Set<(message: Record<string, unknown>) => void>>();
+const todoDelay = 700;
+let todoCounter = 0;
+
+function todoMessage(entityId: string): Record<string, unknown> {
+  return { items: (todoLists[entityId] ?? []).map((item) => ({ ...item })) };
+}
+
+function changeTodo(entityId: string, service: string, data: Record<string, unknown> = {}): void {
+  const items = todoLists[entityId] ?? (todoLists[entityId] = []);
+  window.setTimeout(() => {
+    const index = items.findIndex((item) => item.uid === data.item || item.summary === data.item);
+    if (service === "add_item") {
+      items.push({ uid: `${entityId}-new${todoCounter++}`, summary: String(data.item), status: "needs_action",
+        ...(data.description ? { description: String(data.description) } : {}) });
+    } else if (service === "update_item" && index >= 0) {
+      const item = items[index];
+      if (typeof data.status === "string") item.status = data.status;
+      if (data.description !== undefined) item.description = String(data.description);
+      if (typeof data.rename === "string") item.summary = data.rename;
+    } else if (service === "remove_item" && index >= 0) {
+      items.splice(index, 1);
+    }
+    for (const listener of todoListeners.get(entityId) ?? []) listener(todoMessage(entityId));
+    // the entity state is the number of open items, as in Home Assistant
+    setState(entityId, String(items.filter((item) => item.status === "needs_action").length));
+  }, todoDelay);
+}
+
 function createHass(language: string): any {
   return {
     states,
@@ -193,19 +237,23 @@ function createHass(language: string): any {
       async subscribeMessage(callback: (message: Record<string, unknown>) => void, message: Config) {
         // live todo list of the shopping card, otherwise a template result
         if (message.type === "todo/item/subscribe") {
-          const items = (todoItems[message.entity_id] ?? []).map((item, index) => ({ uid: `item${index}`, ...item }));
-          callback({ items });
-        } else {
-          callback({ result: templateResults[message.template] ?? "" });
+          const entityId = message.entity_id as string;
+          if (!todoListeners.has(entityId)) todoListeners.set(entityId, new Set());
+          todoListeners.get(entityId)!.add(callback);
+          callback(todoMessage(entityId));
+          return () => todoListeners.get(entityId)?.delete(callback);
         }
+        callback({ result: templateResults[message.template] ?? "" });
         return () => undefined;
       },
     },
     // themes of graphite.yaml, as Home Assistant hands them to the cards
     themes: { themes: showcaseThemes },
     async callService(domain: string, service: string, data?: Record<string, unknown>, target?: Record<string, unknown>) {
-      // select_option of input_select / select changes the sample state, everything else does nothing
+      // todo services change the sample list, select_option of input_select / select the sample state;
+      // everything else does nothing
       const entityId = target?.entity_id as string | undefined;
+      if (domain === "todo" && entityId) changeTodo(entityId, service, data);
       if (service === "select_option" && entityId && typeof data?.option === "string") setState(entityId, data.option);
       return undefined;
     },
@@ -247,7 +295,7 @@ function createHass(language: string): any {
       });
     },
     async callWS(message: Config) {
-      if (message.type === "todo/item/list") return { items: todoItems[message.entity_id] ?? [] };
+      if (message.type === "todo/item/list") return todoMessage(message.entity_id);
       throw new Error(`not available in the showcase: ${message.type}`);
     },
   };
@@ -334,19 +382,93 @@ document.addEventListener("hass-action", (event: Event) => {
   showToast(`${action}: ${actionConfig.action}${entityId ? ` · ${entityId}` : ""}`);
 });
 
+// --- page structure: groups of cards with a table of contents ------------------------------
+
+interface ShowcaseGroup {
+  id: string;
+  title: string;
+  description: string;
+  cards: string[];
+}
+
+// the cards in groups by what they are for; a card that is in no group lands in "More"
+const groups: ShowcaseGroup[] = [
+  {
+    id: "layout",
+    title: "Layout",
+    description: "Panels and dialogs hold the other cards; the summary opens a dashboard.",
+    cards: ["graphite-panel", "graphite-dialog", "graphite-summary"],
+  },
+  {
+    id: "values",
+    title: "States and values",
+    description: "Rows and tiles that show what is going on: states, measured values and their history.",
+    cards: ["graphite-status", "graphite-value", "graphite-meter", "graphite-timeline", "graphite-legend"],
+  },
+  {
+    id: "controls",
+    title: "Controls",
+    description: "Switch, trigger and choose.",
+    cards: ["graphite-switch", "graphite-button", "graphite-select", "graphite-slider", "graphite-image"],
+  },
+  {
+    id: "light",
+    title: "Light",
+    description: "Lamps with their own color, scenes and light effects with their gradient.",
+    cards: ["graphite-light", "graphite-scene"],
+  },
+  {
+    id: "household",
+    title: "Household",
+    description: "Calendars, lists and the devices that need attention now and then.",
+    cards: ["graphite-calendar", "graphite-pickup", "graphite-todo", "graphite-shopping", "graphite-battery",
+      "graphite-ink", "graphite-vacuum"],
+  },
+  {
+    id: "media",
+    title: "Media and play time",
+    description: "What is playing and for how long.",
+    cards: ["graphite-now-playing", "graphite-stopwatch"],
+  },
+];
+
+// short names for the page ("Panel"); the element name stays visible next to it
+const cardNames: Record<string, string> = {
+  "graphite-now-playing": "Now playing",
+  "graphite-todo": "To-do",
+};
+
+function cardName(card: string): string {
+  if (cardNames[card]) return cardNames[card];
+  const name = card.slice("graphite-".length).split("-").join(" ");
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+const cardAnchor = (card: string) => card.slice("graphite-".length);
+const documentation = (card: string) => `https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/${card}.md`;
+
 function renderSection(section: ShowcaseSection, hass: any): HTMLElement {
   const sectionElement = document.createElement("section");
   sectionElement.className = "card-section";
-  const heading = document.createElement("h2");
-  heading.textContent = section.title;
+  sectionElement.id = cardAnchor(section.card);
+  const head = document.createElement("div");
+  head.className = "card-head";
+  const heading = document.createElement("h3");
+  heading.textContent = cardName(section.card);
+  const element = document.createElement("code");
+  element.textContent = section.card;
+  const link = document.createElement("a");
+  link.href = documentation(section.card);
+  link.textContent = "Documentation";
+  head.append(heading, element, link);
   const intro = document.createElement("p");
   intro.innerHTML = section.description;
   const grid = document.createElement("div");
   grid.className = "examples";
   for (const example of section.examples) {
     const wrapper = document.createElement("div");
-    wrapper.className = "example";
-    const title = document.createElement("h3");
+    wrapper.className = example.wide ? "example wide" : "example";
+    const title = document.createElement("h4");
     title.textContent = example.title;
     const card: any = document.createElement(example.config.type.slice(7));
     card.setConfig(example.config);
@@ -368,34 +490,115 @@ function renderSection(section: ShowcaseSection, hass: any): HTMLElement {
     wrapper.append(details);
     grid.append(wrapper);
   }
-  sectionElement.append(heading, intro, grid);
+  sectionElement.append(head, intro, grid);
   return sectionElement;
 }
 
+function renderGroup(group: ShowcaseGroup, content: HTMLElement[]): HTMLElement {
+  const groupElement = document.createElement("section");
+  groupElement.className = "group";
+  groupElement.id = group.id;
+  const heading = document.createElement("h2");
+  heading.textContent = group.title;
+  const intro = document.createElement("p");
+  intro.textContent = group.description;
+  groupElement.append(heading, intro, ...content);
+  return groupElement;
+}
+
+// the theme colors as rows, in the example grid like the cards (one column as wide as a panel)
 function renderTokens(): HTMLElement {
-  const section = document.createElement("section");
-  section.className = "card-section";
-  section.innerHTML = `<h2>Theme</h2><p>Three surface levels mixed from ground and ink, text levels and the accent colors of the Graphite theme.</p>`;
-  const swatches = document.createElement("div");
-  swatches.className = "swatches";
-  const tokens = [
-    ["surface-page", "text-secondary"], ["surface-panel", "text-secondary"], ["surface-tile", "text-secondary"],
-    ["surface-tile-active", "text-secondary"], ["surface-track", "text-secondary"], ["accent", "accent-ink"],
-    ["success", "success-ink"], ["danger", "ground"],
+  const lists: Array<[string, Array<[string, string]>]> = [
+    ["Surfaces", [["surface-page", "text-secondary"], ["surface-panel", "text-secondary"], ["surface-tile", "text-secondary"],
+      ["surface-tile-active", "text-secondary"], ["surface-track", "text-secondary"]]],
+    ["Colors", [["accent", "accent-ink"], ["success", "success-ink"], ["danger", "ground"]]],
+    ["Text", [["text-primary", ""], ["text-secondary", ""], ["text-muted", ""]]],
   ];
-  for (const [background, foreground] of tokens) {
-    const swatch = document.createElement("div");
-    swatch.className = "swatch";
-    swatch.style.background = `var(--graphite-${background})`;
-    swatch.style.color = `var(--graphite-${foreground})`;
-    swatch.innerHTML = `<span>${background}</span><code>--graphite-${background}</code>`;
-    swatches.append(swatch);
+  const grid = document.createElement("div");
+  grid.className = "examples";
+  for (const [title, tokens] of lists) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "example";
+    const heading = document.createElement("h4");
+    heading.textContent = title;
+    const rows = document.createElement("div");
+    rows.className = "swatches";
+    // a row like the status rows: color chip on the left, name, variable on the right
+    for (const [token] of tokens) {
+      const row = document.createElement("div");
+      row.className = "swatch";
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.style.background = `var(--graphite-${token})`;
+      const name = document.createElement("span");
+      name.className = "name";
+      name.textContent = token;
+      const variable = document.createElement("code");
+      variable.textContent = `--graphite-${token}`;
+      row.append(chip, name, variable);
+      rows.append(row);
+    }
+    wrapper.append(heading, rows);
+    grid.append(wrapper);
   }
-  section.append(swatches);
-  return section;
+  return renderGroup({
+    // not "theme": that is the id of the theme picker in the header
+    id: "theme-colors",
+    title: "Theme",
+    description: "Three surface levels mixed from ground and ink, text levels and the accent colors of the selected theme.",
+    cards: [],
+  }, [grid]);
+}
+
+// table of contents: groups with their cards; on narrow screens only the groups, as a bar
+function renderToc(pageGroups: Array<{ group: ShowcaseGroup; cards: string[] }>): HTMLElement[] {
+  const items: HTMLElement[] = [];
+  for (const { group, cards } of pageGroups) {
+    const groupLink = document.createElement("a");
+    groupLink.className = "toc-group";
+    groupLink.href = `#${group.id}`;
+    groupLink.textContent = group.title;
+    groupLink.dataset.target = group.id;
+    items.push(groupLink);
+    for (const card of cards) {
+      const cardLink = document.createElement("a");
+      cardLink.className = "toc-card";
+      cardLink.href = `#${cardAnchor(card)}`;
+      cardLink.textContent = cardName(card);
+      cardLink.dataset.target = cardAnchor(card);
+      cardLink.dataset.group = group.id;
+      items.push(cardLink);
+    }
+  }
+  return items;
+}
+
+// marks the group and card in view in the table of contents
+let tocObserver: IntersectionObserver | undefined;
+
+function followScroll(): void {
+  tocObserver?.disconnect();
+  const links = [...toc.querySelectorAll<HTMLAnchorElement>("a")];
+  tocObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const target = entry.target as HTMLElement;
+      const groupId = target.classList.contains("group") ? target.id : target.closest(".group")?.id;
+      for (const link of links) {
+        const current = link.dataset.target === target.id || (link.classList.contains("toc-group") && link.dataset.target === groupId);
+        link.classList.toggle("current", current);
+        // narrow screens: the bar of groups follows, so the current group stays visible
+        if (current && link.classList.contains("toc-group") && toc.scrollWidth > toc.clientWidth) {
+          toc.scrollTo({ left: link.offsetLeft - 16, behavior: "smooth" });
+        }
+      }
+    }
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  for (const element of main.querySelectorAll(".group, .card-section")) tocObserver.observe(element);
 }
 
 const main = document.getElementById("showcase")!;
+const toc = document.getElementById("toc")!;
 const languageSelect = document.getElementById("language") as HTMLSelectElement;
 
 // theme switcher: the themes of graphite.yaml (theme.css holds their variables); the choice is kept
@@ -436,7 +639,19 @@ function render(): void {
   document.documentElement.lang = language;
   const hass = createHass(language);
   renderedCards = [];
-  main.replaceChildren(renderTokens(), ...examples(language).map((section) => renderSection(section, hass)));
+  const sections = new Map(examples(language).map((section) => [section.card, section]));
+  const grouped = new Set(groups.flatMap((group) => group.cards));
+  const more = [...sections.keys()].filter((card) => !grouped.has(card));
+  const pageGroups = [...groups, ...(more.length ? [{ id: "more", title: "More", description: "", cards: more }] : [])]
+    .map((group) => ({ group, cards: group.cards.filter((card) => sections.has(card)) }))
+    .filter(({ cards }) => cards.length);
+  main.replaceChildren(
+    ...pageGroups.map(({ group, cards }) => renderGroup(group, cards.map((card) => renderSection(sections.get(card)!, hass)))),
+    renderTokens(),
+  );
+  const theme = { group: { id: "theme-colors", title: "Theme", description: "", cards: [] }, cards: [] };
+  toc.replaceChildren(...renderToc([...pageGroups, theme]));
+  followScroll();
 }
 
 languageSelect.addEventListener("change", render);

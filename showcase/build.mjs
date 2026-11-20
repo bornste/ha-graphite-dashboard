@@ -1,6 +1,7 @@
 // Builds the showcase site into showcase/site/: theme variables as CSS, the card library and
 // the showcase script. Usage: npm run build:showcase (once) or npm run showcase (serve locally).
 import { build, context } from "esbuild";
+import { watch } from "node:fs";
 import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse } from "yaml";
@@ -28,7 +29,8 @@ const themeBlock = (selector, variables, light) => `${selector} {\n  color-schem
 const css = themeList.map((theme) => themeBlock(theme.name === "Graphite" ? ":root" : `:root[data-theme="${theme.slug}"]`,
   theme.variables, theme.light)).join("\n");
 await writeFile(new URL("theme.css", site), css);
-await copyFile(new URL("index.html", import.meta.url), new URL("index.html", site));
+const copyPage = () => copyFile(new URL("index.html", import.meta.url), new URL("index.html", site));
+await copyPage();
 
 // Roboto (latin, OFL) next to the page, so the showcase makes no external requests
 const fonts = new URL("fonts/", site);
@@ -120,6 +122,14 @@ if (process.argv.includes("--serve")) {
   await buildContext.watch();
   const { port } = await buildContext.serve({ servedir: fileURLToPath(site), port: 8080 });
   console.log(`Showcase: http://localhost:${port}/`);
+  // esbuild only watches the scripts: the page (index.html, its styles) is copied again on change.
+  // A change of graphite.yaml needs a restart (the themes are also built into the script).
+  let copyTimer;
+  watch(fileURLToPath(new URL("index.html", import.meta.url)), () => {
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => copyPage().then(() => console.log("[watch] index.html copied"))
+      .catch((error) => console.warn(`showcase: index.html not copied (${error.message})`)), 100);
+  });
 } else {
   await build(options);
 }

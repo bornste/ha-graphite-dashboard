@@ -3,11 +3,14 @@
 export interface ShowcaseExample {
   title: string;
   note?: string;
+  // takes two columns of the example grid (cards with their own columns, e.g. the shopping list)
+  wide?: boolean;
   config: Record<string, any> & { type: string };
 }
 
 export interface ShowcaseSection {
-  title: string;
+  // card element name, e.g. "graphite-panel"; the showcase derives title, group and documentation link
+  card: string;
   description: string;
   examples: ShowcaseExample[];
 }
@@ -86,7 +89,7 @@ export const sampleStates: Record<string, any> = {
   "sensor.player_two_playing_time": entity("sensor.player_two_playing_time", "6480", { friendly_name: "Player two", status: "running", accumulated_seconds: 6000, running_since: minutesAgo(8), icon: "ic:twotone-sports-esports" }, 8),
   "sensor.tv_watching_time": entity("sensor.tv_watching_time", "4980", { friendly_name: "TV", status: "paused", accumulated_seconds: 4980, icon: "ic:twotone-tv" }, 30),
   "image.player_two_picture": entity("image.player_two_picture", "2026-11-01", { friendly_name: "Player two", entity_picture: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' fill='%237aa5d6'/><circle cx='18' cy='14' r='7' fill='%23ffffff' opacity='0.85'/><rect x='7' y='24' width='22' height='14' rx='7' fill='%23ffffff' opacity='0.85'/></svg>" }),
-  "todo.shopping": entity("todo.shopping", "3", { friendly_name: "Shopping" }, 40),
+  "todo.shopping": entity("todo.shopping", "5", { friendly_name: "Shopping" }, 40),
   "todo.chores": entity("todo.chores", "0", { friendly_name: "Chores" }, 600),
   "sensor.office_printer": entity("sensor.office_printer", "idle", { friendly_name: "Printer" }, 120),
   "sensor.office_printer_black": entity("sensor.office_printer_black", "64", { friendly_name: "Black", unit_of_measurement: "%" }),
@@ -198,10 +201,9 @@ export function examples(language: string): ShowcaseSection[] {
   const german = language === "de";
   return [
     {
-      title: "graphite-panel",
+      card: "graphite-panel",
       description: `Groups cards in one panel with title, status, chips and a vertical, horizontal or grid layout.
-        Child cards get the tile surface; the examples use graphite-value tiles and rows.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-panel.md">Documentation</a>`,
+        Child cards get the tile surface; the examples use graphite-value tiles and rows.`,
       examples: [
         {
           title: "Header with status and chips",
@@ -277,10 +279,9 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-dialog",
+      card: "graphite-dialog",
       description: `Dialog that opens on a hash like #windows from every view: place all dialogs in one subview and link to the hash.
-        Header like graphite-panel, glass surface, bottom sheet on small screens. Shown inline here, as in the dialogs subview.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-dialog.md">Documentation</a>`,
+        Header like graphite-panel, glass surface, bottom sheet on small screens. Shown inline here, as in the dialogs subview.`,
       examples: [
         {
           title: "Windows (inline, as in the dialogs subview)",
@@ -307,9 +308,9 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-status",
+      card: "graphite-status",
       description: `Display row: icon, name with a "since" line and the state on the right. Active states get the accent tint,
-        measured values never. <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-status.md">Documentation</a>`,
+        measured values never.`,
       examples: [
         {
           title: "Windows, lamps, values",
@@ -340,9 +341,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-switch",
-      description: `Switch as a row or, with layout: tile, as a tile with the icon as watermark: tapping switches, holding opens more-info.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-switch.md">Documentation</a>`,
+      card: "graphite-switch",
+      description: `Switch as a row or, with layout: tile, as a tile with the icon as watermark: tapping switches, holding opens more-info.`,
       examples: [
         {
           title: "Switches",
@@ -395,9 +395,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-value",
-      description: `One value – number or word – as a tile or a row, where the value is the main thing. For states (windows, lamps) use graphite-status.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-value.md">Documentation</a>`,
+      card: "graphite-value",
+      description: `One value – number or word – as a tile or a row, where the value is the main thing. For states (windows, lamps) use graphite-status.`,
       examples: [
         {
           title: "Values and words",
@@ -432,12 +431,12 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-timeline",
-      description: `What ran when: one row per entity over a chosen period, short interruptions bridged, the total on the right. Hover or tap a bar for its time and duration.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-timeline.md">Documentation</a>`,
+      card: "graphite-timeline",
+      description: `What ran when: one row per entity over a chosen period, short interruptions bridged, the total on the right. Hover or tap a bar for its time and duration.`,
       examples: [
         {
           title: "Who played what",
+          wide: true,
           note: "Gaps up to 5 minutes (sensor drops, a screensaver between two Plex phases) do not split the bars.",
           config: {
             type: "custom:graphite-panel",
@@ -458,9 +457,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-meter",
-      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient), a fill bar (level) or the change against a reference (change, for prices); as a tile or, with layout: row, as a row with a status line (ink cartridges, batteries).
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-meter.md">Documentation</a>`,
+      card: "graphite-meter",
+      description: `Measured value above a thin instrument bar: a color scale with a needle (gradient), a fill bar (level) or the change against a reference (change, for prices); as a tile or, with layout: row, as a row with a status line (ink cartridges, batteries).`,
       examples: [
         {
           title: "Prices (change)",
@@ -550,9 +548,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-image",
-      description: `Action tile with a picture (blurred backdrop and thumbnail) or a label; a spinner while the script runs.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-image.md">Documentation</a>`,
+      card: "graphite-image",
+      description: `Action tile with a picture (blurred backdrop and thumbnail) or a label; a spinner while the script runs.`,
       examples: [
         {
           title: "Games and apps",
@@ -571,9 +568,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-button",
-      description: `A plain button for any action: tile, row or compact icon button; optional active state and busy spinner.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-button.md">Documentation</a>`,
+      card: "graphite-button",
+      description: `A plain button for any action: tile, row or compact icon button; optional active state and busy spinner.`,
       examples: [
         {
           title: "Tiles",
@@ -616,9 +612,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-select",
-      description: `Picks one option of an input_select or select: as segments or as tiles, optionally with a preview of the theme each option names.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-select.md">Documentation</a>`,
+      card: "graphite-select",
+      description: `Picks one option of an input_select or select: as segments or as tiles, optionally with a preview of the theme each option names.`,
       examples: [
         {
           title: "Segments",
@@ -674,9 +669,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-stopwatch",
-      description: `Elapsed time of a Stopwatch Plus sensor, optional daily limit; picture or icon on the left.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-stopwatch.md">Documentation</a>`,
+      card: "graphite-stopwatch",
+      description: `Elapsed time of a Stopwatch Plus sensor, optional daily limit; picture or icon on the left.`,
       examples: [
         {
           title: "Playing and watching time",
@@ -696,9 +690,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-todo",
-      description: `Open items of a todo list, optionally with the first item names; an empty list shows a word as value.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-todo.md">Documentation</a>`,
+      card: "graphite-todo",
+      description: `Open items of a todo list, optionally with the first item names; an empty list shows a word as value.`,
       examples: [
         {
           title: "Lists",
@@ -717,9 +710,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-ink",
-      description: `Printer with one tank per cartridge; soon empty and empty cartridges are highlighted.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-ink.md">Documentation</a>`,
+      card: "graphite-ink",
+      description: `Printer with one tank per cartridge; soon empty and empty cartridges are highlighted.`,
       examples: [
         {
           title: "Printers",
@@ -738,9 +730,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-pickup",
-      description: `Next waste collection of a calendar; today and tomorrow are highlighted.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-pickup.md">Documentation</a>`,
+      card: "graphite-pickup",
+      description: `Next waste collection of a calendar; today and tomorrow are highlighted.`,
       examples: [
         {
           title: "Collections",
@@ -759,33 +750,33 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-calendar",
-      description: `Events of one or more calendars, grouped by day: color and icon per calendar or keyword rule, exams highlighted.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-calendar.md">Documentation</a>`,
+      card: "graphite-calendar",
+      description: `Events of one or more calendars, grouped by day: color and icon per calendar or keyword rule, exams highlighted.`,
       examples: [
         {
-          title: "School calendar",
-          note: "This and next week, at most 10 events; today's past events stay visible. Tap an event for its details.",
+          title: "Tiles: today and the next exam",
+          note: "The day tile shows today, from 15:00 on the next school day; the exam tile turns red when the exam is today or tomorrow. Tap opens the two weeks in a pop-up.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Schule" : "School",
             cards: [
               {
                 type: "custom:graphite-calendar",
-                calendars: [
-                  { entity: "calendar.school_homework", name: german ? "Hausaufgaben" : "Homework", color: "#8ab8f5", icon: "ic:twotone-edit" },
-                  { entity: "calendar.school_exams", name: german ? "Prüfungen" : "Exams", color: "#e8908a", icon: "ic:twotone-warning-amber", highlight: true },
-                  { entity: "calendar.school_events", name: german ? "Termine" : "Events", color: "#a8d5a2", icon: "ic:twotone-calendar-today" },
-                ],
-                range: "this_and_next_week",
-                max_items: 10,
-                show_past_today: true,
+                calendars: ["calendar.school_homework", "calendar.school_exams", "calendar.school_events"],
+                layout: "tiles",
+                icon: "ic:twotone-school",
+                weekdays: true,
+                day_switch: "15:00",
+                rules: [{ contains_any: ["Exam", "Test"], color: "var(--graphite-danger)", highlight: true }],
+                tap_action: { action: "none" },
+                hold_action: { action: "none" },
               },
             ],
           },
         },
         {
           title: "Two weeks side by side (compact layout)",
+          wide: true,
           note: "One block per day, Monday to Friday always shown; from the night to Saturday both columns move on by one week. Exams are colored by a keyword rule, no matter which calendar they are in.",
           config: {
             type: "custom:graphite-panel",
@@ -802,29 +793,29 @@ export function examples(language: string): ShowcaseSection[] {
                   week,
                   week_rollover: "sat 00:00",
                   weekdays: true,
-                  rules: [{ contains_any: ["Exam", "Test"], color: "#e8908a" }],
+                  rules: [{ contains_any: ["Exam", "Test"], color: "var(--graphite-danger)" }],
                 },
               ],
             })),
           },
         },
         {
-          title: "Tiles: today and the next exam",
-          note: "The day tile shows today, from 15:00 on the next school day; the exam tile turns red when the exam is today or tomorrow. Tap opens the two weeks in a pop-up.",
+          title: "School calendar",
+          note: "This and next week, at most 10 events; today's past events stay visible. Tap an event for its details.",
           config: {
             type: "custom:graphite-panel",
             title: german ? "Schule" : "School",
             cards: [
               {
                 type: "custom:graphite-calendar",
-                calendars: ["calendar.school_homework", "calendar.school_exams", "calendar.school_events"],
-                layout: "tiles",
-                icon: "ic:twotone-school",
-                weekdays: true,
-                day_switch: "15:00",
-                rules: [{ contains_any: ["Exam", "Test"], color: "#e8908a", highlight: true }],
-                tap_action: { action: "none" },
-                hold_action: { action: "none" },
+                calendars: [
+                  { entity: "calendar.school_homework", name: german ? "Hausaufgaben" : "Homework", color: "#8ab8f5", icon: "ic:twotone-edit" },
+                  { entity: "calendar.school_exams", name: german ? "Prüfungen" : "Exams", color: "var(--graphite-danger)", icon: "ic:twotone-warning-amber", highlight: true },
+                  { entity: "calendar.school_events", name: german ? "Termine" : "Events", color: "var(--graphite-success)", icon: "ic:twotone-calendar-today" },
+                ],
+                range: "this_and_next_week",
+                max_items: 10,
+                show_past_today: true,
               },
             ],
           },
@@ -843,7 +834,7 @@ export function examples(language: string): ShowcaseSection[] {
                 days: 14,
                 secondary: "none",
                 highlight_days: 2,
-                rules: [{ starts_with: "Exam", color: "#e8908a", icon: "ic:twotone-warning-amber", highlight: true }],
+                rules: [{ starts_with: "Exam", color: "var(--graphite-danger)", icon: "ic:twotone-warning-amber", highlight: true }],
               },
             ],
           },
@@ -851,9 +842,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-slider",
-      description: `One slider: number, input_number, or brightness, white temperature, color and saturation of a light. Snaps to the steps, ticks below the track.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-slider.md">Documentation</a>`,
+      card: "graphite-slider",
+      description: `One slider: number, input_number, or brightness, white temperature, color and saturation of a light. Snaps to the steps, ticks below the track.`,
       examples: [
         {
           title: "Rows (layout: row)",
@@ -885,9 +875,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-light",
-      description: `Lamp as a tile: switch row head with brightness and white temperature sliders; a wall switch lamp shows a quiet icon instead of the toggle.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-light.md">Documentation</a>`,
+      card: "graphite-light",
+      description: `Lamp as a tile: switch row head with brightness and white temperature sliders; a wall switch lamp shows a quiet icon instead of the toggle.`,
       examples: [
         {
           title: "Lamps",
@@ -905,9 +894,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-scene",
-      description: `Scene or light effect as a tile; several of them with header buttons in a graphite-panel make a room.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-scene.md">Documentation</a>`,
+      card: "graphite-scene",
+      description: `Scene or light effect as a tile; several of them with header buttons in a graphite-panel make a room.`,
       examples: [
         {
           title: "Room (panel with buttons and scenes)",
@@ -953,9 +941,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-now-playing",
-      description: `What runs on the most important media device; the order of the sources sets the priority.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-now-playing.md">Documentation</a>`,
+      card: "graphite-now-playing",
+      description: `What runs on the most important media device; the order of the sources sets the priority.`,
       examples: [
         {
           title: "Console with a game",
@@ -974,9 +961,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-vacuum",
-      description: `Robot vacuum (Dreame) as animated tile and as panel for the pop-up.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-vacuum.md">Documentation</a>`,
+      card: "graphite-vacuum",
+      description: `Robot vacuum (Dreame) as animated tile and as panel for the pop-up.`,
       examples: [
         {
           title: "Tile while cleaning",
@@ -985,6 +971,7 @@ export function examples(language: string): ShowcaseSection[] {
         },
         {
           title: "Panel",
+          wide: true,
           note: "Quick picks, mode, suction, rooms and station with maintenance.",
           config: {
             type: "custom:graphite-vacuum",
@@ -1002,9 +989,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-summary",
-      description: `Clock with date and the state of the home as prose; highlights are tappable.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-summary.md">Documentation</a>`,
+      card: "graphite-summary",
+      description: `Clock with date and the state of the home as prose; highlights are tappable.`,
       examples: [
         {
           title: "Alerts, pickup and a second line",
@@ -1023,12 +1009,12 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-shopping",
-      description: `Shopping list of a todo entity with quick pick groups, variants and products with a fixed description.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-shopping.md">Documentation</a>`,
+      card: "graphite-shopping",
+      description: `Shopping list of a todo entity with quick pick groups, variants and products with a fixed description.`,
       examples: [
         {
           title: "List and quick picks",
+          wide: true,
           note: "Eggs with a chosen amount, red onions as product of their own; tap a chip to add or remove it.",
           config: {
             type: "custom:graphite-shopping",
@@ -1045,9 +1031,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-battery",
-      description: `All battery sensors grouped by urgency; new devices appear by themselves.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-battery.md">Documentation</a>`,
+      card: "graphite-battery",
+      description: `All battery sensors grouped by urgency; new devices appear by themselves.`,
       examples: [
         {
           title: "Battery overview",
@@ -1057,9 +1042,8 @@ export function examples(language: string): ShowcaseSection[] {
       ],
     },
     {
-      title: "graphite-legend",
-      description: `Legend for charts: color scales with the same stops as the chart thresholds, and swatch items.
-        <a href="https://github.com/bornste/ha-graphite-dashboard/blob/main/docs/graphite-legend.md">Documentation</a>`,
+      card: "graphite-legend",
+      description: `Legend for charts: color scales with the same stops as the chart thresholds, and swatch items.`,
       examples: [
         {
           title: "Climate legend in a panel",
@@ -1073,7 +1057,7 @@ export function examples(language: string): ShowcaseSection[] {
                 { name: "Temperature", unit: "°C", min: -5, max: 35, opacity: 0.6, stops: [{ value: 0, color: "#9b7bd4" }, { value: 15, color: "#5b9bd5" }, { value: 20, color: "#6fbf5a" }, { value: 24, color: "#6fbf5a" }, { value: 28, color: "#f0a33c" }, { value: 32, color: "#e4644b" }] },
                 { name: "CO₂", unit: "ppm", min: 300, max: 2200, opacity: 0.6, stops: [{ value: 400, color: "#6fbf5a" }, { value: 1000, color: "#6fbf5a" }, { value: 1400, color: "#f0a33c" }, { value: 2000, color: "#e4644b" }], ticks: [400, 1000, 1400, 2000] },
               ],
-              items: [{ name: "Window / door open", color: "#f5c48a", opacity: 0.4 }],
+              items: [{ name: "Window / door open", color: "var(--graphite-accent)", opacity: 0.4 }],
             }],
           },
         },
