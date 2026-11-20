@@ -183,6 +183,40 @@ their own defaults.
 A child card that hides itself (visibility conditions, cards that hide without content) collapses
 its slot, so no empty gap remains.
 
+### Column span
+
+In the grid layout a child card can take several columns: `view_layout.column_span` of the child,
+a number of columns or `full` for the whole row. Without it a card takes one column. A span larger
+than the grid is capped to its columns; in a responsive grid (`min_column_width`) the span follows
+the columns that fit, so a card falls back to fewer columns on narrow screens. `view_layout` is used
+because every card accepts it (the visual editors of the built-in cards refuse unknown keys).
+
+```yaml
+type: custom:graphite-panel
+title: Living room
+layout: grid
+columns: 6
+cards:
+  - type: custom:graphite-value
+    layout: row
+    entity: sensor.power_strip_power
+    view_layout:
+      column_span: full    # whole row
+  - type: custom:graphite-value
+    entity: sensor.living_room_temperature
+    view_layout:
+      column_span: 3       # half
+  - type: custom:graphite-value
+    entity: sensor.living_room_humidity
+    view_layout:
+      column_span: 3
+  - type: custom:graphite-value
+    entity: sensor.kitchen_temperature
+    view_layout:
+      column_span: 2       # a third
+  # …
+```
+
 ## Styling
 
 Theme variables used: `--graphite-surface-panel`, `--graphite-radius-panel`,
@@ -201,7 +235,8 @@ variables.
 The visual editor groups the panel options in two expansion panels, *Header* and *Layout*; hints
 are shown as helper texts below the fields. The dynamic status (`summary`), `chips` and `buttons`
 are edited as lists with a dialog per entry, including the part `show`, the chip `alert` and the
-button `active`; `summary_mode: first` is a switch. No option needs YAML. `columns` and `min_column_width` are only
+button `active`; `summary_mode: first` is a switch. No option needs YAML. `columns`, `min_column_width` and *Card widths*
+(one field per child card for its column span, 1 to the number of columns or *Whole row*) are only
 shown for the grid layout. The child cards are edited with Home Assistant's own stack editor
 (tabs, card picker, card editors). Empty optional values are not stored; `frame` is only stored
 when `false`. The labels are translated (see *Language* in the [overview](README.md)).

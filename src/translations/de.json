@@ -30,6 +30,8 @@
       "layoutVertical": "Vertikal",
       "layoutHorizontal": "Horizontal",
       "layoutGrid": "Raster",
+      "cardWidths": "Breite der Karten",
+      "spanFull": "Ganze Zeile",
       "columns": "Spalten",
       "min_column_width": "Mindestbreite pro Spalte",
       "gap": "Abstand",

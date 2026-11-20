@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.68.3";
+var version = "0.69.0";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -593,6 +593,8 @@ var de_default = {
       layoutVertical: "Vertikal",
       layoutHorizontal: "Horizontal",
       layoutGrid: "Raster",
+      cardWidths: "Breite der Karten",
+      spanFull: "Ganze Zeile",
       columns: "Spalten",
       min_column_width: "Mindestbreite pro Spalte",
       gap: "Abstand",
@@ -1831,6 +1833,8 @@ var en_default = {
       layoutVertical: "Vertical",
       layoutHorizontal: "Horizontal",
       layoutGrid: "Grid",
+      cardWidths: "Card widths",
+      spanFull: "Whole row",
       columns: "Columns",
       min_column_width: "Minimum column width",
       gap: "Gap",
@@ -3444,6 +3448,14 @@ var panelHeaderStyles = i`
   }
 `;
 
+// src/core/column-span.ts
+function columnSpan(cardConfig) {
+  const span = cardConfig?.view_layout?.column_span;
+  if (span === "full") return "full";
+  const number = Math.floor(Number(span));
+  return number > 1 ? number : void 0;
+}
+
 // src/core/format.ts
 var unavailableStates = ["unavailable", "unknown"];
 function isUnavailable(stateObj) {
@@ -3542,7 +3554,10 @@ function optionalText(language, key) {
   const text = translate(language, fullKey);
   return text === fullKey ? void 0 : text;
 }
-function editorSchema(language, layout, mode) {
+var spanPrefix = "span_";
+var spanFull = "full";
+var spanMax = 6;
+function editorSchema(language, layout, mode, spanFields) {
   const text = (key) => translate(language, `${prefix}.${key}`);
   const itemField = (name, selector, required = false) => [name, {
     selector,
@@ -3695,7 +3710,25 @@ function editorSchema(language, layout, mode) {
             { name: "columns", selector: { number: { min: 1, max: 6, mode: "box" } } },
             { name: "min_column_width", selector: { text: {} } }
           ]
-        }] : [],
+        }, ...spanFields.length ? [{
+          type: "expandable",
+          name: "cardWidths",
+          icon: "mdi:table-column-width",
+          flatten: true,
+          schema: spanFields.map((field, index) => ({
+            name: `${spanPrefix}${index}`,
+            label: field.label,
+            selector: {
+              select: {
+                mode: "dropdown",
+                options: [
+                  ...Array.from({ length: field.max }, (_2, column) => ({ value: String(column + 1), label: String(column + 1) })),
+                  { value: spanFull, label: text("spanFull") }
+                ]
+              }
+            }
+          }))
+        }] : []] : [],
         ...mode === "dialog" ? [{ name: "gap", selector: { text: {} } }] : [
           {
             type: "grid",
@@ -3755,6 +3788,18 @@ function storedItems(items, conditionKey) {
     return data;
   });
 }
+function withSpan(card, span) {
+  if (span === void 0 || !card || typeof card !== "object") return card;
+  const current = columnSpan(card);
+  const wanted = span === spanFull ? spanFull : Number(span) > 1 ? Math.floor(Number(span)) : void 0;
+  if (current === wanted) return card;
+  const viewLayout = { ...card.view_layout ?? {} };
+  if (wanted === void 0) delete viewLayout.column_span;
+  else viewLayout.column_span = wanted;
+  const stored = { ...card, view_layout: viewLayout };
+  if (!Object.keys(viewLayout).length) delete stored.view_layout;
+  return stored;
+}
 var GraphitePanelEditor = class extends HTMLElement {
   constructor() {
     super(...arguments);
@@ -3795,11 +3840,17 @@ var GraphitePanelEditor = class extends HTMLElement {
     }
     const language = languageOf(this.isConnected ? this : void 0, this.hassObject);
     const layout = this.config.layout || "vertical";
-    const schemaKey = `${language}|${layout}|${this.mode}`;
+    const cards = this.config.cards || [];
+    const spanFields = layout === "grid" ? cards.map((card, index) => ({
+      label: `${index + 1} \xB7 ${this.cardLabel(card)}`,
+      max: this.config.min_column_width ? spanMax : Math.max(1, Math.min(spanMax, Number(this.config.columns) || 2))
+    })) : [];
+    const schemaKey = `${language}|${layout}|${this.mode}|${JSON.stringify(spanFields)}`;
     if (this.formSchemaKey !== schemaKey) {
       this.formSchemaKey = schemaKey;
-      this.form.schema = editorSchema(language, layout, this.mode);
+      this.form.schema = editorSchema(language, layout, this.mode, spanFields);
       this.form.computeLabel = (schema) => {
+        if (schema.label) return schema.label;
         if (!schema.name || listNames.includes(schema.name)) return "";
         return optionalText(language, schema.name) ?? schema.name;
       };
@@ -3839,9 +3890,20 @@ var GraphitePanelEditor = class extends HTMLElement {
     };
     if (this.mode === "dialog") Object.assign(data, { hash, width });
     else Object.assign(data, { padding, frame: frame !== false });
+    spanFields.forEach((_2, index) => {
+      const span = columnSpan(cards[index]);
+      data[`${spanPrefix}${index}`] = span === void 0 ? "1" : String(span);
+    });
     this.form.data = data;
     this.stackEditor.setConfig({ type: "vertical-stack", cards: this.config.cards || [] });
     this.hideStackTitle();
+  }
+  // name of a child card in the list of card widths: its name, the name of its entity or its type
+  cardLabel(card) {
+    const type = String(card?.type ?? "").replace("custom:", "");
+    const entity = typeof card?.entity === "string" ? card.entity : "";
+    const name = card?.name || card?.title || entity && this.hassObject?.states[entity]?.attributes?.friendly_name || entity;
+    return name ? `${type} ${name}` : type;
   }
   // the stack editor has its own "title" field, which the panel does not use (it has "title" above)
   async hideStackTitle() {
@@ -3854,7 +3916,14 @@ var GraphitePanelEditor = class extends HTMLElement {
   }
   // empty optional values are not stored, so the YAML stays clean
   fireConfig(config) {
-    const { summary_first: summaryFirst, ...rest } = config;
+    const { summary_first: summaryFirst, ...fields } = config;
+    const rest = {};
+    const spans = /* @__PURE__ */ new Map();
+    for (const [key, value] of Object.entries(fields)) {
+      if (key.startsWith(spanPrefix)) spans.set(Number(key.slice(spanPrefix.length)), String(value ?? ""));
+      else rest[key] = value;
+    }
+    if (spans.size && Array.isArray(rest.cards)) rest.cards = rest.cards.map((card, index) => withSpan(card, spans.get(index)));
     const storedConfig = {
       ...rest,
       summary: storedItems(config.summary, "show"),
@@ -3894,6 +3963,7 @@ var GraphitePanel = class extends GraphiteCard {
   constructor() {
     super(...arguments);
     this.childCards = [];
+    this.spanWidth = 0;
     this.buildId = 0;
     this.infoText = "";
   }
@@ -4040,7 +4110,41 @@ var GraphitePanel = class extends GraphiteCard {
       return element;
     });
     await this.updateComplete;
-    if (buildId === this.buildId) this.renderRoot.querySelector(".content")?.replaceChildren(...this.childCards);
+    if (buildId !== this.buildId) return;
+    this.renderRoot.querySelector(".content")?.replaceChildren(...this.childCards);
+    this.applySpans();
+  }
+  // grid layout: each child card takes its column span, at most the columns the grid has; a span
+  // larger than the grid would add columns of its own, so it is capped
+  applySpans() {
+    const config = this.config;
+    const content = this.renderRoot.querySelector(".content");
+    if (!config || !content) return;
+    const grid = config.layout === "grid";
+    const spans = config.cards.map((cardConfig) => grid ? columnSpan(cardConfig) : void 0);
+    const responsive = grid && !!config.min_column_width && spans.some((span) => typeof span === "number");
+    let columns = Number(config.columns) || 2;
+    if (responsive) {
+      for (const element of this.childCards) element.style.gridColumn = "";
+      columns = getComputedStyle(content).gridTemplateColumns.split(" ").filter((track) => parseFloat(track) > 0).length || 1;
+    }
+    this.childCards.forEach((element, index) => {
+      const span = spans[index];
+      element.style.gridColumn = span === "full" ? "1 / -1" : span ? `span ${Math.min(span, columns)}` : "";
+    });
+    this.watchSpans(content, responsive);
+  }
+  // a responsive grid gets other columns when its width changes: spans are applied again then
+  watchSpans(content, responsive) {
+    this.spanObserver?.disconnect();
+    if (!responsive) return;
+    this.spanObserver ??= new ResizeObserver((entries) => {
+      const width = Math.round(entries[0]?.contentRect.width ?? 0);
+      if (width === this.spanWidth) return;
+      this.spanWidth = width;
+      this.applySpans();
+    });
+    this.spanObserver.observe(content);
   }
   // a child card that hides itself (card-visibility-changed) collapses its slot, so no gap remains
   watchVisibility(element) {
@@ -4072,6 +4176,7 @@ var GraphitePanel = class extends GraphiteCard {
     this.toggleAttribute("frameless", this.config.frame === false);
     const content = this.renderRoot.querySelector(".content");
     if (content && this.childCards.length && content.childElementCount === 0) content.replaceChildren(...this.childCards);
+    this.applySpans();
   }
   chipValue(chip) {
     const stateObj = this.hass?.states[chip.entity];

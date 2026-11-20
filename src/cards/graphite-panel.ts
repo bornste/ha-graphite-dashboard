@@ -7,6 +7,7 @@ import { edgeMask } from "../core/edge";
 import { fireAction, hasAction } from "../core/actions";
 import { pillButtonsMargin, pillButtonStyles } from "../core/pill-button";
 import { panelHeaderStyles, panelSurfaceStyles } from "../core/panel-styles";
+import { columnSpan } from "../core/column-span";
 import { unavailableStates } from "../core/format";
 import { matchesCondition, type ValueCondition } from "../core/conditions";
 import { isTemplate, subscribeTemplate } from "../core/template";
@@ -65,6 +66,7 @@ export interface PanelConfig extends GraphiteCardConfig {
 }
 
 const layouts = ["vertical", "horizontal", "grid"];
+
 
 // Home Assistant's stack card editor is reused for the child cards (panel and dialog): load it first
 export async function loadStackCardEditor(): Promise<void> {
@@ -301,6 +303,10 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
   `;
 
   private childCards: any[] = [];
+  // grid: column spans of the child cards follow the number of columns, which a responsive grid
+  // (min_column_width) only knows once it is laid out
+  private spanObserver?: ResizeObserver;
+  private spanWidth = 0;
   private buildId = 0;
   private infoText = "";
   private infoUnsubscribe?: Promise<() => void>;
@@ -470,7 +476,45 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       return element;
     });
     await this.updateComplete;
-    if (buildId === this.buildId) this.renderRoot.querySelector(".content")?.replaceChildren(...this.childCards);
+    if (buildId !== this.buildId) return;
+    this.renderRoot.querySelector(".content")?.replaceChildren(...this.childCards);
+    this.applySpans();
+  }
+
+  // grid layout: each child card takes its column span, at most the columns the grid has; a span
+  // larger than the grid would add columns of its own, so it is capped
+  private applySpans(): void {
+    const config = this.config;
+    const content = this.renderRoot.querySelector<HTMLElement>(".content");
+    if (!config || !content) return;
+    const grid = config.layout === "grid";
+    const spans = config.cards.map((cardConfig) => (grid ? columnSpan(cardConfig) : undefined));
+    const responsive = grid && !!config.min_column_width && spans.some((span) => typeof span === "number");
+    let columns = Number(config.columns) || 2;
+    if (responsive) {
+      // columns of the responsive grid: laid out without spans, then counted (auto-fit leaves unused
+      // columns at 0px)
+      for (const element of this.childCards) element.style.gridColumn = "";
+      columns = getComputedStyle(content).gridTemplateColumns.split(" ").filter((track) => parseFloat(track) > 0).length || 1;
+    }
+    this.childCards.forEach((element, index) => {
+      const span = spans[index];
+      element.style.gridColumn = span === "full" ? "1 / -1" : span ? `span ${Math.min(span, columns)}` : "";
+    });
+    this.watchSpans(content, responsive);
+  }
+
+  // a responsive grid gets other columns when its width changes: spans are applied again then
+  private watchSpans(content: HTMLElement, responsive: boolean): void {
+    this.spanObserver?.disconnect();
+    if (!responsive) return;
+    this.spanObserver ??= new ResizeObserver((entries) => {
+      const width = Math.round(entries[0]?.contentRect.width ?? 0);
+      if (width === this.spanWidth) return;
+      this.spanWidth = width;
+      this.applySpans();
+    });
+    this.spanObserver.observe(content);
   }
 
   // a child card that hides itself (card-visibility-changed) collapses its slot, so no gap remains
@@ -508,6 +552,7 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     // a re-rendered content element (new config) gets the child cards back
     const content = this.renderRoot.querySelector(".content");
     if (content && this.childCards.length && content.childElementCount === 0) content.replaceChildren(...this.childCards);
+    this.applySpans();
   }
 
   private chipValue(chip: PanelChipConfig): { value: string; unit: string; state?: string } {

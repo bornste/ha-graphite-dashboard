@@ -30,6 +30,8 @@
       "layoutVertical": "Vertical",
       "layoutHorizontal": "Horizontal",
       "layoutGrid": "Grid",
+      "cardWidths": "Card widths",
+      "spanFull": "Whole row",
       "columns": "Columns",
       "min_column_width": "Minimum column width",
       "gap": "Gap",

@@ -275,6 +275,21 @@ export function examples(): ShowcaseSection[] {
             ],
           },
         },
+        {
+          title: "Grid with column spans",
+          note: "view_layout.column_span: one card over the whole row, then two halves and three thirds in a grid of six columns – no nested panels.",
+          config: {
+            type: "custom:graphite-panel",
+            title: "Household",
+            layout: "grid",
+            columns: 6,
+            cards: [
+              { ...powerRow, view_layout: { column_span: "full" } },
+              ...roomTiles.slice(0, 2).map((tile) => ({ ...tile, view_layout: { column_span: 3 } })),
+              ...roomTiles.slice(2, 5).map((tile) => ({ ...tile, view_layout: { column_span: 2 } })),
+            ],
+          },
+        },
       ],
     },
     {
@@ -677,19 +692,12 @@ export function examples(): ShowcaseSection[] {
           config: {
             type: "custom:graphite-panel",
             title: "Playing time",
-            layout: "vertical",
+            layout: "grid",
+            columns: 2,
             cards: [
-              {
-                type: "custom:graphite-panel",
-                frame: false,
-                layout: "grid",
-                columns: 2,
-                cards: [
-                  { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "ic:twotone-sports-esports" },
-                  { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "ic:twotone-tv", icon_position: "left" },
-                ],
-              },
-              { type: "custom:graphite-stopwatch", entity: "sensor.player_two_playing_time", icon: "ic:twotone-sports-esports", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
+              { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "ic:twotone-sports-esports" },
+              { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "ic:twotone-tv", icon_position: "left" },
+              { type: "custom:graphite-stopwatch", entity: "sensor.player_two_playing_time", icon: "ic:twotone-sports-esports", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 }, view_layout: { column_span: "full" } },
             ],
           },
         },

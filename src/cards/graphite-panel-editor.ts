@@ -5,6 +5,7 @@
 // no panel surface and padding (a dialog has its own surface).
 import type { HomeAssistant } from "../core/types";
 import { languageOf, translate } from "../core/i18n";
+import { columnSpan } from "../core/column-span";
 
 const prefix = "panel.editor";
 
@@ -25,8 +26,19 @@ function optionalText(language: string, key: string): string | undefined {
   return text === fullKey ? undefined : text;
 }
 
+// the grid layout gets one field per child card for its column span ("span_<index>")
+const spanPrefix = "span_";
+const spanFull = "full";
+// most columns offered for a span: the columns of the panel, a responsive grid up to the maximum
+const spanMax = 6;
+
+interface SpanField {
+  label: string;
+  max: number;
+}
+
 // schema with translated labels; the grid options are only shown for the grid layout
-function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
+function editorSchema(language: string, layout: string, mode: PanelEditorMode, spanFields: SpanField[]) {
   const text = (key: string) => translate(language, `${prefix}.${key}`);
   // field of a list entry (chip, button): label and helper come from "item" / "helper.item"
   const itemField = (name: string, selector: unknown, required = false) => [name, {
@@ -184,7 +196,25 @@ function editorSchema(language: string, layout: string, mode: PanelEditorMode) {
             { name: "columns", selector: { number: { min: 1, max: 6, mode: "box" } } },
             { name: "min_column_width", selector: { text: {} } },
           ],
-        }] : []),
+        }, ...(spanFields.length ? [{
+          type: "expandable",
+          name: "cardWidths",
+          icon: "mdi:table-column-width",
+          flatten: true,
+          schema: spanFields.map((field, index) => ({
+            name: `${spanPrefix}${index}`,
+            label: field.label,
+            selector: {
+              select: {
+                mode: "dropdown",
+                options: [
+                  ...Array.from({ length: field.max }, (_, column) => ({ value: String(column + 1), label: String(column + 1) })),
+                  { value: spanFull, label: text("spanFull") },
+                ],
+              },
+            },
+          })),
+        }] : [])] : []),
         ...(mode === "dialog" ? [{ name: "gap", selector: { text: {} } }] : [
           {
             type: "grid",
@@ -261,6 +291,20 @@ function storedItems(items: unknown, conditionKey: string): unknown[] | undefine
   });
 }
 
+// a child card with its column span stored (or removed when it is the default)
+function withSpan(card: Record<string, any>, span: string | undefined): Record<string, any> {
+  if (span === undefined || !card || typeof card !== "object") return card;
+  const current = columnSpan(card);
+  const wanted = span === spanFull ? spanFull : Number(span) > 1 ? Math.floor(Number(span)) : undefined;
+  if (current === wanted) return card;
+  const viewLayout: Record<string, unknown> = { ...(card.view_layout ?? {}) };
+  if (wanted === undefined) delete viewLayout.column_span;
+  else viewLayout.column_span = wanted;
+  const stored: Record<string, any> = { ...card, view_layout: viewLayout };
+  if (!Object.keys(viewLayout).length) delete stored.view_layout;
+  return stored;
+}
+
 export class GraphitePanelEditor extends HTMLElement {
   protected mode: PanelEditorMode = "panel";
   private config: Record<string, any> = {};
@@ -310,11 +354,17 @@ export class GraphitePanelEditor extends HTMLElement {
     }
     const language = languageOf(this.isConnected ? this : undefined, this.hassObject);
     const layout = this.config.layout || "vertical";
-    const schemaKey = `${language}|${layout}|${this.mode}`;
+    const cards: Record<string, any>[] = this.config.cards || [];
+    const spanFields = layout === "grid" ? cards.map((card, index) => ({
+      label: `${index + 1} · ${this.cardLabel(card)}`,
+      max: this.config.min_column_width ? spanMax : Math.max(1, Math.min(spanMax, Number(this.config.columns) || 2)),
+    })) : [];
+    const schemaKey = `${language}|${layout}|${this.mode}|${JSON.stringify(spanFields)}`;
     if (this.formSchemaKey !== schemaKey) {
       this.formSchemaKey = schemaKey;
-      this.form.schema = editorSchema(language, layout, this.mode);
-      this.form.computeLabel = (schema: { name: string }) => {
+      this.form.schema = editorSchema(language, layout, this.mode, spanFields);
+      this.form.computeLabel = (schema: { name: string; label?: string }) => {
+        if (schema.label) return schema.label;
         // the list sections already show the name in their header
         if (!schema.name || listNames.includes(schema.name)) return "";
         return optionalText(language, schema.name) ?? schema.name;
@@ -337,9 +387,21 @@ export class GraphitePanelEditor extends HTMLElement {
     };
     if (this.mode === "dialog") Object.assign(data, { hash, width });
     else Object.assign(data, { padding, frame: frame !== false });
+    spanFields.forEach((_, index) => {
+      const span = columnSpan(cards[index]);
+      data[`${spanPrefix}${index}`] = span === undefined ? "1" : String(span);
+    });
     this.form.data = data;
     this.stackEditor.setConfig({ type: "vertical-stack", cards: this.config.cards || [] });
     this.hideStackTitle();
+  }
+
+  // name of a child card in the list of card widths: its name, the name of its entity or its type
+  private cardLabel(card: Record<string, any>): string {
+    const type = String(card?.type ?? "").replace("custom:", "");
+    const entity = typeof card?.entity === "string" ? card.entity : "";
+    const name = card?.name || card?.title || (entity && this.hassObject?.states[entity]?.attributes?.friendly_name) || entity;
+    return name ? `${type} ${name}` : type;
   }
 
   // the stack editor has its own "title" field, which the panel does not use (it has "title" above)
@@ -354,7 +416,15 @@ export class GraphitePanelEditor extends HTMLElement {
 
   // empty optional values are not stored, so the YAML stays clean
   private fireConfig(config: Record<string, any>): void {
-    const { summary_first: summaryFirst, ...rest } = config;
+    const { summary_first: summaryFirst, ...fields } = config;
+    // span fields go to view_layout.column_span of the child cards (1 is the default and not stored)
+    const rest: Record<string, any> = {};
+    const spans = new Map<number, string>();
+    for (const [key, value] of Object.entries(fields)) {
+      if (key.startsWith(spanPrefix)) spans.set(Number(key.slice(spanPrefix.length)), String(value ?? ""));
+      else rest[key] = value;
+    }
+    if (spans.size && Array.isArray(rest.cards)) rest.cards = rest.cards.map((card: Record<string, any>, index: number) => withSpan(card, spans.get(index)));
     const storedConfig: Record<string, any> = {
       ...rest,
       summary: storedItems(config.summary, "show"),
