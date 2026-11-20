@@ -164,9 +164,22 @@ customElements.define("showcase-tile", ShowcaseTile);
 declare const SHOWCASE_THEMES: Array<{ name: string; slug: string; variables: Record<string, string> }>;
 const showcaseThemes = Object.fromEntries(SHOWCASE_THEMES.map((theme) => [theme.name, theme.variables]));
 
+// the showcase is in English
+const language = "en";
+
+// theme picker: a graphite-select with theme preview on a sample input_select of all themes
+const themeEntity = "input_select.showcase_theme";
+const themeOfSlug = (slug: string) => SHOWCASE_THEMES.find((theme) => theme.slug === slug);
+
 // a minimal hass object: states, number formatting and canned template results
 // states of the page; toggling replaces an entity object (like Home Assistant), so the cards re-render
-let states: Record<string, any> = { ...sampleStates };
+let states: Record<string, any> = {
+  ...sampleStates,
+  [themeEntity]: {
+    entity_id: themeEntity, state: "Graphite", last_changed: new Date().toISOString(), last_updated: new Date().toISOString(),
+    attributes: { friendly_name: "Theme", options: SHOWCASE_THEMES.map((theme) => theme.name) },
+  },
+};
 
 // todo lists: a small live store, so adding, changing and removing on the shopping list works;
 // like the Bring integration, a change arrives in the list after a moment
@@ -216,11 +229,7 @@ function createHass(language: string): any {
     locale: { language },
     formatEntityState(stateObj: any) {
       // translated states like Home Assistant shows them (only the ones the examples use)
-      const words: Record<string, Record<string, string>> = {
-        de: { on: "An", off: "Aus", open: "Offen", closed: "Geschlossen", unavailable: "Nicht verfügbar" },
-        en: { on: "On", off: "Off", open: "Open", closed: "Closed", unavailable: "Unavailable" },
-      };
-      const dictionary = words[language] ?? words.en;
+      const dictionary: Record<string, string> = { on: "On", off: "Off", open: "Open", closed: "Closed", unavailable: "Unavailable" };
       if (stateObj.attributes.device_class === "window" && ["on", "off"].includes(stateObj.state)) {
         return dictionary[stateObj.state === "on" ? "open" : "closed"];
       }
@@ -254,7 +263,11 @@ function createHass(language: string): any {
       // everything else does nothing
       const entityId = target?.entity_id as string | undefined;
       if (domain === "todo" && entityId) changeTodo(entityId, service, data);
-      if (service === "select_option" && entityId && typeof data?.option === "string") setState(entityId, data.option);
+      if (service === "select_option" && entityId && typeof data?.option === "string") {
+        setState(entityId, data.option);
+        const theme = SHOWCASE_THEMES.find((item) => item.name === data.option);
+        if (entityId === themeEntity && theme) applyTheme(theme.slug);
+      }
       return undefined;
     },
     async callApi(method: string, path: string) {
@@ -321,7 +334,7 @@ function setState(entityId: string, state: string): void {
   if (!current) return;
   const now = new Date().toISOString();
   states = { ...states, [entityId]: { ...current, state, last_changed: now, last_updated: now } };
-  const hass = createHass(languageSelect.value);
+  const hass = createHass(language);
   for (const card of renderedCards) card.hass = hass;
 }
 
@@ -353,13 +366,13 @@ dialog.addEventListener("click", (event) => {
 function showMoreInfo(entityId: string): void {
   const stateObj = states[entityId];
   if (!stateObj) return;
-  const hass = createHass(languageSelect.value);
+  const hass = createHass(language);
   const name = stateObj.attributes.friendly_name ?? entityId;
   const rows = Object.entries(stateObj.attributes)
     .filter(([key]) => key !== "friendly_name")
     .map(([key, value]) => `<dt>${key}</dt><dd>${String(value)}</dd>`)
     .join("");
-  const changed = new Date(stateObj.last_changed).toLocaleString(languageSelect.value);
+  const changed = new Date(stateObj.last_changed).toLocaleString(language);
   dialog.innerHTML = `<form method="dialog"><header><h2>${name}</h2><button aria-label="close">✕</button></header>
     <p class="state">${hass.formatEntityState(stateObj)}</p><p class="entity">${entityId} · ${changed}</p>
     ${rows ? `<dl>${rows}</dl>` : ""}</form>`;
@@ -521,6 +534,7 @@ function renderTokens(): HTMLElement {
     wrapper.className = "example";
     const heading = document.createElement("h4");
     heading.textContent = title;
+    // the rows sit in a panel like the cards of the examples
     const rows = document.createElement("div");
     rows.className = "swatches";
     // a row like the status rows: color chip on the left, name, variable on the right
@@ -599,11 +613,10 @@ function followScroll(): void {
 
 const main = document.getElementById("showcase")!;
 const toc = document.getElementById("toc")!;
-const languageSelect = document.getElementById("language") as HTMLSelectElement;
+const themePicker = document.getElementById("theme-picker")!;
 
-// theme switcher: the themes of graphite.yaml (theme.css holds their variables); the choice is kept
-// in the browser and can be given as ?theme=<slug>
-const themeSelect = document.getElementById("theme") as HTMLSelectElement;
+// theme: the themes of graphite.yaml (theme.css holds their variables); the choice is kept in the
+// browser and can be given as ?theme=<slug>
 const themeKey = "graphite-showcase-theme";
 
 function storedTheme(): string | null {
@@ -626,20 +639,38 @@ function applyTheme(slug: string): void {
   }
 }
 
-themeSelect.replaceChildren(...SHOWCASE_THEMES.map((theme) => new Option(theme.name, theme.slug)));
-const initialTheme = storedTheme();
-themeSelect.value = SHOWCASE_THEMES.some((theme) => theme.slug === initialTheme) ? initialTheme! : "graphite";
-applyTheme(themeSelect.value);
-themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
+const initialTheme = themeOfSlug(storedTheme() ?? "") ?? themeOfSlug("graphite")!;
+states = { ...states, [themeEntity]: { ...states[themeEntity], state: initialTheme.name } };
+applyTheme(initialTheme.slug);
+
+// all themes side by side; narrow screens get two rows
+const narrowScreen = window.matchMedia("(max-width: 700px)");
+
+function renderPicker(hass: any): void {
+  const picker: any = document.createElement("graphite-panel");
+  picker.setConfig({
+    type: "custom:graphite-panel",
+    title: "Themes",
+    cards: [{
+      type: "custom:graphite-select", entity: themeEntity, layout: "tiles", preview: "theme",
+      columns: narrowScreen.matches ? 4 : SHOWCASE_THEMES.length,
+    }],
+  });
+  picker.hass = hass;
+  renderedCards = [...renderedCards.filter((card) => card !== themePicker.firstElementChild), picker];
+  themePicker.replaceChildren(picker);
+}
+
+narrowScreen.addEventListener("change", () => renderPicker(createHass(language)));
 
 function render(): void {
-  const language = languageSelect.value;
-  // the cards read their language from this theme variable
-  main.style.setProperty("--graphite-language", language);
+  // the cards read their language from this theme variable (the theme may set another one)
+  document.body.style.setProperty("--graphite-language", language);
   document.documentElement.lang = language;
   const hass = createHass(language);
   renderedCards = [];
-  const sections = new Map(examples(language).map((section) => [section.card, section]));
+  renderPicker(hass);
+  const sections = new Map(examples().map((section) => [section.card, section]));
   const grouped = new Set(groups.flatMap((group) => group.cards));
   const more = [...sections.keys()].filter((card) => !grouped.has(card));
   const pageGroups = [...groups, ...(more.length ? [{ id: "more", title: "More", description: "", cards: more }] : [])]
@@ -654,5 +685,5 @@ function render(): void {
   followScroll();
 }
 
-languageSelect.addEventListener("change", render);
 render();
+

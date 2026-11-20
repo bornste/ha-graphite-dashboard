@@ -81,7 +81,7 @@ export const sampleStates: Record<string, any> = {
   "script.start_racing_game": entity("script.start_racing_game", "on", { friendly_name: "Racing game" }, 1),
   "script.start_puzzle_game": entity("script.start_puzzle_game", "off", { friendly_name: "Puzzle game" }, 300),
   "script.start_streaming": entity("script.start_streaming", "off", { friendly_name: "Streaming" }, 900),
-  "input_select.theme_mode": entity("input_select.theme_mode", "Automatisch", { friendly_name: "Theme mode", options: ["Automatisch", "Hell", "Dunkel"] }, 60),
+  "input_select.theme_mode": entity("input_select.theme_mode", "Automatic", { friendly_name: "Theme mode", options: ["Automatic", "Light", "Dark"] }, 60),
   "input_select.light_theme": entity("input_select.light_theme", "Graphite Lavender", { friendly_name: "Light theme", options: ["Graphite Sand", "Graphite Lavender"] }, 600),
   "input_select.dark_theme": entity("input_select.dark_theme", "Graphite Salvia", { friendly_name: "Dark theme", options: ["Graphite Salvia", "Graphite", "Graphite Midnight", "Graphite Carbon"] }, 600),
   "input_select.vacuum_power": entity("input_select.vacuum_power", "Standard", { friendly_name: "Suction", options: ["Quiet", "Standard", "Turbo", "Max"] }, 30),
@@ -124,7 +124,7 @@ export const sampleStates: Record<string, any> = {
   "sensor.water_today": entity("sensor.water_today", "184.6", { unit_of_measurement: "L", friendly_name: "Water today" }),
   "sensor.water_yesterday": entity("sensor.water_yesterday", "212.3", { unit_of_measurement: "L", friendly_name: "Water yesterday" }),
   "sensor.garden_sensor": entity("sensor.garden_sensor", "unavailable", { unit_of_measurement: "°C", friendly_name: "Garden" }),
-  "sensor.washing_machine": entity("sensor.washing_machine", "Spülen", { friendly_name: "Washing machine" }),
+  "sensor.washing_machine": entity("sensor.washing_machine", "Rinse", { friendly_name: "Washing machine" }),
   "sensor.energy_today": entity("sensor.energy_today", "9.4", { unit_of_measurement: "kWh", friendly_name: "Electricity today" }),
   "sensor.energy_yesterday": entity("sensor.energy_yesterday", "11.2", { unit_of_measurement: "kWh", friendly_name: "Electricity yesterday" }),
   "sensor.sample_coin": entity("sensor.sample_coin", "0.1777", { unit_of_measurement: "$", friendly_name: "Sample Coin", "24h_change": -3.24, "7d_change": 5.8 }),
@@ -197,8 +197,7 @@ const roomTiles = ["living_room", "bedroom", "office", "kitchen", "bathroom", "h
   .map((room) => ({ type: "custom:graphite-value", entity: `sensor.${room}_temperature`, icon: "ic:twotone-thermostat" }));
 const powerRow = { type: "custom:graphite-value", layout: "row", entity: "sensor.power_strip_power", icon: "ic:twotone-bolt" };
 
-export function examples(language: string): ShowcaseSection[] {
-  const german = language === "de";
+export function examples(): ShowcaseSection[] {
   return [
     {
       card: "graphite-panel",
@@ -210,8 +209,8 @@ export function examples(language: string): ShowcaseSection[] {
           note: "CO₂ above 1000 ppm turns its chip into the accent color. Tap a chip to see the action.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Wohnen" : "Living room",
-            info: german ? "2 Lichter an" : "2 lights on",
+            title: "Living room",
+            info: "2 lights on",
             chips: [
               { entity: "sensor.living_room_humidity", muted: true, decimals: 0 },
               { entity: "sensor.living_room_co2", label: "CO₂", alert: { above: 1000 } },
@@ -240,7 +239,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "title_action: the chevron after the title shows that title and status open something (here a detail view).",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Raumklima" : "Climate",
+            title: "Climate",
             title_action: { action: "navigate", navigation_path: "/climate" },
             layout: "grid",
             columns: 3,
@@ -252,7 +251,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "min_column_width: as many columns as fit, one column on narrow screens.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Räume" : "Rooms",
+            title: "Rooms",
             layout: "grid",
             min_column_width: "160px",
             cards: roomTiles.slice(0, 4),
@@ -263,7 +262,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "frame: false – no surface and padding, the children keep the tile look of the parent.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Haushalt" : "Household",
+            title: "Household",
             cards: [
               powerRow,
               {
@@ -289,14 +288,14 @@ export function examples(language: string): ShowcaseSection[] {
           config: {
             type: "custom:graphite-dialog",
             hash: "#windows",
-            title: german ? "Fenster & Türen" : "Windows & doors",
-            info: german ? "Alle geschlossen" : "All closed",
-            summary: [{ entity: "sensor.open_windows", text: german ? "{value} Fenster offen" : "{value} windows open",
-              text_one: german ? "1 Fenster offen" : "1 window open", color: "accent" }],
+            title: "Windows & doors",
+            info: "All closed",
+            summary: [{ entity: "sensor.open_windows", text: "{value} windows open",
+              text_one: "1 window open", color: "accent" }],
             cards: [
               {
                 type: "custom:graphite-panel",
-                title: german ? "Fenster" : "Windows",
+                title: "Windows",
                 cards: [
                   { type: "custom:graphite-status", entity: "binary_sensor.bedroom_window" },
                   { type: "custom:graphite-status", entity: "binary_sensor.office_window" },
@@ -317,7 +316,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The floor lamp opens more-info on tap; holding any row opens more-info.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Status" : "Status",
+            title: "Status",
             cards: [
               { type: "custom:graphite-status", entity: "binary_sensor.bedroom_window" },
               { type: "custom:graphite-status", entity: "binary_sensor.office_window" },
@@ -331,7 +330,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "wall_switch: an unavailable lamp counts as off (no offline badge).",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Nicht erreichbar" : "Unavailable",
+            title: "Unavailable",
             cards: [
               { type: "custom:graphite-status", entity: "sensor.garden_temperature" },
               { type: "custom:graphite-status", entity: "light.ceiling_lamp", wall_switch: true },
@@ -349,7 +348,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The TV pulses until its online entity reports the device as reachable.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Steckdosen" : "Sockets",
+            title: "Sockets",
             cards: [
               { type: "custom:graphite-switch", entity: "switch.coffee_machine" },
               { type: "custom:graphite-switch", entity: "switch.tv", online_entity: "binary_sensor.tv_online" },
@@ -362,7 +361,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "since_attribute shows the last run; detail_entities show values while on.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Automationen" : "Automations",
+            title: "Automations",
             cards: [
               { type: "custom:graphite-switch", entity: "automation.night_light", since_attribute: "last_triggered" },
               { type: "custom:graphite-switch", entity: "automation.vacation_mode", since_attribute: "last_triggered" },
@@ -382,7 +381,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Console online (accent icon), TV connecting (pulsing icon), speaker off, printer offline.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Steckdosen" : "Sockets",
+            title: "Sockets",
             layout: "horizontal",
             cards: [
               { type: "custom:graphite-switch", layout: "tile", entity: "switch.game_console", icon: "ic:twotone-sports-esports", online_entity: "binary_sensor.game_console_online" },
@@ -403,14 +402,14 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Numbers with their own decimals, a second value on the right; a word as value is set a little smaller.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Haushalt" : "Household",
+            title: "Household",
             layout: "grid",
             columns: 3,
             cards: [
-              { type: "custom:graphite-value", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "ic:twotone-water-drop", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
-              { type: "custom:graphite-value", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "ic:twotone-local-laundry-service" },
+              { type: "custom:graphite-value", entity: "sensor.water_today", name: "Water today", decimals: 0, icon: "ic:twotone-water-drop", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
+              { type: "custom:graphite-value", entity: "sensor.washing_machine", name: "Washing machine", icon: "ic:twotone-local-laundry-service" },
               { type: "custom:graphite-value", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "ic:twotone-show-chart" },
-              { type: "custom:graphite-value", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "ic:twotone-thermostat" },
+              { type: "custom:graphite-value", entity: "sensor.garden_sensor", name: "Garden", icon: "ic:twotone-thermostat" },
             ],
           },
         },
@@ -419,12 +418,12 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The same values as a list: the value on the right in the value type, the second value below the name, offline like the status rows.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Werte" : "Values",
+            title: "Values",
             cards: [
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.water_today", name: german ? "Wasser heute" : "Water today", decimals: 0, icon: "ic:twotone-water-drop", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.washing_machine", name: german ? "Waschmaschine" : "Washing machine", icon: "ic:twotone-local-laundry-service" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.water_today", name: "Water today", decimals: 0, icon: "ic:twotone-water-drop", secondary_entity: "sensor.water_yesterday", secondary_decimals: 0 },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.washing_machine", name: "Washing machine", icon: "ic:twotone-local-laundry-service" },
               { type: "custom:graphite-value", layout: "row", entity: "sensor.acme_share", name: "ACME", decimals: 2, icon: "ic:twotone-show-chart" },
-              { type: "custom:graphite-value", layout: "row", entity: "sensor.garden_sensor", name: german ? "Garten" : "Garden", icon: "ic:twotone-thermostat" },
+              { type: "custom:graphite-value", layout: "row", entity: "sensor.garden_sensor", name: "Garden", icon: "ic:twotone-thermostat" },
             ],
           },
         },
@@ -440,13 +439,13 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Gaps up to 5 minutes (sensor drops, a screensaver between two Plex phases) do not split the bars.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Verlauf" : "History",
+            title: "History",
             cards: [
               {
                 type: "custom:graphite-timeline",
                 entities: [
-                  { entity: "sensor.player_one_game", name: german ? "Spieler 1 (Wohnzimmer)" : "Player one (living room)" },
-                  { entity: "sensor.player_two_game", name: german ? "Spieler 2" : "Player two" },
+                  { entity: "sensor.player_one_game", name: "Player one (living room)" },
+                  { entity: "sensor.player_two_game", name: "Player two" },
                   { entity: "sensor.tv_app", name: "TV", color: "var(--graphite-text-secondary)", ignore_states: ["Home", "Screensaver"] },
                 ],
                 default_interval: "4h",
@@ -465,7 +464,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "style: change – the needle marks the reference (purchase price or 24 hours ago), the bar runs right for a gain and left for a loss; half the bar is 20 %. Up to 4 decimals.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Depot" : "Portfolio",
+            title: "Portfolio",
             layout: "grid",
             columns: 2,
             cards: [
@@ -479,7 +478,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Prices you only watch: compared with 24 hours / 7 days ago (here from an attribute with the change in percent). On narrow tiles the reference gets shorter («Kauf»), very narrow ones drop the unit.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Beobachtet" : "Watchlist",
+            title: "Watchlist",
             layout: "horizontal",
             cards: [
               { type: "custom:graphite-meter", entity: "sensor.sample_coin", style: "change", reference: "24h", change_attribute: "24h_change", decimals: 4 },
@@ -493,12 +492,12 @@ export function examples(language: string): ShowcaseSection[] {
           note: "change_mode: absolute shows the difference in the unit; invert: true makes an increase red – here the electricity of today against yesterday.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Verbrauch" : "Consumption",
+            title: "Consumption",
             layout: "grid",
             columns: 2,
             cards: [
-              { type: "custom:graphite-meter", entity: "sensor.energy_today", name: german ? "Strom heute" : "Electricity today", style: "change", reference: "sensor.energy_yesterday", reference_name: german ? "gestern" : "yesterday", change_mode: "absolute", scale: 5, invert: true },
-              { type: "custom:graphite-meter", entity: "sensor.living_room_temperature", name: german ? "Wohnen" : "Living", style: "change", reference: 21, reference_name: german ? "Ziel" : "Target", change_mode: "absolute", scale: 3, decimals: 1 },
+              { type: "custom:graphite-meter", entity: "sensor.energy_today", name: "Electricity today", style: "change", reference: "sensor.energy_yesterday", reference_name: "yesterday", change_mode: "absolute", scale: 5, invert: true },
+              { type: "custom:graphite-meter", entity: "sensor.living_room_temperature", name: "Living", style: "change", reference: 21, reference_name: "Target", change_mode: "absolute", scale: 3, decimals: 1 },
             ],
           },
         },
@@ -507,12 +506,12 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Temperature on a comfort scale, humidity as second value; the garden sensor is offline.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Raumklima" : "Climate",
+            title: "Climate",
             layout: "horizontal",
             cards: [
-              { type: "custom:graphite-meter", entity: "sensor.living_room_temperature", name: german ? "Wohnen" : "Living", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.living_room_humidity" },
-              { type: "custom:graphite-meter", entity: "sensor.office_temperature", name: german ? "Büro" : "Office", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.office_humidity" },
-              { type: "custom:graphite-meter", entity: "sensor.garden_temperature", name: german ? "Garten" : "Garden", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" } },
+              { type: "custom:graphite-meter", entity: "sensor.living_room_temperature", name: "Living", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.living_room_humidity" },
+              { type: "custom:graphite-meter", entity: "sensor.office_temperature", name: "Office", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" }, secondary_entity: "sensor.office_humidity" },
+              { type: "custom:graphite-meter", entity: "sensor.garden_temperature", name: "Garden", style: "gradient", min: 16, max: 32, unit: "°C", colors: { 16: "#4f8fd6", 24: "#6fbf5a", 28: "#f0a33c", 32: "#e4644b" } },
             ],
           },
         },
@@ -535,7 +534,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Magenta is soon empty, gray is empty.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Patronen" : "Cartridges",
+            title: "Cartridges",
             cards: [
               { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.office_printer_black", name: "Black", color: "#e4e4e6" },
               { type: "custom:graphite-meter", layout: "row", decimals: 0, low: 20, entity: "sensor.office_printer_cyan", name: "Cyan", color: "#2fb4e6" },
@@ -556,7 +555,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The racing game is starting (busy), the streaming tile has no picture and shows its label.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Spiele" : "Games",
+            title: "Games",
             layout: "horizontal",
             cards: [
               { type: "custom:graphite-image", entity: "script.start_racing_game", image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23e4644b'/><stop offset='1' stop-color='%233a1a4f'/></linearGradient></defs><rect width='100' height='100' fill='url(%23g)'/><circle cx='68' cy='38' r='18' fill='%23ffffff' opacity='0.55'/></svg>", busy: true, tap_action: { action: "toggle" } },
@@ -576,13 +575,13 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The racing game script runs (busy), the streaming script is ready; the floor lamp button is active and shows the lamp's own color.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Aktionen" : "Actions",
+            title: "Actions",
             layout: "grid",
             columns: 3,
             cards: [
               { type: "custom:graphite-button", entity: "script.start_racing_game", icon: "ic:twotone-sports-esports", busy: true },
               { type: "custom:graphite-button", entity: "script.start_streaming", icon: "ic:twotone-live-tv", busy: true },
-              { type: "custom:graphite-button", entity: "light.floor_lamp", name: german ? "Stehlampe" : "Floor lamp", active: { state: "on" } },
+              { type: "custom:graphite-button", entity: "light.floor_lamp", name: "Floor lamp", active: { state: "on" } },
             ],
           },
         },
@@ -591,9 +590,9 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Rows like the status rows; icon buttons like the panel header buttons, free to place – one navigates, one is active, one is busy.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Werkzeuge" : "Tools",
+            title: "Tools",
             cards: [
-              { type: "custom:graphite-button", layout: "row", name: german ? "Themes neu laden" : "Reload themes", icon: "ic:twotone-palette", tap_action: { action: "none" } },
+              { type: "custom:graphite-button", layout: "row", name: "Reload themes", icon: "ic:twotone-palette", tap_action: { action: "none" } },
               { type: "custom:graphite-button", layout: "row", entity: "script.start_racing_game", busy: true },
               {
                 type: "custom:graphite-panel",
@@ -601,7 +600,7 @@ export function examples(language: string): ShowcaseSection[] {
                 layout: "horizontal",
                 gap: "8px",
                 cards: [
-                  { type: "custom:graphite-button", layout: "icon", name: german ? "Batterien" : "Batteries", icon: "ic:twotone-battery-5-bar", tap_action: { action: "navigate", navigation_path: "#batteries" } },
+                  { type: "custom:graphite-button", layout: "icon", name: "Batteries", icon: "ic:twotone-battery-5-bar", tap_action: { action: "navigate", navigation_path: "#batteries" } },
                   { type: "custom:graphite-button", layout: "icon", entity: "light.floor_lamp", active: { state: "on" } },
                   { type: "custom:graphite-button", layout: "icon", entity: "script.start_racing_game", busy: true },
                 ],
@@ -620,15 +619,15 @@ export function examples(language: string): ShowcaseSection[] {
           note: "A mode as a row of buttons; names and icons of the options come from the card config.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Modus" : "Mode",
+            title: "Mode",
             cards: [
               {
                 type: "custom:graphite-select",
                 entity: "input_select.theme_mode",
                 options: [
-                  { option: "Automatisch", name: "Auto", icon: "mdi:brightness-6" },
-                  { option: "Hell", name: german ? "Hell" : "Light", icon: "mdi:white-balance-sunny" },
-                  { option: "Dunkel", name: german ? "Dunkel" : "Dark", icon: "mdi:weather-night" },
+                  { option: "Automatic", name: "Auto", icon: "mdi:brightness-6" },
+                  { option: "Light", name: "Light", icon: "mdi:white-balance-sunny" },
+                  { option: "Dark", name: "Dark", icon: "mdi:weather-night" },
                 ],
               },
             ],
@@ -639,7 +638,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "With preview: theme each tile draws its Graphite theme with the theme's own tokens; \"Graphite \" in front of the name is left out. The selected theme gets a check mark.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Dunkles Theme" : "Dark theme",
+            title: "Dark theme",
             cards: [
               { type: "custom:graphite-select", entity: "input_select.dark_theme", layout: "tiles", preview: "theme" },
             ],
@@ -650,14 +649,14 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Without preview the tiles show icon and name, like graphite-button.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Saugkraft" : "Suction",
+            title: "Suction",
             cards: [
               {
                 type: "custom:graphite-select",
                 entity: "input_select.vacuum_power",
                 layout: "tiles",
                 options: [
-                  { option: "Quiet", name: german ? "Leise" : "Quiet", icon: "mdi:fan-speed-1" },
+                  { option: "Quiet", name: "Quiet", icon: "mdi:fan-speed-1" },
                   { option: "Standard", icon: "mdi:fan-speed-2" },
                   { option: "Turbo", icon: "mdi:fan-speed-3" },
                   { option: "Max", icon: "mdi:fan-plus" },
@@ -674,16 +673,23 @@ export function examples(language: string): ShowcaseSection[] {
       examples: [
         {
           title: "Playing and watching time",
-          note: "Player one runs without a limit, player two is close to the limit (picture on the left), TV is paused (icon on the left).",
+          note: "Player one runs without a limit, TV is paused (icon on the left); player two is close to the limit (picture on the left) and takes the whole width.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Spielzeit" : "Playing time",
-            layout: "grid",
-            columns: 3,
+            title: "Playing time",
+            layout: "vertical",
             cards: [
-              { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "ic:twotone-sports-esports" },
+              {
+                type: "custom:graphite-panel",
+                frame: false,
+                layout: "grid",
+                columns: 2,
+                cards: [
+                  { type: "custom:graphite-stopwatch", entity: "sensor.player_one_playing_time", icon: "ic:twotone-sports-esports" },
+                  { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "ic:twotone-tv", icon_position: "left" },
+                ],
+              },
               { type: "custom:graphite-stopwatch", entity: "sensor.player_two_playing_time", icon: "ic:twotone-sports-esports", picture_entity: "image.player_two_picture", limit: { weekday: 115, weekend: 115 } },
-              { type: "custom:graphite-stopwatch", entity: "sensor.tv_watching_time", icon: "ic:twotone-tv", icon_position: "left" },
             ],
           },
         },
@@ -698,12 +704,12 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Shopping with a preview of the open items, chores empty.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Listen" : "Lists",
+            title: "Lists",
             layout: "grid",
             columns: 2,
             cards: [
               { type: "custom:graphite-todo", entity: "todo.shopping", icon: "ic:twotone-shopping-cart", preview: true },
-              { type: "custom:graphite-todo", entity: "todo.chores", icon: "ic:twotone-cleaning-services", empty_text: german ? "alles erledigt" : "all done", unit: german ? "Aufgaben" : "tasks", unit_one: german ? "Aufgabe" : "task" },
+              { type: "custom:graphite-todo", entity: "todo.chores", icon: "ic:twotone-cleaning-services", empty_text: "all done", unit: "tasks", unit_one: "task" },
             ],
           },
         },
@@ -718,7 +724,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Office printer with magenta soon empty, photo printer with an empty gray cartridge. Hover a tank for its level.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Drucker" : "Printers",
+            title: "Printers",
             layout: "grid",
             columns: 2,
             cards: [
@@ -738,7 +744,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Paper is collected tomorrow, cardboard in a week.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Abfuhr" : "Collection",
+            title: "Collection",
             layout: "grid",
             columns: 2,
             cards: [
@@ -758,7 +764,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The day tile shows today, from 15:00 on the next school day; the exam tile turns red when the exam is today or tomorrow. Tap opens the two weeks in a pop-up.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Schule" : "School",
+            title: "School",
             cards: [
               {
                 type: "custom:graphite-calendar",
@@ -804,14 +810,14 @@ export function examples(language: string): ShowcaseSection[] {
           note: "This and next week, at most 10 events; today's past events stay visible. Tap an event for its details.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Schule" : "School",
+            title: "School",
             cards: [
               {
                 type: "custom:graphite-calendar",
                 calendars: [
-                  { entity: "calendar.school_homework", name: german ? "Hausaufgaben" : "Homework", color: "#8ab8f5", icon: "ic:twotone-edit" },
-                  { entity: "calendar.school_exams", name: german ? "Prüfungen" : "Exams", color: "var(--graphite-danger)", icon: "ic:twotone-warning-amber", highlight: true },
-                  { entity: "calendar.school_events", name: german ? "Termine" : "Events", color: "var(--graphite-success)", icon: "ic:twotone-calendar-today" },
+                  { entity: "calendar.school_homework", name: "Homework", color: "#8ab8f5", icon: "ic:twotone-edit" },
+                  { entity: "calendar.school_exams", name: "Exams", color: "var(--graphite-danger)", icon: "ic:twotone-warning-amber", highlight: true },
+                  { entity: "calendar.school_events", name: "Events", color: "var(--graphite-success)", icon: "ic:twotone-calendar-today" },
                 ],
                 range: "this_and_next_week",
                 max_items: 10,
@@ -825,7 +831,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "The next 14 days without second line; the rule colors every title starting with «Exam».",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Prüfungen" : "Exams",
+            title: "Exams",
             cards: [
               {
                 type: "custom:graphite-calendar",
@@ -850,10 +856,10 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Play time in 15-minute steps with a long tick per hour; a card of its own like the status rows.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Spielzeit" : "Play time",
+            title: "Play time",
             cards: [
-              { type: "custom:graphite-slider", layout: "row", entity: "input_number.play_time_weekday", name: german ? "Werktags" : "Weekdays", value_format: "state" },
-              { type: "custom:graphite-slider", layout: "row", entity: "input_number.play_time_weekend", name: german ? "Wochenende" : "Weekend", value_format: "state" },
+              { type: "custom:graphite-slider", layout: "row", entity: "input_number.play_time_weekday", name: "Weekdays", value_format: "state" },
+              { type: "custom:graphite-slider", layout: "row", entity: "input_number.play_time_weekend", name: "Weekend", value_format: "state" },
             ],
           },
         },
@@ -862,13 +868,13 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Without a surface: brightness (off at 0), white temperature, color and saturation; the effect speed shows quarters.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Stehlampe" : "Floor lamp",
+            title: "Floor lamp",
             cards: [
               { type: "custom:graphite-slider", entity: "light.floor_lamp", allow_off: true, step: 5 },
               { type: "custom:graphite-slider", entity: "light.floor_lamp", attribute: "color_temp" },
               { type: "custom:graphite-slider", entity: "light.floor_lamp", attribute: "hue" },
               { type: "custom:graphite-slider", entity: "light.floor_lamp", attribute: "saturation" },
-              { type: "custom:graphite-slider", entity: "number.lamp_effect_speed", name: german ? "Geschwindigkeit" : "Speed" },
+              { type: "custom:graphite-slider", entity: "number.lamp_effect_speed", name: "Speed" },
             ],
           },
         },
@@ -883,7 +889,7 @@ export function examples(language: string): ShowcaseSection[] {
           note: "A lamp that is on shows its own color: the floor lamp warm white, the LED strip blue. The ceiling lamp is off at the wall switch, its sliders stay locked.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Lampen" : "Lamps",
+            title: "Lamps",
             cards: [
               { type: "custom:graphite-light", entity: "light.floor_lamp" },
               { type: "custom:graphite-light", entity: "light.led_strip" },
@@ -902,18 +908,18 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Relax is active (filled), two lights are on: status and the lights-off pill are highlighted. The title opens the room's dialog.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Wohnen" : "Living room",
+            title: "Living room",
             title_action: { action: "navigate", navigation_path: "#living-room" },
-            summary: [{ entity: "sensor.living_room_lights_on", text: german ? "{value} Lichter an" : "{value} lights on",
-              text_one: german ? "1 Licht an" : "1 light on", color: "accent" }],
+            summary: [{ entity: "sensor.living_room_lights_on", text: "{value} lights on",
+              text_one: "1 light on", color: "accent" }],
             buttons: [
-              { entity: "scene.living_room_off", name: german ? "Licht aus" : "Lights off", active: { entity: "sensor.living_room_lights_on", above: 0 } },
+              { entity: "scene.living_room_off", name: "Lights off", active: { entity: "sensor.living_room_lights_on", above: 0 } },
             ],
             layout: "grid",
             columns: 4,
             cards: [
               { type: "custom:graphite-scene", entity: "scene.living_room_default", name: "Standard", colors: ["#f5c48a", "#e89a5c", "#c9733f"], active: { entity: "input_select.living_room_scenes", state: "Standard" } },
-              { type: "custom:graphite-scene", entity: "scene.living_room_bright", name: german ? "Hell" : "Bright", colors: ["#f4a93c", "#ffd166", "#ffe9a8"], active: { entity: "input_select.living_room_scenes", state: "Hell" } },
+              { type: "custom:graphite-scene", entity: "scene.living_room_bright", name: "Bright", colors: ["#f4a93c", "#ffd166", "#ffe9a8"], active: { entity: "input_select.living_room_scenes", state: "Hell" } },
               { type: "custom:graphite-scene", entity: "scene.living_room_relax", name: "Relax", colors: ["#ff9a3c", "#ff6f61", "#b8478a"], active: { entity: "input_select.living_room_scenes", state: "Relax" } },
               { type: "custom:graphite-scene", entity: "scene.living_room_tv", name: "TV", colors: ["#1e3cff", "#4b6bff", "#9a7bff"], active: { entity: "input_select.living_room_scenes", state: "TV" } },
             ],
@@ -924,8 +930,8 @@ export function examples(language: string): ShowcaseSection[] {
           note: "Light effects as scene tiles: icon none, stripe full, the lamp only for holding; tapping starts the effect (a toast here). Long names wrap, the tiles keep their height.",
           config: {
             type: "custom:graphite-panel",
-            title: german ? "Effekte" : "Effects",
-            info: german ? "Stehlampe" : "Floor lamp",
+            title: "Effects",
+            info: "Floor lamp",
             layout: "grid",
             columns: 3,
             cards: [
@@ -953,7 +959,7 @@ export function examples(language: string): ShowcaseSection[] {
             cards: [
               { type: "custom:graphite-now-playing", sources: [
                 { entity: "media_player.game_console", name: "Console", icon: "ic:twotone-sports-esports" },
-                { entity: "media_player.game_console", name: "Console", icon: "ic:twotone-sports-esports", states: ["idle"], fallback_title: "Startseite" },
+                { entity: "media_player.game_console", name: "Console", icon: "ic:twotone-sports-esports", states: ["idle"], fallback_title: "Home screen" },
               ] },
             ],
           },

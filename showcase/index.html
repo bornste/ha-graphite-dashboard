@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Graphite cards – showcase</title>
+  <title>Graphite Cards &amp; Themes – showcase</title>
   <!-- Roboto in all weights the cards use (Home Assistant ships it; here it is served locally, no external requests) -->
   <link rel="stylesheet" href="fonts/roboto.css">
   <link rel="stylesheet" href="theme.css">
@@ -16,25 +16,16 @@
       font-family: Roboto, "Segoe UI", system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
-    header.page {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 32px 24px 8px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 12px 24px;
-    }
-    header.page h1 { font-size: 24px; font-weight: 400; margin: 0; }
-    header.page p { margin: 0; color: var(--graphite-text-secondary); font-size: 14px; flex: 1 1 320px; }
-    header.page label { font-size: 13px; color: var(--graphite-text-secondary); }
-    header.page select {
-      margin-left: 6px; font: inherit; color: var(--graphite-text-primary);
-      background: var(--graphite-surface-tile); border: none; border-radius: 8px; padding: 4px 8px;
-    }
+    /* intro at the top of the content column: title, description and the theme picker */
+    .content { min-width: 0; }
+    .intro { padding-bottom: 56px; margin-bottom: 24px; border-bottom: 1px solid var(--graphite-divider, rgba(255, 255, 255, 0.08)); }
+    .intro h1 { font-size: 34px; font-weight: 400; margin: 0 0 6px; }
+    .intro p { margin: 0; max-width: 720px; color: var(--graphite-text-secondary); font-size: 15px; line-height: 1.5; }
+    .intro p a { color: var(--graphite-accent); }
+    #theme-picker { margin-top: 24px; }
     /* page: table of contents on the left, the groups of cards on the right */
     .layout {
-      max-width: 1440px; margin: 0 auto; padding: 16px 24px 48px;
+      max-width: 1440px; margin: 0 auto; padding: 40px 24px 48px;
       display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 32px; align-items: start;
     }
     nav#toc {
@@ -64,7 +55,7 @@
       font-size: 12px; color: var(--graphite-text-secondary); background: var(--graphite-surface-tile);
       padding: 2px 8px; border-radius: 999px;
     }
-    .card-head a { font-size: 13px; color: var(--graphite-accent); margin-left: auto; }
+    .card-head a { font-size: 13px; color: var(--graphite-accent); }
     section.card-section > p { margin: 0 0 16px; color: var(--graphite-text-secondary); font-size: 14px; }
     section.card-section > p a { color: var(--graphite-accent); }
     .examples { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; align-items: start; }
@@ -94,7 +85,11 @@
       background: var(--graphite-surface-panel); color: var(--graphite-text-secondary); font-size: 12px; line-height: 1.5;
     }
     /* theme colors as rows like the status rows: color chip, name, variable on the right */
-    .swatches { display: flex; flex-direction: column; gap: 8px; }
+    .swatches {
+      display: flex; flex-direction: column; gap: var(--graphite-gap-tile, 8px);
+      padding: var(--graphite-padding-panel, 16px); border-radius: var(--graphite-radius-panel, 20px);
+      background: var(--graphite-panel-fill, var(--graphite-surface-panel)); box-shadow: var(--graphite-panel-shadow, none);
+    }
     .swatch {
       box-sizing: border-box; height: var(--graphite-row-height, 60px); padding: 0 16px 0 12px; border-radius: var(--graphite-radius-tile, 12px);
       display: flex; align-items: center; gap: 12px; font-size: 14px;
@@ -137,17 +132,18 @@
   </style>
 </head>
 <body>
-  <header class="page">
-    <h1>Graphite cards</h1>
-    <p>Showcase of the graphite-cards library with sample data – no Home Assistant needed.
-      Tap a card to switch it, hold it for details.
-      Built for a personal dashboard, see the <a href="https://github.com/bornste/ha-graphite-dashboard" style="color: var(--graphite-accent)">repository</a>.</p>
-    <label>Theme <select id="theme"></select></label>
-    <label>Language <select id="language"><option value="de">Deutsch</option><option value="en">English</option></select></label>
-  </header>
   <div class="layout">
     <nav id="toc" aria-label="Contents"></nav>
-    <main id="showcase"></main>
+    <div class="content">
+      <header class="intro">
+        <h1>Graphite Cards &amp; Themes</h1>
+        <p>Showcase of the graphite-cards library with sample data – no Home Assistant needed.
+          Tap a card to switch it, hold it for details.
+          Built for a personal dashboard, see the <a href="https://github.com/bornste/ha-graphite-dashboard">repository</a>.</p>
+        <div id="theme-picker"></div>
+      </header>
+      <main id="showcase"></main>
+    </div>
   </div>
   <div class="toast" id="toast"></div>
   <dialog id="more-info"></dialog>
