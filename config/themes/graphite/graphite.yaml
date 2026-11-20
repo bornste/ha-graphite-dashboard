@@ -32,7 +32,8 @@ Graphite: &graphite
       graphite-text-secondary: "color-mix(in srgb, var(--graphite-ink) 62%, var(--graphite-ground))"
       graphite-text-muted: "color-mix(in srgb, var(--graphite-ink) 40%, var(--graphite-ground))"
       graphite-divider: "color-mix(in srgb, var(--graphite-ink) 8%, transparent)"
-      # separator between title and status in headers: opaque, so it looks the same on every surface
+      # thin lines (dialog outline, line under a scrolled dialog header, summary divider): opaque, so they
+      # look the same on every surface
       graphite-separator: "color-mix(in srgb, var(--graphite-ink) 18%, var(--graphite-ground))"
       graphite-overlay: "color-mix(in srgb, var(--graphite-ground) 90%, transparent)"
 

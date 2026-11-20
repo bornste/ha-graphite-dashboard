@@ -3,6 +3,7 @@
 // compact layout (one block per day) and the tiles layout.
 import { css } from "lit";
 import { tileEdgeStyles } from "../../core/edge";
+import { panelHeaderStyles } from "../../core/panel-styles";
 
 export const calendarStyles = css`
   :host {
@@ -154,51 +155,8 @@ export const calendarStyles = css`
   .empty .icon {
     color: var(--graphite-success);
   }
-  /* header like the panel header: title and info on one baseline, separated by a thin line */
-  .header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--graphite-gap-header, 12px);
-    margin-bottom: var(--graphite-gap-header, 12px);
-    min-width: 0;
-  }
-  .header .title {
-    flex: none;
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--graphite-text-primary));
-  }
-  .header .title:empty {
-    display: none;
-  }
-  .header .info {
-    position: relative;
-    min-width: 0;
-    padding-left: var(--graphite-gap-header, 12px);
-    /* 2px more room on top for the separator line; the negative margin keeps the baseline */
-    padding-top: 2px;
-    margin-top: -2px;
-    font-size: var(--graphite-font-label-size, 13px);
-    line-height: 16px;
-    color: var(--graphite-text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* separator from the title's cap height down to the shared baseline */
-  .header .info::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 3.5px;
-    width: 1px;
-    background: var(--graphite-separator);
-  }
-  .header .info:empty {
-    display: none;
-  }
+  /* header like the panel header (core/panel-styles) */
+  ${panelHeaderStyles}
   /* compact layout: one block per day, date on the left, one line per event */
   .days {
     display: flex;

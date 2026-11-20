@@ -2,6 +2,7 @@
 // Graphite tokens: tiles and buttons 60px (row height), gaps 8px (tile gap) and 16px (panel gap).
 import { css } from "lit";
 import { tileEdgeStyles } from "../../core/edge";
+import { panelHeaderStyles, panelSurfaceStyles } from "../../core/panel-styles";
 
 export const tileStyles = css`
   ha-card {
@@ -112,20 +113,13 @@ export const panelStyles = css`
     gap: var(--graphite-gap-panel, 16px);
     align-items: start;
   }
+  /* panel surface and header like graphite-panel (core/panel-styles) */
+  ${panelSurfaceStyles(".column")}
+  ${panelHeaderStyles}
   .column {
-    background: var(--graphite-surface-panel, #161617);
-    border-radius: var(--graphite-radius-panel, 20px);
-    padding: var(--graphite-padding-panel, 16px);
     min-width: 0;
   }
-  .columns.plain .column { background: none; padding: 0; }
-  .panelTitle {
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--vacText));
-    margin-bottom: var(--graphite-gap-header, 12px);
-  }
+  .columns.plain .column { background: none; padding: 0; box-shadow: none; }
   .label {
     display: flex;
     justify-content: space-between;
@@ -135,7 +129,7 @@ export const panelStyles = css`
     color: var(--vacText);
     margin: var(--graphite-gap-panel, 16px) 0 var(--graphite-gap-tile, 8px);
   }
-  .panelTitle + .label { margin-top: 0; }
+  .header + .label { margin-top: 0; }
   .label button {
     background: none;
     padding: 0;

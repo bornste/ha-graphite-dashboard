@@ -6,6 +6,7 @@ import { GraphiteCard } from "../core/graphite-card";
 import { edgeMask } from "../core/edge";
 import { fireAction, hasAction } from "../core/actions";
 import { pillButtonsMargin, pillButtonStyles } from "../core/pill-button";
+import { panelHeaderStyles, panelSurfaceStyles } from "../core/panel-styles";
 import { unavailableStates } from "../core/format";
 import { matchesCondition, type ValueCondition } from "../core/conditions";
 import { isTemplate, subscribeTemplate } from "../core/template";
@@ -92,12 +93,11 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       --graphite-card-inner-surface: var(--graphite-surface-tile-active);
       --graphite-card-radius: var(--graphite-radius-tile);
     }
+    /* surface and header shared with the cards that draw panels of their own (core/panel-styles) */
+    ${panelSurfaceStyles("ha-card")}
+    ${panelHeaderStyles}
     ha-card {
-      background: var(--graphite-panel-fill, var(--graphite-surface-panel));
-      border-radius: var(--graphite-radius-panel);
       border: none;
-      box-shadow: none;
-      padding: var(--graphite-padding-panel, 16px);
       box-sizing: border-box;
       height: 100%;
       /* only colors animate; the theme applies after the first render and would animate the radius */
@@ -105,12 +105,9 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
     }
     /* title and info share one baseline; they differ in size and colour, a chevron after the title marks
        a title that opens something */
+    /* the row also holds chips and buttons: centered, title and info keep their baseline in .heading */
     .header {
-      display: flex;
-      justify-content: flex-start;
       align-items: center;
-      gap: var(--graphite-gap-header, 12px);
-      margin-bottom: var(--graphite-gap-header, 12px);
     }
     /* the header of a dialog (only its own panel, not the panels inside it): as high as the close
        button (36px), so the title already has room below it; 8px = the gap between tiles, the buttons
@@ -181,31 +178,9 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
         fill: var(--graphite-text-primary);
       }
     }
-    .title {
-      flex: none;
-      font-size: var(--graphite-title-size, 18px);
-      font-weight: var(--graphite-title-weight, 400);
-      line-height: 1.2;
-      color: var(--graphite-title-color, var(--primary-text-color));
-    }
     /* optical inset: the title of a dialog alone looks too close to the dialog edge */
     :host([dialog]) .title {
       padding-left: 4px;
-    }
-    .title:empty {
-      display: none;
-    }
-    .info {
-      min-width: 0;
-      font-size: var(--graphite-font-label-size, 13px);
-      line-height: 16px;
-      color: var(--graphite-text-secondary, var(--secondary-text-color));
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .info:empty {
-      display: none;
     }
     /* colored parts of the dynamic status */
     .info b {
@@ -300,9 +275,9 @@ export class GraphitePanel extends GraphiteCard<PanelConfig> {
       padding: 0;
       border-radius: 0;
     }
-    /* framed panels: shadow set by the theme (--graphite-panel-shadow, none by default) */
-    :host(:not([frameless])) ha-card {
-      box-shadow: var(--graphite-panel-shadow, none);
+    /* frameless: no shadow either (the framed panel takes --graphite-panel-shadow from panelSurfaceStyles) */
+    :host([frameless]) ha-card {
+      box-shadow: none;
     }
     /* outer panel (directly in the view, not inside another panel or a dialog): the theme can make it
        translucent with a blur behind and give it a light edge; inner panels stay solid */

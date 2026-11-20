@@ -690,7 +690,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
     const allSelected = rooms.length > 0 && this.selected.length === rooms.length;
     const issues = this.roomIssues();
     return html`
-      <div class="panelTitle">${config.cleaning_title || this.t("cleaningTitle")}</div>
+      <div class="header"><span class="title">${config.cleaning_title || this.t("cleaningTitle")}</span></div>
       ${presets.length
         ? html`
           <div class="label">${config.presets_title || this.t("presetsTitle")}</div>
@@ -802,7 +802,7 @@ export class GraphiteVacuum extends GraphiteCard<VacuumConfig> {
   private renderStation(status: VacuumStatus): TemplateResult {
     const actions = this.stationActions.filter((action) => this.stateOf(action.entity));
     return html`
-      <div class="panelTitle">${this.config!.station_title || this.t("stationTitle")}</div>
+      <div class="header"><span class="title">${this.config!.station_title || this.t("stationTitle")}</span></div>
       <div class="robotInfo">
         ${this.renderArt(status)}
         <div class="facts">${this.facts(status).map((fact, index) => html`${index ? html`<br>` : nothing}${fact}`)}</div>

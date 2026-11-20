@@ -362,12 +362,12 @@ export class GraphiteShopping extends GraphiteCard<ShoppingConfig> {
   private renderSyncStatus(): TemplateResult {
     const openChanges = this.pending.size;
     if (openChanges === 0 && this.syncError)
-      return html`<div class="syncStatus error" role="status" aria-live="polite" title=${this.syncError}>
+      return html`<div class="info syncStatus error" role="status" aria-live="polite" title=${this.syncError}>
         <ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>${this.t("notSaved")}</span></div>`;
     if (openChanges > 0)
-      return html`<div class="syncStatus saving" role="status" aria-live="polite">
+      return html`<div class="info syncStatus saving" role="status" aria-live="polite">
         <span class="syncSpinner"></span><span>${openChanges > 1 ? this.t("savingCount", { count: openChanges }) : this.t("saving")}</span></div>`;
-    return html`<div class="syncStatus" role="status" aria-live="polite"><ha-icon icon="mdi:check"></ha-icon><span>${this.t("synced")}</span></div>`;
+    return html`<div class="info syncStatus" role="status" aria-live="polite"><ha-icon icon="mdi:check"></ha-icon><span>${this.t("synced")}</span></div>`;
   }
 
   private renderItem(item: ShownItem): TemplateResult {
@@ -445,8 +445,8 @@ export class GraphiteShopping extends GraphiteCard<ShoppingConfig> {
     return html`
       <div class="columns ${config.panels === false ? "" : "panels"}">
         <div class="listColumn">
-          <div class="panelHeader">
-            ${listTitle ? html`<div class="panelTitle">${listTitle}</div>` : nothing}
+          <div class="header">
+            ${listTitle ? html`<span class="title">${listTitle}</span>` : nothing}
             ${this.renderSyncStatus()}
           </div>
           <form class="inputRow" @submit=${this.onSubmit}>
@@ -461,7 +461,7 @@ export class GraphiteShopping extends GraphiteCard<ShoppingConfig> {
           </div>
         </div>
         <div class="quickColumn">
-          ${quickTitle ? html`<div class="panelTitle">${quickTitle}</div>` : nothing}
+          ${quickTitle ? html`<div class="header"><span class="title">${quickTitle}</span></div>` : nothing}
           <div class="groups">${this.groups.map((group) => this.renderGroup(group))}</div>
         </div>
       </div>

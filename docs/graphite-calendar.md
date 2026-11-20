@@ -24,7 +24,7 @@ cards:
         icon: mdi:pencil-outline
       - entity: calendar.school_exams
         name: Prüfungen
-        color: "#e8908a"
+        color: "var(--graphite-danger)"
         icon: mdi:alert-outline
         highlight: true
       - calendar.school_events
@@ -54,7 +54,7 @@ cards:
         weekdays: true
         rules:
           - contains: Test
-            color: "#e8908a"
+            color: "var(--graphite-danger)"
   - type: custom:graphite-panel
     cards:
       - type: custom:graphite-calendar
@@ -66,7 +66,7 @@ cards:
         weekdays: true
         rules:
           - contains: Test
-            color: "#e8908a"
+            color: "var(--graphite-danger)"
 ```
 
 ### Tiles: today and the next exam
@@ -83,7 +83,7 @@ cards:
     day_switch: "15:00"
     rules:
       - contains_any: [Test, Prüfung]
-        color: "#e8908a"
+        color: "var(--graphite-danger)"
         highlight: true
     tap_action:
       action: navigate
@@ -144,8 +144,8 @@ today or tomorrow).
 - **Colors:** a dot in the calendar or rule color (muted without a color). Titles colored by a rule
   (or highlighted) take that color and come first within the day, so exams stand out even when they
   are in the wrong calendar.
-- **Header** (`range: week` or `title`): title and date range on one baseline with the separator line,
-  same as the panel header ("Diese Woche | 9.–13. November"). The range runs Monday to Friday, to the
+- **Header** (`range: week` or `title`): title and date range on one baseline,
+  same as the panel header ("Diese Woche  9.–13. November"). The range runs Monday to Friday, to the
   weekend when it has events.
 
 ## Tiles layout
@@ -168,7 +168,7 @@ List rows use the geometry of the status rows (`--graphite-row-height`, `--graph
 `--graphite-font-name-size`, `--graphite-font-caption-size`), day headers `--graphite-font-label-size`.
 The tint of highlighted events is `--graphite-tint-alert` (16 %) of the event color. Compact day blocks are
 `--graphite-row-height` high at least, with `--graphite-card-surface` and `--graphite-card-radius`; the
-header uses `--graphite-title-size`, `--graphite-gap-header` and `--graphite-separator`.
+header is the shared panel header (`--graphite-title-size`, `--graphite-gap-header`).
 
 ## Editor
 

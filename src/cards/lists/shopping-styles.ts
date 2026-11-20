@@ -2,6 +2,7 @@
 // items, quick pick column with chip groups and the variant chooser as overlay.
 import { css } from "lit";
 import { tileEdgeStyles } from "../../core/edge";
+import { panelHeaderStyles, panelSurfaceStyles } from "../../core/panel-styles";
 
 export const shoppingStyles = css`
   :host {
@@ -23,54 +24,13 @@ export const shoppingStyles = css`
     gap: 20px;
     align-items: start;
   }
-  /* panel look per column (same tokens as graphite-panel); tiles inside use the tile surface */
-  .columns.panels .listColumn,
-  .columns.panels .quickColumn {
-    background: var(--graphite-surface-panel, #161617);
-    border-radius: var(--graphite-radius-panel, 20px);
-    padding: var(--graphite-padding-panel, 16px);
-  }
-  .panelTitle {
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--shopText));
-    margin-bottom: 12px;
-  }
-  /* title and sync state in one line on one baseline, separated by a thin line */
-  .panelHeader {
-    display: flex;
-    justify-content: flex-start;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  .panelHeader .panelTitle { flex: none; margin-bottom: 0; }
-  /* sync state of the todo integration: saved / saving (n) / error */
+  /* panel look per column and the panel header, like graphite-panel (core/panel-styles); tiles inside
+     use the tile surface */
+  ${panelSurfaceStyles(".columns.panels .listColumn, .columns.panels .quickColumn")}
+  ${panelHeaderStyles}
+  /* sync state of the todo integration as the header info: saved / saving (n) / error */
   .syncStatus {
-    min-width: 0;
-    padding-left: 12px;
-    position: relative;
-    /* 2px more room on top for the separator line; the negative margin keeps the shared baseline */
-    padding-top: 2px;
-    margin-top: -2px;
-    font-size: 13px;
-    line-height: 16px;
-    color: var(--shopText2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     --mdc-icon-size: 14px;
-  }
-  /* separator line from the title's cap height down to the shared baseline */
-  .syncStatus::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 3.5px;
-    width: 1px;
-    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 24%, var(--graphite-ground, #0a0a0b)));
   }
   .syncStatus.saving { color: var(--shopAccent); }
   .syncStatus.error { color: var(--shopDanger); }

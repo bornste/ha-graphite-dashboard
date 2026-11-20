@@ -1,5 +1,5 @@
 // src/core/version.ts
-var version = "0.68.2";
+var version = "0.68.3";
 
 // node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
@@ -3402,6 +3402,48 @@ function pillButtonStyles(selector) {
   `;
 }
 
+// src/core/panel-styles.ts
+function panelSurfaceStyles(selector) {
+  const panel = r(selector);
+  return i`
+    ${panel} {
+      background: var(--graphite-panel-fill, var(--graphite-surface-panel));
+      border-radius: var(--graphite-radius-panel, 20px);
+      padding: var(--graphite-padding-panel, 16px);
+      box-shadow: var(--graphite-panel-shadow, none);
+    }
+  `;
+}
+var panelHeaderStyles = i`
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--graphite-gap-header, 12px);
+    min-width: 0;
+    margin-bottom: var(--graphite-gap-header, 12px);
+  }
+  .header .title {
+    flex: none;
+    font-size: var(--graphite-title-size, 18px);
+    font-weight: var(--graphite-title-weight, 400);
+    line-height: 1.2;
+    color: var(--graphite-title-color, var(--graphite-text-primary, var(--primary-text-color)));
+  }
+  .header .info {
+    min-width: 0;
+    font-size: var(--graphite-font-label-size, 13px);
+    line-height: 16px;
+    color: var(--graphite-text-secondary, var(--secondary-text-color));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .header .title:empty,
+  .header .info:empty {
+    display: none;
+  }
+`;
+
 // src/core/format.ts
 var unavailableStates = ["unavailable", "unknown"];
 function isUnavailable(stateObj) {
@@ -4100,12 +4142,11 @@ GraphitePanel.styles = i`
       --graphite-card-inner-surface: var(--graphite-surface-tile-active);
       --graphite-card-radius: var(--graphite-radius-tile);
     }
+    /* surface and header shared with the cards that draw panels of their own (core/panel-styles) */
+    ${panelSurfaceStyles("ha-card")}
+    ${panelHeaderStyles}
     ha-card {
-      background: var(--graphite-panel-fill, var(--graphite-surface-panel));
-      border-radius: var(--graphite-radius-panel);
       border: none;
-      box-shadow: none;
-      padding: var(--graphite-padding-panel, 16px);
       box-sizing: border-box;
       height: 100%;
       /* only colors animate; the theme applies after the first render and would animate the radius */
@@ -4113,12 +4154,9 @@ GraphitePanel.styles = i`
     }
     /* title and info share one baseline; they differ in size and colour, a chevron after the title marks
        a title that opens something */
+    /* the row also holds chips and buttons: centered, title and info keep their baseline in .heading */
     .header {
-      display: flex;
-      justify-content: flex-start;
       align-items: center;
-      gap: var(--graphite-gap-header, 12px);
-      margin-bottom: var(--graphite-gap-header, 12px);
     }
     /* the header of a dialog (only its own panel, not the panels inside it): as high as the close
        button (36px), so the title already has room below it; 8px = the gap between tiles, the buttons
@@ -4189,31 +4227,9 @@ GraphitePanel.styles = i`
         fill: var(--graphite-text-primary);
       }
     }
-    .title {
-      flex: none;
-      font-size: var(--graphite-title-size, 18px);
-      font-weight: var(--graphite-title-weight, 400);
-      line-height: 1.2;
-      color: var(--graphite-title-color, var(--primary-text-color));
-    }
     /* optical inset: the title of a dialog alone looks too close to the dialog edge */
     :host([dialog]) .title {
       padding-left: 4px;
-    }
-    .title:empty {
-      display: none;
-    }
-    .info {
-      min-width: 0;
-      font-size: var(--graphite-font-label-size, 13px);
-      line-height: 16px;
-      color: var(--graphite-text-secondary, var(--secondary-text-color));
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .info:empty {
-      display: none;
     }
     /* colored parts of the dynamic status */
     .info b {
@@ -4308,9 +4324,9 @@ GraphitePanel.styles = i`
       padding: 0;
       border-radius: 0;
     }
-    /* framed panels: shadow set by the theme (--graphite-panel-shadow, none by default) */
-    :host(:not([frameless])) ha-card {
-      box-shadow: var(--graphite-panel-shadow, none);
+    /* frameless: no shadow either (the framed panel takes --graphite-panel-shadow from panelSurfaceStyles) */
+    :host([frameless]) ha-card {
+      box-shadow: none;
     }
     /* outer panel (directly in the view, not inside another panel or a dialog): the theme can make it
        translucent with a blur behind and give it a light edge; inner panels stay solid */
@@ -8039,20 +8055,13 @@ var panelStyles = i`
     gap: var(--graphite-gap-panel, 16px);
     align-items: start;
   }
+  /* panel surface and header like graphite-panel (core/panel-styles) */
+  ${panelSurfaceStyles(".column")}
+  ${panelHeaderStyles}
   .column {
-    background: var(--graphite-surface-panel, #161617);
-    border-radius: var(--graphite-radius-panel, 20px);
-    padding: var(--graphite-padding-panel, 16px);
     min-width: 0;
   }
-  .columns.plain .column { background: none; padding: 0; }
-  .panelTitle {
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--vacText));
-    margin-bottom: var(--graphite-gap-header, 12px);
-  }
+  .columns.plain .column { background: none; padding: 0; box-shadow: none; }
   .label {
     display: flex;
     justify-content: space-between;
@@ -8062,7 +8071,7 @@ var panelStyles = i`
     color: var(--vacText);
     margin: var(--graphite-gap-panel, 16px) 0 var(--graphite-gap-tile, 8px);
   }
-  .panelTitle + .label { margin-top: 0; }
+  .header + .label { margin-top: 0; }
   .label button {
     background: none;
     padding: 0;
@@ -8694,7 +8703,7 @@ var GraphiteVacuum = class extends GraphiteCard {
     const allSelected = rooms.length > 0 && this.selected.length === rooms.length;
     const issues = this.roomIssues();
     return b2`
-      <div class="panelTitle">${config.cleaning_title || this.t("cleaningTitle")}</div>
+      <div class="header"><span class="title">${config.cleaning_title || this.t("cleaningTitle")}</span></div>
       ${presets.length ? b2`
           <div class="label">${config.presets_title || this.t("presetsTitle")}</div>
           <div class="presets">
@@ -8804,7 +8813,7 @@ var GraphiteVacuum = class extends GraphiteCard {
   renderStation(status) {
     const actions = this.stationActions.filter((action) => this.stateOf(action.entity));
     return b2`
-      <div class="panelTitle">${this.config.station_title || this.t("stationTitle")}</div>
+      <div class="header"><span class="title">${this.config.station_title || this.t("stationTitle")}</span></div>
       <div class="robotInfo">
         ${this.renderArt(status)}
         <div class="facts">${this.facts(status).map((fact, index) => b2`${index ? b2`<br>` : A}${fact}`)}</div>
@@ -9206,51 +9215,8 @@ var calendarStyles = i`
   .empty .icon {
     color: var(--graphite-success);
   }
-  /* header like the panel header: title and info on one baseline, separated by a thin line */
-  .header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--graphite-gap-header, 12px);
-    margin-bottom: var(--graphite-gap-header, 12px);
-    min-width: 0;
-  }
-  .header .title {
-    flex: none;
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--graphite-text-primary));
-  }
-  .header .title:empty {
-    display: none;
-  }
-  .header .info {
-    position: relative;
-    min-width: 0;
-    padding-left: var(--graphite-gap-header, 12px);
-    /* 2px more room on top for the separator line; the negative margin keeps the baseline */
-    padding-top: 2px;
-    margin-top: -2px;
-    font-size: var(--graphite-font-label-size, 13px);
-    line-height: 16px;
-    color: var(--graphite-text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* separator from the title's cap height down to the shared baseline */
-  .header .info::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 3.5px;
-    width: 1px;
-    background: var(--graphite-separator);
-  }
-  .header .info:empty {
-    display: none;
-  }
+  /* header like the panel header (core/panel-styles) */
+  ${panelHeaderStyles}
   /* compact layout: one block per day, date on the left, one line per event */
   .days {
     display: flex;
@@ -10623,54 +10589,13 @@ var shoppingStyles = i`
     gap: 20px;
     align-items: start;
   }
-  /* panel look per column (same tokens as graphite-panel); tiles inside use the tile surface */
-  .columns.panels .listColumn,
-  .columns.panels .quickColumn {
-    background: var(--graphite-surface-panel, #161617);
-    border-radius: var(--graphite-radius-panel, 20px);
-    padding: var(--graphite-padding-panel, 16px);
-  }
-  .panelTitle {
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--shopText));
-    margin-bottom: 12px;
-  }
-  /* title and sync state in one line on one baseline, separated by a thin line */
-  .panelHeader {
-    display: flex;
-    justify-content: flex-start;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  .panelHeader .panelTitle { flex: none; margin-bottom: 0; }
-  /* sync state of the todo integration: saved / saving (n) / error */
+  /* panel look per column and the panel header, like graphite-panel (core/panel-styles); tiles inside
+     use the tile surface */
+  ${panelSurfaceStyles(".columns.panels .listColumn, .columns.panels .quickColumn")}
+  ${panelHeaderStyles}
+  /* sync state of the todo integration as the header info: saved / saving (n) / error */
   .syncStatus {
-    min-width: 0;
-    padding-left: 12px;
-    position: relative;
-    /* 2px more room on top for the separator line; the negative margin keeps the shared baseline */
-    padding-top: 2px;
-    margin-top: -2px;
-    font-size: 13px;
-    line-height: 16px;
-    color: var(--shopText2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     --mdc-icon-size: 14px;
-  }
-  /* separator line from the title's cap height down to the shared baseline */
-  .syncStatus::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 3.5px;
-    width: 1px;
-    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 24%, var(--graphite-ground, #0a0a0b)));
   }
   .syncStatus.saving { color: var(--shopAccent); }
   .syncStatus.error { color: var(--shopDanger); }
@@ -11131,12 +11056,12 @@ var GraphiteShopping = class extends GraphiteCard {
   renderSyncStatus() {
     const openChanges = this.pending.size;
     if (openChanges === 0 && this.syncError)
-      return b2`<div class="syncStatus error" role="status" aria-live="polite" title=${this.syncError}>
+      return b2`<div class="info syncStatus error" role="status" aria-live="polite" title=${this.syncError}>
         <ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>${this.t("notSaved")}</span></div>`;
     if (openChanges > 0)
-      return b2`<div class="syncStatus saving" role="status" aria-live="polite">
+      return b2`<div class="info syncStatus saving" role="status" aria-live="polite">
         <span class="syncSpinner"></span><span>${openChanges > 1 ? this.t("savingCount", { count: openChanges }) : this.t("saving")}</span></div>`;
-    return b2`<div class="syncStatus" role="status" aria-live="polite"><ha-icon icon="mdi:check"></ha-icon><span>${this.t("synced")}</span></div>`;
+    return b2`<div class="info syncStatus" role="status" aria-live="polite"><ha-icon icon="mdi:check"></ha-icon><span>${this.t("synced")}</span></div>`;
   }
   renderItem(item) {
     const isFixed = this.fixedKeys.has(item.key);
@@ -11200,8 +11125,8 @@ var GraphiteShopping = class extends GraphiteCard {
     return b2`
       <div class="columns ${config.panels === false ? "" : "panels"}">
         <div class="listColumn">
-          <div class="panelHeader">
-            ${listTitle ? b2`<div class="panelTitle">${listTitle}</div>` : A}
+          <div class="header">
+            ${listTitle ? b2`<span class="title">${listTitle}</span>` : A}
             ${this.renderSyncStatus()}
           </div>
           <form class="inputRow" @submit=${this.onSubmit}>
@@ -11214,7 +11139,7 @@ var GraphiteShopping = class extends GraphiteCard {
           </div>
         </div>
         <div class="quickColumn">
-          ${quickTitle ? b2`<div class="panelTitle">${quickTitle}</div>` : A}
+          ${quickTitle ? b2`<div class="header"><span class="title">${quickTitle}</span></div>` : A}
           <div class="groups">${this.groups.map((group) => this.renderGroup(group))}</div>
         </div>
       </div>
@@ -11270,21 +11195,15 @@ var batteryStyles = i`
     box-shadow: none;
     padding: 0;
   }
-  /* one panel per group, same look as graphite-panel */
-  .panel {
-    background: var(--graphite-surface-panel, var(--card-background-color));
-    border-radius: var(--graphite-radius-panel, 20px);
-    padding: var(--graphite-padding-panel, 16px);
-  }
+  /* one panel per group, surface and header like graphite-panel (core/panel-styles) */
+  ${panelSurfaceStyles(".panel")}
+  ${panelHeaderStyles}
   .panel + .panel {
     margin-top: var(--graphite-gap-panel, 16px);
   }
-  /* title and info share one baseline; dot and chevron are centered on the line */
+  /* the dot before the title, centered on the line; with the 10px gap it sits close to the title */
   .header {
-    display: flex;
-    align-items: baseline;
     gap: 10px;
-    margin-bottom: 12px;
   }
   .header i {
     flex: none;
@@ -11294,41 +11213,9 @@ var batteryStyles = i`
     border-radius: 50%;
     background: var(--labelColor);
   }
-  .header .title {
-    flex: none;
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--textPrimary));
-  }
-  /* info right after the title, separated by a thin line (same as panel card, room cards and dialog
-     headers); 2px margin + 10px gap = 12px like there. The right side stays for the chevron. */
+  /* 2px + 10px gap = 12px between title and info, like the other panel headers */
   .header .info {
-    min-width: 0;
     margin-left: 2px;
-    padding-left: 12px;
-    position: relative;
-    /* 2px more room on top for the separator line (it reads too short at cap height);
-       the negative margin keeps the text on the shared baseline */
-    padding-top: 2px;
-    margin-top: -2px;
-    font-size: 13px;
-    line-height: 16px;
-    color: var(--textSecondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* separator line from the title's cap height down to the shared baseline
-     (13px text in a 16px line: the baseline sits 3.5px above the bottom) */
-  .header .info::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 3.5px;
-    width: 1px;
-    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 24%, var(--graphite-ground, #0a0a0b)));
   }
   /* "in order": the whole header toggles the compact tiles */
   button.header {

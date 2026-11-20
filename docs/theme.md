@@ -48,7 +48,7 @@ in dark mode.
 | `graphite-surface-track` | Tracks, inactive switches and buttons |
 | `graphite-text-primary` / `-secondary` / `-muted` | Text levels |
 | `graphite-divider` | Thin dividers (translucent, Home Assistant `divider-color`) |
-| `graphite-separator` | Line between title and status (opaque) |
+| `graphite-separator` | Thin lines: outline of a dialog, line under a scrolled dialog header, divider in the summary (opaque) |
 | `graphite-overlay` | Pop-up background |
 
 ## 3. Layout
@@ -76,8 +76,8 @@ in dark mode.
 The size follows the role of a text, not the layout: a name that is the main content is a name (rows
 and tiles alike), a name next to a value or a picture is a label.
 
-The status line after a title is tuned for a 13px font in a 16px line (position of the separator
-line). Other sizes work, the separator may then need a small adjustment.
+Panel headers (graphite-panel and the cards that draw their own panels: battery, calendar, shopping,
+vacuum) share one style: title and status on one baseline, no separator line.
 
 ### Sizes and inner spacing
 

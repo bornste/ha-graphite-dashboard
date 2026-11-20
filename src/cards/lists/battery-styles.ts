@@ -2,6 +2,7 @@
 // for batteries that need attention, compact tiles for the batteries in order.
 import { css } from "lit";
 import { tileEdgeStyles } from "../../core/edge";
+import { panelHeaderStyles, panelSurfaceStyles } from "../../core/panel-styles";
 
 export const batteryStyles = css`
   :host {
@@ -23,21 +24,15 @@ export const batteryStyles = css`
     box-shadow: none;
     padding: 0;
   }
-  /* one panel per group, same look as graphite-panel */
-  .panel {
-    background: var(--graphite-surface-panel, var(--card-background-color));
-    border-radius: var(--graphite-radius-panel, 20px);
-    padding: var(--graphite-padding-panel, 16px);
-  }
+  /* one panel per group, surface and header like graphite-panel (core/panel-styles) */
+  ${panelSurfaceStyles(".panel")}
+  ${panelHeaderStyles}
   .panel + .panel {
     margin-top: var(--graphite-gap-panel, 16px);
   }
-  /* title and info share one baseline; dot and chevron are centered on the line */
+  /* the dot before the title, centered on the line; with the 10px gap it sits close to the title */
   .header {
-    display: flex;
-    align-items: baseline;
     gap: 10px;
-    margin-bottom: 12px;
   }
   .header i {
     flex: none;
@@ -47,41 +42,9 @@ export const batteryStyles = css`
     border-radius: 50%;
     background: var(--labelColor);
   }
-  .header .title {
-    flex: none;
-    font-size: var(--graphite-title-size, 18px);
-    font-weight: var(--graphite-title-weight, 400);
-    line-height: 1.2;
-    color: var(--graphite-title-color, var(--textPrimary));
-  }
-  /* info right after the title, separated by a thin line (same as panel card, room cards and dialog
-     headers); 2px margin + 10px gap = 12px like there. The right side stays for the chevron. */
+  /* 2px + 10px gap = 12px between title and info, like the other panel headers */
   .header .info {
-    min-width: 0;
     margin-left: 2px;
-    padding-left: 12px;
-    position: relative;
-    /* 2px more room on top for the separator line (it reads too short at cap height);
-       the negative margin keeps the text on the shared baseline */
-    padding-top: 2px;
-    margin-top: -2px;
-    font-size: 13px;
-    line-height: 16px;
-    color: var(--textSecondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* separator line from the title's cap height down to the shared baseline
-     (13px text in a 16px line: the baseline sits 3.5px above the bottom) */
-  .header .info::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 3.5px;
-    width: 1px;
-    background: var(--graphite-separator, color-mix(in srgb, var(--graphite-ink, #f3f3f4) 24%, var(--graphite-ground, #0a0a0b)));
   }
   /* "in order": the whole header toggles the compact tiles */
   button.header {

@@ -23,7 +23,7 @@ scales:
       - { value: 28, color: "#f0a33c" }
       - { value: 32, color: "#e4644b" }
 items:
-  - { name: Window open, color: "#f5c48a", opacity: 0.4 }
+  - { name: Window open, color: "var(--graphite-accent)", opacity: 0.4 }
 ```
 
 ## Options
